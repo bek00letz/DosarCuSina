@@ -1,0 +1,503 @@
+[
+  {
+    "assetId" : "7d1e2f30-0000-4000-8000-00000000a001",
+    "createdAt" : "2026-11-01T09:00:00Z",
+    "dueDate" : "2027-05-01",
+    "id" : "7d1e2f30-0000-4000-8000-00000000b001",
+    "isExample" : false,
+    "kind" : "routine",
+    "recurrence" : {
+      "anchor" : "dueDate",
+      "every" : 1,
+      "skipHolidays" : true,
+      "type" : "interval",
+      "unit" : "year"
+    },
+    "reminders" : {
+      "consequence" : "comfort",
+      "followUpAfterLapse" : false,
+      "graceDays" : 0,
+      "leadDays" : [
+        7
+      ],
+      "quietHours" : true
+    },
+    "status" : "active",
+    "title" : "Verifică albumele",
+    "updatedAt" : "2026-11-01T09:00:00Z"
+  },
+  {
+    "assetId" : "d18f09a5-1718-490d-bc68-161b0166d75f",
+    "blueprintKey" : "document.renew",
+    "createdAt" : "2026-11-25T21:59:16Z",
+    "dueDate" : "2029-12-19",
+    "id" : "b8b90ba0-0080-48a8-8cdf-4fab414bc9e5",
+    "isExample" : false,
+    "kind" : "renewal",
+    "notes" : "Programările durează. Pentru pașaport, multe țări cer 6 luni de valabilitate.",
+    "recurrence" : {
+      "type" : "none"
+    },
+    "reminders" : {
+      "consequence" : "legal",
+      "followUpAfterLapse" : true,
+      "graceDays" : 0,
+      "leadDays" : [
+        90,
+        30
+      ]
+    },
+    "status" : "active",
+    "title" : "Reînnoire",
+    "updatedAt" : "2026-11-20T08:04:00Z"
+  },
+  {
+    "assetId" : "038c6cef-a824-46a4-a416-0e864764e587",
+    "blueprintKey" : "vehicle.itp",
+    "createdAt" : "2026-11-25T21:59:16Z",
+    "dueDate" : "2028-11-18",
+    "estimatedCost" : {
+      "amount" : "180",
+      "currency" : "RON"
+    },
+    "id" : "0a5ee631-1bc8-4765-a0db-2409be97c1ac",
+    "isExample" : false,
+    "kind" : "legal",
+    "notes" : "Fără ITP valabil, înmatricularea se suspendă.",
+    "recurrence" : {
+      "rule" : "vehicleITP",
+      "type" : "legal"
+    },
+    "reminders" : {
+      "consequence" : "legal",
+      "followUpAfterLapse" : true,
+      "graceDays" : 0,
+      "leadDays" : [
+        30,
+        7
+      ]
+    },
+    "status" : "active",
+    "title" : "ITP",
+    "updatedAt" : "2026-11-20T08:13:00Z"
+  },
+  {
+    "assetId" : "038c6cef-a824-46a4-a416-0e864764e587",
+    "blueprintKey" : "vehicle.rca",
+    "createdAt" : "2026-11-25T21:59:16Z",
+    "dueDate" : "2027-01-17",
+    "estimatedCost" : {
+      "amount" : "1250.75",
+      "currency" : "RON"
+    },
+    "id" : "d135e7d8-35b2-4a6a-9459-8516ab1dbe1f",
+    "isExample" : false,
+    "kind" : "insurance",
+    "notes" : "Cere oferte cu o lună înainte, prețurile diferă mult.",
+    "recurrence" : {
+      "anchor" : "dueDate",
+      "every" : 1,
+      "type" : "interval",
+      "unit" : "year"
+    },
+    "reference" : "POL-000001",
+    "reminderMinuteOfDay" : 480,
+    "reminders" : {
+      "consequence" : "legal",
+      "followUpAfterLapse" : true,
+      "graceDays" : 0,
+      "leadDays" : [
+        30,
+        7,
+        0
+      ]
+    },
+    "status" : "active",
+    "title" : "RCA",
+    "updatedAt" : "2026-11-20T08:16:00Z"
+  },
+  {
+    "assetId" : "038c6cef-a824-46a4-a416-0e864764e587",
+    "blueprintKey" : "vehicle.vignette",
+    "createdAt" : "2026-11-25T21:59:16Z",
+    "dueDate" : "2026-11-26",
+    "id" : "0859a945-9f9d-4551-8939-285121ae2af5",
+    "isExample" : false,
+    "kind" : "legal",
+    "recurrence" : {
+      "anchor" : "completion",
+      "every" : 12,
+      "type" : "interval",
+      "unit" : "month"
+    },
+    "reminders" : {
+      "consequence" : "legal",
+      "followUpAfterLapse" : true,
+      "graceDays" : 0,
+      "leadDays" : [
+        7,
+        0
+      ]
+    },
+    "snoozedUntil" : "2026-11-22T22:00:00Z",
+    "status" : "active",
+    "title" : "Rovinietă",
+    "updatedAt" : "2026-11-20T08:20:00Z"
+  },
+  {
+    "assetId" : "038c6cef-a824-46a4-a416-0e864764e587",
+    "blueprintKey" : "vehicle.service",
+    "createdAt" : "2026-11-25T21:59:16Z",
+    "dueDate" : "2027-03-12",
+    "dueMetric" : 157500,
+    "id" : "82cd648a-1e7b-44fb-879e-c8f0a7705476",
+    "isExample" : false,
+    "kind" : "maintenance",
+    "recurrence" : {
+      "every" : 15000,
+      "fallbackEvery" : 1,
+      "fallbackUnit" : "year",
+      "type" : "metric",
+      "unit" : "km"
+    },
+    "reminders" : {
+      "consequence" : "comfort",
+      "followUpAfterLapse" : false,
+      "graceDays" : 30,
+      "leadDays" : [
+        14,
+        1
+      ]
+    },
+    "status" : "active",
+    "title" : "Revizie periodică",
+    "updatedAt" : "2026-11-20T08:06:00Z"
+  },
+  {
+    "assetId" : "038c6cef-a824-46a4-a416-0e864764e587",
+    "blueprintKey" : "vehicle.tyres",
+    "createdAt" : "2026-11-25T21:59:16Z",
+    "dueDate" : "2027-04-15",
+    "id" : "2c9930b9-7a58-455d-9849-fe646507e6ef",
+    "isExample" : false,
+    "kind" : "maintenance",
+    "recurrence" : {
+      "dates" : [
+        "04-15",
+        "11-01"
+      ],
+      "type" : "fixedDates"
+    },
+    "reminders" : {
+      "consequence" : "comfort",
+      "followUpAfterLapse" : false,
+      "graceDays" : 14,
+      "leadDays" : [
+        14
+      ]
+    },
+    "status" : "active",
+    "title" : "Schimb de anvelope",
+    "updatedAt" : "2026-11-20T08:06:00Z"
+  },
+  {
+    "assetId" : "bcc847d8-03d4-4bb5-9e9a-8253e8120968",
+    "blueprintKey" : "home.boilerCheck",
+    "createdAt" : "2026-11-25T21:59:16Z",
+    "dueDate" : "2027-04-09",
+    "id" : "ea86a52c-f4ab-4c06-af3b-5db6bdf361cd",
+    "isExample" : false,
+    "kind" : "legal",
+    "notes" : "Obligatorie la cel mult 2 ani, făcută de o firmă autorizată ISCIR.",
+    "recurrence" : {
+      "anchor" : "completion",
+      "every" : 2,
+      "type" : "interval",
+      "unit" : "year"
+    },
+    "reminders" : {
+      "consequence" : "legal",
+      "followUpAfterLapse" : true,
+      "graceDays" : 0,
+      "leadDays" : [
+        30,
+        7
+      ]
+    },
+    "status" : "active",
+    "title" : "Verificare centrală (VTP)",
+    "updatedAt" : "2026-11-20T08:21:00Z"
+  },
+  {
+    "assetId" : "bcc847d8-03d4-4bb5-9e9a-8253e8120968",
+    "blueprintKey" : "home.gasCheck",
+    "createdAt" : "2026-11-25T21:59:16Z",
+    "dueDate" : "2028-01-04",
+    "id" : "a32afbe4-ea3a-414a-bbff-4c5908b1e547",
+    "isExample" : false,
+    "kind" : "legal",
+    "recurrence" : {
+      "anchor" : "completion",
+      "every" : 2,
+      "type" : "interval",
+      "unit" : "year"
+    },
+    "reminders" : {
+      "consequence" : "legal",
+      "followUpAfterLapse" : true,
+      "graceDays" : 0,
+      "leadDays" : [
+        30,
+        7
+      ]
+    },
+    "status" : "paused",
+    "title" : "Verificare instalație de gaze",
+    "updatedAt" : "2026-11-20T08:22:00Z"
+  },
+  {
+    "assetId" : "bcc847d8-03d4-4bb5-9e9a-8253e8120968",
+    "blueprintKey" : "home.pad",
+    "createdAt" : "2026-11-25T21:59:16Z",
+    "dueDate" : "2026-12-21",
+    "estimatedCost" : {
+      "amount" : "130",
+      "currency" : "RON"
+    },
+    "id" : "c57763ed-afbe-42e6-89e9-5f333ee746d7",
+    "isExample" : false,
+    "kind" : "insurance",
+    "recurrence" : {
+      "anchor" : "dueDate",
+      "every" : 1,
+      "type" : "interval",
+      "unit" : "year"
+    },
+    "reminders" : {
+      "consequence" : "legal",
+      "followUpAfterLapse" : true,
+      "graceDays" : 0,
+      "leadDays" : [
+        30,
+        7,
+        0
+      ]
+    },
+    "status" : "active",
+    "title" : "Asigurare obligatorie (PAD)",
+    "updatedAt" : "2026-11-20T08:21:00Z"
+  },
+  {
+    "assetId" : "bcc847d8-03d4-4bb5-9e9a-8253e8120968",
+    "blueprintKey" : "home.buildingTax",
+    "createdAt" : "2026-11-25T21:59:16Z",
+    "dueDate" : "2027-03-31",
+    "id" : "764d89c1-c8bb-470e-b538-4abbb8f372e9",
+    "isExample" : false,
+    "kind" : "tax",
+    "notes" : "Plata integrală până la 31 martie poate aduce o reducere.",
+    "recurrence" : {
+      "dates" : [
+        "03-31",
+        "09-30"
+      ],
+      "type" : "fixedDates"
+    },
+    "reminders" : {
+      "consequence" : "financial",
+      "followUpAfterLapse" : true,
+      "graceDays" : 0,
+      "leadDays" : [
+        14,
+        1
+      ]
+    },
+    "status" : "active",
+    "title" : "Impozit pe clădire",
+    "updatedAt" : "2026-11-20T08:21:00Z"
+  },
+  {
+    "assetId" : "31432ef9-3d87-42e2-99eb-04d6117c9f98",
+    "blueprintKey" : "tenancy.end",
+    "createdAt" : "2026-11-25T21:59:16Z",
+    "dueDate" : "2027-05-04",
+    "id" : "36087bec-1726-457a-ab67-37ded20df8c7",
+    "isExample" : false,
+    "kind" : "renewal",
+    "notes" : "Timp să vorbiți despre prelungire sau să cauți alt chiriaș.",
+    "recurrence" : {
+      "type" : "none"
+    },
+    "reminders" : {
+      "consequence" : "financial",
+      "followUpAfterLapse" : false,
+      "graceDays" : 0,
+      "leadDays" : [
+        60
+      ]
+    },
+    "status" : "active",
+    "title" : "Se termină contractul de închiriere",
+    "updatedAt" : "2026-11-20T08:23:00Z"
+  },
+  {
+    "blueprintKey" : "household.rentalDeclaration",
+    "createdAt" : "2026-11-25T21:59:16Z",
+    "dueDate" : "2027-05-25",
+    "id" : "e80995d2-1ea9-4c8e-8544-fe67da0394e1",
+    "isExample" : false,
+    "kind" : "tax",
+    "notes" : "Venitul din chirii se declară la ANAF până pe 25 mai.",
+    "recurrence" : {
+      "dates" : [
+        "05-25"
+      ],
+      "type" : "fixedDates"
+    },
+    "reminders" : {
+      "consequence" : "legal",
+      "followUpAfterLapse" : true,
+      "graceDays" : 0,
+      "leadDays" : [
+        30,
+        7
+      ]
+    },
+    "status" : "active",
+    "title" : "Declarația unică pentru chirii",
+    "updatedAt" : "2026-11-20T08:23:00Z"
+  },
+  {
+    "assetId" : "a8b6e745-d49f-457b-ae27-20bff9e0b746",
+    "blueprintKey" : "purchase.warrantyEnds",
+    "createdAt" : "2026-11-25T21:59:17Z",
+    "dueDate" : "2027-02-18",
+    "id" : "defd733b-35ba-4828-addd-a3bc58661070",
+    "isExample" : false,
+    "kind" : "renewal",
+    "notes" : "Funcționează totul bine? Acum mai poți reclama gratuit un defect.",
+    "recurrence" : {
+      "type" : "none"
+    },
+    "reminders" : {
+      "consequence" : "financial",
+      "followUpAfterLapse" : false,
+      "graceDays" : 0,
+      "leadDays" : [
+        30
+      ]
+    },
+    "status" : "active",
+    "title" : "Garanția se termină",
+    "updatedAt" : "2026-11-20T08:29:00Z"
+  },
+  {
+    "assetId" : "08dab900-9b94-48d6-95d4-66710071a1c3",
+    "blueprintKey" : "health.checkup",
+    "createdAt" : "2026-11-25T21:59:17Z",
+    "dueDate" : "2027-01-04",
+    "id" : "0cc18659-0481-4b4e-a827-7861867f8206",
+    "isExample" : false,
+    "kind" : "health",
+    "recurrence" : {
+      "anchor" : "completion",
+      "every" : 1,
+      "type" : "interval",
+      "unit" : "year"
+    },
+    "reminders" : {
+      "consequence" : "health",
+      "followUpAfterLapse" : false,
+      "graceDays" : 30,
+      "leadDays" : [
+        14,
+        0
+      ]
+    },
+    "status" : "active",
+    "title" : "Analize anuale",
+    "updatedAt" : "2026-11-20T08:30:00Z"
+  },
+  {
+    "assetId" : "08dab900-9b94-48d6-95d4-66710071a1c3",
+    "blueprintKey" : "health.dentist",
+    "createdAt" : "2026-11-25T21:59:17Z",
+    "dueDate" : "2026-11-29",
+    "id" : "5dbcd90f-fce7-4e4e-964f-82253bd37949",
+    "isExample" : false,
+    "kind" : "health",
+    "recurrence" : {
+      "anchor" : "completion",
+      "every" : 6,
+      "type" : "interval",
+      "unit" : "month"
+    },
+    "reminders" : {
+      "consequence" : "health",
+      "followUpAfterLapse" : false,
+      "graceDays" : 30,
+      "leadDays" : [
+        7,
+        0
+      ]
+    },
+    "status" : "active",
+    "title" : "Control stomatologic",
+    "updatedAt" : "2026-11-20T08:30:00Z"
+  },
+  {
+    "assetId" : "2fa81057-daf1-4b98-b058-460e70bec58b",
+    "blueprintKey" : "custom.service.engineHours",
+    "createdAt" : "2026-11-25T21:59:17Z",
+    "dueDate" : "2027-11-20",
+    "dueMetric" : 310,
+    "id" : "6fb4ba97-b983-4dda-a43f-c74037ac46f2",
+    "isExample" : false,
+    "kind" : "maintenance",
+    "recurrence" : {
+      "every" : 100,
+      "fallbackEvery" : 1,
+      "fallbackUnit" : "year",
+      "type" : "metric",
+      "unit" : "h"
+    },
+    "reminders" : {
+      "consequence" : "comfort",
+      "followUpAfterLapse" : false,
+      "graceDays" : 30,
+      "leadDays" : [
+        14,
+        1
+      ]
+    },
+    "status" : "active",
+    "title" : "Revizie periodică",
+    "updatedAt" : "2026-11-20T08:33:00Z"
+  },
+  {
+    "assetId" : "2fa81057-daf1-4b98-b058-460e70bec58b",
+    "createdAt" : "2026-11-25T21:59:17Z",
+    "dueDate" : "2026-12-20",
+    "id" : "c93ba559-ee59-4cfd-a05b-9804fa273e89",
+    "isExample" : false,
+    "kind" : "routine",
+    "notes" : "Două baterii AA.",
+    "recurrence" : {
+      "anchor" : "completion",
+      "every" : 6,
+      "type" : "interval",
+      "unit" : "month"
+    },
+    "reminders" : {
+      "consequence" : "comfort",
+      "followUpAfterLapse" : false,
+      "graceDays" : 3,
+      "leadDays" : [
+        0
+      ]
+    },
+    "status" : "active",
+    "title" : "Schimbă bateria telecomenzii",
+    "updatedAt" : "2026-11-20T08:36:00Z"
+  }
+]

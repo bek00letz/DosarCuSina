@@ -1,0 +1,42 @@
+[
+  {
+    "assetId" : "038c6cef-a824-46a4-a416-0e864764e587",
+    "id" : "86b05476-7efe-4e0f-9883-3a3fadacf9a5",
+    "isExample" : false,
+    "kind" : "maintenance",
+    "metricReading" : 138900,
+    "note" : "Totul în regulă.",
+    "occurredAt" : "2026-08-17T08:00:00Z",
+    "providerIds" : [
+      "603b61c5-16a1-4454-96ac-13ae6cf17674"
+    ],
+    "rating" : 5,
+    "reference" : "FCT-0001",
+    "title" : "Revizie anuală",
+    "totalCost" : {
+      "amount" : "1150.5",
+      "currency" : "RON"
+    },
+    "updatedAt" : "2026-11-20T08:11:00Z"
+  },
+  {
+    "assetId" : "038c6cef-a824-46a4-a416-0e864764e587",
+    "cycleDueDate" : "2026-12-13",
+    "id" : "8b8b42af-262b-440a-afed-6990dcc267ba",
+    "isExample" : false,
+    "kind" : "inspection",
+    "nextDueDate" : "2028-11-18",
+    "obligationId" : "0a5ee631-1bc8-4765-a0db-2409be97c1ac",
+    "occurredAt" : "2026-11-18T08:00:00Z",
+    "previousStatus" : "active",
+    "providerIds" : [
+
+    ],
+    "title" : "ITP",
+    "totalCost" : {
+      "amount" : "170",
+      "currency" : "RON"
+    },
+    "updatedAt" : "2026-11-20T08:13:00Z"
+  }
+]

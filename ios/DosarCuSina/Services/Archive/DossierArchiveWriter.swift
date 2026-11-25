@@ -130,13 +130,14 @@ struct DossierArchiveWriter: Sendable {
             var pagePaths: [String] = []
             for page in attachment.orderedPages {
                 guard let data = page.imageData else { continue }
-                let pagePath = "\(base)/page-\(pagePaths.count + 1).heic"
+                // Named by what it is: a JPEG page (kept where HEIC isn't available) is `.jpg`.
+                let pagePath = "\(base)/page-\(pagePaths.count + 1).\(DossierV3.Path.pictureExtension(of: data))"
                 try keep(pagePath, data)
                 pagePaths.append(pagePath)
             }
             var thumbnailPath: String?
             if let data = attachment.thumbnailData {
-                let thumbnail = "\(base)/thumbnail.heic"
+                let thumbnail = "\(base)/thumbnail.\(DossierV3.Path.pictureExtension(of: data))"
                 try keep(thumbnail, data)
                 thumbnailPath = thumbnail
             }
