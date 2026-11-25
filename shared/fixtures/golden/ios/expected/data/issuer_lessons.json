@@ -1,0 +1,13 @@
+[
+  {
+    "categoryKey" : "subscription",
+    "createdAt" : "2026-11-25T21:59:17Z",
+    "field" : "dueDate",
+    "id" : "49579d9e-57eb-5eaf-88b3-e82fb064775d",
+    "issuerKey" : "name:ENGIEROMANIASA",
+    "issuerName" : "ENGIE Romania S.A.",
+    "kind" : "utilityInvoice",
+    "label" : "Ultima zi de plată",
+    "updatedAt" : "2026-11-20T08:28:00Z"
+  }
+]

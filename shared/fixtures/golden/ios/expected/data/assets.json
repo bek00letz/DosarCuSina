@@ -1,0 +1,295 @@
+[
+  {
+    "createdAt" : "2026-11-01T09:00:00Z",
+    "customFacts" : [
+      {
+        "futureColour" : "blue",
+        "id" : "7d1e2f30-0000-4000-8000-00000000f001",
+        "isSensitive" : false,
+        "label" : "Album",
+        "value" : "Albastru"
+      }
+    ],
+    "id" : "7d1e2f30-0000-4000-8000-00000000a001",
+    "isExample" : false,
+    "name" : "Colecția de timbre",
+    "templateKey" : "custom.7d1e2f30-0000-4000-8000-00000000c011",
+    "updatedAt" : "2026-11-01T09:00:00Z",
+    "values" : {
+      "collection.place" : {
+        "lat" : 44.4268,
+        "lon" : 26.1025,
+        "type" : "geoPoint"
+      },
+      "collection.shelf" : {
+        "futureNote" : "kept",
+        "type" : "text",
+        "value" : "A3"
+      }
+    }
+  },
+  {
+    "createdAt" : "2026-11-25T21:59:16Z",
+    "id" : "195c4519-0bdd-40cc-92c1-7bdba5c1fb78",
+    "isExample" : false,
+    "name" : "Ana",
+    "templateKey" : "member",
+    "updatedAt" : "2026-11-20T08:02:00Z",
+    "values" : {
+      "member.citizenship" : {
+        "type" : "choices",
+        "value" : [
+          "country.RO"
+        ]
+      }
+    }
+  },
+  {
+    "createdAt" : "2026-11-25T21:59:16Z",
+    "id" : "ec988d77-ec5f-4604-be39-b9efc5a841a5",
+    "isExample" : false,
+    "name" : "Mihai",
+    "templateKey" : "member",
+    "updatedAt" : "2026-11-20T08:03:00Z",
+    "values" : {
+      "member.citizenship" : {
+        "type" : "choices",
+        "value" : [
+          "country.RO"
+        ]
+      }
+    }
+  },
+  {
+    "createdAt" : "2026-11-25T21:59:16Z",
+    "id" : "d18f09a5-1718-490d-bc68-161b0166d75f",
+    "isExample" : false,
+    "name" : "Carte de identitate – Ana",
+    "parentId" : "195c4519-0bdd-40cc-92c1-7bdba5c1fb78",
+    "templateKey" : "documents",
+    "updatedAt" : "2026-11-20T08:04:00Z",
+    "values" : {
+      "document.expiry" : {
+        "type" : "date",
+        "value" : "2029-12-19"
+      },
+      "document.issueDate" : {
+        "type" : "date",
+        "value" : "2024-12-20"
+      },
+      "document.number" : {
+        "type" : "text",
+        "value" : "XX123456"
+      },
+      "document.personalNumber" : {
+        "type" : "text",
+        "value" : "1800101990006"
+      },
+      "document.type" : {
+        "type" : "text",
+        "value" : "documentType.idCard"
+      },
+      "document.variant" : {
+        "type" : "text",
+        "value" : "documentVariant.idCard.electronic"
+      }
+    }
+  },
+  {
+    "createdAt" : "2026-11-25T21:59:16Z",
+    "id" : "038c6cef-a824-46a4-a416-0e864764e587",
+    "isExample" : false,
+    "name" : "VW Golf 2018",
+    "photoPath" : "vault/photos/038c6cef-a824-46a4-a416-0e864764e587.jpg",
+    "templateKey" : "vehicle",
+    "updatedAt" : "2026-11-20T08:07:00Z",
+    "values" : {
+      "vehicle.fuel" : {
+        "type" : "text",
+        "value" : "fuel.petrol"
+      },
+      "vehicle.make" : {
+        "type" : "text",
+        "value" : "Volkswagen"
+      },
+      "vehicle.model" : {
+        "type" : "text",
+        "value" : "Golf"
+      },
+      "vehicle.odometer" : {
+        "type" : "number",
+        "value" : 142500
+      },
+      "vehicle.plate" : {
+        "type" : "text",
+        "value" : "B-123-ABC"
+      },
+      "vehicle.usage" : {
+        "type" : "text",
+        "value" : "vehicleUse.personal"
+      },
+      "vehicle.year" : {
+        "type" : "number",
+        "value" : 2018
+      }
+    }
+  },
+  {
+    "createdAt" : "2026-11-25T21:59:16Z",
+    "id" : "bcc847d8-03d4-4bb5-9e9a-8253e8120968",
+    "isExample" : false,
+    "name" : "Apartament",
+    "templateKey" : "home",
+    "updatedAt" : "2026-11-20T08:21:00Z",
+    "values" : {
+      "home.address" : {
+        "type" : "text",
+        "value" : "Str. Exemplu nr. 7, Cluj-Napoca"
+      },
+      "home.area" : {
+        "type" : "number",
+        "value" : 74.5
+      }
+    }
+  },
+  {
+    "createdAt" : "2026-11-25T21:59:16Z",
+    "id" : "31432ef9-3d87-42e2-99eb-04d6117c9f98",
+    "isExample" : false,
+    "name" : "Închiriere apartament",
+    "parentId" : "bcc847d8-03d4-4bb5-9e9a-8253e8120968",
+    "templateKey" : "tenancy",
+    "updatedAt" : "2026-11-20T08:23:00Z",
+    "values" : {
+      "tenancy.deposit" : {
+        "amount" : "500",
+        "currency" : "EUR",
+        "type" : "money"
+      },
+      "tenancy.end" : {
+        "type" : "date",
+        "value" : "2027-05-04"
+      },
+      "tenancy.paymentDay" : {
+        "type" : "number",
+        "value" : 5
+      },
+      "tenancy.rent" : {
+        "amount" : "2000",
+        "currency" : "RON",
+        "type" : "money"
+      },
+      "tenancy.start" : {
+        "type" : "date",
+        "value" : "2026-05-04"
+      }
+    }
+  },
+  {
+    "createdAt" : "2026-11-25T21:59:16Z",
+    "id" : "321386b1-219b-4fad-bf68-03a288106dae",
+    "isExample" : false,
+    "name" : "Curent",
+    "parentId" : "bcc847d8-03d4-4bb5-9e9a-8253e8120968",
+    "templateKey" : "subscription",
+    "updatedAt" : "2026-11-20T08:25:00Z",
+    "values" : {
+      "subscription.cycle" : {
+        "type" : "text",
+        "value" : "billing.monthly"
+      },
+      "subscription.group" : {
+        "type" : "text",
+        "value" : "subscriptionGroup.utilities"
+      },
+      "subscription.price" : {
+        "amount" : "180.4",
+        "currency" : "RON",
+        "type" : "money"
+      },
+      "subscription.provider" : {
+        "type" : "text",
+        "value" : "ENGIE Romania S.A."
+      },
+      "subscription.service" : {
+        "type" : "text",
+        "value" : "service.electricity"
+      }
+    }
+  },
+  {
+    "createdAt" : "2026-11-25T21:59:17Z",
+    "id" : "a8b6e745-d49f-457b-ae27-20bff9e0b746",
+    "isExample" : false,
+    "name" : "Mașină de spălat",
+    "parentId" : "bcc847d8-03d4-4bb5-9e9a-8253e8120968",
+    "templateKey" : "purchase",
+    "updatedAt" : "2026-11-20T08:29:00Z",
+    "values" : {
+      "purchase.brand" : {
+        "type" : "text",
+        "value" : "Mașină de spălat exemplu"
+      },
+      "purchase.date" : {
+        "type" : "date",
+        "value" : "2025-02-18"
+      },
+      "purchase.price" : {
+        "amount" : "2199.99",
+        "currency" : "RON",
+        "type" : "money"
+      },
+      "purchase.retailer" : {
+        "type" : "text",
+        "value" : "Magazin Exemplu"
+      },
+      "purchase.warrantyMonths" : {
+        "type" : "number",
+        "value" : 24
+      },
+      "purchase.warrantyUntil" : {
+        "type" : "date",
+        "value" : "2027-02-18"
+      }
+    }
+  },
+  {
+    "createdAt" : "2026-11-25T21:59:17Z",
+    "id" : "08dab900-9b94-48d6-95d4-66710071a1c3",
+    "isExample" : false,
+    "name" : "Profil medical Ana",
+    "templateKey" : "health",
+    "updatedAt" : "2026-11-20T08:30:00Z",
+    "values" : {
+      "health.allergies" : {
+        "type" : "text",
+        "value" : "Fără alergii cunoscute"
+      },
+      "health.bloodType" : {
+        "type" : "text",
+        "value" : "bloodType.aPositive"
+      }
+    }
+  },
+  {
+    "createdAt" : "2026-11-25T21:59:17Z",
+    "customFacts" : [
+      {
+        "id" : "dc5241cb-7545-40a8-bef5-f1708f94989f",
+        "label" : "Loc în port",
+        "value" : "Ponton 3, locul 12"
+      }
+    ],
+    "id" : "2fa81057-daf1-4b98-b058-460e70bec58b",
+    "isExample" : false,
+    "name" : "Barca de pe lac",
+    "templateKey" : "custom.88cb5599-ebd1-4a58-a1d2-709ea68f6fa6",
+    "updatedAt" : "2026-11-20T08:35:00Z",
+    "values" : {
+      "custom.counter.h" : {
+        "type" : "number",
+        "value" : 4
+      }
+    }
+  }
+]
