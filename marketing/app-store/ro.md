@@ -116,6 +116,26 @@ Every answer in the questionnaire is **None / No**, which gives **4+**:
 | Parental controls, age assurance | No |
 | Made for Kids | No |
 
+## Accesibilitate (App Accessibility)
+
+App Store Connect › the app › App Accessibility › Get Started, once for iPhone and once for iPad, with the same answers. Apple asks for a feature to be claimed only when people can do the app's common tasks with it: open the binder, add a document (a photo or a share), file it, see what's next, mark a deadline done, search, make a backup. The product page then lists what is claimed.
+
+| Feature | Answer | Why |
+| :--- | :--- | :--- |
+| VoiceOver | Yes, once checked on a phone | Every control has a label and every row reads as one; a refused save moves VoiceOver to the field that needs fixing. Built in and pinned by tests, but not yet walked through on a device. |
+| Voice Control | Yes, once checked on a phone | Every action has words on screen, or a label Voice Control can say. Check it on the same walk-through. |
+| Larger Text | Yes | Text follows Dynamic Type up to the largest accessibility sizes (well past 200%); rows stack when they don't fit, and symbols stop growing so the words keep the room. Measured by tests at those sizes. |
+| Dark Interface | Yes | A real dark mode: every colour has its own dark version. |
+| Differentiate Without Color Alone | Yes | Every status is said in words beside its colour („În 6 zile”, „Depășit de 3 zile”, „Gata”). |
+| Sufficient Contrast | Yes | System text colours; the status colours have their own versions for Increase Contrast. |
+| Reduced Motion | Yes | Every animation goes through one place, which turns movement into a short fade when Reduce Motion is on. |
+| Captions | No | The app has no video or audio. |
+| Audio Descriptions | No | The app has no video. |
+
+**The walk-through before claiming VoiceOver and Voice Control**, on the TestFlight build, about ten minutes each: open the binder and a section; add a document from a photo and file it; open Urmează and mark a deadline done; search for a section; make a backup. Anything that can't be reached or isn't read sensibly is fixed before the claim.
+
+**Accessibility URL** (optional): leave it empty for now; the help page has no section about accessibility yet.
+
 ## Export compliance
 
 Already answered in the app's Info.plist (`ITSAppUsesNonExemptEncryption` = NO): only the encryption iOS provides. `scripts/bundle-check.sh` checks it on every pull request.
