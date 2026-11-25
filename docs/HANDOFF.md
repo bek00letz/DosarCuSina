@@ -83,7 +83,6 @@ Nothing at the moment.
 
 - **Identity cards without a chip held by people who were 70 or over on 2 August 2021**: the EU keeps theirs valid until they expire; the trip check applies 2 August 2031 to everyone. Worth a rule of its own?
 - **Other EU citizens' identity cards in Moldova and the Western Balkans**: only a Romanian card is taken there today (from the foreign ministry's pages); a German or Italian citizen is asked for a passport.
-- **The Android backup format's pages**: may a scanned page in a `.dosar` be JPEG as well as HEIC (not every Android phone can write HEIC)? Proposed in [ANDROID_PLAN.md](ANDROID_PLAN.md), Phase 1; it changes the format, so it waits for the owner.
 
 The three questions of the App Store screenshot run (the binder on iPad, „Copiază” beside a long travel line, a repair for labour kept as a part) were answered on 2026-11-18 and are in [DECISIONS.md](DECISIONS.md).
 
@@ -115,9 +114,9 @@ Newest first. Copy this template:
 ### 2026-11-25 — owner (with Claude) — `claude/android-port-66ecde`
 - **Did:** wrote [ANDROID_PLAN.md](ANDROID_PLAN.md): the Android port's phases (the `.dosar` archive both ways first, proven by golden archives each app imports from the other), how the two apps are kept from drifting (the catalog and capture's tables exported to `shared/`, shared test cases, the copy matrix compared), parity screen by screen, and four questions for the owner.
 - **Tests:** none (documentation only).
-- **Left open:** everything Android; the format question about JPEG pages.
+- **Left open:** everything Android. The iOS writer still names a JPEG page `.heic` (fixed in Phase 1).
 - **Next:** Phase 0 (a new Gradle project, the old one moved to `android/Legacy/`, an Android check on GitHub), then Phase 1, the archive.
-- **Decisions:** "The Android port starts, on what it is built" (2026-11-25), the owner taking all four recommendations.
+- **Decisions:** "The Android port starts, on what it is built" (2026-11-25), the owner taking all four recommendations; "A scanned page in a backup is HEIC or JPEG" (2026-11-25).
 
 ### 2026-11-25 — owner (with Claude) — `claude/locks-travel`
 - **Did:** locking travels, opening stays on the device (database version 19, `CategoryTemplate.lockedEverywhereAt`, `SectionLocks` keeps when each choice was made, `LockPublishing` sends a device's earlier locks up once; version 18 frozen). The Protecție footer and the privacy pages (both languages, 25 November) say so.

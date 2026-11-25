@@ -8,6 +8,10 @@ To propose a change to a decision, open an issue with the **Proposal** template 
 
 ## 2026-11-25
 
+### A scanned page in a backup is HEIC or JPEG (owner)
+- **Decided (owner):** a `.dosar` archive's scanned pages and thumbnails are HEIC or JPEG pictures, named by what they are (`page-1.heic`, `page-1.jpg`); a writer uses HEIC where the phone can write it, and a reader knows a picture by its bytes, never by its name. *Why:* not every Android phone can write HEIC, and the iOS app already keeps a page as JPEG where HEIC isn't available, while its writer named every page `.heic`. *Alternative:* HEIC only, which would leave Android phones without a HEIC encoder unable to make a backup.
+- **Decided:** the iOS writer names a JPEG page `.jpg` (Phase 1 of the Android port, with a test); archives already written, with a JPEG named `.heic`, read as before.
+
 ### The Android port starts, on what it is built (owner)
 This replaces "Android and the archive format" (2026-11-02, below): Android is no longer paused. The plan is [ANDROID_PLAN.md](ANDROID_PLAN.md).
 - **Decided (owner):** Android reads documents with an open-source reader that runs only on the phone (the PaddleOCR models, run by ONNX Runtime), after a side-by-side test against Google's ML Kit on placeholder documents; if it reads clearly worse, the owner sees the numbers and decides again. The camera's page scanner is the app's own (the page found and straightened on the phone), not Google's. *Why:* ML Kit works offline but sends usage data to Google (device details, error codes, timings), and its scanner needs Google Play services; the rule is no SDK that talks to anyone. *Alternatives:* ML Kit, declared in Play's Data safety form; Tesseract, which reads phone photos worse.
