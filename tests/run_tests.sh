@@ -19,8 +19,11 @@
 #
 # For CI:
 #   DERIVED_DATA_PATH=<dir>  keep build products there (cached between runs)
-#   RESULTS_DIR=<dir>        keep the full log and the result bundle there, and up-to-date
-#                            String Catalogs (string-catalogs/) when they fell behind
+#   RESULTS_DIR=<dir>        keep the full log and the result bundle there, up-to-date
+#                            String Catalogs (string-catalogs/) when they fell behind, and
+#                            the golden archives made afresh (golden-archives/, laid out as
+#                            shared/fixtures/golden/ios/) when GoldenArchiveTests finds them
+#                            out of date
 set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -82,6 +85,12 @@ mkdir -p "$RESULTS"
 LOG="$RESULTS/test.log"
 RESULT_BUNDLE="$RESULTS/DosarCuSinaTests.xcresult"
 rm -rf "$RESULT_BUNDLE"
+# GoldenArchiveTests leaves the golden archives as they should be here when the committed
+# ones are out of date (xcodebuild hands TEST_RUNNER_ variables to the tests without the prefix).
+if [[ -n "${RESULTS_DIR:-}" ]]; then
+    rm -rf "$RESULTS/golden-archives"
+    export TEST_RUNNER_GOLDEN_ARCHIVES_OUT="$RESULTS/golden-archives"
+fi
 
 echo "iOS tests on $DESCRIPTION"
 set +e
@@ -115,6 +124,9 @@ fi
 if [[ $STATUS -ne 0 ]]; then
     echo "iOS tests failed (exit $STATUS)." >&2
     [[ -n "${RESULTS_DIR:-}" ]] && echo "The full log is $LOG, the result bundle $RESULT_BUNDLE." >&2
+    if [[ -d "$RESULTS/golden-archives" ]]; then
+        echo "The golden archives are out of date; made afresh in $RESULTS/golden-archives (copy over shared/fixtures/golden/ios/ and review the diff of expected/)." >&2
+    fi
     exit "$STATUS"
 fi
 if [[ $CATALOGS -ne 0 ]]; then
