@@ -26,8 +26,8 @@ plain ZIP file (DEFLATE or STORE entries) with JSON inside, readable with
 | `data/attachments.json` | Document metadata. |
 | `data/issuer_lessons.json` | What capture learned of each issuer's papers: the label it prints a value under. |
 | `vault/<id>.<ext>` | An attachment's original file. |
-| `vault/<id>/page-<n>.heic` | Scanned pages of an attachment, from 1. |
-| `vault/<id>/thumbnail.heic` | An attachment's thumbnail. |
+| `vault/<id>/page-<n>.heic` or `.jpg` | Scanned pages of an attachment, from 1: HEIC, or JPEG where the phone can't write HEIC. |
+| `vault/<id>/thumbnail.heic` or `.jpg` | An attachment's thumbnail, HEIC or JPEG the same way. |
 | `vault/photos/<assetId>.jpg` | An asset's photo. |
 | `opis.pdf` | Optional printable table of contents. |
 
@@ -376,6 +376,7 @@ diacritics, and words joined by `-`.
 `serviceItemId`?, `measurementId`?, `providerId`?, `validUntil`?, `framing`?,
 `updatedAt`?.
 
+- **Pages and thumbnails:** each is a HEIC or a JPEG picture, named by what it is (`.heic` or `.jpg`); a writer chooses HEIC where the phone can write it. A reader finds them by the paths in `pagePaths` and `thumbnailPath` and knows a picture by its bytes, never by its name: archives written before this rule may hold a JPEG page named `.heic`.
 - **Fingerprint:** `sha256` is the hash of the original file, or of the page images joined in order when there is no original.
 - **Replaced documents:** a replaced document is kept with `isArchived: true` and `supersededById` pointing to its replacement.
 - **`validUntil`:** a calendar day, the last day the document itself is valid, as read when it was filed (a policy's end). Its deadline moving on later doesn't change it.
