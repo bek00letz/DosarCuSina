@@ -13,3 +13,9 @@ naming:
   FunctionNaming:
     # Compose's functions are named like types.
     ignoreAnnotated: ['Composable']
+
+style:
+  ReturnCount:
+    # Code that reads or refuses (the value rules, ported from Swift's guards) checks each
+    # part first and leaves early; only returns after those checks count.
+    excludeGuardClauses: true

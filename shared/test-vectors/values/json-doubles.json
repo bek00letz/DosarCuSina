@@ -1,0 +1,168 @@
+{
+  "cases" : [
+    {
+      "value" : "0.0",
+      "written" : "0"
+    },
+    {
+      "value" : "-0.0",
+      "written" : "-0"
+    },
+    {
+      "value" : "1.0",
+      "written" : "1"
+    },
+    {
+      "value" : "-1.0",
+      "written" : "-1"
+    },
+    {
+      "value" : "12.0",
+      "written" : "12"
+    },
+    {
+      "value" : "100.0",
+      "written" : "100"
+    },
+    {
+      "value" : "45724.0",
+      "written" : "45724"
+    },
+    {
+      "value" : "0.5",
+      "written" : "0.5"
+    },
+    {
+      "value" : "-2.5",
+      "written" : "-2.5"
+    },
+    {
+      "value" : "0.1",
+      "written" : "0.1"
+    },
+    {
+      "value" : "0.2",
+      "written" : "0.2"
+    },
+    {
+      "value" : "0.3333333333333333",
+      "written" : "0.3333333333333333"
+    },
+    {
+      "value" : "0.6666666666666666",
+      "written" : "0.6666666666666666"
+    },
+    {
+      "value" : "4.35",
+      "written" : "4.35"
+    },
+    {
+      "value" : "0.30000000000000004",
+      "written" : "0.30000000000000004"
+    },
+    {
+      "value" : "0.0001",
+      "written" : "0.0001"
+    },
+    {
+      "value" : "0.00012",
+      "written" : "0.00012"
+    },
+    {
+      "value" : "9e-05",
+      "written" : "9e-05"
+    },
+    {
+      "value" : "1e-05",
+      "written" : "1e-05"
+    },
+    {
+      "value" : "1e-07",
+      "written" : "1e-07"
+    },
+    {
+      "value" : "123456.789",
+      "written" : "123456.789"
+    },
+    {
+      "value" : "1234567890123456.5",
+      "written" : "1234567890123456.5"
+    },
+    {
+      "value" : "9007199254740992.0",
+      "written" : "9007199254740992"
+    },
+    {
+      "value" : "9.007199254740994e+15",
+      "written" : "9.007199254740994e+15"
+    },
+    {
+      "value" : "1.8014398509481984e+16",
+      "written" : "1.8014398509481984e+16"
+    },
+    {
+      "value" : "1e+16",
+      "written" : "1e+16"
+    },
+    {
+      "value" : "1.5e+16",
+      "written" : "1.5e+16"
+    },
+    {
+      "value" : "1e+21",
+      "written" : "1e+21"
+    },
+    {
+      "value" : "1e+22",
+      "written" : "1e+22"
+    },
+    {
+      "value" : "1.7976931348623157e+308",
+      "written" : "1.7976931348623157e+308"
+    },
+    {
+      "value" : "5e-324",
+      "written" : "5e-324"
+    },
+    {
+      "value" : "2.2250738585072014e-308",
+      "written" : "2.2250738585072014e-308"
+    },
+    {
+      "value" : "1e+300",
+      "written" : "1e+300"
+    },
+    {
+      "value" : "299792458.0",
+      "written" : "299792458"
+    },
+    {
+      "value" : "6.02214076e+23",
+      "written" : "6.02214076e+23"
+    },
+    {
+      "value" : "9.999999999999999e-05",
+      "written" : "9.999999999999999e-05"
+    },
+    {
+      "value" : "0.25",
+      "written" : "0.25"
+    },
+    {
+      "value" : "0.12345678901234566",
+      "written" : "0.12345678901234566"
+    },
+    {
+      "value" : "1e-300",
+      "written" : "1e-300"
+    },
+    {
+      "value" : "8.5e-05",
+      "written" : "8.5e-05"
+    }
+  ],
+  "rule" : "How MachineText.jsonEncoder() writes a Double",
+  "shape" : "value: how Swift describes the Double, the shortest text that reads back as it exactly. written: the text machine JSON writes for it.",
+  "source" : "ios/Shared/MachineText.swift",
+  "writtenBy" : "ios/DosarCuSinaTests/ValueVectorsTests.swift"
+}

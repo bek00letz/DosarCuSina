@@ -1,0 +1,428 @@
+{
+  "cases" : [
+    {
+      "input" : "km",
+      "storedKey" : "km",
+      "unit" : {
+        "isCatalog" : true,
+        "key" : "km",
+        "label" : "km"
+      }
+    },
+    {
+      "input" : "KM",
+      "storedKey" : "km",
+      "unit" : {
+        "isCatalog" : true,
+        "key" : "km",
+        "label" : "km"
+      }
+    },
+    {
+      "input" : "Km ",
+      "storedKey" : "km",
+      "unit" : {
+        "isCatalog" : true,
+        "key" : "km",
+        "label" : "km"
+      }
+    },
+    {
+      "input" : " km",
+      "storedKey" : "km",
+      "unit" : {
+        "isCatalog" : true,
+        "key" : "km",
+        "label" : "km"
+      }
+    },
+    {
+      "input" : "m³",
+      "storedKey" : "m3",
+      "unit" : {
+        "isCatalog" : true,
+        "key" : "m3",
+        "label" : "m³"
+      }
+    },
+    {
+      "input" : "M³",
+      "storedKey" : "m3",
+      "unit" : {
+        "isCatalog" : true,
+        "key" : "m3",
+        "label" : "m³"
+      }
+    },
+    {
+      "input" : "mc",
+      "storedKey" : "m3",
+      "unit" : {
+        "isCatalog" : true,
+        "key" : "m3",
+        "label" : "m³"
+      }
+    },
+    {
+      "input" : "MC",
+      "storedKey" : "m3",
+      "unit" : {
+        "isCatalog" : true,
+        "key" : "m3",
+        "label" : "m³"
+      }
+    },
+    {
+      "input" : "m3",
+      "storedKey" : "m3",
+      "unit" : {
+        "isCatalog" : true,
+        "key" : "m3",
+        "label" : "m³"
+      }
+    },
+    {
+      "input" : "kWh",
+      "storedKey" : "kwh",
+      "unit" : {
+        "isCatalog" : true,
+        "key" : "kwh",
+        "label" : "kWh"
+      }
+    },
+    {
+      "input" : "KWH",
+      "storedKey" : "kwh",
+      "unit" : {
+        "isCatalog" : true,
+        "key" : "kwh",
+        "label" : "kWh"
+      }
+    },
+    {
+      "input" : "kwh",
+      "storedKey" : "kwh",
+      "unit" : {
+        "isCatalog" : true,
+        "key" : "kwh",
+        "label" : "kWh"
+      }
+    },
+    {
+      "input" : "Gcal",
+      "storedKey" : "gcal",
+      "unit" : {
+        "isCatalog" : true,
+        "key" : "gcal",
+        "label" : "Gcal"
+      }
+    },
+    {
+      "input" : "GCAL",
+      "storedKey" : "gcal",
+      "unit" : {
+        "isCatalog" : true,
+        "key" : "gcal",
+        "label" : "Gcal"
+      }
+    },
+    {
+      "input" : "kg",
+      "storedKey" : "kg",
+      "unit" : {
+        "isCatalog" : true,
+        "key" : "kg",
+        "label" : "kg"
+      }
+    },
+    {
+      "input" : "mg/dL",
+      "storedKey" : "mgdl",
+      "unit" : {
+        "isCatalog" : true,
+        "key" : "mgdl",
+        "label" : "mg/dL"
+      }
+    },
+    {
+      "input" : "mgdl",
+      "storedKey" : "mgdl",
+      "unit" : {
+        "isCatalog" : true,
+        "key" : "mgdl",
+        "label" : "mg/dL"
+      }
+    },
+    {
+      "input" : "MG/DL",
+      "storedKey" : "mgdl",
+      "unit" : {
+        "isCatalog" : true,
+        "key" : "mgdl",
+        "label" : "mg/dL"
+      }
+    },
+    {
+      "input" : "mmHg",
+      "storedKey" : "mmhg",
+      "unit" : {
+        "isCatalog" : true,
+        "key" : "mmhg",
+        "label" : "mmHg"
+      }
+    },
+    {
+      "input" : "mmhg",
+      "storedKey" : "mmhg",
+      "unit" : {
+        "isCatalog" : true,
+        "key" : "mmhg",
+        "label" : "mmHg"
+      }
+    },
+    {
+      "input" : "dpt",
+      "storedKey" : "dpt",
+      "unit" : {
+        "isCatalog" : true,
+        "key" : "dpt",
+        "label" : "dpt"
+      }
+    },
+    {
+      "input" : "cm³",
+      "storedKey" : "cm3",
+      "unit" : {
+        "isCatalog" : true,
+        "key" : "cm3",
+        "label" : "cm³"
+      }
+    },
+    {
+      "input" : "cm3",
+      "storedKey" : "cm3",
+      "unit" : {
+        "isCatalog" : true,
+        "key" : "cm3",
+        "label" : "cm³"
+      }
+    },
+    {
+      "input" : "CP",
+      "storedKey" : "hp",
+      "unit" : {
+        "isCatalog" : true,
+        "key" : "hp",
+        "label" : "CP"
+      }
+    },
+    {
+      "input" : "cp",
+      "storedKey" : "hp",
+      "unit" : {
+        "isCatalog" : true,
+        "key" : "hp",
+        "label" : "CP"
+      }
+    },
+    {
+      "input" : "hp",
+      "storedKey" : "hp",
+      "unit" : {
+        "isCatalog" : true,
+        "key" : "hp",
+        "label" : "CP"
+      }
+    },
+    {
+      "input" : "m²",
+      "storedKey" : "m2",
+      "unit" : {
+        "isCatalog" : true,
+        "key" : "m2",
+        "label" : "m²"
+      }
+    },
+    {
+      "input" : "m2",
+      "storedKey" : "m2",
+      "unit" : {
+        "isCatalog" : true,
+        "key" : "m2",
+        "label" : "m²"
+      }
+    },
+    {
+      "input" : "mp",
+      "storedKey" : "mp",
+      "unit" : {
+        "isCatalog" : false,
+        "key" : "mp",
+        "label" : "mp"
+      }
+    },
+    {
+      "input" : "months",
+      "storedKey" : "months",
+      "unit" : {
+        "isCatalog" : true,
+        "key" : "months",
+        "label" : "luni"
+      }
+    },
+    {
+      "input" : "luni",
+      "storedKey" : "months",
+      "unit" : {
+        "isCatalog" : true,
+        "key" : "months",
+        "label" : "luni"
+      }
+    },
+    {
+      "input" : "Luni",
+      "storedKey" : "months",
+      "unit" : {
+        "isCatalog" : true,
+        "key" : "months",
+        "label" : "luni"
+      }
+    },
+    {
+      "input" : "LUNI",
+      "storedKey" : "months",
+      "unit" : {
+        "isCatalog" : true,
+        "key" : "months",
+        "label" : "luni"
+      }
+    },
+    {
+      "input" : "shots",
+      "storedKey" : "shots",
+      "unit" : {
+        "isCatalog" : true,
+        "key" : "shots",
+        "label" : "cafele"
+      }
+    },
+    {
+      "input" : "cafele",
+      "storedKey" : "shots",
+      "unit" : {
+        "isCatalog" : true,
+        "key" : "shots",
+        "label" : "cafele"
+      }
+    },
+    {
+      "input" : "Cafele",
+      "storedKey" : "shots",
+      "unit" : {
+        "isCatalog" : true,
+        "key" : "shots",
+        "label" : "cafele"
+      }
+    },
+    {
+      "input" : "h",
+      "storedKey" : "h",
+      "unit" : {
+        "isCatalog" : true,
+        "key" : "h",
+        "label" : "h"
+      }
+    },
+    {
+      "input" : "H",
+      "storedKey" : "h",
+      "unit" : {
+        "isCatalog" : true,
+        "key" : "h",
+        "label" : "h"
+      }
+    },
+    {
+      "input" : "ore motor",
+      "storedKey" : "ore motor",
+      "unit" : {
+        "isCatalog" : false,
+        "key" : "ore motor",
+        "label" : "ore motor"
+      }
+    },
+    {
+      "input" : "  ore motor  ",
+      "storedKey" : "ore motor",
+      "unit" : {
+        "isCatalog" : false,
+        "key" : "ore motor",
+        "label" : "ore motor"
+      }
+    },
+    {
+      "input" : "Ore Motor",
+      "storedKey" : "Ore Motor",
+      "unit" : {
+        "isCatalog" : false,
+        "key" : "Ore Motor",
+        "label" : "Ore Motor"
+      }
+    },
+    {
+      "input" : "",
+      "storedKey" : "",
+      "unit" : null
+    },
+    {
+      "input" : "   ",
+      "storedKey" : "",
+      "unit" : null
+    },
+    {
+      "input" : "\n",
+      "storedKey" : "",
+      "unit" : null
+    },
+    {
+      "input" : "kWh\n",
+      "storedKey" : "kwh",
+      "unit" : {
+        "isCatalog" : true,
+        "key" : "kwh",
+        "label" : "kWh"
+      }
+    },
+    {
+      "input" : "lună",
+      "storedKey" : "lună",
+      "unit" : {
+        "isCatalog" : false,
+        "key" : "lună",
+        "label" : "lună"
+      }
+    },
+    {
+      "input" : "km/h",
+      "storedKey" : "km/h",
+      "unit" : {
+        "isCatalog" : false,
+        "key" : "km/h",
+        "label" : "km/h"
+      }
+    },
+    {
+      "input" : "ｋｍ",
+      "storedKey" : "km",
+      "unit" : {
+        "isCatalog" : true,
+        "key" : "km",
+        "label" : "km"
+      }
+    }
+  ],
+  "rule" : "MeasurementUnit(_:), key, label, isCatalog, storedKey(for:)",
+  "shape" : "input: a unit as stored or typed. unit: its key, the label a person sees, and whether it is the catalog's; null for no unit. storedKey: what is stored for it (\"\" for none).",
+  "source" : "ios/DosarCuSina/Models/Values/MeasurementUnit.swift",
+  "writtenBy" : "ios/DosarCuSinaTests/ValueVectorsTests.swift"
+}

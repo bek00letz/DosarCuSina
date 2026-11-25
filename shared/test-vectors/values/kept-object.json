@@ -1,0 +1,242 @@
+{
+  "cases" : [
+    {
+      "edited" : null,
+      "keepsMore" : true,
+      "keepsMoreWritten" : true,
+      "name" : "Read and written again unchanged",
+      "stored" : {
+        "every" : 2,
+        "future" : {
+          "a" : 1
+        },
+        "type" : "interval",
+        "unit" : "year"
+      },
+      "transform" : null,
+      "value" : {
+        "every" : 2,
+        "type" : "interval",
+        "unit" : "year"
+      },
+      "written" : {
+        "every" : 2,
+        "future" : {
+          "a" : 1
+        },
+        "type" : "interval",
+        "unit" : "year"
+      }
+    },
+    {
+      "edited" : {
+        "every" : 3,
+        "type" : "interval",
+        "unit" : "year"
+      },
+      "keepsMore" : true,
+      "keepsMoreWritten" : true,
+      "name" : "Edited: what it kept stays",
+      "stored" : {
+        "every" : 2,
+        "future" : {
+          "a" : 1
+        },
+        "type" : "interval",
+        "unit" : "year"
+      },
+      "transform" : null,
+      "value" : {
+        "every" : 2,
+        "type" : "interval",
+        "unit" : "year"
+      },
+      "written" : {
+        "every" : 3,
+        "future" : {
+          "a" : 1
+        },
+        "type" : "interval",
+        "unit" : "year"
+      }
+    },
+    {
+      "edited" : {
+        "every" : 2,
+        "type" : "interval"
+      },
+      "keepsMore" : true,
+      "keepsMoreWritten" : true,
+      "name" : "A known part taken out by the edit goes",
+      "stored" : {
+        "every" : 2,
+        "future" : 1,
+        "type" : "interval",
+        "unit" : "year"
+      },
+      "transform" : null,
+      "value" : {
+        "every" : 2,
+        "type" : "interval",
+        "unit" : "year"
+      },
+      "written" : {
+        "every" : 2,
+        "future" : 1,
+        "type" : "interval"
+      }
+    },
+    {
+      "edited" : {
+        "type" : "none"
+      },
+      "keepsMore" : true,
+      "keepsMoreWritten" : false,
+      "name" : "Another type keeps nothing",
+      "stored" : {
+        "every" : 2,
+        "future" : 1,
+        "type" : "interval",
+        "unit" : "year"
+      },
+      "transform" : null,
+      "value" : {
+        "every" : 2,
+        "type" : "interval",
+        "unit" : "year"
+      },
+      "written" : {
+        "type" : "none"
+      }
+    },
+    {
+      "edited" : null,
+      "keepsMore" : true,
+      "keepsMoreWritten" : true,
+      "name" : "Unreadable: read as the fallback, written back as stored",
+      "stored" : {
+        "every" : 2,
+        "type" : 7
+      },
+      "transform" : null,
+      "value" : {
+        "type" : "none"
+      },
+      "written" : {
+        "every" : 2,
+        "type" : 7
+      }
+    },
+    {
+      "edited" : {
+        "every" : 1,
+        "type" : "interval",
+        "unit" : "month"
+      },
+      "keepsMore" : true,
+      "keepsMoreWritten" : false,
+      "name" : "Unreadable, then edited: the edit",
+      "stored" : {
+        "every" : 2,
+        "type" : 7
+      },
+      "transform" : null,
+      "value" : {
+        "type" : "none"
+      },
+      "written" : {
+        "every" : 1,
+        "type" : "interval",
+        "unit" : "month"
+      }
+    },
+    {
+      "edited" : null,
+      "keepsMore" : true,
+      "keepsMoreWritten" : true,
+      "name" : "A value of a type this build doesn't know",
+      "stored" : {
+        "every" : 1,
+        "phase" : "full",
+        "type" : "lunar"
+      },
+      "transform" : null,
+      "value" : {
+        "every" : 1,
+        "type" : "lunar"
+      },
+      "written" : {
+        "every" : 1,
+        "phase" : "full",
+        "type" : "lunar"
+      }
+    },
+    {
+      "edited" : {
+        "every" : 6,
+        "type" : "interval",
+        "unit" : "month"
+      },
+      "keepsMore" : false,
+      "keepsMoreWritten" : false,
+      "name" : "Made here: nothing kept",
+      "stored" : null,
+      "transform" : null,
+      "value" : {
+        "type" : "none"
+      },
+      "written" : {
+        "every" : 6,
+        "type" : "interval",
+        "unit" : "month"
+      }
+    },
+    {
+      "edited" : null,
+      "keepsMore" : true,
+      "keepsMoreWritten" : true,
+      "name" : "Kept parts changed on the way out",
+      "stored" : {
+        "every" : 2,
+        "future" : "nou",
+        "note" : "text",
+        "type" : "interval"
+      },
+      "transform" : "upper",
+      "value" : {
+        "every" : 2,
+        "type" : "interval"
+      },
+      "written" : {
+        "every" : 2,
+        "future" : "NOU",
+        "note" : "TEXT",
+        "type" : "interval"
+      }
+    },
+    {
+      "edited" : null,
+      "keepsMore" : true,
+      "keepsMoreWritten" : false,
+      "name" : "Kept parts left out on the way out",
+      "stored" : {
+        "every" : 2,
+        "future" : "sealed:v1:abc",
+        "type" : "interval"
+      },
+      "transform" : "dropSealed",
+      "value" : {
+        "every" : 2,
+        "type" : "interval"
+      },
+      "written" : {
+        "every" : 2,
+        "type" : "interval"
+      }
+    }
+  ],
+  "rule" : "KeptObject: one stored object, the value this build reads and the JSON it was read from",
+  "shape" : "The value is a rule {type, every?, unit?}: readable only when type is text and every, if there, a whole number; else read as the fallback {\"type\":\"none\"}. stored: as kept (null: a value made here, from edited). value, keepsMore: how it reads. edited: the new value, if any; transform: applied on the way out (as in json-mapping-kept), if any. written, keepsMoreWritten: what it writes then.",
+  "source" : "ios/DosarCuSina/Models/Values/KeptObject.swift",
+  "writtenBy" : "ios/DosarCuSinaTests/ValueVectorsTests.swift"
+}

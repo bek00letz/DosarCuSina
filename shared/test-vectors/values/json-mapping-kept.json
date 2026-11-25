@@ -1,0 +1,203 @@
+{
+  "cases" : [
+    {
+      "name" : "Only the parts this build doesn't read change",
+      "read" : {
+        "every" : 2,
+        "note" : "citit",
+        "type" : "interval"
+      },
+      "stored" : {
+        "every" : 2,
+        "future" : {
+          "a" : "nou"
+        },
+        "note" : "citit",
+        "type" : "interval"
+      },
+      "transform" : "upper",
+      "written" : {
+        "every" : 2,
+        "future" : {
+          "a" : "NOU"
+        },
+        "note" : "citit",
+        "type" : "interval"
+      }
+    },
+    {
+      "name" : "A part read as something else changes as kept",
+      "read" : {
+        "consequence" : "legal",
+        "label" : "citit"
+      },
+      "stored" : {
+        "consequence" : "catastrophic",
+        "label" : "citit"
+      },
+      "transform" : "upper",
+      "written" : {
+        "consequence" : "CATASTROPHIC",
+        "label" : "citit"
+      }
+    },
+    {
+      "name" : "A part dropped by the transform is left out",
+      "read" : {
+        "label" : "Cod"
+      },
+      "stored" : {
+        "code" : "sealed:v1:abc",
+        "future" : "sealed:v1:def",
+        "label" : "Cod"
+      },
+      "transform" : "dropSealed",
+      "written" : {
+        "label" : "Cod"
+      }
+    },
+    {
+      "name" : "A part this build reads, dropped by the transform, is kept as read",
+      "read" : {
+        "label" : "Cod"
+      },
+      "stored" : {
+        "label" : "sealed:v1:abc"
+      },
+      "transform" : "dropSealed",
+      "written" : {
+        "label" : "Cod"
+      }
+    },
+    {
+      "name" : "Entries of a list, by id",
+      "read" : [
+        {
+          "id" : "r1",
+          "label" : "a"
+        },
+        {
+          "id" : "r2",
+          "label" : "b"
+        }
+      ],
+      "stored" : [
+        {
+          "future" : "x",
+          "id" : "r1",
+          "label" : "a"
+        },
+        {
+          "id" : "r2",
+          "label" : "b"
+        },
+        {
+          "id" : "r3",
+          "secret" : "sealed:v1:z"
+        }
+      ],
+      "transform" : "dropSealed",
+      "written" : [
+        {
+          "future" : "x",
+          "id" : "r1",
+          "label" : "a"
+        },
+        {
+          "id" : "r2",
+          "label" : "b"
+        }
+      ]
+    },
+    {
+      "name" : "Entries of a list, by id, upper",
+      "read" : [
+        {
+          "id" : "r1",
+          "label" : "a"
+        },
+        {
+          "id" : "r2",
+          "label" : "b"
+        }
+      ],
+      "stored" : [
+        {
+          "future" : "x",
+          "id" : "r1",
+          "label" : "a"
+        },
+        {
+          "id" : "r2",
+          "label" : "b"
+        },
+        {
+          "id" : "r3",
+          "more" : "y"
+        }
+      ],
+      "transform" : "upper",
+      "written" : [
+        {
+          "future" : "X",
+          "id" : "r1",
+          "label" : "a"
+        },
+        {
+          "id" : "r2",
+          "label" : "b"
+        },
+        {
+          "id" : "R3",
+          "more" : "Y"
+        }
+      ]
+    },
+    {
+      "name" : "A type that changed: the whole as the transform gives it",
+      "read" : {
+        "type" : "none"
+      },
+      "stored" : {
+        "phase" : "plină",
+        "type" : "lunar"
+      },
+      "transform" : "upper",
+      "written" : {
+        "phase" : "PLINĂ",
+        "type" : "LUNAR"
+      }
+    },
+    {
+      "name" : "A type that changed, dropped: as read",
+      "read" : {
+        "type" : "none"
+      },
+      "stored" : {
+        "phase" : "sealed:v1:q",
+        "type" : "lunar"
+      },
+      "transform" : "dropSealed",
+      "written" : {
+        "type" : "none"
+      }
+    },
+    {
+      "name" : "The same as read: nothing changes",
+      "read" : {
+        "a" : "x"
+      },
+      "stored" : {
+        "a" : "x"
+      },
+      "transform" : "upper",
+      "written" : {
+        "a" : "x"
+      }
+    }
+  ],
+  "rule" : "JSONValue.mappingKept(readAs:_:): an exit's rule reaching the parts this build doesn't read",
+  "shape" : "stored, read as in json-laying; transform: upper (every text inside in capitals) or dropSealed (left out when any text inside starts with sealed:v1:). written: the result.",
+  "source" : "ios/DosarCuSina/Models/Values/KeptJSON.swift",
+  "writtenBy" : "ios/DosarCuSinaTests/ValueVectorsTests.swift"
+}

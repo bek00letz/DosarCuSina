@@ -1,0 +1,2665 @@
+{
+  "cases" : [
+    {
+      "count" : {
+        "problem" : "notWhole"
+      },
+      "input" : "1.250,50",
+      "kilometres" : {
+        "problem" : "notWhole"
+      },
+      "meterIndex" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "1250.5"
+      },
+      "money" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "1250.5"
+      },
+      "origin" : "document",
+      "unit" : null
+    },
+    {
+      "count" : {
+        "problem" : "notWhole"
+      },
+      "input" : "1,250.50",
+      "kilometres" : {
+        "problem" : "notWhole"
+      },
+      "meterIndex" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "1250.5"
+      },
+      "money" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "1250.5"
+      },
+      "origin" : "document",
+      "unit" : null
+    },
+    {
+      "count" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "45724"
+      },
+      "input" : "45,724",
+      "kilometres" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "45724"
+      },
+      "meterIndex" : {
+        "ambiguous" : true,
+        "needsCheck" : true,
+        "value" : "45.724"
+      },
+      "money" : {
+        "ambiguous" : true,
+        "needsCheck" : true,
+        "value" : "45.724"
+      },
+      "origin" : "document",
+      "unit" : null
+    },
+    {
+      "count" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "45724"
+      },
+      "input" : "45.724",
+      "kilometres" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "45724"
+      },
+      "meterIndex" : {
+        "ambiguous" : true,
+        "needsCheck" : true,
+        "value" : "45724"
+      },
+      "money" : {
+        "ambiguous" : true,
+        "needsCheck" : true,
+        "value" : "45724"
+      },
+      "origin" : "document",
+      "unit" : null
+    },
+    {
+      "count" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "3750"
+      },
+      "input" : "3,750",
+      "kilometres" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "3750"
+      },
+      "meterIndex" : {
+        "ambiguous" : true,
+        "needsCheck" : true,
+        "value" : "3.75"
+      },
+      "money" : {
+        "ambiguous" : true,
+        "needsCheck" : true,
+        "value" : "3.75"
+      },
+      "origin" : "document",
+      "unit" : null
+    },
+    {
+      "count" : {
+        "problem" : "notWhole"
+      },
+      "input" : "0,725",
+      "kilometres" : {
+        "problem" : "notWhole"
+      },
+      "meterIndex" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "0.725"
+      },
+      "money" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "0.725"
+      },
+      "origin" : "document",
+      "unit" : null
+    },
+    {
+      "count" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "1250000"
+      },
+      "input" : "1 250 000",
+      "kilometres" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "1250000"
+      },
+      "meterIndex" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "1250000"
+      },
+      "money" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "1250000"
+      },
+      "origin" : "document",
+      "unit" : null
+    },
+    {
+      "count" : {
+        "problem" : "notWhole"
+      },
+      "input" : "1 250,50",
+      "kilometres" : {
+        "problem" : "notWhole"
+      },
+      "meterIndex" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "1250.5"
+      },
+      "money" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "1250.5"
+      },
+      "origin" : "document",
+      "unit" : null
+    },
+    {
+      "count" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "1250500"
+      },
+      "input" : "1.250.500",
+      "kilometres" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "1250500"
+      },
+      "meterIndex" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "1250500"
+      },
+      "money" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "1250500"
+      },
+      "origin" : "document",
+      "unit" : null
+    },
+    {
+      "count" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "1250500"
+      },
+      "input" : "1,250,500",
+      "kilometres" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "1250500"
+      },
+      "meterIndex" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "1250500"
+      },
+      "money" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "1250500"
+      },
+      "origin" : "document",
+      "unit" : null
+    },
+    {
+      "count" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "1250"
+      },
+      "input" : "1.250",
+      "kilometres" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "1250"
+      },
+      "meterIndex" : {
+        "ambiguous" : true,
+        "needsCheck" : true,
+        "value" : "1250"
+      },
+      "money" : {
+        "ambiguous" : true,
+        "needsCheck" : true,
+        "value" : "1250"
+      },
+      "origin" : "document",
+      "unit" : null
+    },
+    {
+      "count" : {
+        "problem" : "notWhole"
+      },
+      "input" : "1,25",
+      "kilometres" : {
+        "problem" : "notWhole"
+      },
+      "meterIndex" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "1.25"
+      },
+      "money" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "1.25"
+      },
+      "origin" : "document",
+      "unit" : null
+    },
+    {
+      "count" : {
+        "problem" : "notWhole"
+      },
+      "input" : "1.25",
+      "kilometres" : {
+        "problem" : "notWhole"
+      },
+      "meterIndex" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "1.25"
+      },
+      "money" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "1.25"
+      },
+      "origin" : "document",
+      "unit" : null
+    },
+    {
+      "count" : {
+        "problem" : "notWhole"
+      },
+      "input" : "1.2345",
+      "kilometres" : {
+        "problem" : "notWhole"
+      },
+      "meterIndex" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "1.2345"
+      },
+      "money" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "1.2345"
+      },
+      "origin" : "document",
+      "unit" : null
+    },
+    {
+      "count" : {
+        "problem" : "notWhole"
+      },
+      "input" : "12.345,678",
+      "kilometres" : {
+        "problem" : "notWhole"
+      },
+      "meterIndex" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "12345.678"
+      },
+      "money" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "12345.678"
+      },
+      "origin" : "document",
+      "unit" : null
+    },
+    {
+      "count" : {
+        "problem" : "unreadable"
+      },
+      "input" : "1.250,50,5",
+      "kilometres" : {
+        "problem" : "unreadable"
+      },
+      "meterIndex" : {
+        "problem" : "unreadable"
+      },
+      "money" : {
+        "problem" : "unreadable"
+      },
+      "origin" : "document",
+      "unit" : null
+    },
+    {
+      "count" : {
+        "problem" : "unreadable"
+      },
+      "input" : "1,2.3",
+      "kilometres" : {
+        "problem" : "unreadable"
+      },
+      "meterIndex" : {
+        "problem" : "unreadable"
+      },
+      "money" : {
+        "problem" : "unreadable"
+      },
+      "origin" : "document",
+      "unit" : null
+    },
+    {
+      "count" : {
+        "problem" : "notWhole"
+      },
+      "input" : "1 250.500,5",
+      "kilometres" : {
+        "problem" : "notWhole"
+      },
+      "meterIndex" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "1250500.5"
+      },
+      "money" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "1250500.5"
+      },
+      "origin" : "document",
+      "unit" : null
+    },
+    {
+      "count" : {
+        "problem" : "notWhole"
+      },
+      "input" : "0,5",
+      "kilometres" : {
+        "problem" : "notWhole"
+      },
+      "meterIndex" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "0.5"
+      },
+      "money" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "0.5"
+      },
+      "origin" : "document",
+      "unit" : null
+    },
+    {
+      "count" : {
+        "problem" : "unreadable"
+      },
+      "input" : ",5",
+      "kilometres" : {
+        "problem" : "unreadable"
+      },
+      "meterIndex" : {
+        "problem" : "unreadable"
+      },
+      "money" : {
+        "problem" : "unreadable"
+      },
+      "origin" : "document",
+      "unit" : null
+    },
+    {
+      "count" : {
+        "problem" : "unreadable"
+      },
+      "input" : "5,",
+      "kilometres" : {
+        "problem" : "unreadable"
+      },
+      "meterIndex" : {
+        "problem" : "unreadable"
+      },
+      "money" : {
+        "problem" : "unreadable"
+      },
+      "origin" : "document",
+      "unit" : null
+    },
+    {
+      "count" : {
+        "problem" : "unreadable"
+      },
+      "input" : ".",
+      "kilometres" : {
+        "problem" : "unreadable"
+      },
+      "meterIndex" : {
+        "problem" : "unreadable"
+      },
+      "money" : {
+        "problem" : "unreadable"
+      },
+      "origin" : "document",
+      "unit" : null
+    },
+    {
+      "count" : {
+        "problem" : "unreadable"
+      },
+      "input" : ",",
+      "kilometres" : {
+        "problem" : "unreadable"
+      },
+      "meterIndex" : {
+        "problem" : "unreadable"
+      },
+      "money" : {
+        "problem" : "unreadable"
+      },
+      "origin" : "document",
+      "unit" : null
+    },
+    {
+      "count" : {
+        "problem" : "unreadable"
+      },
+      "input" : "-",
+      "kilometres" : {
+        "problem" : "unreadable"
+      },
+      "meterIndex" : {
+        "problem" : "unreadable"
+      },
+      "money" : {
+        "problem" : "unreadable"
+      },
+      "origin" : "document",
+      "unit" : null
+    },
+    {
+      "count" : {
+        "problem" : "negative"
+      },
+      "input" : "-12",
+      "kilometres" : {
+        "problem" : "negative"
+      },
+      "meterIndex" : {
+        "problem" : "negative"
+      },
+      "money" : {
+        "problem" : "negative"
+      },
+      "origin" : "document",
+      "unit" : null
+    },
+    {
+      "count" : {
+        "problem" : "negative"
+      },
+      "input" : "−12",
+      "kilometres" : {
+        "problem" : "negative"
+      },
+      "meterIndex" : {
+        "problem" : "negative"
+      },
+      "money" : {
+        "problem" : "negative"
+      },
+      "origin" : "document",
+      "unit" : null
+    },
+    {
+      "count" : {
+        "problem" : "negative"
+      },
+      "input" : "- 12",
+      "kilometres" : {
+        "problem" : "negative"
+      },
+      "meterIndex" : {
+        "problem" : "negative"
+      },
+      "money" : {
+        "problem" : "negative"
+      },
+      "origin" : "document",
+      "unit" : null
+    },
+    {
+      "count" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "0"
+      },
+      "input" : "-0",
+      "kilometres" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "0"
+      },
+      "meterIndex" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "0"
+      },
+      "money" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "0"
+      },
+      "origin" : "document",
+      "unit" : null
+    },
+    {
+      "count" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "0"
+      },
+      "input" : "-0,00",
+      "kilometres" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "0"
+      },
+      "meterIndex" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "0"
+      },
+      "money" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "0"
+      },
+      "origin" : "document",
+      "unit" : null
+    },
+    {
+      "count" : {
+        "problem" : "unreadable"
+      },
+      "input" : "+5",
+      "kilometres" : {
+        "problem" : "unreadable"
+      },
+      "meterIndex" : {
+        "problem" : "unreadable"
+      },
+      "money" : {
+        "problem" : "unreadable"
+      },
+      "origin" : "document",
+      "unit" : null
+    },
+    {
+      "count" : {
+        "problem" : "unreadable"
+      },
+      "input" : "12-5",
+      "kilometres" : {
+        "problem" : "unreadable"
+      },
+      "meterIndex" : {
+        "problem" : "unreadable"
+      },
+      "money" : {
+        "problem" : "unreadable"
+      },
+      "origin" : "document",
+      "unit" : null
+    },
+    {
+      "count" : {
+        "problem" : "unreadable"
+      },
+      "input" : "12-05",
+      "kilometres" : {
+        "problem" : "unreadable"
+      },
+      "meterIndex" : {
+        "problem" : "unreadable"
+      },
+      "money" : {
+        "problem" : "unreadable"
+      },
+      "origin" : "document",
+      "unit" : null
+    },
+    {
+      "count" : {
+        "problem" : "unreadable"
+      },
+      "input" : "5²",
+      "kilometres" : {
+        "problem" : "unreadable"
+      },
+      "meterIndex" : {
+        "problem" : "unreadable"
+      },
+      "money" : {
+        "problem" : "unreadable"
+      },
+      "origin" : "document",
+      "unit" : null
+    },
+    {
+      "count" : {
+        "problem" : "unreadable"
+      },
+      "input" : "12 km",
+      "kilometres" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "12"
+      },
+      "meterIndex" : {
+        "problem" : "unreadable"
+      },
+      "money" : {
+        "problem" : "unreadable"
+      },
+      "origin" : "document",
+      "unit" : null
+    },
+    {
+      "count" : {
+        "problem" : "unreadable"
+      },
+      "input" : "12km",
+      "kilometres" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "12"
+      },
+      "meterIndex" : {
+        "problem" : "unreadable"
+      },
+      "money" : {
+        "problem" : "unreadable"
+      },
+      "origin" : "document",
+      "unit" : null
+    },
+    {
+      "count" : {
+        "problem" : "unreadable"
+      },
+      "input" : "86.420 km",
+      "kilometres" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "86420"
+      },
+      "meterIndex" : {
+        "problem" : "unreadable"
+      },
+      "money" : {
+        "problem" : "unreadable"
+      },
+      "origin" : "document",
+      "unit" : null
+    },
+    {
+      "count" : {
+        "problem" : "unreadable"
+      },
+      "input" : "86,420 km",
+      "kilometres" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "86420"
+      },
+      "meterIndex" : {
+        "problem" : "unreadable"
+      },
+      "money" : {
+        "problem" : "unreadable"
+      },
+      "origin" : "document",
+      "unit" : null
+    },
+    {
+      "count" : {
+        "problem" : "unreadable"
+      },
+      "input" : "84200KM",
+      "kilometres" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "84200"
+      },
+      "meterIndex" : {
+        "problem" : "unreadable"
+      },
+      "money" : {
+        "problem" : "unreadable"
+      },
+      "origin" : "document",
+      "unit" : null
+    },
+    {
+      "count" : {
+        "problem" : "unreadable"
+      },
+      "input" : "350 lei",
+      "kilometres" : {
+        "problem" : "unreadable"
+      },
+      "meterIndex" : {
+        "problem" : "unreadable"
+      },
+      "money" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "350"
+      },
+      "origin" : "document",
+      "unit" : null
+    },
+    {
+      "count" : {
+        "problem" : "unreadable"
+      },
+      "input" : "350 LEI",
+      "kilometres" : {
+        "problem" : "unreadable"
+      },
+      "meterIndex" : {
+        "problem" : "unreadable"
+      },
+      "money" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "350"
+      },
+      "origin" : "document",
+      "unit" : null
+    },
+    {
+      "count" : {
+        "problem" : "unreadable"
+      },
+      "input" : "350lei",
+      "kilometres" : {
+        "problem" : "unreadable"
+      },
+      "meterIndex" : {
+        "problem" : "unreadable"
+      },
+      "money" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "350"
+      },
+      "origin" : "document",
+      "unit" : null
+    },
+    {
+      "count" : {
+        "problem" : "unreadable"
+      },
+      "input" : "350 Lei",
+      "kilometres" : {
+        "problem" : "unreadable"
+      },
+      "meterIndex" : {
+        "problem" : "unreadable"
+      },
+      "money" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "350"
+      },
+      "origin" : "document",
+      "unit" : null
+    },
+    {
+      "count" : {
+        "problem" : "unreadable"
+      },
+      "input" : "1 leu",
+      "kilometres" : {
+        "problem" : "unreadable"
+      },
+      "meterIndex" : {
+        "problem" : "unreadable"
+      },
+      "money" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "1"
+      },
+      "origin" : "document",
+      "unit" : null
+    },
+    {
+      "count" : {
+        "problem" : "unreadable"
+      },
+      "input" : "350 RON",
+      "kilometres" : {
+        "problem" : "unreadable"
+      },
+      "meterIndex" : {
+        "problem" : "unreadable"
+      },
+      "money" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "350"
+      },
+      "origin" : "document",
+      "unit" : null
+    },
+    {
+      "count" : {
+        "problem" : "unreadable"
+      },
+      "input" : "350 ron",
+      "kilometres" : {
+        "problem" : "unreadable"
+      },
+      "meterIndex" : {
+        "problem" : "unreadable"
+      },
+      "money" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "350"
+      },
+      "origin" : "document",
+      "unit" : null
+    },
+    {
+      "count" : {
+        "problem" : "unreadable"
+      },
+      "input" : "350 EUR",
+      "kilometres" : {
+        "problem" : "unreadable"
+      },
+      "meterIndex" : {
+        "problem" : "unreadable"
+      },
+      "money" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "350"
+      },
+      "origin" : "document",
+      "unit" : null
+    },
+    {
+      "count" : {
+        "problem" : "unreadable"
+      },
+      "input" : "350 euro",
+      "kilometres" : {
+        "problem" : "unreadable"
+      },
+      "meterIndex" : {
+        "problem" : "unreadable"
+      },
+      "money" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "350"
+      },
+      "origin" : "document",
+      "unit" : null
+    },
+    {
+      "count" : {
+        "problem" : "unreadable"
+      },
+      "input" : "350€",
+      "kilometres" : {
+        "problem" : "unreadable"
+      },
+      "meterIndex" : {
+        "problem" : "unreadable"
+      },
+      "money" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "350"
+      },
+      "origin" : "document",
+      "unit" : null
+    },
+    {
+      "count" : {
+        "problem" : "unreadable"
+      },
+      "input" : "350 €",
+      "kilometres" : {
+        "problem" : "unreadable"
+      },
+      "meterIndex" : {
+        "problem" : "unreadable"
+      },
+      "money" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "350"
+      },
+      "origin" : "document",
+      "unit" : null
+    },
+    {
+      "count" : {
+        "problem" : "unreadable"
+      },
+      "input" : "€350",
+      "kilometres" : {
+        "problem" : "unreadable"
+      },
+      "meterIndex" : {
+        "problem" : "unreadable"
+      },
+      "money" : {
+        "problem" : "unreadable"
+      },
+      "origin" : "document",
+      "unit" : null
+    },
+    {
+      "count" : {
+        "problem" : "unreadable"
+      },
+      "input" : "$350",
+      "kilometres" : {
+        "problem" : "unreadable"
+      },
+      "meterIndex" : {
+        "problem" : "unreadable"
+      },
+      "money" : {
+        "problem" : "unreadable"
+      },
+      "origin" : "document",
+      "unit" : null
+    },
+    {
+      "count" : {
+        "problem" : "unreadable"
+      },
+      "input" : "350 $",
+      "kilometres" : {
+        "problem" : "unreadable"
+      },
+      "meterIndex" : {
+        "problem" : "unreadable"
+      },
+      "money" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "350"
+      },
+      "origin" : "document",
+      "unit" : null
+    },
+    {
+      "count" : {
+        "problem" : "unreadable"
+      },
+      "input" : "350 usd",
+      "kilometres" : {
+        "problem" : "unreadable"
+      },
+      "meterIndex" : {
+        "problem" : "unreadable"
+      },
+      "money" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "350"
+      },
+      "origin" : "document",
+      "unit" : null
+    },
+    {
+      "count" : {
+        "problem" : "unreadable"
+      },
+      "input" : "12,5 m³",
+      "kilometres" : {
+        "problem" : "unreadable"
+      },
+      "meterIndex" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "12.5"
+      },
+      "money" : {
+        "problem" : "unreadable"
+      },
+      "origin" : "document",
+      "unit" : null
+    },
+    {
+      "count" : {
+        "problem" : "unreadable"
+      },
+      "input" : "12,5 mc",
+      "kilometres" : {
+        "problem" : "unreadable"
+      },
+      "meterIndex" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "12.5"
+      },
+      "money" : {
+        "problem" : "unreadable"
+      },
+      "origin" : "document",
+      "unit" : null
+    },
+    {
+      "count" : {
+        "problem" : "unreadable"
+      },
+      "input" : "12,5 m3",
+      "kilometres" : {
+        "problem" : "unreadable"
+      },
+      "meterIndex" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "12.5"
+      },
+      "money" : {
+        "problem" : "unreadable"
+      },
+      "origin" : "document",
+      "unit" : null
+    },
+    {
+      "count" : {
+        "problem" : "unreadable"
+      },
+      "input" : "12,5 MC",
+      "kilometres" : {
+        "problem" : "unreadable"
+      },
+      "meterIndex" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "12.5"
+      },
+      "money" : {
+        "problem" : "unreadable"
+      },
+      "origin" : "document",
+      "unit" : null
+    },
+    {
+      "count" : {
+        "problem" : "unreadable"
+      },
+      "input" : "4 kWh",
+      "kilometres" : {
+        "problem" : "unreadable"
+      },
+      "meterIndex" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "4"
+      },
+      "money" : {
+        "problem" : "unreadable"
+      },
+      "origin" : "document",
+      "unit" : null
+    },
+    {
+      "count" : {
+        "problem" : "unreadable"
+      },
+      "input" : "4kwh",
+      "kilometres" : {
+        "problem" : "unreadable"
+      },
+      "meterIndex" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "4"
+      },
+      "money" : {
+        "problem" : "unreadable"
+      },
+      "origin" : "document",
+      "unit" : null
+    },
+    {
+      "count" : {
+        "problem" : "unreadable"
+      },
+      "input" : "7 Gcal",
+      "kilometres" : {
+        "problem" : "unreadable"
+      },
+      "meterIndex" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "7"
+      },
+      "money" : {
+        "problem" : "unreadable"
+      },
+      "origin" : "document",
+      "unit" : null
+    },
+    {
+      "count" : {
+        "problem" : "unreadable"
+      },
+      "input" : "4,5 kg",
+      "kilometres" : {
+        "problem" : "unreadable"
+      },
+      "meterIndex" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "4.5"
+      },
+      "money" : {
+        "problem" : "unreadable"
+      },
+      "origin" : "document",
+      "unit" : null
+    },
+    {
+      "count" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "12345"
+      },
+      "input" : "Index nou: 12.345",
+      "kilometres" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "12345"
+      },
+      "meterIndex" : {
+        "ambiguous" : true,
+        "needsCheck" : true,
+        "value" : "12345"
+      },
+      "money" : {
+        "ambiguous" : true,
+        "needsCheck" : true,
+        "value" : "12345"
+      },
+      "origin" : "document",
+      "unit" : null
+    },
+    {
+      "count" : {
+        "problem" : "unreadable"
+      },
+      "input" : "Total: 1.250,50 lei",
+      "kilometres" : {
+        "problem" : "unreadable"
+      },
+      "meterIndex" : {
+        "problem" : "unreadable"
+      },
+      "money" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "1250.5"
+      },
+      "origin" : "document",
+      "unit" : null
+    },
+    {
+      "count" : {
+        "problem" : "unreadable"
+      },
+      "input" : "12:30",
+      "kilometres" : {
+        "problem" : "unreadable"
+      },
+      "meterIndex" : {
+        "problem" : "unreadable"
+      },
+      "money" : {
+        "problem" : "unreadable"
+      },
+      "origin" : "document",
+      "unit" : null
+    },
+    {
+      "count" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "86420"
+      },
+      "input" : "Km bord: 86420",
+      "kilometres" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "86420"
+      },
+      "meterIndex" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "86420"
+      },
+      "money" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "86420"
+      },
+      "origin" : "document",
+      "unit" : null
+    },
+    {
+      "count" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "12"
+      },
+      "input" : "a: 12",
+      "kilometres" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "12"
+      },
+      "meterIndex" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "12"
+      },
+      "money" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "12"
+      },
+      "origin" : "document",
+      "unit" : null
+    },
+    {
+      "count" : {
+        "problem" : "unreadable"
+      },
+      "input" : "Index 2: 12",
+      "kilometres" : {
+        "problem" : "unreadable"
+      },
+      "meterIndex" : {
+        "problem" : "unreadable"
+      },
+      "money" : {
+        "problem" : "unreadable"
+      },
+      "origin" : "document",
+      "unit" : null
+    },
+    {
+      "count" : {
+        "problem" : "unreadable"
+      },
+      "input" : "Index: ",
+      "kilometres" : {
+        "problem" : "unreadable"
+      },
+      "meterIndex" : {
+        "problem" : "unreadable"
+      },
+      "money" : {
+        "problem" : "unreadable"
+      },
+      "origin" : "document",
+      "unit" : null
+    },
+    {
+      "count" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "12"
+      },
+      "input" : " 12 ",
+      "kilometres" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "12"
+      },
+      "meterIndex" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "12"
+      },
+      "money" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "12"
+      },
+      "origin" : "document",
+      "unit" : null
+    },
+    {
+      "count" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "12"
+      },
+      "input" : " 12 ",
+      "kilometres" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "12"
+      },
+      "meterIndex" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "12"
+      },
+      "money" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "12"
+      },
+      "origin" : "document",
+      "unit" : null
+    },
+    {
+      "count" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "12"
+      },
+      "input" : "12\t",
+      "kilometres" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "12"
+      },
+      "meterIndex" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "12"
+      },
+      "money" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "12"
+      },
+      "origin" : "document",
+      "unit" : null
+    },
+    {
+      "count" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "12"
+      },
+      "input" : "\t12",
+      "kilometres" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "12"
+      },
+      "meterIndex" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "12"
+      },
+      "money" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "12"
+      },
+      "origin" : "document",
+      "unit" : null
+    },
+    {
+      "count" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "1250"
+      },
+      "input" : "1 250",
+      "kilometres" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "1250"
+      },
+      "meterIndex" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "1250"
+      },
+      "money" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "1250"
+      },
+      "origin" : "document",
+      "unit" : null
+    },
+    {
+      "count" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "1250"
+      },
+      "input" : "1 250",
+      "kilometres" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "1250"
+      },
+      "meterIndex" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "1250"
+      },
+      "money" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "1250"
+      },
+      "origin" : "document",
+      "unit" : null
+    },
+    {
+      "count" : {
+        "problem" : "unreadable"
+      },
+      "input" : "1 450,50 lei",
+      "kilometres" : {
+        "problem" : "unreadable"
+      },
+      "meterIndex" : {
+        "problem" : "unreadable"
+      },
+      "money" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "1450.5"
+      },
+      "origin" : "document",
+      "unit" : null
+    },
+    {
+      "count" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "12"
+      },
+      "input" : "0012",
+      "kilometres" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "12"
+      },
+      "meterIndex" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "12"
+      },
+      "money" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "12"
+      },
+      "origin" : "document",
+      "unit" : null
+    },
+    {
+      "count" : {
+        "problem" : "notWhole"
+      },
+      "input" : "012.345",
+      "kilometres" : {
+        "problem" : "notWhole"
+      },
+      "meterIndex" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "12.345"
+      },
+      "money" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "12.345"
+      },
+      "origin" : "document",
+      "unit" : null
+    },
+    {
+      "count" : {
+        "problem" : "notWhole"
+      },
+      "input" : "0.345",
+      "kilometres" : {
+        "problem" : "notWhole"
+      },
+      "meterIndex" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "0.345"
+      },
+      "money" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "0.345"
+      },
+      "origin" : "document",
+      "unit" : null
+    },
+    {
+      "count" : {
+        "problem" : "notWhole"
+      },
+      "input" : "00,5",
+      "kilometres" : {
+        "problem" : "notWhole"
+      },
+      "meterIndex" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "0.5"
+      },
+      "money" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "0.5"
+      },
+      "origin" : "document",
+      "unit" : null
+    },
+    {
+      "count" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "0"
+      },
+      "input" : "0",
+      "kilometres" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "0"
+      },
+      "meterIndex" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "0"
+      },
+      "money" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "0"
+      },
+      "origin" : "document",
+      "unit" : null
+    },
+    {
+      "count" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "0"
+      },
+      "input" : "000",
+      "kilometres" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "0"
+      },
+      "meterIndex" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "0"
+      },
+      "money" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "0"
+      },
+      "origin" : "document",
+      "unit" : null
+    },
+    {
+      "count" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "12"
+      },
+      "input" : "12",
+      "kilometres" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "12"
+      },
+      "meterIndex" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "12"
+      },
+      "money" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "12"
+      },
+      "origin" : "document",
+      "unit" : null
+    },
+    {
+      "count" : {
+        "problem" : "notWhole"
+      },
+      "input" : "1234,567",
+      "kilometres" : {
+        "problem" : "notWhole"
+      },
+      "meterIndex" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "1234.567"
+      },
+      "money" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "1234.567"
+      },
+      "origin" : "document",
+      "unit" : null
+    },
+    {
+      "count" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "123456789012345678901234567890"
+      },
+      "input" : "123456789012345678901234567890",
+      "kilometres" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "123456789012345678901234567890"
+      },
+      "meterIndex" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "123456789012345678901234567890"
+      },
+      "money" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "123456789012345678901234567890"
+      },
+      "origin" : "document",
+      "unit" : null
+    },
+    {
+      "count" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "1234567890123456789012345678901"
+      },
+      "input" : "1.234.567.890.123.456.789.012.345.678.901",
+      "kilometres" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "1234567890123456789012345678901"
+      },
+      "meterIndex" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "1234567890123456789012345678901"
+      },
+      "money" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "1234567890123456789012345678901"
+      },
+      "origin" : "document",
+      "unit" : null
+    },
+    {
+      "count" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "12345678901234567890123456789012345678900000000000"
+      },
+      "input" : "12345678901234567890123456789012345678901234567890",
+      "kilometres" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "12345678901234567890123456789012345678900000000000"
+      },
+      "meterIndex" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "12345678901234567890123456789012345678900000000000"
+      },
+      "money" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "12345678901234567890123456789012345678900000000000"
+      },
+      "origin" : "document",
+      "unit" : null
+    },
+    {
+      "count" : {
+        "problem" : "notWhole"
+      },
+      "input" : "0,1234567890123456789",
+      "kilometres" : {
+        "problem" : "notWhole"
+      },
+      "meterIndex" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "0.1234567890123456789"
+      },
+      "money" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "0.1234567890123456789"
+      },
+      "origin" : "document",
+      "unit" : null
+    },
+    {
+      "count" : {
+        "problem" : "unreadable"
+      },
+      "input" : "١٢٣",
+      "kilometres" : {
+        "problem" : "unreadable"
+      },
+      "meterIndex" : {
+        "problem" : "unreadable"
+      },
+      "money" : {
+        "problem" : "unreadable"
+      },
+      "origin" : "document",
+      "unit" : null
+    },
+    {
+      "count" : {
+        "problem" : "unreadable"
+      },
+      "input" : "１２",
+      "kilometres" : {
+        "problem" : "unreadable"
+      },
+      "meterIndex" : {
+        "problem" : "unreadable"
+      },
+      "money" : {
+        "problem" : "unreadable"
+      },
+      "origin" : "document",
+      "unit" : null
+    },
+    {
+      "count" : {
+        "problem" : "unreadable"
+      },
+      "input" : "١.٢٣٤",
+      "kilometres" : {
+        "problem" : "unreadable"
+      },
+      "meterIndex" : {
+        "problem" : "unreadable"
+      },
+      "money" : {
+        "problem" : "unreadable"
+      },
+      "origin" : "document",
+      "unit" : null
+    },
+    {
+      "count" : {
+        "problem" : "unreadable"
+      },
+      "input" : "kkm",
+      "kilometres" : {
+        "problem" : "unreadable"
+      },
+      "meterIndex" : {
+        "problem" : "unreadable"
+      },
+      "money" : {
+        "problem" : "unreadable"
+      },
+      "origin" : "document",
+      "unit" : null
+    },
+    {
+      "count" : {
+        "problem" : "unreadable"
+      },
+      "input" : "12 kkm",
+      "kilometres" : {
+        "problem" : "unreadable"
+      },
+      "meterIndex" : {
+        "problem" : "unreadable"
+      },
+      "money" : {
+        "problem" : "unreadable"
+      },
+      "origin" : "document",
+      "unit" : null
+    },
+    {
+      "count" : {
+        "problem" : "unreadable"
+      },
+      "input" : "km",
+      "kilometres" : {
+        "problem" : "unreadable"
+      },
+      "meterIndex" : {
+        "problem" : "unreadable"
+      },
+      "money" : {
+        "problem" : "unreadable"
+      },
+      "origin" : "document",
+      "unit" : null
+    },
+    {
+      "count" : {
+        "problem" : "unreadable"
+      },
+      "input" : "lei",
+      "kilometres" : {
+        "problem" : "unreadable"
+      },
+      "meterIndex" : {
+        "problem" : "unreadable"
+      },
+      "money" : {
+        "problem" : "unreadable"
+      },
+      "origin" : "document",
+      "unit" : null
+    },
+    {
+      "count" : {
+        "problem" : "empty"
+      },
+      "input" : "",
+      "kilometres" : {
+        "problem" : "empty"
+      },
+      "meterIndex" : {
+        "problem" : "empty"
+      },
+      "money" : {
+        "problem" : "empty"
+      },
+      "origin" : "document",
+      "unit" : null
+    },
+    {
+      "count" : {
+        "problem" : "empty"
+      },
+      "input" : "   ",
+      "kilometres" : {
+        "problem" : "empty"
+      },
+      "meterIndex" : {
+        "problem" : "empty"
+      },
+      "money" : {
+        "problem" : "empty"
+      },
+      "origin" : "document",
+      "unit" : null
+    },
+    {
+      "count" : {
+        "problem" : "unreadable"
+      },
+      "input" : "abc",
+      "kilometres" : {
+        "problem" : "unreadable"
+      },
+      "meterIndex" : {
+        "problem" : "unreadable"
+      },
+      "money" : {
+        "problem" : "unreadable"
+      },
+      "origin" : "document",
+      "unit" : null
+    },
+    {
+      "count" : {
+        "problem" : "unreadable"
+      },
+      "input" : "1e3",
+      "kilometres" : {
+        "problem" : "unreadable"
+      },
+      "meterIndex" : {
+        "problem" : "unreadable"
+      },
+      "money" : {
+        "problem" : "unreadable"
+      },
+      "origin" : "document",
+      "unit" : null
+    },
+    {
+      "count" : {
+        "problem" : "unreadable"
+      },
+      "input" : "1_000",
+      "kilometres" : {
+        "problem" : "unreadable"
+      },
+      "meterIndex" : {
+        "problem" : "unreadable"
+      },
+      "money" : {
+        "problem" : "unreadable"
+      },
+      "origin" : "document",
+      "unit" : null
+    },
+    {
+      "count" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "12345678"
+      },
+      "input" : "12 345 678",
+      "kilometres" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "12345678"
+      },
+      "meterIndex" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "12345678"
+      },
+      "money" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "12345678"
+      },
+      "origin" : "document",
+      "unit" : null
+    },
+    {
+      "count" : {
+        "problem" : "unreadable"
+      },
+      "input" : "12  345",
+      "kilometres" : {
+        "problem" : "unreadable"
+      },
+      "meterIndex" : {
+        "problem" : "unreadable"
+      },
+      "money" : {
+        "problem" : "unreadable"
+      },
+      "origin" : "document",
+      "unit" : null
+    },
+    {
+      "count" : {
+        "problem" : "unreadable"
+      },
+      "input" : "1 23",
+      "kilometres" : {
+        "problem" : "unreadable"
+      },
+      "meterIndex" : {
+        "problem" : "unreadable"
+      },
+      "money" : {
+        "problem" : "unreadable"
+      },
+      "origin" : "document",
+      "unit" : null
+    },
+    {
+      "count" : {
+        "problem" : "unreadable"
+      },
+      "input" : "1 2345",
+      "kilometres" : {
+        "problem" : "unreadable"
+      },
+      "meterIndex" : {
+        "problem" : "unreadable"
+      },
+      "money" : {
+        "problem" : "unreadable"
+      },
+      "origin" : "document",
+      "unit" : null
+    },
+    {
+      "count" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "12"
+      },
+      "input" : "12\n",
+      "kilometres" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "12"
+      },
+      "meterIndex" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "12"
+      },
+      "money" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "12"
+      },
+      "origin" : "document",
+      "unit" : null
+    },
+    {
+      "count" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "12"
+      },
+      "input" : "\n12",
+      "kilometres" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "12"
+      },
+      "meterIndex" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "12"
+      },
+      "money" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "12"
+      },
+      "origin" : "document",
+      "unit" : null
+    },
+    {
+      "count" : {
+        "problem" : "unreadable"
+      },
+      "input" : "12 h",
+      "kilometres" : {
+        "problem" : "unreadable"
+      },
+      "meterIndex" : {
+        "problem" : "unreadable"
+      },
+      "money" : {
+        "problem" : "unreadable"
+      },
+      "origin" : "document",
+      "unit" : null
+    },
+    {
+      "count" : {
+        "problem" : "unreadable"
+      },
+      "input" : "12 ore motor",
+      "kilometres" : {
+        "problem" : "unreadable"
+      },
+      "meterIndex" : {
+        "problem" : "unreadable"
+      },
+      "money" : {
+        "problem" : "unreadable"
+      },
+      "origin" : "document",
+      "unit" : null
+    },
+    {
+      "count" : {
+        "problem" : "unreadable"
+      },
+      "input" : "12 cafele",
+      "kilometres" : {
+        "problem" : "unreadable"
+      },
+      "meterIndex" : {
+        "problem" : "unreadable"
+      },
+      "money" : {
+        "problem" : "unreadable"
+      },
+      "origin" : "document",
+      "unit" : null
+    },
+    {
+      "count" : {
+        "problem" : "unreadable"
+      },
+      "input" : "24 luni",
+      "kilometres" : {
+        "problem" : "unreadable"
+      },
+      "meterIndex" : {
+        "problem" : "unreadable"
+      },
+      "money" : {
+        "problem" : "unreadable"
+      },
+      "origin" : "document",
+      "unit" : null
+    },
+    {
+      "count" : {
+        "problem" : "unreadable"
+      },
+      "input" : "1.250 cafele",
+      "kilometres" : {
+        "problem" : "unreadable"
+      },
+      "meterIndex" : {
+        "problem" : "unreadable"
+      },
+      "money" : {
+        "problem" : "unreadable"
+      },
+      "origin" : "document",
+      "unit" : null
+    },
+    {
+      "count" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "3750"
+      },
+      "input" : "3,750",
+      "kilometres" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "3750"
+      },
+      "meterIndex" : {
+        "ambiguous" : true,
+        "needsCheck" : false,
+        "value" : "3.75"
+      },
+      "money" : {
+        "ambiguous" : true,
+        "needsCheck" : false,
+        "value" : "3.75"
+      },
+      "origin" : "typed",
+      "unit" : null
+    },
+    {
+      "count" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "45724"
+      },
+      "input" : "45.724",
+      "kilometres" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "45724"
+      },
+      "meterIndex" : {
+        "ambiguous" : true,
+        "needsCheck" : false,
+        "value" : "45724"
+      },
+      "money" : {
+        "ambiguous" : true,
+        "needsCheck" : false,
+        "value" : "45724"
+      },
+      "origin" : "typed",
+      "unit" : null
+    },
+    {
+      "count" : {
+        "problem" : "notWhole"
+      },
+      "input" : "1.250,50",
+      "kilometres" : {
+        "problem" : "notWhole"
+      },
+      "meterIndex" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "1250.5"
+      },
+      "money" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "1250.5"
+      },
+      "origin" : "typed",
+      "unit" : null
+    },
+    {
+      "count" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "12"
+      },
+      "input" : "12 h",
+      "kilometres" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "12"
+      },
+      "meterIndex" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "12"
+      },
+      "money" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "12"
+      },
+      "origin" : "document",
+      "unit" : "h"
+    },
+    {
+      "count" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "12"
+      },
+      "input" : "12h",
+      "kilometres" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "12"
+      },
+      "meterIndex" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "12"
+      },
+      "money" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "12"
+      },
+      "origin" : "document",
+      "unit" : "h"
+    },
+    {
+      "count" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "12"
+      },
+      "input" : "12 ore motor",
+      "kilometres" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "12"
+      },
+      "meterIndex" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "12"
+      },
+      "money" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "12"
+      },
+      "origin" : "document",
+      "unit" : "ore motor"
+    },
+    {
+      "count" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "12"
+      },
+      "input" : "12 ORE MOTOR",
+      "kilometres" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "12"
+      },
+      "meterIndex" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "12"
+      },
+      "money" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "12"
+      },
+      "origin" : "document",
+      "unit" : "ore motor"
+    },
+    {
+      "count" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "1250"
+      },
+      "input" : "1.250 cafele",
+      "kilometres" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "1250"
+      },
+      "meterIndex" : {
+        "ambiguous" : true,
+        "needsCheck" : true,
+        "value" : "1250"
+      },
+      "money" : {
+        "ambiguous" : true,
+        "needsCheck" : true,
+        "value" : "1250"
+      },
+      "origin" : "document",
+      "unit" : "cafele"
+    },
+    {
+      "count" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "24"
+      },
+      "input" : "24 luni",
+      "kilometres" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "24"
+      },
+      "meterIndex" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "24"
+      },
+      "money" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "24"
+      },
+      "origin" : "document",
+      "unit" : "luni"
+    },
+    {
+      "count" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "24"
+      },
+      "input" : "24 luni",
+      "kilometres" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "24"
+      },
+      "meterIndex" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "24"
+      },
+      "money" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "24"
+      },
+      "origin" : "document",
+      "unit" : "months"
+    },
+    {
+      "count" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "90"
+      },
+      "input" : "90 kg",
+      "kilometres" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "90"
+      },
+      "meterIndex" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "90"
+      },
+      "money" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "90"
+      },
+      "origin" : "document",
+      "unit" : "kg"
+    },
+    {
+      "count" : {
+        "problem" : "notWhole"
+      },
+      "input" : "12,5 m²",
+      "kilometres" : {
+        "problem" : "notWhole"
+      },
+      "meterIndex" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "12.5"
+      },
+      "money" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "12.5"
+      },
+      "origin" : "document",
+      "unit" : "m2"
+    },
+    {
+      "count" : {
+        "problem" : "unreadable"
+      },
+      "input" : "12,5 mp",
+      "kilometres" : {
+        "problem" : "unreadable"
+      },
+      "meterIndex" : {
+        "problem" : "unreadable"
+      },
+      "money" : {
+        "problem" : "unreadable"
+      },
+      "origin" : "document",
+      "unit" : "m2"
+    },
+    {
+      "count" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "120"
+      },
+      "input" : "120 CP",
+      "kilometres" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "120"
+      },
+      "meterIndex" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "120"
+      },
+      "money" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "120"
+      },
+      "origin" : "document",
+      "unit" : "hp"
+    },
+    {
+      "count" : {
+        "problem" : "notWhole"
+      },
+      "input" : "4,5 dpt",
+      "kilometres" : {
+        "problem" : "notWhole"
+      },
+      "meterIndex" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "4.5"
+      },
+      "money" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "4.5"
+      },
+      "origin" : "document",
+      "unit" : "dpt"
+    },
+    {
+      "count" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "120"
+      },
+      "input" : "120 mmHg",
+      "kilometres" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "120"
+      },
+      "meterIndex" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "120"
+      },
+      "money" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "120"
+      },
+      "origin" : "document",
+      "unit" : "mmHg"
+    },
+    {
+      "count" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "95"
+      },
+      "input" : "95 mg/dL",
+      "kilometres" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "95"
+      },
+      "meterIndex" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "95"
+      },
+      "money" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "95"
+      },
+      "origin" : "document",
+      "unit" : "mgdl"
+    },
+    {
+      "count" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "1600"
+      },
+      "input" : "1.600 cm³",
+      "kilometres" : {
+        "ambiguous" : false,
+        "needsCheck" : false,
+        "value" : "1600"
+      },
+      "meterIndex" : {
+        "ambiguous" : true,
+        "needsCheck" : true,
+        "value" : "1600"
+      },
+      "money" : {
+        "ambiguous" : true,
+        "needsCheck" : true,
+        "value" : "1600"
+      },
+      "origin" : "document",
+      "unit" : "cm3"
+    },
+    {
+      "count" : {
+        "problem" : "unreadable"
+      },
+      "input" : "12 h",
+      "kilometres" : {
+        "problem" : "unreadable"
+      },
+      "meterIndex" : {
+        "problem" : "unreadable"
+      },
+      "money" : {
+        "problem" : "unreadable"
+      },
+      "origin" : "document",
+      "unit" : "km"
+    }
+  ],
+  "rule" : "RomanianNumber.read(_:as:from:unit:)",
+  "shape" : "input: text; origin: document or typed; unit: a field's unit as written (read with MeasurementUnit), or null. For each kind (money, count, meterIndex, kilometres): value (the number, as Foundation's Decimal writes it), ambiguous and needsCheck, or problem (empty, unreadable, negative, notWhole).",
+  "source" : "ios/DosarCuSina/Models/Values/RomanianNumber.swift",
+  "writtenBy" : "ios/DosarCuSinaTests/ValueVectorsTests.swift"
+}

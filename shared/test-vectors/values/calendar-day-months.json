@@ -1,0 +1,448 @@
+{
+  "cases" : [
+    {
+      "day" : "2026-02-28",
+      "dayOfMonth" : null,
+      "months" : 1,
+      "start" : "2026-01-31"
+    },
+    {
+      "day" : "2024-02-29",
+      "dayOfMonth" : null,
+      "months" : 1,
+      "start" : "2024-01-31"
+    },
+    {
+      "day" : "2025-02-28",
+      "dayOfMonth" : null,
+      "months" : 12,
+      "start" : "2024-02-29"
+    },
+    {
+      "day" : "2028-02-29",
+      "dayOfMonth" : null,
+      "months" : 48,
+      "start" : "2024-02-29"
+    },
+    {
+      "day" : "2026-02-28",
+      "dayOfMonth" : null,
+      "months" : -1,
+      "start" : "2026-03-31"
+    },
+    {
+      "day" : "2024-02-29",
+      "dayOfMonth" : null,
+      "months" : -1,
+      "start" : "2024-03-31"
+    },
+    {
+      "day" : "2026-03-31",
+      "dayOfMonth" : 31,
+      "months" : 1,
+      "start" : "2026-02-28"
+    },
+    {
+      "day" : "2026-04-30",
+      "dayOfMonth" : 31,
+      "months" : 2,
+      "start" : "2026-02-28"
+    },
+    {
+      "day" : "2027-01-31",
+      "dayOfMonth" : null,
+      "months" : 1,
+      "start" : "2026-12-31"
+    },
+    {
+      "day" : "2024-12-15",
+      "dayOfMonth" : null,
+      "months" : -13,
+      "start" : "2026-01-15"
+    },
+    {
+      "day" : "2026-05-31",
+      "dayOfMonth" : null,
+      "months" : 0,
+      "start" : "2026-05-31"
+    },
+    {
+      "day" : "2026-05-31",
+      "dayOfMonth" : 31,
+      "months" : 0,
+      "start" : "2026-05-10"
+    },
+    {
+      "day" : "2026-02-28",
+      "dayOfMonth" : 31,
+      "months" : 0,
+      "start" : "2026-02-10"
+    },
+    {
+      "day" : "2026-02-28",
+      "dayOfMonth" : 29,
+      "months" : 0,
+      "start" : "2026-02-10"
+    },
+    {
+      "day" : "2024-02-29",
+      "dayOfMonth" : 30,
+      "months" : 0,
+      "start" : "2024-02-10"
+    },
+    {
+      "day" : "2026-02-01",
+      "dayOfMonth" : 0,
+      "months" : 0,
+      "start" : "2026-02-10"
+    },
+    {
+      "day" : "2026-02-01",
+      "dayOfMonth" : -5,
+      "months" : 0,
+      "start" : "2026-02-10"
+    },
+    {
+      "day" : "2126-01-31",
+      "dayOfMonth" : null,
+      "months" : 1200,
+      "start" : "2026-01-31"
+    },
+    {
+      "day" : "2026-03-30",
+      "dayOfMonth" : null,
+      "months" : 1,
+      "start" : "2026-02-30"
+    },
+    {
+      "day" : "2026-02-28",
+      "dayOfMonth" : null,
+      "months" : 0,
+      "start" : "2026-02-31"
+    },
+    {
+      "day" : "2026-04-30",
+      "dayOfMonth" : null,
+      "months" : 0,
+      "start" : "2026-04-31"
+    },
+    {
+      "day" : "1900-02-28",
+      "dayOfMonth" : null,
+      "months" : 1,
+      "start" : "1900-01-31"
+    },
+    {
+      "day" : "2000-02-29",
+      "dayOfMonth" : null,
+      "months" : 1,
+      "start" : "2000-01-31"
+    },
+    {
+      "day" : "2027-02-28",
+      "dayOfMonth" : null,
+      "months" : 6,
+      "start" : "2026-08-31"
+    },
+    {
+      "day" : "2026-11-30",
+      "dayOfMonth" : null,
+      "months" : 1,
+      "start" : "2026-10-31"
+    },
+    {
+      "day" : "1692-09-30",
+      "dayOfMonth" : null,
+      "months" : -4000,
+      "start" : "2026-01-31"
+    },
+    {
+      "day" : "2026-12-31",
+      "dayOfMonth" : 40,
+      "months" : 1,
+      "start" : "2026-11-25"
+    },
+    {
+      "day" : "2025-12-25",
+      "dayOfMonth" : null,
+      "months" : -11,
+      "start" : "2026-11-25"
+    },
+    {
+      "day" : "2027-11-25",
+      "dayOfMonth" : null,
+      "months" : 12,
+      "start" : "2026-11-25"
+    },
+    {
+      "day" : "2025-11-25",
+      "dayOfMonth" : null,
+      "months" : -12,
+      "start" : "2026-11-25"
+    },
+    {
+      "day" : "2028-11-30",
+      "dayOfMonth" : 31,
+      "months" : 24,
+      "start" : "2026-11-25"
+    },
+    {
+      "day" : "2028-02-29",
+      "dayOfMonth" : 29,
+      "months" : 12,
+      "start" : "2027-02-28"
+    },
+    {
+      "day" : "2026-02-28",
+      "dayOfMonth" : 31,
+      "months" : 1,
+      "start" : "2026-01-31"
+    },
+    {
+      "day" : "2026-03-31",
+      "dayOfMonth" : 31,
+      "months" : 1,
+      "start" : "2026-02-28"
+    },
+    {
+      "day" : "2026-04-30",
+      "dayOfMonth" : 31,
+      "months" : 1,
+      "start" : "2026-03-31"
+    },
+    {
+      "day" : "2026-05-31",
+      "dayOfMonth" : 31,
+      "months" : 1,
+      "start" : "2026-04-30"
+    },
+    {
+      "day" : "2026-06-30",
+      "dayOfMonth" : 31,
+      "months" : 1,
+      "start" : "2026-05-31"
+    },
+    {
+      "day" : "2026-07-31",
+      "dayOfMonth" : 31,
+      "months" : 1,
+      "start" : "2026-06-30"
+    },
+    {
+      "day" : "2026-08-31",
+      "dayOfMonth" : 31,
+      "months" : 1,
+      "start" : "2026-07-31"
+    },
+    {
+      "day" : "2026-09-30",
+      "dayOfMonth" : 31,
+      "months" : 1,
+      "start" : "2026-08-31"
+    },
+    {
+      "day" : "2026-10-31",
+      "dayOfMonth" : 31,
+      "months" : 1,
+      "start" : "2026-09-30"
+    },
+    {
+      "day" : "2026-11-30",
+      "dayOfMonth" : 31,
+      "months" : 1,
+      "start" : "2026-10-31"
+    },
+    {
+      "day" : "2026-12-31",
+      "dayOfMonth" : 31,
+      "months" : 1,
+      "start" : "2026-11-30"
+    },
+    {
+      "day" : "2027-01-31",
+      "dayOfMonth" : 31,
+      "months" : 1,
+      "start" : "2026-12-31"
+    },
+    {
+      "day" : "2027-02-28",
+      "dayOfMonth" : 31,
+      "months" : 1,
+      "start" : "2027-01-31"
+    },
+    {
+      "day" : "2027-03-31",
+      "dayOfMonth" : 31,
+      "months" : 1,
+      "start" : "2027-02-28"
+    },
+    {
+      "daysInMonth" : [
+        {
+          "daysInMonth" : 31,
+          "month" : 1,
+          "year" : 2026
+        },
+        {
+          "daysInMonth" : 28,
+          "month" : 2,
+          "year" : 2026
+        },
+        {
+          "daysInMonth" : 31,
+          "month" : 3,
+          "year" : 2026
+        },
+        {
+          "daysInMonth" : 30,
+          "month" : 4,
+          "year" : 2026
+        },
+        {
+          "daysInMonth" : 31,
+          "month" : 5,
+          "year" : 2026
+        },
+        {
+          "daysInMonth" : 30,
+          "month" : 6,
+          "year" : 2026
+        },
+        {
+          "daysInMonth" : 31,
+          "month" : 7,
+          "year" : 2026
+        },
+        {
+          "daysInMonth" : 31,
+          "month" : 8,
+          "year" : 2026
+        },
+        {
+          "daysInMonth" : 30,
+          "month" : 9,
+          "year" : 2026
+        },
+        {
+          "daysInMonth" : 31,
+          "month" : 10,
+          "year" : 2026
+        },
+        {
+          "daysInMonth" : 30,
+          "month" : 11,
+          "year" : 2026
+        },
+        {
+          "daysInMonth" : 31,
+          "month" : 12,
+          "year" : 2026
+        },
+        {
+          "daysInMonth" : 31,
+          "month" : 1,
+          "year" : 2024
+        },
+        {
+          "daysInMonth" : 29,
+          "month" : 2,
+          "year" : 2024
+        },
+        {
+          "daysInMonth" : 31,
+          "month" : 3,
+          "year" : 2024
+        },
+        {
+          "daysInMonth" : 30,
+          "month" : 4,
+          "year" : 2024
+        },
+        {
+          "daysInMonth" : 31,
+          "month" : 5,
+          "year" : 2024
+        },
+        {
+          "daysInMonth" : 30,
+          "month" : 6,
+          "year" : 2024
+        },
+        {
+          "daysInMonth" : 31,
+          "month" : 7,
+          "year" : 2024
+        },
+        {
+          "daysInMonth" : 31,
+          "month" : 8,
+          "year" : 2024
+        },
+        {
+          "daysInMonth" : 30,
+          "month" : 9,
+          "year" : 2024
+        },
+        {
+          "daysInMonth" : 31,
+          "month" : 10,
+          "year" : 2024
+        },
+        {
+          "daysInMonth" : 30,
+          "month" : 11,
+          "year" : 2024
+        },
+        {
+          "daysInMonth" : 31,
+          "month" : 12,
+          "year" : 2024
+        },
+        {
+          "daysInMonth" : 29,
+          "month" : 2,
+          "year" : 1600
+        },
+        {
+          "daysInMonth" : 28,
+          "month" : 2,
+          "year" : 1700
+        },
+        {
+          "daysInMonth" : 28,
+          "month" : 2,
+          "year" : 1900
+        },
+        {
+          "daysInMonth" : 29,
+          "month" : 2,
+          "year" : 2000
+        },
+        {
+          "daysInMonth" : 28,
+          "month" : 2,
+          "year" : 2100
+        },
+        {
+          "daysInMonth" : 29,
+          "month" : 2,
+          "year" : 2400
+        },
+        {
+          "daysInMonth" : 31,
+          "month" : 13,
+          "year" : 2026
+        },
+        {
+          "daysInMonth" : 31,
+          "month" : 0,
+          "year" : 2026
+        }
+      ]
+    }
+  ],
+  "rule" : "CalendarDay.adding(months:dayOfMonth:), daysInMonth",
+  "shape" : "start + months (dayOfMonth: the day a series keeps, or null for the start's own) = day, clamped to the month's last day. The last case lists daysInMonth for [year, month] (month 13 and 0 are the next and previous year's).",
+  "source" : "ios/Shared/CalendarDay.swift",
+  "writtenBy" : "ios/DosarCuSinaTests/ValueVectorsTests.swift"
+}
