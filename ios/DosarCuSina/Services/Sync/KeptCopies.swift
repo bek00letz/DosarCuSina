@@ -1,24 +1,52 @@
 import Foundation
 import SwiftData
 
-/// Copies of the binder kept on this phone before it syncs with another iCloud account than
-/// the one it synced with (`PersistenceController.syncWithThisAccount`): that account's binder
-/// comes down in its place, so what was on the phone is first written as a backup (`.dosar`,
-/// through `DossierArchiveService`, without a password, like any backup kept on the phone).
-/// Settings offers each until the person brings it in ("Adaugă" in the backup screen) or deletes it.
+/// Copies of the binder kept on this phone before something replaces it (`Reason`): syncing
+/// with another iCloud account than the one it synced with (`PersistenceController.syncWithThisAccount`),
+/// whose binder comes down in its place, and „Înlocuiește tot” with a backup (`BackupFlow`),
+/// which deletes on every device the binder syncs to. What was there is first written as a
+/// backup (`.dosar`, through `DossierArchiveService`, without a password, like any backup kept on
+/// the phone). Settings offers each, saying why it was kept, until the person brings it in
+/// ("Adaugă" in the backup screen) or deletes it.
 ///
 /// Every copy is a file of its own, never written over another: two account changes on one day
-/// keep two copies (`name(for:in:)`). The newest `mostKept` stay, by one order (`all(in:)`): a copy
-/// past them goes as a new one is kept.
+/// keep two copies (`name(for:in:)`). The newest `mostKept` of each reason stay, by one order
+/// (`all(in:)`): a copy past them goes as a new one is kept.
 @MainActor
 enum KeptCopies {
+    /// Why a copy was kept, each in a folder of its own beside the store.
+    enum Reason: CaseIterable {
+        case accountChange
+        case replacingAll
+
+        var folder: URL {
+            switch self {
+            case .accountChange: URL.applicationSupportDirectory.appending(path: "Kept before account change", directoryHint: .isDirectory)
+            case .replacingAll: URL.applicationSupportDirectory.appending(path: "Kept before replacing", directoryHint: .isDirectory)
+            }
+        }
+    }
+
     /// How many copies stay on the phone: each is the whole binder, documents included, and
     /// the newest are the ones worth bringing back.
     static let mostKept = 3
 
     /// Beside the store, on this phone only: never in iCloud's database or in a backup of the binder.
-    static var folder: URL {
-        URL.applicationSupportDirectory.appending(path: "Kept before account change", directoryHint: .isDirectory)
+    static var folder: URL { Reason.accountChange.folder }
+
+    /// Writes a copy kept for `reason` (`keep(container:in:now:)`).
+    static func keep(container: ModelContainer, for reason: Reason, now: Date = Date()) async throws -> URL {
+        try await keep(container: container, in: reason.folder, now: now)
+    }
+
+    /// Every copy kept, whatever the reason, the newest first.
+    static func everyKept(in folders: [URL] = Reason.allCases.map(\.folder)) -> [URL] {
+        folders.flatMap { all(in: $0) }.sorted { (keptAt($0) ?? .distantPast) > (keptAt($1) ?? .distantPast) }
+    }
+
+    /// Why `copy` was kept, by the folder it is in.
+    static func reason(of copy: URL) -> Reason {
+        Reason.allCases.first { $0.folder.standardizedFileURL.path == copy.deletingLastPathComponent().standardizedFileURL.path } ?? .accountChange
     }
 
     /// Writes a copy of `container`'s binder and returns where it is. It is written in a folder

@@ -396,7 +396,7 @@ struct ICloudSyncSettings: View {
                 ForEach(keptCopies, id: \.self) { copy in
                     KeptCopyRow(copy: copy, bringBack: { navigator.open(copy) }) {
                         KeptCopies.remove(copy)
-                        keptCopies = KeptCopies.all()
+                        keptCopies = KeptCopies.everyKept()
                     }
                 }
             } footer: {
@@ -413,8 +413,8 @@ struct ICloudSyncSettings: View {
             Text("Sincronizează cu iCloud", comment: "Setting: sync the binder with the person's own iCloud.")
         }
         .frame(minHeight: DS.Control.minimumHitTarget)
-        .onAppear { keptCopies = KeptCopies.all() }
-        .onChange(of: scenePhase) { _, phase in if phase == .active { keptCopies = KeptCopies.all() } }
+        .onAppear { keptCopies = KeptCopies.everyKept() }
+        .onChange(of: scenePhase) { _, phase in if phase == .active { keptCopies = KeptCopies.everyKept() } }
         .userErrorAlert($error)
     }
 
@@ -430,7 +430,7 @@ struct ICloudSyncSettings: View {
             defer { isSwitching = false }
             do {
                 try await persistence.syncWithThisAccount()
-                keptCopies = KeptCopies.all()
+                keptCopies = KeptCopies.everyKept()
             } catch {
                 self.error = UserFacingError(error, doing: String(localized: "Nu am trecut pe contul acesta", comment: "Title of an error while switching iCloud accounts."))
             }
@@ -470,7 +470,8 @@ private struct SyncStatusRow: View {
     }
 }
 
-/// A copy of the binder kept before switching iCloud accounts: brought in through the backup
+/// A copy of the binder kept before switching iCloud accounts or replacing it with a backup
+/// (`KeptCopies.Reason`), said by why it was kept: brought in through the backup
 /// screen ("Adaugă" keeps what is here), or deleted after asking. Each action is a row of its
 /// own, so each has the whole row as its target; the question hangs on the row that asks it.
 private struct KeptCopyRow: View {
@@ -483,7 +484,12 @@ private struct KeptCopyRow: View {
     var body: some View {
         Label {
             VStack(alignment: .leading, spacing: DS.Space.xxs) {
-                Text("Copia dosarului de dinainte de schimbarea contului", comment: "A copy of the binder kept before switching iCloud accounts.")
+                switch KeptCopies.reason(of: copy) {
+                case .accountChange:
+                    Text("Copia dosarului de dinainte de schimbarea contului", comment: "A copy of the binder kept before switching iCloud accounts.")
+                case .replacingAll:
+                    Text("Copia dosarului de dinainte de „Înlocuiește tot”", comment: "A copy of the binder kept before it was replaced with a backup.")
+                }
                 // Two copies are told apart by when each was kept.
                 if let kept = KeptCopies.keptAt(copy) {
                     Text("Păstrată pe \(DosarFormat.longDay(kept)), la \(DosarFormat.time(kept))",

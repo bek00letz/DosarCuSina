@@ -13,6 +13,12 @@ This replaces "Section locks stay on each device" (below), keeping its rule that
 - **Decided (owner):** locking a category on any of the person's devices locks it on all of them, a new one included; opening it with Face ID opens it only on the device in the person's hand. *Why:* a new iPad opened every category locked on the iPhone without Face ID, listed them in its search and named them in its reminders. *Alternative:* full sync, where opening on one device opens everywhere (a less-guarded device could open the phone's sections).
 - **Decided:** database version 19 adds `CategoryTemplate.lockedEverywhereAt`, when the category was last locked anywhere, written when a lock goes on (never cleared, not in backups, which carry the device's locks as before). Each device keeps when it made each choice beside its choices (`SectionLocks`, a `.times` file); a category is locked when it was locked anywhere after this device last chose for it, else as chosen here, else as the catalog says. A choice whose time isn't known reads as older, so locked (locks fail closed). Each device sends up the locks it had once, at launch (`LockPublishing`): a device that had opened one of them is locked again there once, until opened with Face ID.
 
+### „Înlocuiește tot” on a binder that syncs
+- **Decided (owner):** replacing everything with a backup stays, made safe: a copy of the binder is kept first (`KeptCopies`, „Copia dosarului de dinainte de „Înlocuiește tot””, in Setări › iCloud și copii de siguranță), the warning says it deletes on every device when the binder syncs, and it waits while the binder may still be arriving from iCloud. *Why:* it deletes on every device, and on a device still downloading it would replace only half. *Alternatives:* hide it while sync is on (no way to roll the whole binder back); leave it.
+
+### Two devices changing one section at once
+- **Decided (owner):** 1.0 keeps a section's values, its rows under Date importante, a deadline's reminders and a category's definition as one stored field each; two devices changing different values of one section at the same time keep only one change. Storing them value by value comes after 1.0. *Why:* it is rare, and it is a large change to the database.
+
 ## 2026-11-24
 
 ### A deletion from another device never takes what this one added
