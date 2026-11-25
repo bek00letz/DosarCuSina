@@ -32,12 +32,31 @@ struct GoldenArchiveTests {
 
     static let regenerate = """
     shared/fixtures/golden/ios/ is out of date with what the iOS writer makes. Bring it up to date: \
+    a failed run on GitHub keeps them made afresh in its test-results artifact, golden-archives/ \
+    (copy household.dosar, household-password.dosar and expected/ over shared/fixtures/golden/ios/), or \
     TEST_RUNNER_GOLDEN_ARCHIVES_WRITE=1 xcodebuild test … -only-testing:DosarCuSinaTests/GoldenArchiveTests \
     (or run GoldenArchiveTests in Xcode with GOLDEN_ARCHIVES_WRITE=1 in the scheme's environment), then \
     review the diff of expected/ and commit it with both archives. Android's suite imports them.
     """
 
     static var writes: Bool { ProcessInfo.processInfo.environment["GOLDEN_ARCHIVES_WRITE"] == "1" }
+
+    /// Where a run that finds them out of date leaves them as they should be
+    /// (`TEST_RUNNER_GOLDEN_ARCHIVES_OUT`): `tests/run_tests.sh` sets it to the run's results
+    /// folder, so a failed run on GitHub keeps them in its `test-results` as `golden-archives/`,
+    /// to copy over `shared/fixtures/golden/ios/` without a run on a Mac.
+    static var outOfDateGoesTo: URL? {
+        ProcessInfo.processInfo.environment["GOLDEN_ARCHIVES_OUT"].flatMap { $0.isEmpty ? nil : URL(filePath: $0, directoryHint: .isDirectory) }
+    }
+
+    /// Writes both archives and their contents unpacked (`expected/`) into `folder`, laid out
+    /// as `shared/fixtures/golden/ios/` is.
+    static func keep(_ fresh: (plain: Data, protected: Data), unpacked: GoldenContents, in folder: URL) throws {
+        try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+        try fresh.plain.write(to: folder.appending(path: "household.dosar"))
+        try fresh.protected.write(to: folder.appending(path: "household-password.dosar"))
+        try unpacked.write(to: folder.appending(path: "expected", directoryHint: .isDirectory))
+    }
 
     /// The household exported, plain and with the password.
     static func freshArchives() throws -> (plain: Data, protected: Data) {
@@ -60,14 +79,16 @@ struct GoldenArchiveTests {
         let unpacked = try GoldenContents.unpack(fresh.plain)
         #expect(try GoldenContents.unpack(fresh.protected, password: Self.password) == unpacked, "The twin holds the same archive")
         if Self.writes {
-            try fresh.plain.write(to: Self.ios.appending(path: "household.dosar"))
-            try fresh.protected.write(to: Self.ios.appending(path: "household-password.dosar"))
-            try unpacked.write(to: Self.expected)
+            try Self.keep(fresh, unpacked: unpacked, in: Self.ios)
         }
         let committed = try GoldenContents.read(Self.expected)
         let freshForm = try GoldenContents.canonical(unpacked)
         let committedForm = try GoldenContents.canonical(committed)
-        for path in Set(freshForm.keys).union(committedForm.keys).sorted() where freshForm[path] != committedForm[path] {
+        let outOfDate = Set(freshForm.keys).union(committedForm.keys).sorted().filter { freshForm[$0] != committedForm[$0] }
+        if !outOfDate.isEmpty, let folder = Self.outOfDateGoesTo {
+            try Self.keep(fresh, unpacked: unpacked, in: folder)
+        }
+        for path in outOfDate {
             Issue.record(Comment(rawValue: "\(path) differs from what is committed. \(Self.regenerate)"))
         }
 
