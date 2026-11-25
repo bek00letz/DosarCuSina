@@ -111,6 +111,13 @@ Newest first. Copy this template:
 - **Decisions:** entries added to or questioned in DECISIONS.md, or "none".
 ```
 
+### 2026-11-26 — owner (with Claude) — `claude/golden-archives-on-ci`
+- **Did:** a failed `build-and-test` run keeps the iOS golden archives made afresh, as it keeps the String Catalogs: `GoldenArchiveTests` writes them to `TEST_RUNNER_GOLDEN_ARCHIVES_OUT` when the committed ones are out of date, and `tests/run_tests.sh` points it at the run's `test-results` (`golden-archives/`, laid out as `shared/fixtures/golden/ios/`). AGENTS.md's `build-and-test` row and "Where things are documented" say so, beside the copy matrix.
+- **Tests:** on GitHub; the out-of-date path itself was not run (it needs a change to what a backup holds).
+- **Left open:** none.
+- **Next:** Phase 1 goes on with the Android importer.
+- **Decisions:** none.
+
 ### 2026-11-25 — owner (with Claude) — `claude/android-p1-zip`
 - **Did:** Phase 1's container on Android: the `.dosar` ZIP reader and writer (`DosarZipEngine`), the password format (`ArchiveEncryption`) and the opening rule (`ArchiveOpening`: no password, nothing typed, a wrong one, a damaged header), with their error kinds (`ZipError`, `ArchiveEncryption.Failure`, `ArchiveError`, case for case with iOS and without words: those come from the shared catalog later), in `android/archive`. The iOS tests of the engine and the password format are ported. [shared/test-vectors/archive](../shared/test-vectors/archive) holds an iOS-made and an Android-made archive, each plain and with a password (two 1 MiB chunks), with what they hold (`contents.sha256`), and 17 crafted archives both apps refuse with the same kind (`refused.tsv`); `ArchiveVectorsTests.swift` and `ArchiveVectorsTest.kt` read all of them.
 - **Tests:** `./gradlew :archive:test :archive:lint :core:lint detekt`; `ArchiveVectorsTests` alone on iPhone 18 Pro (iOS 27.0), which wrote the iOS-made files. The full suites, and the app's Lint, on GitHub. The plain archives the two apps write today are byte for byte the same.
