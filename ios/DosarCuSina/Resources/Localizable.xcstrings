@@ -8105,8 +8105,8 @@
     "Secțiunile din „%@” pot sta acum și la o persoană. Pentru că ai mai multe persoane, le muți tu, din pagina fiecărei secțiuni, cu „Mută la…”." : {
       "comment" : "Repair note: a category's sections can now be filed under a person; with several people the person moves each with 'Mută la…'. The argument is the category's name, as it is: one thing or many."
     },
-    "Secțiunile unei categorii protejate se deschid doar cu %@, chiar dacă aplicația nu e blocată, și nu apar în căutarea iPhone-ului. Restul aplicației merge normal." : {
-      "comment" : "Footer of the category locks."
+    "Secțiunile unei categorii protejate se deschid doar cu %@, chiar dacă aplicația nu e blocată, și nu apar în căutarea iPhone-ului. Ce protejezi aici se protejează și pe celelalte dispozitive ale tale; ce deschizi se deschide doar aici." : {
+      "comment" : "Footer of the category locks: locking travels to the person's other devices, opening stays on this one."
     },
     "Semnat de amândoi, câte un exemplar pentru tine, pentru cumpărător și pentru primărie." : {
       "comment" : "Sale: copies of the sale contract."

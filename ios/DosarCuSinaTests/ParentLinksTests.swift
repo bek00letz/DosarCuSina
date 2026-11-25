@@ -16,7 +16,7 @@ struct ParentLinksTests {
 
     @Test func versionEighteenOnlyAddsWhatHoldsEachRecordByID() throws {
         let seventeen = try #require(NSManagedObjectModel.makeManagedObjectModel(for: DosarSchemaV17.models))
-        let eighteen = try #require(NSManagedObjectModel.makeManagedObjectModel(for: CurrentSchema.models))
+        let eighteen = try #require(NSManagedObjectModel.makeManagedObjectModel(for: DosarSchemaV18.models))
         let added: [String: Set<String>] = [
             "Obligation": ["assetID"], "Attachment": ["assetID"], "HistoryEntry": ["assetID"],
             "MeasurementLog": ["assetID"], "ServiceItem": ["entryID"], "AttachmentPage": ["attachmentID"],

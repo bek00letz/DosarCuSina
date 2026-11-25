@@ -175,7 +175,7 @@ extension CategoryTemplate: ChangeTimed {
     /// What the person chooses for a built-in category (its place, whether it shows, one box or one
     /// per section); everything else is the catalog's. Its lock is this device's own and isn't in
     /// the record (`SectionLocks`).
-    static let personsOwnChoices: Set<String> = ["homeOrder", "isOnHome", "boxGroupingRaw"]
+    static let personsOwnChoices: Set<String> = ["homeOrder", "isOnHome", "boxGroupingRaw", "lockedEverywhereAt"]
 
     public func changeCounts(_ name: String) -> Bool {
         !isBuiltIn || Self.personsOwnChoices.contains(name)

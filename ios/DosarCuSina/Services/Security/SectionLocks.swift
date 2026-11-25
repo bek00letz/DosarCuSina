@@ -5,11 +5,15 @@ import SwiftData
 /// Which categories this device keeps behind Face ID: the one source of truth for a section's
 /// lock (`CategoryTemplate.isSensitive` reads it, `CategoryTemplate.setLock` writes it).
 ///
-/// Each phone or iPad decides for itself. The choice lives on the device, beside the store, never
-/// in it: iCloud never carries it, and a lock turned off on one device can't open a section on
-/// another. A category this device hasn't decided on is locked as the catalog says (Acte and
-/// Sănătate), or as it was made here; a category of one's own made on another device starts open
-/// here until it is locked here.
+/// Locking travels, opening doesn't (DECISIONS, 2026-11-25). This device's choices live on it,
+/// beside the store, never in it, each with when it was made (`chosenAt`); locking a category
+/// also writes when on its record (`CategoryTemplate.lockedEverywhereAt`), which iCloud carries.
+/// A category is locked here when it was locked anywhere after this device last chose for it
+/// (or this device never chose), else as this device chose, else as the catalog says (Acte and
+/// Sănătate) or as it was made. So locking on one device locks it on every device, a new one
+/// included, and opening it with Face ID opens it only on the device that opens it: a lock
+/// turned off on one device can't open a section on another. Each device sends up the locks it
+/// already had once (`LockPublishing`).
 ///
 /// The choices are kept in a small file next to the store (`file(forStoreAt:)`), readable once the
 /// phone was unlocked after it started (so reminders and widgets planned in the background follow
@@ -41,6 +45,9 @@ final class SectionLocks: Observable, @unchecked Sendable {
     private let file: URL?
     private let mutex = NSLock()
     private var choices: [String: Bool]
+    /// When this device made each choice, kept beside the choices (`timesFile`). A choice without
+    /// a time (made before version 19, or its time lost) is older than any lock made anywhere.
+    private var chosenAt: [String: Date]
     /// Every category stays locked until the person keeps the locks (`chooseAgain`).
     private var untilChosenAgain: Bool
     /// The file is there and couldn't be read: it is read again before anything is written, and
@@ -56,15 +63,24 @@ final class SectionLocks: Observable, @unchecked Sendable {
         choices = loaded.choices
         untilChosenAgain = loaded.untilChosenAgain
         fileUnread = loaded.fileUnread
+        chosenAt = file.map { Self.loadTimes(Self.timesFile(for: $0)) } ?? [:]
     }
 
-    /// Whether `key` is locked on this device: its choice here, else `byDefault`. While the locks
-    /// wait to be chosen again, every category is locked.
-    func isLocked(_ key: String, byDefault: Bool) -> Bool {
+    /// Whether `key` is locked on this device: locked anywhere (`lockedEverywhereAt`, from its
+    /// record) after this device last chose for it, else its choice here, else `byDefault`. While
+    /// the locks wait to be chosen again, every category is locked.
+    func isLocked(_ key: String, byDefault: Bool, lockedEverywhereAt: Date? = nil) -> Bool {
         registrar.access(self, keyPath: \.generation)
         return mutex.withLock {
-            untilChosenAgain || (choices[key] ?? byDefault)
+            if untilChosenAgain { return true }
+            if let lockedEverywhereAt, !(chosenAt[key].map { $0 > lockedEverywhereAt } ?? false) { return true }
+            return choices[key] ?? byDefault
         }
+    }
+
+    /// Whether this device chose to lock `key` itself, and when (`LockPublishing` sends it up).
+    func lockedHere(_ key: String) -> (locked: Bool, at: Date?)? {
+        mutex.withLock { choices[key].map { ($0, chosenAt[key]) } }
     }
 
     /// Whether this device's locks couldn't be read and wait for the person to keep them as they
@@ -77,10 +93,11 @@ final class SectionLocks: Observable, @unchecked Sendable {
     /// Every choice this device made.
     var all: [String: Bool] { mutex.withLock { choices } }
 
-    /// Locks or opens `key` on this device. Throws when the choice can't be kept; then nothing
-    /// changes.
-    func set(_ locked: Bool, for key: String) throws {
-        try update { $0[key] = locked }
+    /// Locks or opens `key` on this device, as chosen `now`: a newer choice than any lock made
+    /// elsewhere, so opening here opens it here. Throws when the choice can't be kept; then
+    /// nothing changes.
+    func set(_ locked: Bool, for key: String, at now: Date = Date()) throws {
+        try update(choosing: [key], at: now) { $0[key] = locked }
     }
 
     /// Takes `values` as this device's choices for the keys it hasn't decided on: an upgrade's
@@ -94,8 +111,8 @@ final class SectionLocks: Observable, @unchecked Sendable {
     /// Ends the wait after the locks couldn't be read: `locks` (every category's lock as it shows
     /// now: on) become this device's choices, and a category of one's own from another device starts
     /// open again. Only after Face ID (`TemplateStore.keepLocksAsTheyAre`).
-    func chooseAgain(_ locks: [String: Bool]) throws {
-        try update(endingTheWait: true) { choices in
+    func chooseAgain(_ locks: [String: Bool], at now: Date = Date()) throws {
+        try update(endingTheWait: true, choosing: Set(locks.keys), at: now) { choices in
             for (key, locked) in locks where key != Self.waitKey { choices[key] = locked }
         }
     }
@@ -115,7 +132,7 @@ final class SectionLocks: Observable, @unchecked Sendable {
         if read { told() }
     }
 
-    private func update(endingTheWait: Bool = false, _ change: (inout [String: Bool]) -> Void) throws {
+    private func update(endingTheWait: Bool = false, choosing: Set<String> = [], at now: Date = Date(), _ change: (inout [String: Bool]) -> Void) throws {
         let changed: Bool = try mutex.withLock {
             if fileUnread, let file {
                 // It may read now; then the change goes over what it says.
@@ -129,8 +146,13 @@ final class SectionLocks: Observable, @unchecked Sendable {
             var next = choices
             change(&next)
             let waits = untilChosenAgain && !endingTheWait
-            guard next != choices || waits != untilChosenAgain else { return false }
+            var times = chosenAt
+            for key in choosing where key != Self.waitKey && next[key] != nil { times[key] = now }
+            guard next != choices || waits != untilChosenAgain || times != chosenAt else { return false }
             if let file {
+                // The times first: a choice whose time didn't make it reads as older, so locked
+                // wherever a lock was made since (locks fail closed).
+                if times != chosenAt { try MachineText.jsonEncoder().encode(times).write(to: Self.timesFile(for: file), options: [.atomic, .completeFileProtectionUntilFirstUserAuthentication]) }
                 if fileUnread { try Self.setAside(file) }
                 var stored = next
                 if waits { stored[Self.waitKey] = true }
@@ -140,6 +162,7 @@ final class SectionLocks: Observable, @unchecked Sendable {
                 fileUnread = false
             }
             choices = next
+            chosenAt = times
             untilChosenAgain = waits
             return true
         }
@@ -171,6 +194,19 @@ final class SectionLocks: Observable, @unchecked Sendable {
             return Loaded(choices: stored, untilChosenAgain: waits, fileUnread: false)
         }
         return Loaded(choices: [:], untilChosenAgain: wasMovedAside(file), fileUnread: false)
+    }
+
+    /// When this device made each choice: beside the choices, under a name that starts with
+    /// theirs, so "Începe din nou" leaves it with them (`PersistenceController.moveStoreAside`).
+    static func timesFile(for file: URL) -> URL {
+        file.deletingLastPathComponent().appending(path: file.lastPathComponent + ".times")
+    }
+
+    /// What the times file says; none when it isn't there or can't be read (every choice then
+    /// reads as older than any lock made elsewhere).
+    static func loadTimes(_ file: URL) -> [String: Date] {
+        guard let data = try? Data(contentsOf: file) else { return [:] }
+        return (try? MachineText.jsonDecoder().decode([String: Date].self, from: data)) ?? [:]
     }
 
     /// Whether an older build's "Începe din nou" moved this device's locks aside with the store

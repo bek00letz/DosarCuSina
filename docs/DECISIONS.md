@@ -6,6 +6,13 @@ To propose a change to a decision, open an issue with the **Proposal** template 
 
 ---
 
+## 2026-11-25
+
+### Locking travels, opening stays on the device
+This replaces "Section locks stay on each device" (below), keeping its rule that a lock opened on one device never opens sections on another.
+- **Decided (owner):** locking a category on any of the person's devices locks it on all of them, a new one included; opening it with Face ID opens it only on the device in the person's hand. *Why:* a new iPad opened every category locked on the iPhone without Face ID, listed them in its search and named them in its reminders. *Alternative:* full sync, where opening on one device opens everywhere (a less-guarded device could open the phone's sections).
+- **Decided:** database version 19 adds `CategoryTemplate.lockedEverywhereAt`, when the category was last locked anywhere, written when a lock goes on (never cleared, not in backups, which carry the device's locks as before). Each device keeps when it made each choice beside its choices (`SectionLocks`, a `.times` file); a category is locked when it was locked anywhere after this device last chose for it, else as chosen here, else as the catalog says. A choice whose time isn't known reads as older, so locked (locks fail closed). Each device sends up the locks it had once, at launch (`LockPublishing`): a device that had opened one of them is locked again there once, until opened with Face ID.
+
 ## 2026-11-24
 
 ### A deletion from another device never takes what this one added

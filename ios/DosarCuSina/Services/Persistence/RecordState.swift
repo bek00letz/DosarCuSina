@@ -563,7 +563,7 @@ extension CategoryTemplate: UndoableRecord {
             .attribute("key", \.key), .attribute("copyID", \.copyID), .attribute("name", \.name), .attribute("summary", \.summary), .attribute("symbol", \.symbol),
             .attribute("tintRaw", \.tintRaw), .attribute("heroStyleRaw", \.heroStyleRaw), .attribute("isBuiltIn", \.isBuiltIn),
             .attribute("builtInVersion", \.builtInVersion), .attribute("homeOrder", \.homeOrder), .attribute("isOnHome", \.isOnHome),
-            .attribute("boxGroupingRaw", \.boxGroupingRaw), .attribute("sectionsData", \.sectionsData),
+            .attribute("boxGroupingRaw", \.boxGroupingRaw), .attribute("lockedEverywhereAt", \.lockedEverywhereAt), .attribute("sectionsData", \.sectionsData),
             .attribute("blueprintsData", \.blueprintsData), .attribute("componentsData", \.componentsData),
             .attribute("pocketsRaw", \.pocketsRaw), .attribute("behaviorData", \.behaviorData),
             .attribute("createdAt", \.createdAt), .attribute("updatedAt", \.updatedAt),

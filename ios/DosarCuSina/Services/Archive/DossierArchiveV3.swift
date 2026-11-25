@@ -369,6 +369,9 @@ public enum DossierV3 {
     ///   made the copy. A record a backup brings in is a new copy, with one of its own; carried
     ///   along, two devices' copies would look like one and could never be told apart
     ///   (`RecordsMeet`).
+    /// - `CategoryTemplate.lockedEverywhereAt`: when a category was last locked on one of the
+    ///   person's devices; a backup carries the locks of the device that made it as its own
+    ///   settings instead (`isSensitive`), and a device sends its locks up itself (`LockPublishing`).
     /// - The id of what holds a record (`assetID`, `entryID`, `attachmentID`): the backup carries
     ///   the link itself, and the id is written again from it as the record is saved here
     ///   (`ParentLinks.stamp`).
@@ -381,7 +384,7 @@ public enum DossierV3 {
         "Attachment": ["documentID", "compactedAt", "copyID", "assetID"],
         "Provider": ["contactIdentifier", "copyID"],
         "AttachmentPage": ["id", "copyID", "attachmentID"],
-        "CategoryTemplate": ["copyID"],
+        "CategoryTemplate": ["copyID", "lockedEverywhereAt"],
         "IssuerLesson": ["copyID"],
     ]
     static func id(_ uuid: UUID?) -> String? { uuid.map(id) }

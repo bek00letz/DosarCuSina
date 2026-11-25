@@ -1,7 +1,7 @@
 import Foundation
 import SwiftData
 
-extension DosarSchemaV18 {
+extension DosarSchemaV19 {
     /// A category of assets (Car, Home, a user's own "Bikes") and its field and
     /// obligation definitions, plus this household's preferences for it.
     ///
@@ -30,6 +30,11 @@ extension DosarSchemaV18 {
         /// (`CategoryBehavior.defaultGrouping`). Read and write it through `chosenGrouping`, which
         /// keeps a key a newer build wrote. Version 15.
         public var boxGroupingRaw: String?
+        /// When the category was last locked on one of the person's devices: locking it anywhere
+        /// locks it on every device that hasn't opened it since, a new one included; opening it
+        /// stays on the device that opens it (`SectionLocks.isLocked`). Never cleared: no device
+        /// opens a section on another. Version 19.
+        public var lockedEverywhereAt: Date?
         /// The lock asked for before the category was first saved (made here, or brought by a
         /// backup), kept until it is (`SectionLocks`).
         @Transient private var lockBeforeSaved: Bool? = nil
@@ -191,7 +196,7 @@ extension DosarSchemaV18 {
         public var isSensitive: Bool {
             let byDefault = lockBeforeSaved ?? (isBuiltIn && SectionLocks.lockedByDefault.contains(key))
             guard let container = modelContext?.container else { return byDefault }
-            return SectionLocks.of(container).isLocked(key, byDefault: byDefault)
+            return SectionLocks.of(container).isLocked(key, byDefault: byDefault, lockedEverywhereAt: lockedEverywhereAt)
         }
 
         /// Locks or opens the category on this device. Opening one that is locked now takes the
@@ -199,13 +204,19 @@ extension DosarSchemaV18 {
         /// without it, it throws `LockLowering.Needed` and nothing changes. Throws too when the choice
         /// can't be kept (`SectionLocks`). A category not saved yet only remembers the lock it is
         /// made with.
-        func setLock(_ locked: Bool, lowering: LockLowering? = nil) throws {
+        ///
+        /// Locking one that is open here locks it on every device too: when is written on its
+        /// record (`lockedEverywhereAt`), which the caller's unit saves and iCloud carries. Opening
+        /// one, or keeping a lock that is already on, stays on this device.
+        func setLock(_ locked: Bool, lowering: LockLowering? = nil, now: Date = Date()) throws {
             guard let container = modelContext?.container else {
                 lockBeforeSaved = locked
                 return
             }
-            if !locked, lowering == nil, isSensitive { throw LockLowering.Needed() }
-            try SectionLocks.of(container).set(locked, for: key)
+            let wasLocked = isSensitive
+            if !locked, lowering == nil, wasLocked { throw LockLowering.Needed() }
+            try SectionLocks.of(container).set(locked, for: key, at: now)
+            if locked, !wasLocked { lockedEverywhereAt = now }
             // The choice made now wins over the one asked for before saving.
             lockBeforeSaved = nil
         }
@@ -217,6 +228,9 @@ extension DosarSchemaV18 {
         func keepLockAskedBeforeSaving() throws {
             guard let lock = lockBeforeSaved, let container = modelContext?.container else { return }
             try SectionLocks.of(container).adopt([key: lock])
+            // A category of one's own made locked is locked on every device; a built-in's lock is
+            // the catalog's, the same everywhere already.
+            if lock, !isBuiltIn, lockedEverywhereAt == nil { lockedEverywhereAt = Date() }
         }
 
         /// The plain definition, as archives and the catalog describe it.

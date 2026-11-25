@@ -232,7 +232,7 @@ struct LockSettings: View {
             Text("Categorii protejate", comment: "Settings section: the locks, one per category.")
                 .userErrorAlert($error)
         } footer: {
-            Text("Secțiunile unei categorii protejate se deschid doar cu \(vault.biometryName), chiar dacă aplicația nu e blocată, și nu apar în căutarea iPhone-ului. Restul aplicației merge normal.", comment: "Footer of the category locks.")
+            Text("Secțiunile unei categorii protejate se deschid doar cu \(vault.biometryName), chiar dacă aplicația nu e blocată, și nu apar în căutarea iPhone-ului. Ce protejezi aici se protejează și pe celelalte dispozitive ale tale; ce deschizi se deschide doar aici.", comment: "Footer of the category locks: locking travels to the person's other devices, opening stays on this one.")
         }
     }
 

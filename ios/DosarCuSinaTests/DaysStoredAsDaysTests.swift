@@ -17,7 +17,7 @@ struct DaysStoredAsDaysTests {
     /// day is a `StoredDay` text, never a `Date`.
     @Test func everyStoredMomentIsAMoment() {
         let moments: Set<String> = [
-            "CategoryTemplate.createdAt", "CategoryTemplate.updatedAt", "Asset.createdAt", "Asset.updatedAt",
+            "CategoryTemplate.createdAt", "CategoryTemplate.updatedAt", "CategoryTemplate.lockedEverywhereAt", "Asset.createdAt", "Asset.updatedAt",
             "Obligation.createdAt", "Obligation.updatedAt", "Obligation.cycleKnownAt", "HistoryEntry.occurredAt", "HistoryEntry.updatedAt",
             "ServiceItem.updatedAt", "MeasurementLog.recordedAt", "MeasurementLog.updatedAt",
             "Attachment.compactedAt", "Attachment.createdAt", "Attachment.updatedAt",

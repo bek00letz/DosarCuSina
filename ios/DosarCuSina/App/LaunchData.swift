@@ -18,6 +18,7 @@ enum LaunchData {
         case recordsMeet = "Joining records that share an id"
         case issuerLessons = "Settling what capture learned"
         case builtInCategories = "Installing the built-in categories"
+        case lockPublishing = "Sending this device's locks to the others"
         case repairList = "Refreshing the repair list"
         case householdDeadlines = "Working out the household's own deadlines"
     }
@@ -35,6 +36,7 @@ enum LaunchData {
         run(.recordsMeet) { _ = try RecordsMeet.join(in: context) }
         run(.issuerLessons) { _ = try IssuerLessons.settle(in: context) }
         run(.builtInCategories) { _ = try TemplateStore(context: context).installBuiltIns() }
+        run(.lockPublishing) { _ = try LockPublishing.publish(in: context) }
         // The repair list: steps that change nothing anyone sees run now; the rest wait for
         // the owner, and the shell's calm prompt says when there is something new.
         run(.repairList) { try repairs.refresh(in: context, announce: true) }
