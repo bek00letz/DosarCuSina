@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The themed icon: the page with its lines and check cut out. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <path
+        android:fillColor="#FF000000"
+        android:fillType="evenOdd"
+        android:pathData="M39.5,32.5H69A4.5,4.5 0,0 1 73.5,37V71A4.5,4.5 0,0 1 69,75.5H39.5A4.5,4.5 0,0 1 35,71V37A4.5,4.5 0,0 1 39.5,32.5ZM46.8,46H69.7A0.8,0.8 0,0 1 70.5,46.8V46.8A0.8,0.8 0,0 1 69.7,47.6H46.8A0.8,0.8 0,0 1 46,46.8V46.8A0.8,0.8 0,0 1 46.8,46ZM46.8,50.5H65.2A0.8,0.8 0,0 1 66,51.3V51.3A0.8,0.8 0,0 1 65.2,52.1H46.8A0.8,0.8 0,0 1 46,51.3V51.3A0.8,0.8 0,0 1 46.8,50.5ZM46.8,55H69.7A0.8,0.8 0,0 1 70.5,55.8V55.8A0.8,0.8 0,0 1 69.7,56.6H46.8A0.8,0.8 0,0 1 46,55.8V55.8A0.8,0.8 0,0 1 46.8,55ZM46.8,59.5H65.2A0.8,0.8 0,0 1 66,60.3V60.3A0.8,0.8 0,0 1 65.2,61.1H46.8A0.8,0.8 0,0 1 46,60.3V60.3A0.8,0.8 0,0 1 46.8,59.5ZM47,36.5H69A1.5,1.5 0,0 1 70.5,38V38A1.5,1.5 0,0 1 69,39.5H47A1.5,1.5 0,0 1 45.5,38V38A1.5,1.5 0,0 1 47,36.5ZM47.0,68a2.6,2.6 0,1 0 5.2,0a2.6,2.6 0,1 0 -5.2,0Z" />
+</vector>

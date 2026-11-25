@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The binder, after the iPhone app's icon: a page on its rail, a blue tab, a check. Inside the 66 dp safe zone. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <path
+        android:fillColor="#FF1E3461"
+        android:pathData="M39,30H69A7,7 0,0 1 76,37V71A7,7 0,0 1 69,78H39A7,7 0,0 1 32,71V37A7,7 0,0 1 39,30Z" />
+    <path
+        android:fillColor="#FFF4F7FC"
+        android:pathData="M39.5,32.5H69A4.5,4.5 0,0 1 73.5,37V71A4.5,4.5 0,0 1 69,75.5H39.5A4.5,4.5 0,0 1 35,71V37A4.5,4.5 0,0 1 39.5,32.5Z" />
+    <path
+        android:fillColor="#FFB4BFD0"
+        android:pathData="M39,31H39A1.5,1.5 0,0 1 40.5,32.5V75.5A1.5,1.5 0,0 1 39,77H39A1.5,1.5 0,0 1 37.5,75.5V32.5A1.5,1.5 0,0 1 39,31Z" />
+    <path
+        android:fillColor="#FFCED8E5"
+        android:pathData="M47,36.5H54A1.5,1.5 0,0 1 55.5,38V38A1.5,1.5 0,0 1 54,39.5H47A1.5,1.5 0,0 1 45.5,38V38A1.5,1.5 0,0 1 47,36.5Z" />
+    <path
+        android:fillColor="#FF007AFF"
+        android:pathData="M61.5,36H68.5A2,2 0,0 1 70.5,38V38A2,2 0,0 1 68.5,40H61.5A2,2 0,0 1 59.5,38V38A2,2 0,0 1 61.5,36Z" />
+    <path
+        android:fillColor="#FFCED8E5"
+        android:pathData="M46.8,46H69.7A0.8,0.8 0,0 1 70.5,46.8V46.8A0.8,0.8 0,0 1 69.7,47.6H46.8A0.8,0.8 0,0 1 46,46.8V46.8A0.8,0.8 0,0 1 46.8,46Z" />
+    <path
+        android:fillColor="#FFCED8E5"
+        android:pathData="M46.8,50.5H65.2A0.8,0.8 0,0 1 66,51.3V51.3A0.8,0.8 0,0 1 65.2,52.1H46.8A0.8,0.8 0,0 1 46,51.3V51.3A0.8,0.8 0,0 1 46.8,50.5Z" />
+    <path
+        android:fillColor="#FFCED8E5"
+        android:pathData="M46.8,55H69.7A0.8,0.8 0,0 1 70.5,55.8V55.8A0.8,0.8 0,0 1 69.7,56.6H46.8A0.8,0.8 0,0 1 46,55.8V55.8A0.8,0.8 0,0 1 46.8,55Z" />
+    <path
+        android:fillColor="#FFCED8E5"
+        android:pathData="M46.8,59.5H65.2A0.8,0.8 0,0 1 66,60.3V60.3A0.8,0.8 0,0 1 65.2,61.1H46.8A0.8,0.8 0,0 1 46,60.3V60.3A0.8,0.8 0,0 1 46.8,59.5Z" />
+    <path
+        android:fillColor="#FFD4EEE3"
+        android:pathData="M48,64H68A2.5,2.5 0,0 1 70.5,66.5V69.5A2.5,2.5 0,0 1 68,72H48A2.5,2.5 0,0 1 45.5,69.5V66.5A2.5,2.5 0,0 1 48,64Z" />
+    <path
+        android:fillColor="#FF2CB960"
+        android:pathData="M47.0,68a2.6,2.6 0,1 0 5.2,0a2.6,2.6 0,1 0 -5.2,0Z" />
+    <path
+        android:fillColor="#FF34A85A"
+        android:pathData="M54.7,65.6H62.3A0.7,0.7 0,0 1 63,66.3V66.3A0.7,0.7 0,0 1 62.3,67H54.7A0.7,0.7 0,0 1 54,66.3V66.3A0.7,0.7 0,0 1 54.7,65.6Z" />
+    <path
+        android:fillColor="#FF9AB0C0"
+        android:pathData="M54.6,68.8H59.4A0.6,0.6 0,0 1 60,69.4V69.4A0.6,0.6 0,0 1 59.4,70H54.6A0.6,0.6 0,0 1 54,69.4V69.4A0.6,0.6 0,0 1 54.6,68.8Z" />
+    <path
+        android:pathData="M48.3,68.1l0.9,0.9l1.8,-1.9"
+        android:strokeWidth="0.7"
+        android:strokeColor="#FFFFFFFF"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round" />
+</vector>

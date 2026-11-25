@@ -1,0 +1,92 @@
+# The Android app's checks (android/), beside the four iOS checks. Runs on every pull
+# request and every push to main, with no path filters: a required check must always
+# run, or GitHub waits for it forever.
+#   android-build-and-test  builds the app (debug, and the release build unsigned, shrunk
+#                           as Google Play gets it) and runs every module's unit tests
+#                           on the JVM
+#   android-lint            Android Lint on every module and detekt, warnings as errors;
+#                           detekt's configuration (android/config/detekt/detekt.yml) is
+#                           where the Android counterpart of scripts/architecture-check.sh
+#                           grows
+# Reproduce either with the same Gradle command from android/ (see README).
+name: Android
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+# A newer push to the same pull request replaces the run in progress.
+concurrency:
+  group: android-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+defaults:
+  run:
+    working-directory: android
+
+jobs:
+  android-build-and-test:
+    name: android-build-and-test
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Check out
+        uses: actions/checkout@v7
+
+      - name: Set up Java
+        uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: "25"
+
+      # Caches Gradle's downloads and build cache; only main writes the cache.
+      # Also checks the committed Gradle wrapper is one Gradle published.
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v6
+        with:
+          cache-read-only: ${{ github.ref != 'refs/heads/main' }}
+
+      - name: Build the app and run the tests
+        run: ./gradlew --stacktrace assembleDebug assembleRelease test
+
+      - name: Keep the reports
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: android-build-and-test-reports
+          path: android/**/build/reports/
+          if-no-files-found: ignore
+
+  android-lint:
+    name: android-lint
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Check out
+        uses: actions/checkout@v7
+
+      - name: Set up Java
+        uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: "25"
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v6
+        with:
+          cache-read-only: ${{ github.ref != 'refs/heads/main' }}
+
+      - name: Android Lint and detekt
+        run: ./gradlew --stacktrace lint detekt
+
+      - name: Keep the reports
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: android-lint-reports
+          path: android/**/build/reports/
+          if-no-files-found: ignore

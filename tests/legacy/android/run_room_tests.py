@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Automated test runner verifying Android Room SQLite Schema & Data Parity.
-Mirrors all test cases in tests/android/RoomDatabaseTests.kt:
+Mirrors all test cases in tests/legacy/android/RoomDatabaseTests.kt:
 - AssetEntity, LifecycleEventEntity, AttachmentEntity, DynamicFieldEntity CRUD
 - SQLite Foreign Key CASCADE deletion on parent AssetEntity and LifecycleEventEntity
 - TypeConverter list <-> string round-trip serialization for reminderOffsetDays

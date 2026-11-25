@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">Dosar cu Șină</string>
+    <string name="nav_radar">Radar</string>
+    <string name="nav_vault">Seif</string>
+    <string name="nav_scanner">Scanner</string>
+    <string name="camera_permission_required">Permisiunea pentru cameră este necesară pentru scanarea documentelor.</string>
+</resources>

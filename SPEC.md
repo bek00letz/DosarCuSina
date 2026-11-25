@@ -674,7 +674,7 @@ The privacy policy and the help page (what the app is, how to ask for help, how 
 
 ## 11. Not built yet
 
-- **Android port.** Started on 2026-11-25, in Kotlin, aiming at parity with this spec; the code under `android/` is the first version, kept as a reference. The `.dosar` format is the contract: a binder exported on either platform imports on the other with nothing lost.
+- **Android port.** Started on 2026-11-25, in Kotlin, aiming at parity with this spec, by the plan in [docs/ANDROID_PLAN.md](docs/ANDROID_PLAN.md). Phase 0 is in place: the Gradle project in `android/` (`core`, `archive`, `app`; Android 11 and later, `com.ar.dosarcusina.app`) and its checks on every pull request (`android-build-and-test`, `android-lint`); the app shows only its name and one line, and none of this spec's features is built yet. The first version is kept in `android/Legacy/` as a reference, outside the build. The `.dosar` format is the contract: a binder exported on either platform imports on the other with nothing lost.
 - **Partners.** Optional, privacy-first offers from vetted companies (an insurance broker, for example) on fair commission. See the decision log.
 - **Household sharing** through iCloud.
 - **Reminders app** integration. Not built; Calendar is.

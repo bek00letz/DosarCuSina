@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Android Lint for every module, warnings as errors (set in the build files).
+     Only checks that turn red with time, with nothing in the change, are off: a
+     required check must fail for what a pull request did, never for a release
+     somewhere else. Versions and the target API are raised on purpose. -->
+<lint>
+    <!-- A newer library, Android Gradle plugin or Kotlin has been published. -->
+    <issue id="GradleDependency" severity="ignore" />
+    <issue id="AndroidGradlePluginVersion" severity="ignore" />
+    <issue id="NewerVersionAvailable" severity="ignore" />
+    <!-- A newer Android has been released than the one the app targets. -->
+    <issue id="OldTargetApi" severity="ignore" />
+</lint>

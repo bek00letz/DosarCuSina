@@ -70,8 +70,9 @@ fastlane/Preview.html
 fastlane/screenshots
 fastlane/test_output
 
-# Android / Gradle (Future-proofing)
+# Android / Gradle
 .gradle/
+.kotlin/
 */build/
 captures/
 *.apk

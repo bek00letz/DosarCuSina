@@ -225,7 +225,7 @@ def run_android_adversarial_suite():
     # Does Android parse 1.8.0 meter index? In Android code, meterIndex is NEVER parsed for Hidroelectrica!
     has_hidro_meter_regex = hasattr(AndroidRomanianUtilityParser, "HIDRO_ACTIVE_ENERGY") or "1.8.0" in hidro_text
     # Check Android implementation in source:
-    with open("android/app/src/main/java/com/dosarcusina/ocr/RomanianUtilityParser.kt") as f:
+    with open("android/Legacy/app/src/main/java/com/dosarcusina/ocr/RomanianUtilityParser.kt") as f:
         src = f.read()
     assert_test("1.8.0" in src, "Android RomanianUtilityParser.kt extracts 1.8.0 active energy index")
 

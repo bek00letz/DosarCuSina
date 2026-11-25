@@ -39,7 +39,7 @@ The app is in Romanian. It is for everyone, and built so that people who aren't 
 Pre-release. Not on the App Store yet.
 
 - **iOS only**, iOS 26 and later.
-- **Android is paused.** The code under `android/` is from an earlier version. The `.dosar` backup format ([spec](shared/schemas/dosar-v3.md), [fixtures](shared/fixtures)) is the cross-platform contract a future port will follow.
+- **Android is being ported**, by the plan in [docs/ANDROID_PLAN.md](docs/ANDROID_PLAN.md): the project and its checks are in place (see [Android](#android)), the app's features aren't yet. The `.dosar` backup format ([spec](shared/schemas/dosar-v3.md), [fixtures](shared/fixtures)) is the cross-platform contract the port follows.
 
 What is built, and what isn't yet, is in [SPEC.md](SPEC.md). Where work stands right now is in [docs/HANDOFF.md](docs/HANDOFF.md).
 
@@ -94,6 +94,36 @@ Every pull request runs the same script on GitHub (the `build-and-test` check, o
 scripts/architecture-check.sh
 ```
 
+## Android
+
+The Android app is being ported by [docs/ANDROID_PLAN.md](docs/ANDROID_PLAN.md). It is the Gradle project in `android/`, for Android 11 and later:
+
+| Module | What it holds |
+| :--- | :--- |
+| `core` | Values and engines, in pure Kotlin (no Android), tested on the JVM. |
+| `archive` | The `.dosar` reader and writer, in pure Kotlin. |
+| `app` | The Android app, `com.ar.dosarcusina.app`: Compose with Material 3. |
+
+You need a JDK (17 or later; GitHub uses 25) and the Android SDK, found through `ANDROID_HOME` or `sdk.dir` in `android/local.properties` (which git ignores). From `android/`, build the app (debug, and the release build unsigned) and run every module's tests:
+
+```sh
+./gradlew assembleDebug assembleRelease test
+```
+
+Android Lint and detekt, with warnings as errors:
+
+```sh
+./gradlew lint detekt
+```
+
+One module's tests while you work:
+
+```sh
+./gradlew :core:test
+```
+
+Every pull request runs the first two on GitHub as `android-build-and-test` and `android-lint` ([.github/workflows/android.yml](.github/workflows/android.yml)). Versions are in `android/gradle/libs.versions.toml`, Lint's settings in `android/lint.xml` and detekt's in `android/config/detekt/detekt.yml`. The build fails on any dependency on Google Play services, Firebase or ML Kit, and the app asks for no internet permission.
+
 ## App Store screenshots and listing
 
 The screenshots are taken by UI tests, never by hand, so they can be taken again whenever a screen changes. The `DosarCuSinaScreenshots` scheme launches a development build with `-DosarScreenshots <scene>`: the app opens on a binder of its own (a separate store that never syncs, so the phone's binder is never touched), filled once with a made-up household through the app's own actions (`ScreenshotStage`), at the screen the scene names. A release build has none of it.
@@ -126,8 +156,9 @@ The captions are text in [marketing/app-store/captions.json](marketing/app-store
 | `ios/DosarCuSinaScreenshots/` | The UI tests that take the App Store's screenshots (their own scheme, never in the test run). |
 | `ios/Legacy/` | The first version of the app. Not compiled, kept as a way back. |
 | `shared/` | The `.dosar` format and fixtures, Romanian administrative standards, starter templates. |
-| `android/` | The paused Android version. |
-| `tests/` | The test runner, plus legacy and Android scripts. |
+| `android/` | The Android app, a Gradle project: `core` and `archive` in pure Kotlin, `app` the Android app (see [Android](#android)). |
+| `android/Legacy/` | The first Android version. Not built, kept as a way back. |
+| `tests/` | The iOS test runner, plus the first versions' scripts in `tests/legacy/`. |
 | `docs/` | Decisions, handoff notes, copy guide, archive. |
 | `marketing/` | The App Store listing's text, the screenshots' captions, the script that frames them and the framed set to upload (`app-store/screenshots/`). |
 | `site/` | The public web pages: the privacy policy and help, in Romanian and English, published with GitHub Pages. |

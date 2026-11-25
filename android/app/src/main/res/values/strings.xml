@@ -1,7 +1,6 @@
-<resources>
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Romanian is the app's language: these are the default resources. -->
+<resources xmlns:tools="http://schemas.android.com/tools" tools:locale="ro">
     <string name="app_name">Dosar cu Șină</string>
-    <string name="nav_radar">Radar</string>
-    <string name="nav_vault">Seif</string>
-    <string name="nav_scanner">Scanner</string>
-    <string name="camera_permission_required">Permisiunea pentru cameră este necesară pentru scanarea documentelor.</string>
+    <string name="placeholder_line">Versiunea pentru Android e în lucru.</string>
 </resources>

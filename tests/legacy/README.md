@@ -8,3 +8,9 @@ and are not run. The cadence and utility-parser suites were ported to the
 `ios/RomanianUtilityParserSuite.swift` is the Swift Testing suite of the first bill
 reader, moved here with the reader. Its fixtures now run against the label tables
 that replaced it, in `ios/DosarCuSinaTests/Capture/BillReaderTests.swift`.
+
+`android/` holds the scripts that mirror the first Android version's Room database
+(`run_room_tests.py`, `adversarial_room_stress_test.py`, `RoomDatabaseTests.kt`), moved
+here with that version (now in `android/Legacy/`). They run with
+`./tests/run_tests.sh --android-legacy`. `adversarial/run_android_adversarial_tests.py`
+reads that version's bill reader from `android/Legacy/`.
