@@ -20,7 +20,7 @@ public struct SectionOffers {
     }
 
     public init(_ templates: [CategoryTemplate]) {
-        let offered = templates
+        let offered = CategoryTemplate.oncePerKey(templates)
             .filter { Self.group(of: $0.behavior) != nil }
             .sorted { ($0.homeOrder, $0.createdAt) < ($1.homeOrder, $1.createdAt) }
         shortlist = offered

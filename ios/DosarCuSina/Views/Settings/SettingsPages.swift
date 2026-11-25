@@ -265,7 +265,7 @@ private struct SettingsRoot: View {
                 needsChoosingAgain: SectionLocks.of(context.container).needsChoosingAgain
             )
         case .dosarScreen:
-            return SettingsStatus.dosarScreen(hiddenCategories: templates.filter { $0.behavior.box != .insideOther && !$0.isOnHome }.count)
+            return SettingsStatus.dosarScreen(hiddenCategories: CategoryTemplate.oncePerKey(templates).filter { $0.behavior.box != .insideOther && !$0.isOnHome }.count)
         case .iCloudAndBackups:
             return SettingsStatus.iCloud(sync: persistence.sync, health: persistence.health, isStopping: persistence.isStoppingSync)
         case .ai:
