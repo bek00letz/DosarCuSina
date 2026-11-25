@@ -1,0 +1,138 @@
+{
+  "cases" : [
+    {
+      "addDays" : 1,
+      "day" : "2027-01-01",
+      "start" : "2026-12-31"
+    },
+    {
+      "addDays" : 1,
+      "day" : "2026-03-01",
+      "start" : "2026-02-28"
+    },
+    {
+      "addDays" : 1,
+      "day" : "2024-02-29",
+      "start" : "2024-02-28"
+    },
+    {
+      "addDays" : 2,
+      "day" : "2024-03-01",
+      "start" : "2024-02-28"
+    },
+    {
+      "addDays" : -1,
+      "day" : "2026-02-28",
+      "start" : "2026-03-01"
+    },
+    {
+      "addDays" : -1,
+      "day" : "2024-02-29",
+      "start" : "2024-03-01"
+    },
+    {
+      "addDays" : 0,
+      "day" : "2026-02-28",
+      "start" : "2026-02-30"
+    },
+    {
+      "addDays" : 1,
+      "day" : "2026-03-01",
+      "start" : "2026-02-30"
+    },
+    {
+      "addDays" : 0,
+      "day" : "2026-04-30",
+      "start" : "2026-04-31"
+    },
+    {
+      "addDays" : 1,
+      "day" : "2026-03-30",
+      "start" : "2026-03-29"
+    },
+    {
+      "addDays" : 1,
+      "day" : "2026-10-26",
+      "start" : "2026-10-25"
+    },
+    {
+      "addDays" : 365,
+      "day" : "2027-01-01",
+      "start" : "2026-01-01"
+    },
+    {
+      "addDays" : 366,
+      "day" : "2025-01-01",
+      "start" : "2024-01-01"
+    },
+    {
+      "addDays" : -36500,
+      "day" : "1926-01-26",
+      "start" : "2026-01-01"
+    },
+    {
+      "addDays" : 100000,
+      "day" : "2300-09-10",
+      "start" : "2026-11-25"
+    },
+    {
+      "addDays" : -7,
+      "day" : "2026-11-18",
+      "start" : "2026-11-25"
+    },
+    {
+      "addDays" : 1,
+      "day" : "2026-07-01",
+      "start" : "2026-06-31"
+    },
+    {
+      "days" : 364,
+      "end" : "2026-12-31",
+      "start" : "2026-01-01"
+    },
+    {
+      "days" : -364,
+      "end" : "2026-01-01",
+      "start" : "2026-12-31"
+    },
+    {
+      "days" : 2,
+      "end" : "2024-03-01",
+      "start" : "2024-02-28"
+    },
+    {
+      "days" : 2,
+      "end" : "2026-03-30",
+      "start" : "2026-03-28"
+    },
+    {
+      "days" : 2,
+      "end" : "2026-10-26",
+      "start" : "2026-10-24"
+    },
+    {
+      "days" : 1,
+      "end" : "2026-03-01",
+      "start" : "2026-02-30"
+    },
+    {
+      "days" : 0,
+      "end" : "2026-11-25",
+      "start" : "2026-11-25"
+    },
+    {
+      "days" : 73049,
+      "end" : "2100-01-01",
+      "start" : "1900-01-01"
+    },
+    {
+      "days" : 0,
+      "end" : "2026-02-28",
+      "start" : "2026-02-31"
+    }
+  ],
+  "rule" : "CalendarDay.adding(days:), days(to:)",
+  "shape" : "start + addDays = day; or start, end: days from one to the other (negative when end is earlier). A day the calendar doesn't have counts as its month's last day.",
+  "source" : "ios/Shared/CalendarDay.swift",
+  "writtenBy" : "ios/DosarCuSinaTests/ValueVectorsTests.swift"
+}

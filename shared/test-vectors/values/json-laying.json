@@ -1,0 +1,1158 @@
+{
+  "cases" : [
+    {
+      "edited" : {
+        "every" : 2,
+        "type" : "interval",
+        "unit" : "year"
+      },
+      "name" : "Left as read: what was stored stays, unknown keys included",
+      "read" : {
+        "every" : 2,
+        "type" : "interval",
+        "unit" : "year"
+      },
+      "stored" : {
+        "every" : 2,
+        "future" : {
+          "x" : 1
+        },
+        "type" : "interval",
+        "unit" : "year"
+      },
+      "written" : {
+        "every" : 2,
+        "future" : {
+          "x" : 1
+        },
+        "type" : "interval",
+        "unit" : "year"
+      }
+    },
+    {
+      "edited" : {
+        "every" : 3,
+        "type" : "interval",
+        "unit" : "year"
+      },
+      "name" : "A known value changed: the edit wins, an unknown key stays",
+      "read" : {
+        "every" : 2,
+        "type" : "interval",
+        "unit" : "year"
+      },
+      "stored" : {
+        "every" : 2,
+        "future" : true,
+        "type" : "interval",
+        "unit" : "year"
+      },
+      "written" : {
+        "every" : 3,
+        "future" : true,
+        "type" : "interval",
+        "unit" : "year"
+      }
+    },
+    {
+      "edited" : {
+        "anchor" : {
+          "kind" : "completion"
+        },
+        "every" : 5,
+        "type" : "interval"
+      },
+      "name" : "Unknown keys two levels deep stay",
+      "read" : {
+        "anchor" : {
+          "kind" : "completion"
+        },
+        "every" : 2,
+        "type" : "interval"
+      },
+      "stored" : {
+        "anchor" : {
+          "future" : {
+            "deep" : true
+          },
+          "kind" : "completion"
+        },
+        "every" : 2,
+        "extra" : {
+          "x" : 1,
+          "y" : [
+            1,
+            2
+          ]
+        },
+        "type" : "interval"
+      },
+      "written" : {
+        "anchor" : {
+          "future" : {
+            "deep" : true
+          },
+          "kind" : "completion"
+        },
+        "every" : 5,
+        "extra" : {
+          "x" : 1,
+          "y" : [
+            1,
+            2
+          ]
+        },
+        "type" : "interval"
+      }
+    },
+    {
+      "edited" : {
+        "anchor" : {
+          "kind" : "dueDate"
+        },
+        "type" : "interval"
+      },
+      "name" : "A deeper value changed beside an unknown key at the same depth",
+      "read" : {
+        "anchor" : {
+          "kind" : "completion"
+        },
+        "type" : "interval"
+      },
+      "stored" : {
+        "anchor" : {
+          "future" : {
+            "deep" : true
+          },
+          "kind" : "completion"
+        },
+        "type" : "interval"
+      },
+      "written" : {
+        "anchor" : {
+          "future" : {
+            "deep" : true
+          },
+          "kind" : "dueDate"
+        },
+        "type" : "interval"
+      }
+    },
+    {
+      "edited" : {
+        "consequence" : "legal",
+        "graceDays" : 0,
+        "leadDays" : [
+          14,
+          0
+        ]
+      },
+      "name" : "A value read as something else, left as read, stays as stored",
+      "read" : {
+        "consequence" : "legal",
+        "graceDays" : 0,
+        "leadDays" : [
+          30,
+          7,
+          0
+        ]
+      },
+      "stored" : {
+        "consequence" : "catastrophic",
+        "graceDays" : 0,
+        "leadDays" : [
+          30,
+          7,
+          0
+        ]
+      },
+      "written" : {
+        "consequence" : "catastrophic",
+        "graceDays" : 0,
+        "leadDays" : [
+          14,
+          0
+        ]
+      }
+    },
+    {
+      "edited" : {
+        "consequence" : "health",
+        "leadDays" : [
+          30,
+          7,
+          0
+        ]
+      },
+      "name" : "A value read as something else, changed: the edit wins",
+      "read" : {
+        "consequence" : "legal",
+        "leadDays" : [
+          30,
+          7,
+          0
+        ]
+      },
+      "stored" : {
+        "consequence" : "catastrophic",
+        "leadDays" : [
+          30,
+          7,
+          0
+        ]
+      },
+      "written" : {
+        "consequence" : "health",
+        "leadDays" : [
+          30,
+          7,
+          0
+        ]
+      }
+    },
+    {
+      "edited" : {
+        "every" : 1,
+        "type" : "interval",
+        "unit" : "year"
+      },
+      "name" : "A type that changed keeps nothing of the old one",
+      "read" : {
+        "every" : 15000,
+        "type" : "metric",
+        "unit" : "km"
+      },
+      "stored" : {
+        "every" : 15000,
+        "future" : 1,
+        "type" : "metric",
+        "unit" : "km"
+      },
+      "written" : {
+        "every" : 1,
+        "type" : "interval",
+        "unit" : "year"
+      }
+    },
+    {
+      "edited" : {
+        "type" : "none"
+      },
+      "name" : "A type this build doesn't know, read as a fallback and left: stored stays",
+      "read" : {
+        "type" : "none"
+      },
+      "stored" : {
+        "phase" : "full",
+        "type" : "lunar"
+      },
+      "written" : {
+        "phase" : "full",
+        "type" : "lunar"
+      }
+    },
+    {
+      "edited" : {
+        "every" : 1,
+        "type" : "interval",
+        "unit" : "month"
+      },
+      "name" : "A type this build doesn't know, read as a fallback, then a known one chosen",
+      "read" : {
+        "type" : "none"
+      },
+      "stored" : {
+        "phase" : "full",
+        "type" : "lunar"
+      },
+      "written" : {
+        "every" : 1,
+        "type" : "interval",
+        "unit" : "month"
+      }
+    },
+    {
+      "edited" : {
+        "every" : 2,
+        "type" : "none"
+      },
+      "name" : "An object without a type and one with: another value",
+      "read" : {
+        "every" : 1
+      },
+      "stored" : {
+        "every" : 1
+      },
+      "written" : {
+        "every" : 2,
+        "type" : "none"
+      }
+    },
+    {
+      "edited" : {
+        "a" : 1
+      },
+      "name" : "A key the edit took out goes",
+      "read" : {
+        "a" : 1,
+        "b" : 2
+      },
+      "stored" : {
+        "a" : 1,
+        "b" : 2,
+        "future" : 3
+      },
+      "written" : {
+        "a" : 1,
+        "future" : 3
+      }
+    },
+    {
+      "edited" : {
+        "a" : 5,
+        "b" : 2
+      },
+      "name" : "A key left as read that is no longer stored stays out",
+      "read" : {
+        "a" : 1,
+        "b" : 2
+      },
+      "stored" : {
+        "a" : 1,
+        "future" : 3
+      },
+      "written" : {
+        "a" : 5,
+        "future" : 3
+      }
+    },
+    {
+      "edited" : {
+        "a" : 1,
+        "b" : 9
+      },
+      "name" : "A key the edit changed that is no longer stored comes back",
+      "read" : {
+        "a" : 1,
+        "b" : 2
+      },
+      "stored" : {
+        "a" : 1,
+        "future" : 3
+      },
+      "written" : {
+        "a" : 1,
+        "b" : 9,
+        "future" : 3
+      }
+    },
+    {
+      "edited" : {
+        "a" : 1,
+        "c" : 4
+      },
+      "name" : "A key the edit adds",
+      "read" : {
+        "a" : 1
+      },
+      "stored" : {
+        "a" : 1,
+        "future" : 3
+      },
+      "written" : {
+        "a" : 1,
+        "c" : 4,
+        "future" : 3
+      }
+    },
+    {
+      "edited" : {
+        "a" : 1,
+        "future" : 4
+      },
+      "name" : "A key stored but not read, which the edit sets: the edit wins",
+      "read" : {
+        "a" : 1
+      },
+      "stored" : {
+        "a" : 1,
+        "future" : 3
+      },
+      "written" : {
+        "a" : 1,
+        "future" : 4
+      }
+    },
+    {
+      "edited" : {
+        "b" : 2
+      },
+      "name" : "A stored null this build doesn't read stays",
+      "read" : {
+        "b" : 1
+      },
+      "stored" : {
+        "a" : null,
+        "b" : 1
+      },
+      "written" : {
+        "a" : null,
+        "b" : 2
+      }
+    },
+    {
+      "edited" : [
+        {
+          "id" : "r1",
+          "label" : "Loc în port"
+        },
+        {
+          "id" : "r2",
+          "label" : "Cod"
+        }
+      ],
+      "name" : "Entries known by id: one edited keeps what it kept",
+      "read" : [
+        {
+          "id" : "r1",
+          "label" : "Loc"
+        },
+        {
+          "id" : "r2",
+          "label" : "Cod"
+        }
+      ],
+      "stored" : [
+        {
+          "future" : 1,
+          "id" : "r1",
+          "label" : "Loc"
+        },
+        {
+          "future" : 2,
+          "id" : "r2",
+          "label" : "Cod"
+        }
+      ],
+      "written" : [
+        {
+          "future" : 1,
+          "id" : "r1",
+          "label" : "Loc în port"
+        },
+        {
+          "future" : 2,
+          "id" : "r2",
+          "label" : "Cod"
+        }
+      ]
+    },
+    {
+      "edited" : [
+        {
+          "id" : "r2",
+          "label" : "Cod nou"
+        }
+      ],
+      "name" : "A list entry taken out goes, with what it kept",
+      "read" : [
+        {
+          "id" : "r1",
+          "label" : "Loc"
+        },
+        {
+          "id" : "r2",
+          "label" : "Cod"
+        }
+      ],
+      "stored" : [
+        {
+          "future" : 1,
+          "id" : "r1",
+          "label" : "Loc"
+        },
+        {
+          "future" : 2,
+          "id" : "r2",
+          "label" : "Cod"
+        }
+      ],
+      "written" : [
+        {
+          "future" : 2,
+          "id" : "r2",
+          "label" : "Cod nou"
+        }
+      ]
+    },
+    {
+      "edited" : [
+        {
+          "id" : "r1",
+          "label" : "Loc"
+        },
+        {
+          "id" : "r3",
+          "label" : "Nou"
+        }
+      ],
+      "name" : "An entry the edit adds",
+      "read" : [
+        {
+          "id" : "r1",
+          "label" : "Loc"
+        }
+      ],
+      "stored" : [
+        {
+          "future" : 1,
+          "id" : "r1",
+          "label" : "Loc"
+        }
+      ],
+      "written" : [
+        {
+          "future" : 1,
+          "id" : "r1",
+          "label" : "Loc"
+        },
+        {
+          "id" : "r3",
+          "label" : "Nou"
+        }
+      ]
+    },
+    {
+      "edited" : [
+        {
+          "id" : "r1",
+          "label" : "Loc schimbat"
+        }
+      ],
+      "name" : "An entry stored with an id never read stays, at the end",
+      "read" : [
+        {
+          "id" : "r1",
+          "label" : "Loc"
+        }
+      ],
+      "stored" : [
+        {
+          "id" : "r1",
+          "label" : "Loc"
+        },
+        {
+          "id" : "r9",
+          "label" : "Alt telefon"
+        }
+      ],
+      "written" : [
+        {
+          "id" : "r1",
+          "label" : "Loc schimbat"
+        },
+        {
+          "id" : "r9",
+          "label" : "Alt telefon"
+        }
+      ]
+    },
+    {
+      "edited" : [
+        {
+          "id" : "r1",
+          "label" : "Loc"
+        },
+        {
+          "id" : "r2",
+          "label" : "Cod nou"
+        }
+      ],
+      "name" : "An entry left as read that is no longer stored stays out",
+      "read" : [
+        {
+          "id" : "r1",
+          "label" : "Loc"
+        },
+        {
+          "id" : "r2",
+          "label" : "Cod"
+        }
+      ],
+      "stored" : [
+        {
+          "id" : "r2",
+          "label" : "Cod"
+        }
+      ],
+      "written" : [
+        {
+          "id" : "r2",
+          "label" : "Cod nou"
+        }
+      ]
+    },
+    {
+      "edited" : [
+        {
+          "id" : "r1",
+          "label" : "Loc nou"
+        },
+        {
+          "id" : "r2",
+          "label" : "Cod"
+        }
+      ],
+      "name" : "An entry changed that is no longer stored stays, as edited",
+      "read" : [
+        {
+          "id" : "r1",
+          "label" : "Loc"
+        },
+        {
+          "id" : "r2",
+          "label" : "Cod"
+        }
+      ],
+      "stored" : [
+        {
+          "id" : "r2",
+          "label" : "Cod"
+        }
+      ],
+      "written" : [
+        {
+          "id" : "r1",
+          "label" : "Loc nou"
+        },
+        {
+          "id" : "r2",
+          "label" : "Cod"
+        }
+      ]
+    },
+    {
+      "edited" : [
+        {
+          "id" : "b",
+          "v" : 2
+        },
+        {
+          "id" : "a",
+          "v" : 3
+        }
+      ],
+      "name" : "Entries reordered by id keep what they kept",
+      "read" : [
+        {
+          "id" : "a",
+          "v" : 1
+        },
+        {
+          "id" : "b",
+          "v" : 2
+        }
+      ],
+      "stored" : [
+        {
+          "id" : "a",
+          "v" : 1,
+          "x" : "A"
+        },
+        {
+          "id" : "b",
+          "v" : 2,
+          "x" : "B"
+        }
+      ],
+      "written" : [
+        {
+          "id" : "b",
+          "v" : 2,
+          "x" : "B"
+        },
+        {
+          "id" : "a",
+          "v" : 3,
+          "x" : "A"
+        }
+      ]
+    },
+    {
+      "edited" : [
+        {
+          "id" : "Abc",
+          "v" : 2
+        }
+      ],
+      "name" : "Ids compared without case",
+      "read" : [
+        {
+          "id" : "abc",
+          "v" : 1
+        }
+      ],
+      "stored" : [
+        {
+          "id" : "ABC",
+          "v" : 1,
+          "x" : true
+        }
+      ],
+      "written" : [
+        {
+          "id" : "Abc",
+          "v" : 2,
+          "x" : true
+        }
+      ]
+    },
+    {
+      "edited" : [
+        {
+          "id" : "other",
+          "key" : "k1",
+          "v" : 2
+        }
+      ],
+      "name" : "An entry known by its key before its id",
+      "read" : [
+        {
+          "id" : "other",
+          "key" : "k1",
+          "v" : 1
+        }
+      ],
+      "stored" : [
+        {
+          "id" : "zzz",
+          "key" : "k1",
+          "v" : 1,
+          "x" : 1
+        }
+      ],
+      "written" : [
+        {
+          "id" : "zzz",
+          "key" : "k1",
+          "v" : 2,
+          "x" : 1
+        }
+      ]
+    },
+    {
+      "edited" : [
+        {
+          "id" : "i1",
+          "key" : 5,
+          "v" : 2
+        }
+      ],
+      "name" : "A key that isn't text: known by its id instead",
+      "read" : [
+        {
+          "id" : "i1",
+          "key" : 5,
+          "v" : 1
+        }
+      ],
+      "stored" : [
+        {
+          "id" : "i1",
+          "key" : 5,
+          "v" : 1,
+          "x" : 1
+        }
+      ],
+      "written" : [
+        {
+          "id" : "i1",
+          "key" : 5,
+          "v" : 2,
+          "x" : 1
+        }
+      ]
+    },
+    {
+      "edited" : [
+        {
+          "v" : 1
+        },
+        {
+          "v" : 5
+        }
+      ],
+      "name" : "Entries without key or id, the list's length kept: paired by place",
+      "read" : [
+        {
+          "v" : 1
+        },
+        {
+          "v" : 2
+        }
+      ],
+      "stored" : [
+        {
+          "v" : 1,
+          "x" : "a"
+        },
+        {
+          "v" : 2,
+          "x" : "b"
+        }
+      ],
+      "written" : [
+        {
+          "v" : 1,
+          "x" : "a"
+        },
+        {
+          "v" : 5,
+          "x" : "b"
+        }
+      ]
+    },
+    {
+      "edited" : [
+        {
+          "v" : 2
+        },
+        {
+          "v" : 7
+        },
+        {
+          "v" : 8
+        }
+      ],
+      "name" : "Entries without key or id, the length changed: an unchanged one pairs, a changed one is new",
+      "read" : [
+        {
+          "v" : 1
+        },
+        {
+          "v" : 2
+        }
+      ],
+      "stored" : [
+        {
+          "v" : 1,
+          "x" : "a"
+        },
+        {
+          "v" : 2,
+          "x" : "b"
+        }
+      ],
+      "written" : [
+        {
+          "v" : 2,
+          "x" : "b"
+        },
+        {
+          "v" : 7
+        },
+        {
+          "v" : 8
+        }
+      ]
+    },
+    {
+      "edited" : [
+        {
+          "v" : 1
+        },
+        {
+          "v" : 9
+        }
+      ],
+      "name" : "Entries without key or id, stored longer than read: nothing paired by place",
+      "read" : [
+        {
+          "v" : 1
+        },
+        {
+          "v" : 2
+        }
+      ],
+      "stored" : [
+        {
+          "v" : 1,
+          "x" : "a"
+        },
+        {
+          "v" : 2,
+          "x" : "b"
+        },
+        {
+          "weird" : true
+        }
+      ],
+      "written" : [
+        {
+          "v" : 1
+        },
+        {
+          "v" : 9
+        }
+      ]
+    },
+    {
+      "edited" : [
+        {
+          "id" : "a"
+        },
+        {
+          "id" : "b",
+          "y" : 2
+        }
+      ],
+      "name" : "Entries an older build couldn't read, without an id, aren't added back by this rule",
+      "read" : [
+        {
+          "id" : "a"
+        },
+        {
+          "id" : "b"
+        }
+      ],
+      "stored" : [
+        {
+          "id" : "a"
+        },
+        {
+          "id" : "b",
+          "x" : 1
+        },
+        {
+          "weird" : true
+        }
+      ],
+      "written" : [
+        {
+          "id" : "a"
+        },
+        {
+          "id" : "b",
+          "x" : 1,
+          "y" : 2
+        }
+      ]
+    },
+    {
+      "edited" : [
+        {
+          "id" : "d",
+          "v" : 2
+        }
+      ],
+      "name" : "Two stored entries with one id: the first is laid over",
+      "read" : [
+        {
+          "id" : "d",
+          "v" : 1
+        }
+      ],
+      "stored" : [
+        {
+          "id" : "d",
+          "v" : 1,
+          "x" : "first"
+        },
+        {
+          "id" : "d",
+          "v" : 1,
+          "x" : "second"
+        }
+      ],
+      "written" : [
+        {
+          "id" : "d",
+          "v" : 2,
+          "x" : "first"
+        }
+      ]
+    },
+    {
+      "edited" : "edited",
+      "name" : "Plain values: the edit wins",
+      "read" : "read",
+      "stored" : "stored",
+      "written" : "edited"
+    },
+    {
+      "edited" : "read",
+      "name" : "Plain values left as read: stored stays",
+      "read" : "read",
+      "stored" : "stored",
+      "written" : "stored"
+    },
+    {
+      "edited" : {
+        "a" : 2
+      },
+      "name" : "A list read as an object: the edit as it is",
+      "read" : {
+        "a" : 1
+      },
+      "stored" : [
+        1,
+        2
+      ],
+      "written" : {
+        "a" : 2
+      }
+    },
+    {
+      "edited" : [
+        30,
+        7,
+        1
+      ],
+      "name" : "Lists of numbers",
+      "read" : [
+        30,
+        7,
+        0
+      ],
+      "stored" : [
+        30,
+        7,
+        0
+      ],
+      "written" : [
+        30,
+        7,
+        1
+      ]
+    },
+    {
+      "edited" : {
+        "sections" : [
+          {
+            "fields" : [
+              {
+                "key" : "f1",
+                "label" : "Nou",
+                "type" : "text"
+              },
+              {
+                "key" : "f2",
+                "type" : "number"
+              }
+            ],
+            "key" : "s1"
+          }
+        ]
+      },
+      "name" : "Deep: an object in a list in an object in a list",
+      "read" : {
+        "sections" : [
+          {
+            "fields" : [
+              {
+                "key" : "f1",
+                "type" : "text"
+              },
+              {
+                "key" : "f2",
+                "type" : "number"
+              }
+            ],
+            "key" : "s1"
+          }
+        ]
+      },
+      "stored" : {
+        "sections" : [
+          {
+            "fields" : [
+              {
+                "future" : {
+                  "a" : [
+                    {
+                      "b" : 1,
+                      "id" : "x"
+                    }
+                  ]
+                },
+                "key" : "f1",
+                "type" : "text"
+              },
+              {
+                "key" : "f2",
+                "type" : "number"
+              }
+            ],
+            "key" : "s1"
+          }
+        ]
+      },
+      "written" : {
+        "sections" : [
+          {
+            "fields" : [
+              {
+                "future" : {
+                  "a" : [
+                    {
+                      "b" : 1,
+                      "id" : "x"
+                    }
+                  ]
+                },
+                "key" : "f1",
+                "label" : "Nou",
+                "type" : "text"
+              },
+              {
+                "key" : "f2",
+                "type" : "number"
+              }
+            ],
+            "key" : "s1"
+          }
+        ]
+      }
+    },
+    {
+      "edited" : {
+        "fields" : [
+          {
+            "key" : "f1",
+            "type" : "date"
+          }
+        ]
+      },
+      "name" : "A field whose type changed inside a list keeps nothing of the old one",
+      "read" : {
+        "fields" : [
+          {
+            "key" : "f1",
+            "type" : "text"
+          }
+        ]
+      },
+      "stored" : {
+        "fields" : [
+          {
+            "future" : 1,
+            "key" : "f1",
+            "type" : "lunar"
+          }
+        ]
+      },
+      "written" : {
+        "fields" : [
+          {
+            "key" : "f1",
+            "type" : "date"
+          }
+        ]
+      }
+    }
+  ],
+  "rule" : "JSONValue.laying(_:over:readAs:), the one rule a stored JSON value is written again by",
+  "shape" : "stored: as kept; read: what this build made of it; edited: the edit. written: what goes back. Objects compare without their keys' order.",
+  "source" : "ios/DosarCuSina/Models/Values/KeptJSON.swift",
+  "writtenBy" : "ios/DosarCuSinaTests/ValueVectorsTests.swift"
+}

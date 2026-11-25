@@ -1,0 +1,217 @@
+{
+  "cases" : [
+    {
+      "amountString" : "175.50",
+      "currency" : "RON",
+      "money" : {
+        "amount" : "175.5",
+        "currency" : "RON",
+        "written" : "175.5"
+      }
+    },
+    {
+      "amountString" : "175.5",
+      "currency" : "ron",
+      "money" : {
+        "amount" : "175.5",
+        "currency" : "RON",
+        "written" : "175.5"
+      }
+    },
+    {
+      "amountString" : "0",
+      "currency" : "EUR",
+      "money" : {
+        "amount" : "0",
+        "currency" : "EUR",
+        "written" : "0"
+      }
+    },
+    {
+      "amountString" : "12",
+      "currency" : "usd",
+      "money" : {
+        "amount" : "12",
+        "currency" : "USD",
+        "written" : "12"
+      }
+    },
+    {
+      "amountString" : "0.125",
+      "currency" : "RON",
+      "money" : {
+        "amount" : "0.125",
+        "currency" : "RON",
+        "written" : "0.12"
+      }
+    },
+    {
+      "amountString" : "0.135",
+      "currency" : "RON",
+      "money" : {
+        "amount" : "0.135",
+        "currency" : "RON",
+        "written" : "0.14"
+      }
+    },
+    {
+      "amountString" : "0.005",
+      "currency" : "RON",
+      "money" : {
+        "amount" : "0.005",
+        "currency" : "RON",
+        "written" : "0"
+      }
+    },
+    {
+      "amountString" : "-0.005",
+      "currency" : "RON",
+      "money" : {
+        "amount" : "-0.005",
+        "currency" : "RON",
+        "written" : "0"
+      }
+    },
+    {
+      "amountString" : "-12.345",
+      "currency" : "RON",
+      "money" : {
+        "amount" : "-12.345",
+        "currency" : "RON",
+        "written" : "-12.34"
+      }
+    },
+    {
+      "amountString" : "-12.355",
+      "currency" : "RON",
+      "money" : {
+        "amount" : "-12.355",
+        "currency" : "RON",
+        "written" : "-12.36"
+      }
+    },
+    {
+      "amountString" : "2.675",
+      "currency" : "RON",
+      "money" : {
+        "amount" : "2.675",
+        "currency" : "RON",
+        "written" : "2.68"
+      }
+    },
+    {
+      "amountString" : "1250.999",
+      "currency" : "RON",
+      "money" : {
+        "amount" : "1250.999",
+        "currency" : "RON",
+        "written" : "1251"
+      }
+    },
+    {
+      "amountString" : "-0",
+      "currency" : "RON",
+      "money" : {
+        "amount" : "0",
+        "currency" : "RON",
+        "written" : "0"
+      }
+    },
+    {
+      "amountString" : "12345678901234567890123.456",
+      "currency" : "RON",
+      "money" : {
+        "amount" : "12345678901234567890123.456",
+        "currency" : "RON",
+        "written" : "12345678901234567890123.46"
+      }
+    },
+    {
+      "amountString" : "1.250,50",
+      "currency" : "RON",
+      "money" : null
+    },
+    {
+      "amountString" : "1e3",
+      "currency" : "RON",
+      "money" : null
+    },
+    {
+      "amountString" : "",
+      "currency" : "RON",
+      "money" : null
+    },
+    {
+      "amountString" : " 12.50 ",
+      "currency" : "RON",
+      "money" : {
+        "amount" : "12.5",
+        "currency" : "RON",
+        "written" : "12.5"
+      }
+    },
+    {
+      "amountString" : "12.50",
+      "currency" : "Ron",
+      "money" : {
+        "amount" : "12.5",
+        "currency" : "RON",
+        "written" : "12.5"
+      }
+    },
+    {
+      "amountString" : "12.50",
+      "currency" : "",
+      "money" : {
+        "amount" : "12.5",
+        "currency" : "",
+        "written" : "12.5"
+      }
+    },
+    {
+      "amountString" : "00012.3",
+      "currency" : "RON",
+      "money" : {
+        "amount" : "12.3",
+        "currency" : "RON",
+        "written" : "12.3"
+      }
+    },
+    {
+      "json" : "{\"amount\":\"175.50\",\"currency\":\"RON\"}",
+      "written" : "{\"amount\":\"175.5\",\"currency\":\"RON\"}"
+    },
+    {
+      "json" : "{\"amount\":\"12\",\"currency\":\"eur\"}",
+      "written" : "{\"amount\":\"12\",\"currency\":\"EUR\"}"
+    },
+    {
+      "json" : "{\"amount\":12.5,\"currency\":\"RON\"}",
+      "written" : null
+    },
+    {
+      "json" : "{\"amount\":\"1.250,50\",\"currency\":\"RON\"}",
+      "written" : null
+    },
+    {
+      "json" : "{\"currency\":\"RON\"}",
+      "written" : null
+    },
+    {
+      "json" : "{\"amount\":\"12\"}",
+      "written" : null
+    },
+    {
+      "json" : "{\"amount\":\"0.125\",\"currency\":\"RON\",\"future\":1}",
+      "written" : "{\"amount\":\"0.12\",\"currency\":\"RON\"}"
+    },
+    {
+      "json" : "{\"amount\":\"-3\",\"currency\":\"RON\"}",
+      "written" : "{\"amount\":\"-3\",\"currency\":\"RON\"}"
+    }
+  ],
+  "rule" : "Money's stored value: Money(amountString:currency:), amountString, and its JSON",
+  "shape" : "amountString, currency: as stored. money: the amount (as Foundation's Decimal writes it), the currency (in capitals) and the amount written again (rounded to two decimals, half to even); null when refused. Or json: a stored money object, written: as machine JSON writes it again, or null when it can't be read.",
+  "source" : "ios/DosarCuSina/Models/Values/Money.swift",
+  "writtenBy" : "ios/DosarCuSinaTests/ValueVectorsTests.swift"
+}

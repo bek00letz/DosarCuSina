@@ -1,0 +1,203 @@
+{
+  "cases" : [
+    {
+      "input" : "0",
+      "kind" : "int",
+      "written" : "0"
+    },
+    {
+      "input" : "-0",
+      "kind" : "int",
+      "written" : "0"
+    },
+    {
+      "input" : "1",
+      "kind" : "int",
+      "written" : "1"
+    },
+    {
+      "input" : "1.0",
+      "kind" : "int",
+      "written" : "1"
+    },
+    {
+      "input" : "-1.0",
+      "kind" : "int",
+      "written" : "-1"
+    },
+    {
+      "input" : "2.0",
+      "kind" : "int",
+      "written" : "2"
+    },
+    {
+      "input" : "1.5",
+      "kind" : "number",
+      "written" : "1.5"
+    },
+    {
+      "input" : "1e2",
+      "kind" : "int",
+      "written" : "100"
+    },
+    {
+      "input" : "1E2",
+      "kind" : "int",
+      "written" : "100"
+    },
+    {
+      "input" : "1e+2",
+      "kind" : "int",
+      "written" : "100"
+    },
+    {
+      "input" : "1.25e+2",
+      "kind" : "int",
+      "written" : "125"
+    },
+    {
+      "input" : "1e-2",
+      "kind" : "number",
+      "written" : "0.01"
+    },
+    {
+      "input" : "100",
+      "kind" : "int",
+      "written" : "100"
+    },
+    {
+      "input" : "0.1",
+      "kind" : "number",
+      "written" : "0.1"
+    },
+    {
+      "input" : "0.30000000000000004",
+      "kind" : "number",
+      "written" : "0.30000000000000004"
+    },
+    {
+      "input" : "3.14159",
+      "kind" : "number",
+      "written" : "3.14159"
+    },
+    {
+      "input" : "123456.789",
+      "kind" : "number",
+      "written" : "123456.789"
+    },
+    {
+      "input" : "1e-07",
+      "kind" : "number",
+      "written" : "1e-07"
+    },
+    {
+      "input" : "1e+16",
+      "kind" : "int",
+      "written" : "10000000000000000"
+    },
+    {
+      "input" : "1e+15",
+      "kind" : "int",
+      "written" : "1000000000000000"
+    },
+    {
+      "input" : "1e21",
+      "kind" : "number",
+      "written" : "1e+21"
+    },
+    {
+      "input" : "1.5e+300",
+      "kind" : "number",
+      "written" : "1.5e+300"
+    },
+    {
+      "input" : "12345678901234567890",
+      "kind" : "number",
+      "written" : "1.2345678901234567e+19"
+    },
+    {
+      "input" : "9223372036854775807",
+      "kind" : "int",
+      "written" : "9223372036854775807"
+    },
+    {
+      "input" : "9223372036854775808",
+      "kind" : "number",
+      "written" : "9.223372036854776e+18"
+    },
+    {
+      "input" : "-9223372036854775808",
+      "kind" : "int",
+      "written" : "-9223372036854775808"
+    },
+    {
+      "input" : "-9223372036854775810",
+      "kind" : "number",
+      "written" : "-9.223372036854776e+18"
+    },
+    {
+      "input" : "123456789012345678901234567890",
+      "kind" : "number",
+      "written" : "1.2345678901234568e+29"
+    },
+    {
+      "input" : "1.7976931348623157e308",
+      "kind" : "number",
+      "written" : "1.7976931348623157e+308"
+    },
+    {
+      "input" : "5e-324",
+      "kind" : "number",
+      "written" : "5e-324"
+    },
+    {
+      "input" : "1e400",
+      "kind" : null,
+      "written" : null
+    },
+    {
+      "input" : "1e-400",
+      "kind" : "int",
+      "written" : "0"
+    },
+    {
+      "input" : "0.000001",
+      "kind" : "number",
+      "written" : "1e-06"
+    },
+    {
+      "input" : "0.0000001",
+      "kind" : "number",
+      "written" : "1e-07"
+    },
+    {
+      "input" : "1234567890123456.5",
+      "kind" : "number",
+      "written" : "1234567890123456.5"
+    },
+    {
+      "input" : "true",
+      "kind" : "bool",
+      "written" : "true"
+    },
+    {
+      "input" : "false",
+      "kind" : "bool",
+      "written" : "false"
+    },
+    {
+      "input" : "null",
+      "kind" : "null",
+      "written" : "null"
+    },
+    {
+      "input" : "\"1\"",
+      "kind" : "string",
+      "written" : "\"1\""
+    }
+  ],
+  "rule" : "How a JSON number is read into JSONValue (a whole number, else a Double) and written again",
+  "shape" : "input: JSON text. kind: what JSONValue reads it as (int, number, bool, null, string), or null when it can't. written: what machine JSON writes for it then. Two numbers are the same value when they read as the same kind and value.",
+  "source" : "ios/DosarCuSina/Services/AI/AIProviderAdapters.swift (JSONValue), ios/Shared/MachineText.swift",
+  "writtenBy" : "ios/DosarCuSinaTests/ValueVectorsTests.swift"
+}

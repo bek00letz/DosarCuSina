@@ -1,0 +1,460 @@
+{
+  "cases" : [
+    {
+      "day" : [
+        2026,
+        11,
+        25
+      ],
+      "input" : "2026-11-25",
+      "isOnCalendar" : true,
+      "onCalendar" : "2026-11-25",
+      "storedDay" : "2026-11-25",
+      "written" : "2026-11-25"
+    },
+    {
+      "day" : [
+        2026,
+        2,
+        28
+      ],
+      "input" : "2026-02-28",
+      "isOnCalendar" : true,
+      "onCalendar" : "2026-02-28",
+      "storedDay" : "2026-02-28",
+      "written" : "2026-02-28"
+    },
+    {
+      "day" : [
+        2026,
+        2,
+        29
+      ],
+      "input" : "2026-02-29",
+      "isOnCalendar" : false,
+      "onCalendar" : "2026-02-28",
+      "storedDay" : "2026-02-29",
+      "written" : "2026-02-29"
+    },
+    {
+      "day" : [
+        2024,
+        2,
+        29
+      ],
+      "input" : "2024-02-29",
+      "isOnCalendar" : true,
+      "onCalendar" : "2024-02-29",
+      "storedDay" : "2024-02-29",
+      "written" : "2024-02-29"
+    },
+    {
+      "day" : [
+        1999,
+        2,
+        29
+      ],
+      "input" : "1999-02-29",
+      "isOnCalendar" : false,
+      "onCalendar" : "1999-02-28",
+      "storedDay" : "1999-02-29",
+      "written" : "1999-02-29"
+    },
+    {
+      "day" : [
+        2026,
+        2,
+        30
+      ],
+      "input" : "2026-02-30",
+      "isOnCalendar" : false,
+      "onCalendar" : "2026-02-28",
+      "storedDay" : "2026-02-30",
+      "written" : "2026-02-30"
+    },
+    {
+      "day" : [
+        2026,
+        2,
+        31
+      ],
+      "input" : "2026-02-31",
+      "isOnCalendar" : false,
+      "onCalendar" : "2026-02-28",
+      "storedDay" : "2026-02-31",
+      "written" : "2026-02-31"
+    },
+    {
+      "day" : [
+        2026,
+        4,
+        31
+      ],
+      "input" : "2026-04-31",
+      "isOnCalendar" : false,
+      "onCalendar" : "2026-04-30",
+      "storedDay" : "2026-04-31",
+      "written" : "2026-04-31"
+    },
+    {
+      "day" : [
+        2026,
+        6,
+        31
+      ],
+      "input" : "2026-06-31",
+      "isOnCalendar" : false,
+      "onCalendar" : "2026-06-30",
+      "storedDay" : "2026-06-31",
+      "written" : "2026-06-31"
+    },
+    {
+      "day" : [
+        2567,
+        2,
+        29
+      ],
+      "input" : "2567-02-29",
+      "isOnCalendar" : false,
+      "onCalendar" : "2567-02-28",
+      "storedDay" : "2567-02-29",
+      "written" : "2567-02-29"
+    },
+    {
+      "day" : [
+        2026,
+        1,
+        5
+      ],
+      "input" : "2026-1-5",
+      "isOnCalendar" : true,
+      "onCalendar" : "2026-01-05",
+      "storedDay" : null,
+      "written" : "2026-01-05"
+    },
+    {
+      "day" : [
+        2026,
+        1,
+        5
+      ],
+      "input" : "2026-01-5",
+      "isOnCalendar" : true,
+      "onCalendar" : "2026-01-05",
+      "storedDay" : null,
+      "written" : "2026-01-05"
+    },
+    {
+      "day" : [
+        1,
+        1,
+        1
+      ],
+      "input" : "0001-01-01",
+      "isOnCalendar" : true,
+      "onCalendar" : "0001-01-01",
+      "storedDay" : "0001-01-01",
+      "written" : "0001-01-01"
+    },
+    {
+      "day" : [
+        0,
+        1,
+        1
+      ],
+      "input" : "0000-01-01",
+      "isOnCalendar" : true,
+      "onCalendar" : "0000-01-01",
+      "storedDay" : "0000-01-01",
+      "written" : "0000-01-01"
+    },
+    {
+      "day" : [
+        9999,
+        12,
+        31
+      ],
+      "input" : "9999-12-31",
+      "isOnCalendar" : true,
+      "onCalendar" : "9999-12-31",
+      "storedDay" : "9999-12-31",
+      "written" : "9999-12-31"
+    },
+    {
+      "day" : [
+        999999,
+        1,
+        1
+      ],
+      "input" : "999999-1-1",
+      "isOnCalendar" : true,
+      "onCalendar" : "999999-01-01",
+      "storedDay" : "999999-01-01",
+      "written" : "999999-01-01"
+    },
+    {
+      "day" : null,
+      "input" : "+2026-01-01",
+      "isOnCalendar" : null,
+      "onCalendar" : null,
+      "storedDay" : null,
+      "written" : null
+    },
+    {
+      "day" : [
+        2026,
+        1,
+        1
+      ],
+      "input" : "2026-+1-+1",
+      "isOnCalendar" : true,
+      "onCalendar" : "2026-01-01",
+      "storedDay" : "2026-01-01",
+      "written" : "2026-01-01"
+    },
+    {
+      "day" : null,
+      "input" : "-2026-01-01",
+      "isOnCalendar" : null,
+      "onCalendar" : null,
+      "storedDay" : null,
+      "written" : null
+    },
+    {
+      "day" : [
+        202,
+        1,
+        1
+      ],
+      "input" : "-202-01-01",
+      "isOnCalendar" : true,
+      "onCalendar" : "0202-01-01",
+      "storedDay" : "0202-01-01",
+      "written" : "0202-01-01"
+    },
+    {
+      "day" : [
+        2026,
+        11,
+        2
+      ],
+      "input" : "2026--11-25",
+      "isOnCalendar" : true,
+      "onCalendar" : "2026-11-02",
+      "storedDay" : null,
+      "written" : "2026-11-02"
+    },
+    {
+      "day" : [
+        2026,
+        11,
+        25
+      ],
+      "input" : "2026-11-25T08:00:00Z",
+      "isOnCalendar" : true,
+      "onCalendar" : "2026-11-25",
+      "storedDay" : null,
+      "written" : "2026-11-25"
+    },
+    {
+      "day" : [
+        2026,
+        11,
+        25
+      ],
+      "input" : "2026-11-25T08:00:00+02:00",
+      "isOnCalendar" : true,
+      "onCalendar" : "2026-11-25",
+      "storedDay" : null,
+      "written" : "2026-11-25"
+    },
+    {
+      "day" : [
+        2026,
+        11,
+        25
+      ],
+      "input" : "2026-11-25 and more",
+      "isOnCalendar" : true,
+      "onCalendar" : "2026-11-25",
+      "storedDay" : null,
+      "written" : "2026-11-25"
+    },
+    {
+      "day" : [
+        2026,
+        12,
+        31
+      ],
+      "input" : "2026-12-31x",
+      "isOnCalendar" : true,
+      "onCalendar" : "2026-12-31",
+      "storedDay" : null,
+      "written" : "2026-12-31"
+    },
+    {
+      "day" : [
+        2026,
+        11,
+        2
+      ],
+      "input" : "2026-11-2",
+      "isOnCalendar" : true,
+      "onCalendar" : "2026-11-02",
+      "storedDay" : null,
+      "written" : "2026-11-02"
+    },
+    {
+      "day" : null,
+      "input" : "2026/11/25",
+      "isOnCalendar" : null,
+      "onCalendar" : null,
+      "storedDay" : null,
+      "written" : null
+    },
+    {
+      "day" : null,
+      "input" : "20261125",
+      "isOnCalendar" : null,
+      "onCalendar" : null,
+      "storedDay" : null,
+      "written" : null
+    },
+    {
+      "day" : null,
+      "input" : "2026-13-01",
+      "isOnCalendar" : null,
+      "onCalendar" : null,
+      "storedDay" : null,
+      "written" : null
+    },
+    {
+      "day" : null,
+      "input" : "2026-00-10",
+      "isOnCalendar" : null,
+      "onCalendar" : null,
+      "storedDay" : null,
+      "written" : null
+    },
+    {
+      "day" : null,
+      "input" : "2026-12-00",
+      "isOnCalendar" : null,
+      "onCalendar" : null,
+      "storedDay" : null,
+      "written" : null
+    },
+    {
+      "day" : null,
+      "input" : "2026-12-32",
+      "isOnCalendar" : null,
+      "onCalendar" : null,
+      "storedDay" : null,
+      "written" : null
+    },
+    {
+      "day" : null,
+      "input" : " 2026-11-25",
+      "isOnCalendar" : null,
+      "onCalendar" : null,
+      "storedDay" : null,
+      "written" : null
+    },
+    {
+      "day" : [
+        2026,
+        11,
+        25
+      ],
+      "input" : "2026-11-25 ",
+      "isOnCalendar" : true,
+      "onCalendar" : "2026-11-25",
+      "storedDay" : null,
+      "written" : "2026-11-25"
+    },
+    {
+      "day" : null,
+      "input" : "",
+      "isOnCalendar" : null,
+      "onCalendar" : null,
+      "storedDay" : null,
+      "written" : null
+    },
+    {
+      "day" : null,
+      "input" : "2026",
+      "isOnCalendar" : null,
+      "onCalendar" : null,
+      "storedDay" : null,
+      "written" : null
+    },
+    {
+      "day" : null,
+      "input" : "2026-11",
+      "isOnCalendar" : null,
+      "onCalendar" : null,
+      "storedDay" : null,
+      "written" : null
+    },
+    {
+      "day" : [
+        2026,
+        11,
+        25
+      ],
+      "input" : "2026-11-25-01",
+      "isOnCalendar" : true,
+      "onCalendar" : "2026-11-25",
+      "storedDay" : null,
+      "written" : "2026-11-25"
+    },
+    {
+      "day" : null,
+      "input" : "٢٠٢٦-١١-٢٥",
+      "isOnCalendar" : null,
+      "onCalendar" : null,
+      "storedDay" : null,
+      "written" : null
+    },
+    {
+      "day" : null,
+      "input" : "２０２６-11-25",
+      "isOnCalendar" : null,
+      "onCalendar" : null,
+      "storedDay" : null,
+      "written" : null
+    },
+    {
+      "day" : null,
+      "input" : "2026-11-2́5",
+      "isOnCalendar" : null,
+      "onCalendar" : null,
+      "storedDay" : null,
+      "written" : null
+    },
+    {
+      "day" : null,
+      "input" : "2026-11-́25",
+      "isOnCalendar" : null,
+      "onCalendar" : null,
+      "storedDay" : null,
+      "written" : null
+    },
+    {
+      "day" : [
+        2026,
+        7,
+        4
+      ],
+      "input" : "2026-07-04\n",
+      "isOnCalendar" : true,
+      "onCalendar" : "2026-07-04",
+      "storedDay" : null,
+      "written" : "2026-07-04"
+    }
+  ],
+  "rule" : "CalendarDay(isoString:), isoString, isOnCalendar, onCalendar; StoredDay.day(_:)",
+  "shape" : "input: text. day: [year, month, day] as read (numbers kept as written), or null when refused. written: its ISO text. isOnCalendar, onCalendar: whether the calendar has it, and the day it has (its month's last day for one past it). storedDay: what the database reads from the same text (ten characters only).",
+  "source" : "ios/Shared/CalendarDay.swift, ios/DosarCuSina/Models/Values/StoredDay.swift",
+  "writtenBy" : "ios/DosarCuSinaTests/ValueVectorsTests.swift"
+}

@@ -1,0 +1,111 @@
+{
+  "cases" : [
+    {
+      "input" : "03-31",
+      "monthDay" : "03-31"
+    },
+    {
+      "input" : "3-1",
+      "monthDay" : "03-01"
+    },
+    {
+      "input" : "12-31",
+      "monthDay" : "12-31"
+    },
+    {
+      "input" : "13-01",
+      "monthDay" : null
+    },
+    {
+      "input" : "02-30",
+      "monthDay" : "02-30"
+    },
+    {
+      "input" : "02-29",
+      "monthDay" : "02-29"
+    },
+    {
+      "input" : "00-10",
+      "monthDay" : null
+    },
+    {
+      "input" : "01-00",
+      "monthDay" : null
+    },
+    {
+      "input" : "01-32",
+      "monthDay" : null
+    },
+    {
+      "input" : "-03-31",
+      "monthDay" : "03-31"
+    },
+    {
+      "input" : "03-31-",
+      "monthDay" : "03-31"
+    },
+    {
+      "input" : "0331",
+      "monthDay" : null
+    },
+    {
+      "input" : "03-31-2026",
+      "monthDay" : null
+    },
+    {
+      "input" : "",
+      "monthDay" : null
+    },
+    {
+      "input" : "+3-+1",
+      "monthDay" : "03-01"
+    },
+    {
+      "input" : " 03-31",
+      "monthDay" : null
+    },
+    {
+      "input" : "03--31",
+      "monthDay" : "03-31"
+    },
+    {
+      "day" : "2027-02-28",
+      "monthDay" : "02-29",
+      "year" : 2027
+    },
+    {
+      "day" : "2028-02-29",
+      "monthDay" : "02-29",
+      "year" : 2028
+    },
+    {
+      "day" : "1900-02-28",
+      "monthDay" : "02-29",
+      "year" : 1900
+    },
+    {
+      "day" : "2026-12-31",
+      "monthDay" : "12-31",
+      "year" : 2026
+    },
+    {
+      "day" : "2026-04-30",
+      "monthDay" : "04-31",
+      "year" : 2026
+    },
+    {
+      "day" : "2024-02-29",
+      "monthDay" : "02-30",
+      "year" : 2024
+    },
+    {
+      "day" : "2026-01-01",
+      "monthDay" : "01-01",
+      "year" : 2026
+    }
+  ],
+  "rule" : "MonthDay(isoString:), isoString, day(inYear:)",
+  "shape" : "input: text, monthDay: its MM-dd text or null when refused; or monthDay, year: the day it is that year (clamped to the month's last day).",
+  "source" : "ios/Shared/CalendarDay.swift",
+  "writtenBy" : "ios/DosarCuSinaTests/ValueVectorsTests.swift"
+}

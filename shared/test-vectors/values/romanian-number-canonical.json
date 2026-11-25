@@ -1,0 +1,124 @@
+{
+  "cases" : [
+    {
+      "input" : "1250.5",
+      "value" : "1250.5"
+    },
+    {
+      "input" : "-3",
+      "value" : "-3"
+    },
+    {
+      "input" : "45724",
+      "value" : "45724"
+    },
+    {
+      "input" : "0",
+      "value" : "0"
+    },
+    {
+      "input" : "-0",
+      "value" : "0"
+    },
+    {
+      "input" : "-0.0",
+      "value" : "0"
+    },
+    {
+      "input" : "0.00",
+      "value" : "0"
+    },
+    {
+      "input" : "175.50",
+      "value" : "175.5"
+    },
+    {
+      "input" : "1.250,5",
+      "value" : null
+    },
+    {
+      "input" : "45,724",
+      "value" : null
+    },
+    {
+      "input" : "1e3",
+      "value" : null
+    },
+    {
+      "input" : "+5",
+      "value" : null
+    },
+    {
+      "input" : " 12 ",
+      "value" : "12"
+    },
+    {
+      "input" : "12\n",
+      "value" : "12"
+    },
+    {
+      "input" : "\t12",
+      "value" : "12"
+    },
+    {
+      "input" : ".5",
+      "value" : null
+    },
+    {
+      "input" : "5.",
+      "value" : null
+    },
+    {
+      "input" : "1.2.3",
+      "value" : null
+    },
+    {
+      "input" : "--1",
+      "value" : null
+    },
+    {
+      "input" : "00012.3400",
+      "value" : "12.34"
+    },
+    {
+      "input" : "123456789012345678901234567890.123456789",
+      "value" : "123456789012345678901234567890.123456789"
+    },
+    {
+      "input" : "12345678901234567890123456789012345678901234567890",
+      "value" : "12345678901234567890123456789012345678900000000000"
+    },
+    {
+      "input" : "0.0000000000000000000000000000000000000001",
+      "value" : "0.0000000000000000000000000000000000000001"
+    },
+    {
+      "input" : "١٢",
+      "value" : null
+    },
+    {
+      "input" : "１２",
+      "value" : null
+    },
+    {
+      "input" : "",
+      "value" : null
+    },
+    {
+      "input" : "abc",
+      "value" : null
+    },
+    {
+      "input" : "12a",
+      "value" : null
+    },
+    {
+      "input" : "1 000",
+      "value" : null
+    }
+  ],
+  "rule" : "RomanianNumber.canonical(_:), the machine form archives and stored JSON use",
+  "shape" : "input: text. value: the number as Foundation's Decimal writes it, or null when refused.",
+  "source" : "ios/DosarCuSina/Models/Values/RomanianNumber.swift",
+  "writtenBy" : "ios/DosarCuSinaTests/ValueVectorsTests.swift"
+}

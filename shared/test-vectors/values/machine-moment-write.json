@@ -1,0 +1,106 @@
+{
+  "cases" : [
+    {
+      "moment" : {
+        "micros" : 0,
+        "seconds" : 1793606400
+      },
+      "written" : "2026-11-02T08:00:00Z"
+    },
+    {
+      "moment" : {
+        "micros" : 750000,
+        "seconds" : 1793606400
+      },
+      "written" : "2026-11-02T08:00:00Z"
+    },
+    {
+      "moment" : {
+        "micros" : 999000,
+        "seconds" : 1793606400
+      },
+      "written" : "2026-11-02T08:00:00Z"
+    },
+    {
+      "moment" : {
+        "micros" : 999999,
+        "seconds" : 1793606399
+      },
+      "written" : "2026-11-02T07:59:59Z"
+    },
+    {
+      "moment" : {
+        "micros" : 0,
+        "seconds" : 0
+      },
+      "written" : "1970-01-01T00:00:00Z"
+    },
+    {
+      "moment" : {
+        "micros" : 500000,
+        "seconds" : -1
+      },
+      "written" : "1969-12-31T23:59:59Z"
+    },
+    {
+      "moment" : {
+        "micros" : 0,
+        "seconds" : -1
+      },
+      "written" : "1969-12-31T23:59:59Z"
+    },
+    {
+      "moment" : {
+        "micros" : 999999,
+        "seconds" : -1
+      },
+      "written" : "1969-12-31T23:59:59Z"
+    },
+    {
+      "moment" : {
+        "micros" : 0,
+        "seconds" : 9999999999
+      },
+      "written" : "2286-11-20T17:46:39Z"
+    },
+    {
+      "moment" : {
+        "micros" : 0,
+        "seconds" : -9999999999
+      },
+      "written" : "1653-02-10T06:13:21Z"
+    },
+    {
+      "moment" : {
+        "micros" : 0,
+        "seconds" : 253402300799
+      },
+      "written" : "9999-12-31T23:59:59Z"
+    },
+    {
+      "moment" : {
+        "micros" : 500000,
+        "seconds" : 253402300799
+      },
+      "written" : "9999-12-31T23:59:59Z"
+    },
+    {
+      "moment" : {
+        "micros" : 0,
+        "seconds" : -11644473600
+      },
+      "written" : "1601-01-01T00:00:00Z"
+    },
+    {
+      "moment" : {
+        "micros" : 0,
+        "seconds" : 1774746000
+      },
+      "written" : "2026-03-29T01:00:00Z"
+    }
+  ],
+  "rule" : "How MachineText.jsonEncoder() writes a moment: ISO 8601 in UTC, to the second",
+  "shape" : "moment: seconds since 1970 (rounded down) and the microseconds after them. written: the text machine JSON writes for it.",
+  "source" : "ios/Shared/MachineText.swift",
+  "writtenBy" : "ios/DosarCuSinaTests/ValueVectorsTests.swift"
+}

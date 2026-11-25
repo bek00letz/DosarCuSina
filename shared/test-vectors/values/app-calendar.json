@@ -1,0 +1,243 @@
+{
+  "cases" : [
+    {
+      "firstWeekday" : 2,
+      "followsThePhonesTimeZone" : true,
+      "identifier" : "gregorian",
+      "locale" : "ro_RO",
+      "minimumDaysInFirstWeek" : 1
+    },
+    {
+      "week" : "2026-01-01",
+      "weekOfYear" : 1,
+      "weekday" : 5,
+      "yearForWeekOfYear" : 2026
+    },
+    {
+      "week" : "2026-01-04",
+      "weekOfYear" : 1,
+      "weekday" : 1,
+      "yearForWeekOfYear" : 2026
+    },
+    {
+      "week" : "2026-01-05",
+      "weekOfYear" : 2,
+      "weekday" : 2,
+      "yearForWeekOfYear" : 2026
+    },
+    {
+      "week" : "2026-11-25",
+      "weekOfYear" : 48,
+      "weekday" : 4,
+      "yearForWeekOfYear" : 2026
+    },
+    {
+      "week" : "2026-12-31",
+      "weekOfYear" : 1,
+      "weekday" : 5,
+      "yearForWeekOfYear" : 2027
+    },
+    {
+      "week" : "2027-01-01",
+      "weekOfYear" : 1,
+      "weekday" : 6,
+      "yearForWeekOfYear" : 2027
+    },
+    {
+      "week" : "2027-01-03",
+      "weekOfYear" : 1,
+      "weekday" : 1,
+      "yearForWeekOfYear" : 2027
+    },
+    {
+      "week" : "2027-01-04",
+      "weekOfYear" : 2,
+      "weekday" : 2,
+      "yearForWeekOfYear" : 2027
+    },
+    {
+      "week" : "2024-12-30",
+      "weekOfYear" : 1,
+      "weekday" : 2,
+      "yearForWeekOfYear" : 2025
+    },
+    {
+      "week" : "2021-01-03",
+      "weekOfYear" : 1,
+      "weekday" : 1,
+      "yearForWeekOfYear" : 2021
+    },
+    {
+      "day" : "2026-11-02",
+      "moment" : 1793606400,
+      "zone" : "UTC"
+    },
+    {
+      "day" : "2026-11-02",
+      "moment" : 1793606400,
+      "zone" : "Pacific/Kiritimati"
+    },
+    {
+      "day" : "2026-11-01",
+      "moment" : 1793606400,
+      "zone" : "Pacific/Pago_Pago"
+    },
+    {
+      "day" : "2026-11-26",
+      "moment" : 1795651199,
+      "zone" : "Europe/Bucharest"
+    },
+    {
+      "day" : "2026-11-26",
+      "moment" : 1795644000,
+      "zone" : "Europe/Bucharest"
+    },
+    {
+      "day" : "2026-11-25",
+      "moment" : 1795643999,
+      "zone" : "Europe/Bucharest"
+    },
+    {
+      "day" : "2011-12-31",
+      "moment" : 1325239200,
+      "zone" : "Pacific/Apia"
+    },
+    {
+      "day" : "2018-11-04",
+      "moment" : 1541300400,
+      "zone" : "America/Sao_Paulo"
+    },
+    {
+      "day" : "1969-12-31",
+      "moment" : 0,
+      "zone" : "America/New_York"
+    },
+    {
+      "day" : "1969-12-31",
+      "moment" : -1,
+      "zone" : "UTC"
+    },
+    {
+      "day" : "2026-03-29",
+      "moment" : 1774746000,
+      "zone" : "Europe/Bucharest"
+    },
+    {
+      "day" : "2026-11-02",
+      "moment" : 1793606400,
+      "zone" : "Australia/Lord_Howe"
+    },
+    {
+      "minute" : 0,
+      "moment" : 1795557600,
+      "start" : "2026-11-25",
+      "zone" : "Europe/Bucharest"
+    },
+    {
+      "minute" : 540,
+      "moment" : 1795590000,
+      "start" : "2026-11-25",
+      "zone" : "Europe/Bucharest"
+    },
+    {
+      "minute" : 210,
+      "moment" : 1774746000,
+      "start" : "2026-03-29",
+      "zone" : "Europe/Bucharest"
+    },
+    {
+      "minute" : 180,
+      "moment" : 1774746000,
+      "start" : "2026-03-29",
+      "zone" : "Europe/Bucharest"
+    },
+    {
+      "minute" : 240,
+      "moment" : 1774746000,
+      "start" : "2026-03-29",
+      "zone" : "Europe/Bucharest"
+    },
+    {
+      "minute" : 210,
+      "moment" : 1792888200,
+      "start" : "2026-10-25",
+      "zone" : "Europe/Bucharest"
+    },
+    {
+      "minute" : 0,
+      "moment" : 1792875600,
+      "start" : "2026-10-25",
+      "zone" : "Europe/Bucharest"
+    },
+    {
+      "minute" : 0,
+      "moment" : 1541300400,
+      "start" : "2018-11-04",
+      "zone" : "America/Sao_Paulo"
+    },
+    {
+      "minute" : 30,
+      "moment" : 1541300400,
+      "start" : "2018-11-04",
+      "zone" : "America/Sao_Paulo"
+    },
+    {
+      "minute" : 60,
+      "moment" : 1541300400,
+      "start" : "2018-11-04",
+      "zone" : "America/Sao_Paulo"
+    },
+    {
+      "minute" : 0,
+      "moment" : 1325239200,
+      "start" : "2011-12-30",
+      "zone" : "Pacific/Apia"
+    },
+    {
+      "minute" : 0,
+      "moment" : 1325239200,
+      "start" : "2011-12-31",
+      "zone" : "Pacific/Apia"
+    },
+    {
+      "minute" : 600,
+      "moment" : 1772272800,
+      "start" : "2026-02-30",
+      "zone" : "UTC"
+    },
+    {
+      "minute" : 0,
+      "moment" : 1777487400,
+      "start" : "2026-04-31",
+      "zone" : "Asia/Kolkata"
+    },
+    {
+      "minute" : 120,
+      "moment" : 1791126000,
+      "start" : "2026-10-04",
+      "zone" : "Australia/Lord_Howe"
+    },
+    {
+      "minute" : 1439,
+      "moment" : 1795600740,
+      "start" : "2026-11-25",
+      "zone" : "Pacific/Kiritimati"
+    },
+    {
+      "minute" : 150,
+      "moment" : 1772953200,
+      "start" : "2026-03-08",
+      "zone" : "America/New_York"
+    },
+    {
+      "minute" : 90,
+      "moment" : 1793511000,
+      "start" : "2026-11-01",
+      "zone" : "America/New_York"
+    }
+  ],
+  "rule" : "Calendar.dosar and Calendar.dosar(in:); CalendarDay(_:calendar:), moment(atMinute:in:) and startDate(in:)",
+  "shape" : "The first case says what the calendar is. week: weekday (Foundation's, 1 is Sunday), weekOfYear and yearForWeekOfYear. moment (seconds since 1970) in zone: the day it falls on. start, minute (after midnight), zone: the moment (seconds since 1970) the wall clock shows that time; a time the clocks skip is the first minute after the gap, a time shown twice the first of the two; minute 0 is the start of the day.",
+  "source" : "ios/Shared/DosarCalendar.swift, ios/Shared/CalendarDay.swift",
+  "writtenBy" : "ios/DosarCuSinaTests/ValueVectorsTests.swift"
+}

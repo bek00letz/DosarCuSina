@@ -1,0 +1,235 @@
+{
+  "cases" : [
+    {
+      "base" : {
+        "a" : 1
+      },
+      "edited" : {
+        "a" : 1
+      },
+      "name" : "Nothing changed in the form: what is stored now",
+      "stored" : {
+        "a" : 2,
+        "b" : 3
+      },
+      "written" : {
+        "a" : 2,
+        "b" : 3
+      }
+    },
+    {
+      "base" : {
+        "a" : 1
+      },
+      "edited" : {
+        "a" : 5
+      },
+      "name" : "Nothing changed since the form opened: the edit",
+      "stored" : {
+        "a" : 1
+      },
+      "written" : {
+        "a" : 5
+      }
+    },
+    {
+      "base" : {
+        "a" : 1,
+        "b" : 1
+      },
+      "edited" : {
+        "a" : 5,
+        "b" : 1
+      },
+      "name" : "Different parts changed: both",
+      "stored" : {
+        "a" : 1,
+        "b" : 7
+      },
+      "written" : {
+        "a" : 5,
+        "b" : 7
+      }
+    },
+    {
+      "base" : {
+        "a" : 1
+      },
+      "edited" : {
+        "a" : 5
+      },
+      "name" : "The same part changed on both: the person's",
+      "stored" : {
+        "a" : 7
+      },
+      "written" : {
+        "a" : 5
+      }
+    },
+    {
+      "base" : [
+        {
+          "id" : "r1",
+          "v" : 1
+        }
+      ],
+      "edited" : [
+        {
+          "id" : "r1",
+          "v" : 2
+        }
+      ],
+      "name" : "A row another device added stays",
+      "stored" : [
+        {
+          "id" : "r1",
+          "v" : 1
+        },
+        {
+          "id" : "r2",
+          "v" : 1
+        }
+      ],
+      "written" : [
+        {
+          "id" : "r1",
+          "v" : 2
+        },
+        {
+          "id" : "r2",
+          "v" : 1
+        }
+      ]
+    },
+    {
+      "base" : [
+        {
+          "id" : "r1",
+          "v" : 1
+        },
+        {
+          "id" : "r2",
+          "v" : 1
+        }
+      ],
+      "edited" : [
+        {
+          "id" : "r1",
+          "v" : 2
+        },
+        {
+          "id" : "r2",
+          "v" : 1
+        }
+      ],
+      "name" : "A row another device removed stays gone",
+      "stored" : [
+        {
+          "id" : "r1",
+          "v" : 1
+        }
+      ],
+      "written" : [
+        {
+          "id" : "r1",
+          "v" : 2
+        }
+      ]
+    },
+    {
+      "base" : [
+        {
+          "id" : "r1",
+          "v" : 1
+        },
+        {
+          "id" : "r2",
+          "v" : 1
+        }
+      ],
+      "edited" : [
+        {
+          "id" : "r2",
+          "v" : 1
+        }
+      ],
+      "name" : "A row the person removed goes",
+      "stored" : [
+        {
+          "id" : "r1",
+          "v" : 1
+        },
+        {
+          "id" : "r2",
+          "v" : 3
+        }
+      ],
+      "written" : [
+        {
+          "id" : "r2",
+          "v" : 3
+        }
+      ]
+    },
+    {
+      "base" : {
+        "a" : 1,
+        "b" : 1
+      },
+      "edited" : {
+        "a" : 5,
+        "b" : 1
+      },
+      "name" : "A key another device removed stays gone",
+      "stored" : {
+        "a" : 1
+      },
+      "written" : {
+        "a" : 5
+      }
+    },
+    {
+      "base" : "start",
+      "edited" : "person",
+      "name" : "Plain text",
+      "stored" : "device",
+      "written" : "person"
+    },
+    {
+      "value" : [
+        "b",
+        "c",
+        "a"
+      ],
+      "written" : "b"
+    },
+    {
+      "value" : [
+        "a",
+        "c",
+        "a"
+      ],
+      "written" : "c"
+    },
+    {
+      "value" : [
+        "a",
+        "a",
+        "a"
+      ],
+      "written" : "a"
+    },
+    {
+      "value" : [
+        "b",
+        "a",
+        "a"
+      ],
+      "written" : "b"
+    }
+  ],
+  "rule" : "ThreeWay.laying(_:over:startedFrom:) and ThreeWay.value: a form saves only what was changed in it",
+  "shape" : "edited: as the person left it; stored: as stored now; base: as the form opened. written: what the save writes. value: [edited, stored, base] for one whole value.",
+  "source" : "ios/DosarCuSina/Models/Values/ThreeWay.swift",
+  "writtenBy" : "ios/DosarCuSinaTests/ValueVectorsTests.swift"
+}

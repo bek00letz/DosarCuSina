@@ -1,0 +1,76 @@
+{
+  "cases" : [
+    {
+      "folded" : "staia staia",
+      "input" : "ȘȚĂÎÂ șțăîâ"
+    },
+    {
+      "folded" : "st st",
+      "input" : "ŞŢ şţ"
+    },
+    {
+      "folded" : "km",
+      "input" : "ＫＭ"
+    },
+    {
+      "folded" : "-12",
+      "input" : "−12"
+    },
+    {
+      "folded" : "1 250",
+      "input" : "1 250"
+    },
+    {
+      "folded" : "1 250",
+      "input" : "1 250"
+    },
+    {
+      "folded" : "1 250",
+      "input" : "1 250"
+    },
+    {
+      "folded" : "cafe",
+      "input" : "Café"
+    },
+    {
+      "folded" : "e",
+      "input" : "é"
+    },
+    {
+      "folded" : "m³",
+      "input" : "m³"
+    },
+    {
+      "folded" : "lei",
+      "input" : "LEI"
+    },
+    {
+      "folded" : "€ $",
+      "input" : "€ $"
+    },
+    {
+      "folded" : "index nou: 12.345",
+      "input" : "Index nou: 12.345"
+    },
+    {
+      "folded" : "œ æ ø đ ł",
+      "input" : "Œ æ ø đ ł"
+    },
+    {
+      "folded" : "angstrom",
+      "input" : "Ångström"
+    },
+    {
+      "folded" : "cn",
+      "input" : "ÇÑ"
+    },
+    {
+      "folded" : "b-123-abc",
+      "input" : "B-123-ABC"
+    }
+  ],
+  "rule" : "RomanianText.fold(_:), as the number reader and the unit catalog read units",
+  "shape" : "input: text. folded: without case, diacritics or wide forms, no-break spaces as spaces, a typographic minus as -.",
+  "source" : "ios/Shared/RomanianText.swift",
+  "writtenBy" : "ios/DosarCuSinaTests/ValueVectorsTests.swift"
+}

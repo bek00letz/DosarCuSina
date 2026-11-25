@@ -1,0 +1,702 @@
+{
+  "cases" : [
+    {
+      "argument" : "",
+      "identities" : [
+        "r1",
+        "r2"
+      ],
+      "isFullyRead" : true,
+      "items" : [
+        {
+          "id" : "r1",
+          "label" : "Loc"
+        },
+        {
+          "id" : "r2",
+          "label" : "Cod"
+        }
+      ],
+      "name" : "Read and written again unchanged",
+      "operation" : "none",
+      "stored" : [
+        {
+          "future" : 1,
+          "id" : "r1",
+          "label" : "Loc"
+        },
+        {
+          "id" : "r2",
+          "label" : "Cod"
+        }
+      ],
+      "unreadablePositions" : [
+
+      ],
+      "written" : [
+        {
+          "future" : 1,
+          "id" : "r1",
+          "label" : "Loc"
+        },
+        {
+          "id" : "r2",
+          "label" : "Cod"
+        }
+      ]
+    },
+    {
+      "argument" : "",
+      "identities" : [
+        "r1",
+        "r3"
+      ],
+      "isFullyRead" : false,
+      "items" : [
+        {
+          "id" : "r1",
+          "label" : "Loc"
+        },
+        {
+          "id" : "r3",
+          "label" : "Cod"
+        }
+      ],
+      "name" : "An entry this build can't read stays in its place",
+      "operation" : "none",
+      "stored" : [
+        {
+          "id" : "r1",
+          "label" : "Loc"
+        },
+        {
+          "id" : 5,
+          "label" : "Număr"
+        },
+        {
+          "id" : "r3",
+          "label" : "Cod"
+        }
+      ],
+      "unreadablePositions" : [
+        1
+      ],
+      "written" : [
+        {
+          "id" : "r1",
+          "label" : "Loc"
+        },
+        {
+          "id" : 5,
+          "label" : "Număr"
+        },
+        {
+          "id" : "r3",
+          "label" : "Cod"
+        }
+      ]
+    },
+    {
+      "argument" : [
+        {
+          "id" : "r1",
+          "label" : "Loc nou"
+        },
+        {
+          "id" : "r3",
+          "label" : "Cod"
+        }
+      ],
+      "identities" : [
+        "r1",
+        "r3"
+      ],
+      "isFullyRead" : false,
+      "items" : [
+        {
+          "id" : "r1",
+          "label" : "Loc"
+        },
+        {
+          "id" : "r3",
+          "label" : "Cod"
+        }
+      ],
+      "name" : "Editing the readable ones keeps the others in place",
+      "operation" : "replaceItems",
+      "stored" : [
+        {
+          "future" : 1,
+          "id" : "r1",
+          "label" : "Loc"
+        },
+        {
+          "id" : 5,
+          "label" : "Număr"
+        },
+        {
+          "id" : "r3",
+          "label" : "Cod"
+        }
+      ],
+      "unreadablePositions" : [
+        1
+      ],
+      "written" : [
+        {
+          "future" : 1,
+          "id" : "r1",
+          "label" : "Loc nou"
+        },
+        {
+          "id" : 5,
+          "label" : "Număr"
+        },
+        {
+          "id" : "r3",
+          "label" : "Cod"
+        }
+      ]
+    },
+    {
+      "argument" : [
+        {
+          "id" : "r1",
+          "label" : "Loc"
+        },
+        {
+          "id" : "r2",
+          "label" : "Șapte"
+        }
+      ],
+      "identities" : [
+        "r1",
+        "r2"
+      ],
+      "isFullyRead" : false,
+      "items" : [
+        {
+          "id" : "r1",
+          "label" : "Loc"
+        }
+      ],
+      "name" : "A readable entry with an unreadable one's id takes its place",
+      "operation" : "replaceItems",
+      "stored" : [
+        {
+          "id" : "r1",
+          "label" : "Loc"
+        },
+        {
+          "id" : "R2",
+          "label" : 7
+        }
+      ],
+      "unreadablePositions" : [
+        1
+      ],
+      "written" : [
+        {
+          "id" : "r1",
+          "label" : "Loc"
+        },
+        {
+          "id" : "r2",
+          "label" : "Șapte"
+        }
+      ]
+    },
+    {
+      "argument" : [
+        {
+          "id" : "r2",
+          "label" : "Cod"
+        }
+      ],
+      "identities" : [
+        "r1",
+        "r2"
+      ],
+      "isFullyRead" : false,
+      "items" : [
+        {
+          "id" : "r1",
+          "label" : "Loc"
+        },
+        {
+          "id" : "r2",
+          "label" : "Cod"
+        }
+      ],
+      "name" : "An entry taken out goes, what it kept with it",
+      "operation" : "replaceItems",
+      "stored" : [
+        {
+          "future" : 1,
+          "id" : "r1",
+          "label" : "Loc"
+        },
+        {
+          "future" : 2,
+          "id" : "r2",
+          "label" : "Cod"
+        },
+        {
+          "label" : "Fără id"
+        }
+      ],
+      "unreadablePositions" : [
+        2
+      ],
+      "written" : [
+        {
+          "future" : 2,
+          "id" : "r2",
+          "label" : "Cod"
+        },
+        {
+          "label" : "Fără id"
+        }
+      ]
+    },
+    {
+      "argument" : [
+        {
+          "id" : "r2",
+          "label" : "Cod"
+        },
+        {
+          "id" : "r4",
+          "isSensitive" : true,
+          "label" : "Nou"
+        },
+        {
+          "id" : "r1",
+          "label" : "Loc"
+        }
+      ],
+      "identities" : [
+        "r1",
+        "r2"
+      ],
+      "isFullyRead" : false,
+      "items" : [
+        {
+          "id" : "r1",
+          "label" : "Loc"
+        },
+        {
+          "id" : "r2",
+          "label" : "Cod"
+        }
+      ],
+      "name" : "An entry added, and the order changed",
+      "operation" : "replaceItems",
+      "stored" : [
+        {
+          "future" : 1,
+          "id" : "r1",
+          "label" : "Loc"
+        },
+        {
+          "id" : "r2",
+          "label" : "Cod"
+        },
+        {
+          "id" : null,
+          "label" : "x"
+        }
+      ],
+      "unreadablePositions" : [
+        2
+      ],
+      "written" : [
+        {
+          "id" : "r2",
+          "label" : "Cod"
+        },
+        {
+          "id" : "r4",
+          "isSensitive" : true,
+          "label" : "Nou"
+        },
+        {
+          "id" : null,
+          "label" : "x"
+        },
+        {
+          "future" : 1,
+          "id" : "r1",
+          "label" : "Loc"
+        }
+      ]
+    },
+    {
+      "argument" : [
+
+      ],
+      "identities" : [
+        "r1",
+        "r2"
+      ],
+      "isFullyRead" : false,
+      "items" : [
+        {
+          "id" : "r1",
+          "label" : "Loc"
+        },
+        {
+          "id" : "r2",
+          "label" : "Cod"
+        }
+      ],
+      "name" : "All entries taken out: the unreadable ones stay",
+      "operation" : "replaceItems",
+      "stored" : [
+        {
+          "id" : "r1",
+          "label" : "Loc"
+        },
+        "text",
+        {
+          "id" : "r2",
+          "label" : "Cod"
+        },
+        42
+      ],
+      "unreadablePositions" : [
+        1,
+        3
+      ],
+      "written" : [
+        "text",
+        42
+      ]
+    },
+    {
+      "argument" : "",
+      "identities" : [
+        "d"
+      ],
+      "isFullyRead" : true,
+      "items" : [
+        {
+          "id" : "d",
+          "label" : "A"
+        },
+        {
+          "id" : "D",
+          "label" : "A"
+        }
+      ],
+      "name" : "Two entries with one id: the first one's JSON",
+      "operation" : "none",
+      "stored" : [
+        {
+          "future" : "first",
+          "id" : "d",
+          "label" : "A"
+        },
+        {
+          "future" : "second",
+          "id" : "D",
+          "label" : "A"
+        }
+      ],
+      "unreadablePositions" : [
+
+      ],
+      "written" : [
+        {
+          "future" : "first",
+          "id" : "d",
+          "label" : "A"
+        },
+        {
+          "future" : "first",
+          "id" : "D",
+          "label" : "A"
+        }
+      ]
+    },
+    {
+      "argument" : "",
+      "identities" : [
+        "r1",
+        "r2"
+      ],
+      "isFullyRead" : false,
+      "items" : [
+        {
+          "id" : "r2",
+          "label" : "Cod"
+        }
+      ],
+      "name" : "A sensitive flag that isn't a yes or no: unreadable",
+      "operation" : "none",
+      "stored" : [
+        {
+          "id" : "r1",
+          "isSensitive" : "da",
+          "label" : "Loc"
+        },
+        {
+          "id" : "r2",
+          "isSensitive" : null,
+          "label" : "Cod"
+        }
+      ],
+      "unreadablePositions" : [
+        0
+      ],
+      "written" : [
+        {
+          "id" : "r1",
+          "isSensitive" : "da",
+          "label" : "Loc"
+        },
+        {
+          "id" : "r2",
+          "isSensitive" : null,
+          "label" : "Cod"
+        }
+      ]
+    },
+    {
+      "argument" : "upper",
+      "identities" : [
+        "r1",
+        "r2"
+      ],
+      "isFullyRead" : false,
+      "items" : [
+        {
+          "id" : "r1",
+          "label" : "Loc"
+        },
+        {
+          "id" : "r2",
+          "label" : "Cod"
+        }
+      ],
+      "name" : "Kept parts changed on the way out",
+      "operation" : "mappingKept",
+      "stored" : [
+        {
+          "future" : "x",
+          "id" : "r1",
+          "label" : "Loc"
+        },
+        {
+          "id" : 9,
+          "label" : "y"
+        },
+        {
+          "id" : "r2",
+          "label" : "Cod"
+        }
+      ],
+      "unreadablePositions" : [
+        1
+      ],
+      "written" : [
+        {
+          "future" : "X",
+          "id" : "r1",
+          "label" : "Loc"
+        },
+        {
+          "id" : 9,
+          "label" : "Y"
+        },
+        {
+          "id" : "r2",
+          "label" : "Cod"
+        }
+      ]
+    },
+    {
+      "argument" : "dropSealed",
+      "identities" : [
+        "r1",
+        "r2",
+        "r9"
+      ],
+      "isFullyRead" : false,
+      "items" : [
+        {
+          "id" : "r1",
+          "label" : "Loc"
+        },
+        {
+          "id" : "r2",
+          "label" : "Cod"
+        }
+      ],
+      "name" : "Kept parts left out on the way out",
+      "operation" : "mappingKept",
+      "stored" : [
+        {
+          "future" : "sealed:v1:a",
+          "id" : "r1",
+          "label" : "Loc"
+        },
+        {
+          "id" : "r9",
+          "secret" : "sealed:v1:b"
+        },
+        {
+          "id" : "r2",
+          "label" : "Cod"
+        }
+      ],
+      "unreadablePositions" : [
+        1
+      ],
+      "written" : [
+        {
+          "id" : "r1",
+          "label" : "Loc"
+        },
+        {
+          "id" : "r2",
+          "label" : "Cod"
+        }
+      ]
+    },
+    {
+      "argument" : [
+        {
+          "id" : "r2",
+          "label" : "Cod din copie",
+          "more" : true
+        },
+        {
+          "bad" : 1,
+          "id" : "r5"
+        },
+        {
+          "id" : "r6",
+          "label" : "Nou"
+        }
+      ],
+      "identities" : [
+        "r1",
+        "r2"
+      ],
+      "isFullyRead" : false,
+      "items" : [
+        {
+          "id" : "r1",
+          "label" : "Loc"
+        },
+        {
+          "id" : "r2",
+          "label" : "Cod"
+        }
+      ],
+      "name" : "Another list's entries replace the ones they name, the rest stay",
+      "operation" : "replaceEntries",
+      "stored" : [
+        {
+          "future" : 1,
+          "id" : "r1",
+          "label" : "Loc"
+        },
+        {
+          "id" : 7,
+          "label" : "x"
+        },
+        {
+          "id" : "r2",
+          "label" : "Cod"
+        }
+      ],
+      "unreadablePositions" : [
+        1
+      ],
+      "written" : [
+        {
+          "future" : 1,
+          "id" : "r1",
+          "label" : "Loc"
+        },
+        {
+          "id" : 7,
+          "label" : "x"
+        },
+        {
+          "id" : "r2",
+          "label" : "Cod din copie",
+          "more" : true
+        },
+        {
+          "bad" : 1,
+          "id" : "r5"
+        },
+        {
+          "id" : "r6",
+          "label" : "Nou"
+        }
+      ]
+    },
+    {
+      "argument" : "r2",
+      "identities" : [
+        "r1",
+        "r2",
+        "r9"
+      ],
+      "isFullyRead" : false,
+      "items" : [
+        {
+          "id" : "r1",
+          "label" : "Loc"
+        },
+        {
+          "id" : "r2",
+          "label" : "Cod"
+        }
+      ],
+      "name" : "Only the entries kept by a rule: the readable ones without r2, the unreadable ones without an id",
+      "operation" : "filtered",
+      "stored" : [
+        {
+          "future" : 1,
+          "id" : "r1",
+          "label" : "Loc"
+        },
+        {
+          "id" : "r2",
+          "label" : "Cod"
+        },
+        {
+          "bad" : 1,
+          "id" : "r9"
+        },
+        {
+          "bad" : 2
+        }
+      ],
+      "unreadablePositions" : [
+        2,
+        3
+      ],
+      "written" : [
+        {
+          "future" : 1,
+          "id" : "r1",
+          "label" : "Loc"
+        },
+        {
+          "bad" : 1,
+          "id" : "r9"
+        }
+      ]
+    }
+  ],
+  "rule" : "KeptList: a stored list's readable entries and the ones kept raw, written back by JSONValue.laying",
+  "shape" : "Entries are rows {id, label, isSensitive?}: readable only when id and label are text and isSensitive, if there, is a yes or no (null counts as missing). stored: the list as kept. items, unreadablePositions, isFullyRead, identities (sorted): how it reads. operation: none (written again as read), replaceItems (argument: the new readable entries), mappingKept (argument: upper or dropSealed, as in json-mapping-kept), replaceEntries (argument: another stored list), filtered (readable entries whose id isn't the argument, unreadable ones with a key or id). written: the list then written.",
+  "source" : "ios/DosarCuSina/Models/Values/KeptList.swift",
+  "writtenBy" : "ios/DosarCuSinaTests/ValueVectorsTests.swift"
+}
