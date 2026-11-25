@@ -254,3 +254,20 @@ extension DosarSchemaV19 {
         }
     }
 }
+
+extension CategoryTemplate {
+    /// Each category once, until iCloud's or a backup's copies of one are joined (`RecordsMeet`,
+    /// which waits for the binder to arrive and for each copy to be named): of the copies with a
+    /// key, the first on the binder, then the one made first, the same copy every lookup by key
+    /// reads (`TemplateStore.templatesByKey`). Every list of categories a person sees goes through
+    /// it, so two copies never show as two categories; the result keeps the order it was given.
+    nonisolated static func oncePerKey(_ templates: [CategoryTemplate]) -> [CategoryTemplate] {
+        var chosen: [String: CategoryTemplate] = [:]
+        for template in templates where !template.isDeleted {
+            if let current = chosen[template.key],
+               (current.homeOrder, current.createdAt) <= (template.homeOrder, template.createdAt) { continue }
+            chosen[template.key] = template
+        }
+        return templates.filter { chosen[$0.key] === $0 }
+    }
+}

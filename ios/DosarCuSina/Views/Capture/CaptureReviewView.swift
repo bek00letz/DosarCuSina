@@ -926,7 +926,7 @@ private struct CaptureDestinationPicker: View {
                     .navigationBarTitleDisplayMode(.inline)
             }
             .navigationDestination(isPresented: $isPickingNewCategory) {
-                List(templates.filter { $0.behavior.role != .holder }) { template in
+                List(CategoryTemplate.oncePerKey(templates).filter { $0.behavior.role != .holder }) { template in
                     choice(.newAsset(templateKey: template.key), title: template.name, subtitle: template.summary, systemImage: template.symbol)
                 }
                 .navigationTitle(Words.whatSection)
@@ -957,7 +957,7 @@ private struct CaptureDestinationPicker: View {
 
     /// The sections given, grouped by category, in the categories' order.
     @ViewBuilder private func sections(of shown: [Asset]) -> some View {
-        ForEach(templates.filter { template in shown.contains { $0.templateKey == template.key } }) { template in
+        ForEach(CategoryTemplate.oncePerKey(templates).filter { template in shown.contains { $0.templateKey == template.key } }) { template in
             Section {
                 ForEach(shown.filter { $0.templateKey == template.key }) { asset in
                     choice(.asset(asset.id), title: asset.name, subtitle: subtitle(for: asset), systemImage: asset.symbolOverride ?? template.symbol)

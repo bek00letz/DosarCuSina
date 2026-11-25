@@ -161,12 +161,8 @@ public struct TemplateStore {
     /// Templates keyed by `key` on any context, such as search's own off the main
     /// thread. The first in the binder's order wins when a key repeats.
     nonisolated public static func templatesByKey(in context: ModelContext) throws -> [String: CategoryTemplate] {
-        var result: [String: CategoryTemplate] = [:]
-        let all = try context.fetch(FetchDescriptor<CategoryTemplate>(sortBy: [SortDescriptor(\.homeOrder), SortDescriptor(\.createdAt)]))
-        for template in all where result[template.key] == nil {
-            result[template.key] = template
-        }
-        return result
+        Dictionary(CategoryTemplate.oncePerKey(try context.fetch(FetchDescriptor<CategoryTemplate>())).map { ($0.key, $0) },
+                   uniquingKeysWith: { first, _ in first })
     }
 
     @discardableResult

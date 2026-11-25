@@ -200,7 +200,7 @@ struct LockSettings: View {
 
     var body: some View {
         let used = Set(assets.map(\.templateKey))
-        let shown = templates.filter { used.contains($0.key) || $0.behavior.box == .wholeCategory || $0.isSensitive }
+        let shown = CategoryTemplate.oncePerKey(templates).filter { used.contains($0.key) || $0.behavior.box == .wholeCategory || $0.isSensitive }
         let waiting = SectionLocks.of(context.container).needsChoosingAgain
         if waiting {
             LocksNotReadNotice(biometryName: vault.biometryName, isConfirming: isConfirming, keep: keepLocksAsTheyAre)
@@ -534,7 +534,7 @@ struct SectionVisibilitySettings: View {
 
     var body: some View {
         Section {
-            ForEach(templates.filter { $0.behavior.box != .insideOther }) { template in
+            ForEach(CategoryTemplate.oncePerKey(templates).filter { $0.behavior.box != .insideOther }) { template in
                 Toggle(isOn: Binding(get: { template.isOnHome }, set: { setOnHome(template, $0) })) {
                     Label { Text(verbatim: template.name) } icon: { Image(systemName: template.symbol).foregroundStyle(template.tintColor) }
                 }
@@ -592,7 +592,7 @@ struct CustomCategorySettings: View {
     @State private var editing: CategoryTemplate?
 
     var body: some View {
-        let custom = templates.filter(\.isCustom)
+        let custom = CategoryTemplate.oncePerKey(templates).filter(\.isCustom)
         if !custom.isEmpty {
             Section {
                 ForEach(custom) { template in

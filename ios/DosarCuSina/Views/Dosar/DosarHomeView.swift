@@ -287,8 +287,7 @@ struct BinderBoxes {
     let addBoxLine: String?
 
     init(templates: [CategoryTemplate], assets: [Asset], providerCount: Int, vault: BiometricVaultManager, context: ModelContext) {
-        var byKey: [String: CategoryTemplate] = [:]
-        for template in templates where byKey[template.key] == nil { byKey[template.key] = template }
+        let byKey = Dictionary(CategoryTemplate.oncePerKey(templates).map { ($0.key, $0) }, uniquingKeysWith: { first, _ in first })
         templatesByKey = byKey
         assetsByID = Dictionary(assets.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
         self.assets = assets
