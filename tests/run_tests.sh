@@ -3,7 +3,9 @@
 # request workflow runs this same script, so a local run and CI agree.
 #
 #   ./tests/run_tests.sh              # iOS tests
-#   ./tests/run_tests.sh --android    # also the Android Room scripts (paused platform)
+#   ./tests/run_tests.sh --android-legacy  # also the first Android version's Room scripts
+#                                          # (tests/legacy/android; the new Android app is
+#                                          # tested by Gradle, see README)
 #   SIMULATOR_ID=<udid> ./tests/run_tests.sh
 #
 # Building for the tests builds the app with its widgets and share extension.
@@ -26,7 +28,7 @@ PROJECT="$REPO_ROOT/ios/DosarCuSina.xcodeproj"
 RUN_ANDROID=false
 for arg in "$@"; do
     case "$arg" in
-        --android) RUN_ANDROID=true ;;
+        --android-legacy) RUN_ANDROID=true ;;
         *) echo "Unknown option: $arg" >&2; exit 2 ;;
     esac
 done
@@ -126,7 +128,7 @@ if [[ $WARNINGS -ne 0 ]]; then
 fi
 
 if [[ "$RUN_ANDROID" == true ]]; then
-    echo "Android Room scripts"
-    python3 "$REPO_ROOT/tests/android/run_room_tests.py"
-    python3 "$REPO_ROOT/tests/android/adversarial_room_stress_test.py"
+    echo "The first Android version's Room scripts"
+    python3 "$REPO_ROOT/tests/legacy/android/run_room_tests.py"
+    python3 "$REPO_ROOT/tests/legacy/android/adversarial_room_stress_test.py"
 fi
