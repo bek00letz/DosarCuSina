@@ -6,6 +6,14 @@ To propose a change to a decision, open an issue with the **Proposal** template 
 
 ---
 
+## 2026-11-25
+
+### „Înlocuiește tot” on a binder that syncs
+- **Decided (owner):** replacing everything with a backup stays, made safe: a copy of the binder is kept first (`KeptCopies`, „Copia dosarului de dinainte de „Înlocuiește tot””, in Setări › iCloud și copii de siguranță), the warning says it deletes on every device when the binder syncs, and it waits while the binder may still be arriving from iCloud. *Why:* it deletes on every device, and on a device still downloading it would replace only half. *Alternatives:* hide it while sync is on (no way to roll the whole binder back); leave it.
+
+### Two devices changing one section at once
+- **Decided (owner):** 1.0 keeps a section's values, its rows under Date importante, a deadline's reminders and a category's definition as one stored field each; two devices changing different values of one section at the same time keep only one change. Storing them value by value comes after 1.0. *Why:* it is rare, and it is a large change to the database.
+
 ## 2026-11-24
 
 ### A deletion from another device never takes what this one added

@@ -3413,6 +3413,9 @@
     "Copia de siguranță nu s-a putut deschide. Fișierul pare deteriorat; fă copia din nou și încearcă iar." : {
       "comment" : "Backup: its contents couldn't be unpacked."
     },
+    "Copia dosarului de dinainte de „Înlocuiește tot”" : {
+      "comment" : "A copy of the binder kept before it was replaced with a backup."
+    },
     "Copia dosarului de dinainte de schimbarea contului" : {
       "comment" : "A copy of the binder kept before switching iCloud accounts."
     },
@@ -3618,8 +3621,11 @@
     "Dacă ai plătit ceva." : {
       "comment" : "Under a visit's optional cost."
     },
-    "Dacă alegi „Înlocuiește”, ce ai acum pe telefon se șterge și rămâne doar ce e în copie. Codurile PIN de pe acest telefon rămân." : {
+    "Dacă alegi „Înlocuiește”, ce ai acum pe telefon se șterge și rămâne doar ce e în copie. Înainte păstrez o copie a dosarului de acum, în Setări › iCloud și copii de siguranță. Codurile PIN de pe acest telefon rămân." : {
       "comment" : "Warning before replacing everything with a backup."
+    },
+    "Dacă alegi „Înlocuiește”, ce ai acum se șterge de pe toate dispozitivele tale și rămâne doar ce e în copie. Înainte păstrez o copie a dosarului de acum, în Setări › iCloud și copii de siguranță. Codurile PIN de pe acest telefon rămân." : {
+      "comment" : "Warning before replacing everything with a backup while the binder syncs with iCloud."
     },
     "Dacă e un contor nou, cele vechi rămân în istoric." : {
       "comment" : "Lower-reading question: what the answer Contor nou does to the earlier readings."
@@ -4141,6 +4147,9 @@
     },
     "Dosarul e prea mare pentru o singură copie. Șterge documentele mari de care nu mai ai nevoie, apoi încearcă din nou." : {
       "comment" : "Backup: more bytes than one backup can hold."
+    },
+    "Dosarul încă vine din iCloud" : {
+      "comment" : "Title when replacing everything waits for the binder to arrive from iCloud."
     },
     "Dosarul nu se deschide" : {
       "comment" : "Title when the database can't be opened."
@@ -5343,6 +5352,9 @@
     "Înlocuiește tot dosarul cu copia." : {
       "comment" : "Face ID reason before replacing everything with a backup."
     },
+    "Înlocuiește tot după ce s-a adus tot dosarul, ca să nu rămână nimic pe jumătate. Deschide copia din nou peste câteva minute." : {
+      "comment" : "Replacing everything with a backup waits until the binder has arrived from iCloud."
+    },
     "Instalații sanitare" : {
 
     },
@@ -6351,6 +6363,9 @@
     },
     "Nu am putut păstra exemplul" : {
 
+    },
+    "Nu am putut păstra o copie a dosarului de acum" : {
+      "comment" : "Title when the copy kept before replacing everything couldn't be written; nothing was replaced."
     },
     "Nu am putut pune lista înapoi. Ce nu ajunge de acum apare aici, ca de obicei." : {
       "comment" : "Error: „Anulează” couldn't bring back the list of files that didn't arrive; new problems are still listed."

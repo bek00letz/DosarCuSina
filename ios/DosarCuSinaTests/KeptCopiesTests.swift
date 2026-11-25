@@ -64,4 +64,12 @@ struct KeptCopiesTests {
         #expect(names.map(\.lastPathComponent) == ["Dosar cu Șină 2026-11-18.dosar", "Dosar cu Șină 2026-11-18 2.dosar", "Dosar cu Șină 2026-11-18 3.dosar"])
         #expect(KeptCopies.all(in: folder) == names.reversed())
     }
+
+    @Test func eachCopySaysWhyItWasKept() {
+        for reason in KeptCopies.Reason.allCases {
+            let copy = reason.folder.appending(path: "Dosar 2026-11-25.dosar")
+            #expect(KeptCopies.reason(of: copy) == reason)
+        }
+        #expect(Set(KeptCopies.Reason.allCases.map(\.folder)).count == KeptCopies.Reason.allCases.count, "A folder each")
+    }
 }

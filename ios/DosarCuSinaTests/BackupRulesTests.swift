@@ -380,12 +380,82 @@ struct ZipLimitTests {
 @MainActor
 @Suite("Backups ask first")
 struct BackupFlowTests {
-    private func flow(_ household: BackupHousehold, _ outcome: FakeAuthenticator.Outcome, appLock: Bool = false) -> (BackupFlow, FakeAuthenticator, URL) {
+    /// The copies a flow kept before replacing everything, or the copy that couldn't be kept.
+    final class Copies {
+        var kept = 0
+        var fails = false
+        struct CouldNotKeep: Error {}
+    }
+
+    private func flow(_ household: BackupHousehold, _ outcome: FakeAuthenticator.Outcome, appLock: Bool = false, copies: Copies = Copies()) -> (BackupFlow, FakeAuthenticator, URL) {
         let authenticator = FakeAuthenticator(outcome)
         let vault = BiometricVaultManager(authenticator: authenticator, appLockEnabled: { appLock }, observesAppLifecycle: false)
         let directory = URL.temporaryDirectory.appending(path: UUID().uuidString)
         try? FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
-        return (BackupFlow(container: household.container, vault: vault, workDirectory: directory, inbox: directory.appending(path: "Inbox"), keeper: RecordingBackupKeeper()), authenticator, directory)
+        let flow = BackupFlow(container: household.container, vault: vault, workDirectory: directory, inbox: directory.appending(path: "Inbox"),
+                              keeper: RecordingBackupKeeper()) { _ in
+            if copies.fails { throw Copies.CouldNotKeep() }
+            copies.kept += 1
+            return directory.appending(path: "kept.dosar")
+        }
+        return (flow, authenticator, directory)
+    }
+
+    // MARK: Replacing everything
+
+    @Test func replacingEverythingKeepsACopyOfTheBinderFirst() async throws {
+        let household = try BackupHousehold()
+        let copies = Copies()
+        let (flow, _, _) = flow(household, .succeed, copies: copies)
+        await flow.export(password: nil)
+        await flow.open(try #require(flow.exportURL))
+        await flow.runImport(try #require(flow.pending), mode: .replace)
+        #expect(copies.kept == 1)
+        #expect(flow.resultText != nil)
+    }
+
+    @Test func aCopyThatCantBeKeptReplacesNothing() async throws {
+        let household = try BackupHousehold()
+        let copies = Copies()
+        copies.fails = true
+        let (flow, _, _) = flow(household, .succeed, copies: copies)
+        await flow.export(password: nil)
+        let other = Asset(name: "Doar aici", templateKey: BuiltInTemplates.Key.other)
+        household.context.insert(other)
+        try household.context.save()
+        await flow.open(try #require(flow.exportURL))
+        let pending = try #require(flow.pending)
+        await flow.runImport(pending, mode: .replace)
+        #expect(flow.error != nil)
+        #expect(try household.asset(other.id).name == "Doar aici", "Nothing was replaced")
+        #expect(flow.pending == pending, "The backup waits as it was")
+    }
+
+    @Test func replacingEverythingWaitsForTheBinderToArrive() async throws {
+        let household = try BackupHousehold()
+        let copies = Copies()
+        let (flow, prompts, _) = flow(household, .succeed, copies: copies)
+        await flow.export(password: nil)
+        let promptsBefore = prompts.prompts
+        let other = Asset(name: "Doar aici", templateKey: BuiltInTemplates.Key.other)
+        household.context.insert(other)
+        try household.context.save()
+        await flow.open(try #require(flow.exportURL))
+        CloudArrival.awaitFirstDownload(in: household.container)
+        await flow.runImport(try #require(flow.pending), mode: .replace)
+        #expect(flow.error != nil, "Said in plain words")
+        #expect(prompts.prompts == promptsBefore, "Nothing asked")
+        #expect(copies.kept == 0)
+        #expect(try household.asset(other.id).name == "Doar aici", "Nothing was replaced")
+        CloudArrival.follow(SyncEvent(kind: .download, finishedAt: noon("2026-11-25"), succeeded: true), in: household.container)
+    }
+
+    @Test func theWarningSaysWhereReplacingReaches() {
+        #expect(BackupWording.replaceWarning(everyDevice: true).contains("toate dispozitivele"))
+        #expect(BackupWording.replaceWarning(everyDevice: false).contains("pe telefon"))
+        for everyDevice in [true, false] {
+            #expect(BackupWording.replaceWarning(everyDevice: everyDevice).contains("păstrez o copie"))
+        }
     }
 
     @Test func exportingNeedsFaceIDWhileASectionIsLocked() async throws {
