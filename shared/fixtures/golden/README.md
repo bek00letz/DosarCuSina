@@ -32,7 +32,7 @@ The hand-written fixtures beside this folder ([`../dosar-v3/household`](../dosar
 
 `GoldenArchiveTests` exports the household again on every run and compares what it writes with `ios/expected/`, by contents, not bytes: the password's salt changes every time, and so do the ids the actions make and the moment each record was made. It leaves out only those: each id is compared by the place it takes (counted over the records in an order of their own contents, so a link still says which record it points at), `createdAt` and the manifest's `appVersion` are not compared, and the data files' checksums follow from the files, which are. Everything else must match, every vault file's SHA-256 included. It also checks that both committed archives unpack to `expected/`, and imports each of them into an empty binder and writes it out again, expecting every record back exactly as it was.
 
-When the writer, the catalog or the household changes on purpose, bring them up to date and commit all three together:
+When the writer, the catalog or the household changes on purpose, bring them up to date and commit all three together. A pull request's failed `build-and-test` run already made them: its `test-results` artifact holds `golden-archives/`, laid out as `ios/` is (`tests/run_tests.sh` passes the folder as `TEST_RUNNER_GOLDEN_ARCHIVES_OUT`); copy `household.dosar`, `household-password.dosar` and `expected/` over `ios/`. Or make them on a Mac:
 
 ```sh
 TEST_RUNNER_GOLDEN_ARCHIVES_WRITE=1 xcodebuild test -project ios/DosarCuSina.xcodeproj -scheme DosarCuSina \
