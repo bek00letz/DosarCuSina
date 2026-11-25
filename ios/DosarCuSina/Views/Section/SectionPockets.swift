@@ -152,7 +152,7 @@ struct ChildrenPocket: View {
 
     @MainActor
     static func contents(of asset: Asset, pocket: PagePocket, templates: [CategoryTemplate]) -> Contents {
-        let kinds = templates.filter { template -> Bool in
+        let kinds = CategoryTemplate.oncePerKey(templates).filter { template -> Bool in
             switch pocket {
             case .listed(let listed): return template.behavior.parentPocket == listed
             case .category(let key, _): return template.key == key
