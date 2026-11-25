@@ -1,0 +1,160 @@
+[
+  {
+    "assetId" : "7d1e2f30-0000-4000-8000-00000000a001",
+    "byteCount" : 4013,
+    "contentType" : "public.heic",
+    "createdAt" : "2026-11-01T09:00:00Z",
+    "fileName" : "album.heic",
+    "framing" : {
+      "futureSource" : "camera",
+      "pages" : [
+        {
+          "futureFilter" : "mono",
+          "quarterTurns" : 1
+        }
+      ],
+      "version" : 1
+    },
+    "id" : "7d1e2f30-0000-4000-8000-00000000d001",
+    "isArchived" : false,
+    "isExample" : false,
+    "kind" : "photo",
+    "pagePaths" : [
+      "vault/7d1e2f30-0000-4000-8000-00000000d001/page-1.jpg"
+    ],
+    "sha256" : "ef3aa2acee38b7f20b24b9a715d8f542b3fe6ee975835dae0f319078daa71ccb",
+    "title" : "Fotografie album",
+    "updatedAt" : "2026-11-01T09:00:00Z"
+  },
+  {
+    "assetId" : "d18f09a5-1718-490d-bc68-161b0166d75f",
+    "byteCount" : 5046,
+    "contentType" : "public.heic",
+    "createdAt" : "2026-11-25T21:59:16Z",
+    "documentDate" : "2024-12-20",
+    "extractedText" : "Carte de identitate, exemplu. Card de test •••• 1111.",
+    "fileName" : "carte-de-identitate.heic",
+    "framing" : {
+      "pages" : [
+        {
+          "crop" : [
+            {
+              "x" : 0.05,
+              "y" : 0.1
+            },
+            {
+              "x" : 0.95,
+              "y" : 0.08
+            },
+            {
+              "x" : 0.96,
+              "y" : 0.9
+            },
+            {
+              "x" : 0.04,
+              "y" : 0.92
+            }
+          ],
+          "prefersWholePhoto" : false,
+          "quarterTurns" : 1
+        },
+        {
+          "prefersWholePhoto" : true,
+          "quarterTurns" : 0
+        }
+      ],
+      "version" : 1
+    },
+    "id" : "7f5331cd-10b6-4066-ac2e-1971ea219dcb",
+    "isArchived" : false,
+    "isExample" : false,
+    "kind" : "identity",
+    "pagePaths" : [
+      "vault/7f5331cd-10b6-4066-ac2e-1971ea219dcb/page-1.heic",
+      "vault/7f5331cd-10b6-4066-ac2e-1971ea219dcb/page-2.jpg"
+    ],
+    "sha256" : "2a1578795425771049e04b917c3e9b1e5f913041531346fb83a98db9fa8bebaf",
+    "thumbnailPath" : "vault/7f5331cd-10b6-4066-ac2e-1971ea219dcb/thumbnail.heic",
+    "title" : "Carte de identitate",
+    "updatedAt" : "2026-11-20T08:05:00Z"
+  },
+  {
+    "assetId" : "038c6cef-a824-46a4-a416-0e864764e587",
+    "byteCount" : 702,
+    "contentType" : "com.adobe.pdf",
+    "createdAt" : "2026-11-25T21:59:16Z",
+    "documentDate" : "2026-08-17",
+    "fileName" : "factura-revizie.pdf",
+    "historyEntryId" : "86b05476-7efe-4e0f-9883-3a3fadacf9a5",
+    "id" : "6c780de6-6633-478a-b1ad-8e459aaa6b4c",
+    "isArchived" : false,
+    "isExample" : false,
+    "kind" : "invoice",
+    "pagePaths" : [
+
+    ],
+    "path" : "vault/6c780de6-6633-478a-b1ad-8e459aaa6b4c.pdf",
+    "providerId" : "603b61c5-16a1-4454-96ac-13ae6cf17674",
+    "sha256" : "8095699a4ee91ce1dee5204b43c9d845242ef860909deca223193379922c2ed0",
+    "title" : "Factură revizie",
+    "updatedAt" : "2026-11-20T08:12:00Z"
+  },
+  {
+    "assetId" : "038c6cef-a824-46a4-a416-0e864764e587",
+    "byteCount" : 4013,
+    "contentType" : "public.jpeg",
+    "createdAt" : "2026-11-25T21:59:16Z",
+    "fileName" : "raport-itp.jpg",
+    "historyEntryId" : "8b8b42af-262b-440a-afed-6990dcc267ba",
+    "id" : "e75da1f2-05d3-4005-b53c-0e9af2a52174",
+    "isArchived" : false,
+    "isExample" : false,
+    "kind" : "report",
+    "pagePaths" : [
+      "vault/e75da1f2-05d3-4005-b53c-0e9af2a52174/page-1.jpg"
+    ],
+    "sha256" : "ef3aa2acee38b7f20b24b9a715d8f542b3fe6ee975835dae0f319078daa71ccb",
+    "thumbnailPath" : "vault/e75da1f2-05d3-4005-b53c-0e9af2a52174/thumbnail.jpg",
+    "title" : "Raport ITP",
+    "updatedAt" : "2026-11-20T08:14:00Z"
+  },
+  {
+    "assetId" : "038c6cef-a824-46a4-a416-0e864764e587",
+    "byteCount" : 1904,
+    "contentType" : "public.jpeg",
+    "createdAt" : "2026-11-25T21:59:16Z",
+    "fileName" : "polita-2025.jpg",
+    "id" : "9b6965e3-833a-4ec2-8564-ab39c694566b",
+    "isArchived" : true,
+    "isExample" : false,
+    "kind" : "policy",
+    "obligationId" : "d135e7d8-35b2-4a6a-9459-8516ab1dbe1f",
+    "pagePaths" : [
+      "vault/9b6965e3-833a-4ec2-8564-ab39c694566b/page-1.jpg"
+    ],
+    "sha256" : "64740da1346376d1df1d51d687b14beb010f9bdbc9a2abbc51c4567d6424bf93",
+    "supersededById" : "1f2db755-5485-4342-8693-1084a0048f25",
+    "title" : "Poliță RCA 2025",
+    "updatedAt" : "2026-11-20T08:19:00Z"
+  },
+  {
+    "assetId" : "038c6cef-a824-46a4-a416-0e864764e587",
+    "byteCount" : 715,
+    "contentType" : "com.adobe.pdf",
+    "createdAt" : "2026-11-25T21:59:16Z",
+    "documentDate" : "2026-11-17",
+    "fileName" : "polita-2026.pdf",
+    "id" : "1f2db755-5485-4342-8693-1084a0048f25",
+    "isArchived" : false,
+    "isExample" : false,
+    "kind" : "policy",
+    "obligationId" : "d135e7d8-35b2-4a6a-9459-8516ab1dbe1f",
+    "pagePaths" : [
+
+    ],
+    "path" : "vault/1f2db755-5485-4342-8693-1084a0048f25.pdf",
+    "sha256" : "9d4534ff3da6ed3c86a44bccb2f6adf8fa5b1902fbd716bfd6116de7c43d8ceb",
+    "title" : "Poliță RCA 2026",
+    "updatedAt" : "2026-11-20T08:18:00Z"
+  }
+]
