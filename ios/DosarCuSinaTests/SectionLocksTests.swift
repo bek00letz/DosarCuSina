@@ -4,16 +4,16 @@ import SwiftData
 import Testing
 @testable import DosarCuSina
 
-/// Each device decides for itself what it keeps behind Face ID: a section's lock lives beside the
-/// store, never in it, so iCloud never carries it and a lock opened on one device can't open a
-/// section on another. Every value is a placeholder.
+/// Each device keeps its own choices of what is behind Face ID, beside the store, never in it: a
+/// lock opened on one device can't open a section on another. Locking also writes when on the
+/// category's record, so it travels (`LocksTravelTests`). Every value is a placeholder.
 /// How many times something was told, for the test.
 private final class Count: @unchecked Sendable {
     var value = 0
 }
 
 @MainActor
-@Suite("Section locks stay on each device")
+@Suite("Section locks: each device's choices")
 struct SectionLocksTests {
     private func store(_ folder: URL) throws -> ModelContainer {
         let container = try PersistenceController.makeContainer(storeURL: folder.appending(path: "Dosar.store"))
@@ -79,17 +79,22 @@ struct SectionLocksTests {
         #expect(try TemplateStore(context: here).template(forKey: BuiltInTemplates.Key.documents)?.isSensitive == true)
     }
 
-    @Test func lockingChangesNoRecordAndIsToldToWhatFollowsIt() throws {
+    @Test func lockingIsSavedOnTheRecordAndToldToWhatFollowsIt() async throws {
         let context = try makeContext()
         let vehicles = try #require(try TemplateStore(context: context).template(forKey: BuiltInTemplates.Key.vehicle))
-        let before = vehicles.updatedAt
         let told = Count()
         let observer = NotificationCenter.default.addObserver(forName: SectionLocks.didChange, object: SectionLocks.of(context.container), queue: nil) { _ in told.value += 1 }
         defer { NotificationCenter.default.removeObserver(observer) }
         try TemplateStore(context: context).setSensitive(vehicles, true)
         #expect(told.value == 1)
+        #expect(!context.hasChanges, "Saved in one step")
+        let lockedAt = try #require(vehicles.lockedEverywhereAt, "When it was locked, for iCloud to carry to the other devices")
+
+        let updated = vehicles.updatedAt
+        try TemplateStore(context: context).setSensitive(vehicles, false, lowering: try await faceIDConfirmed())
+        #expect(told.value == 2)
         #expect(!context.hasChanges)
-        #expect(vehicles.updatedAt == before, "Nothing for iCloud or a backup's merge to carry")
+        #expect(vehicles.lockedEverywhereAt == lockedAt && vehicles.updatedAt == updated, "Opening changes no record: it stays on this device")
     }
 
     @Test func aCategoryMadeLockedStaysLocked() throws {
