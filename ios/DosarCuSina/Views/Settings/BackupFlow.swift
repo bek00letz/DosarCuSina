@@ -69,20 +69,27 @@ final class BackupFlow {
     @ObservationIgnored private let workDirectory: URL
     @ObservationIgnored private let inbox: URL
     @ObservationIgnored private let keeper: any BackupKeeper
+    /// Keeps a copy of the binder before „Înlocuiește tot” (`KeptCopies`, offered in Settings).
+    @ObservationIgnored private let keepCopy: @MainActor (ModelContainer) async throws -> URL
 
     init(
         container: ModelContainer,
         vault: BiometricVaultManager,
         workDirectory: URL = .temporaryDirectory,
         inbox: URL = URL.documentsDirectory.appending(path: "Inbox", directoryHint: .isDirectory),
-        keeper: any BackupKeeper = SystemBackupKeeper.shared
+        keeper: any BackupKeeper = SystemBackupKeeper.shared,
+        keepCopy: @escaping @MainActor (ModelContainer) async throws -> URL = { try await KeptCopies.keep(container: $0, for: .replacingAll) }
     ) {
         self.container = container
         self.vault = vault
         self.workDirectory = workDirectory
         self.inbox = inbox
         self.keeper = keeper
+        self.keepCopy = keepCopy
     }
+
+    /// Whether replacing everything reaches the person's other devices: the binder syncs.
+    var replacingReachesEveryDevice: Bool { PersistenceController.syncs(container) }
 
     /// What the system shows above a backup step while it runs.
     private static var title: String { String(localized: "Copia de siguranță", comment: "Title of the system's progress while a backup step runs in the background.") }
@@ -184,10 +191,24 @@ final class BackupFlow {
     /// Brings a backup in, either way. It asks for Face ID or the passcode first whenever
     /// any lock is on: what comes in lands among the locked sections, and replacing
     /// everything can't be undone. Without it, the backup waits as it was.
+    ///
+    /// Replacing everything deletes what the backup lacks, on every device the binder syncs to,
+    /// so it waits while the binder may still be arriving from iCloud (`CloudArrival`: it would
+    /// replace only what has come so far), and keeps a copy of the binder first (`KeptCopies`,
+    /// `Reason.replacingAll`): a copy that can't be kept stops it, with nothing changed.
     func runImport(_ pending: PendingImport, mode: ArchiveImportMode) async {
         guard work == nil else { return }
         self.pending = nil
         defer { work = nil }
+        if mode == .replace, !CloudArrival.of(container).isWhole {
+            BackupFiles.remove(pending.url)
+            error = UserFacingError(
+                title: String(localized: "Dosarul încă vine din iCloud", comment: "Title when replacing everything waits for the binder to arrive from iCloud."),
+                message: String(localized: "Înlocuiește tot după ce s-a adus tot dosarul, ca să nu rămână nimic pe jumătate. Deschide copia din nou peste câteva minute.",
+                                comment: "Replacing everything with a backup waits until the binder has arrived from iCloud.")
+            )
+            return
+        }
         let reason = switch mode {
         case .replace: String(localized: "Înlocuiește tot dosarul cu copia.", comment: "Face ID reason before replacing everything with a backup.")
         case .merge: String(localized: "Adaugă în dosar ce e în copie.", comment: "Face ID reason before adding a backup's records to the binder.")
@@ -197,6 +218,15 @@ final class BackupFlow {
             return
         }
         work = .importing
+        if mode == .replace {
+            do {
+                _ = try await keepCopy(container)
+            } catch {
+                self.pending = pending
+                self.error = UserFacingError(error, doing: String(localized: "Nu am putut păstra o copie a dosarului de acum", comment: "Title when the copy kept before replacing everything couldn't be written; nothing was replaced."))
+                return
+            }
+        }
         let staging = Self.stagingFolder(for: pending.url)
         defer {
             BackupFiles.remove(staging)
