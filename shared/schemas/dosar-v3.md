@@ -8,7 +8,7 @@ plain ZIP file (DEFLATE or STORE entries) with JSON inside, readable with
 - **Type identifier:** `com.ar.dosarcusina.dossier` (conforms to `public.zip-archive`)
 - **MIME type:** `application/vnd.dosarcusina.dossier+zip`
 - **JSON Schema:** [`dosar-v3.schema.json`](dosar-v3.schema.json)
-- **Golden fixtures:** [`../fixtures/dosar-v3/household`](../fixtures/dosar-v3/household) (v3) and [`../fixtures/dosar-v2/ios-export`](../fixtures/dosar-v2/ios-export) (v2, still importable). Every implementation must import both.
+- **Golden fixtures:** [`../fixtures/dosar-v3/household`](../fixtures/dosar-v3/household) (v3) and [`../fixtures/dosar-v2/ios-export`](../fixtures/dosar-v2/ios-export) (v2, still importable). Every implementation must import both. What each app's own writer makes is in [`../fixtures/golden`](../fixtures/golden) (an iOS export, with and without a password, and its contents unpacked); each app imports the other's.
 - **With a password:** the same ZIP, encrypted whole; see [Password-protected archives](#password-protected-archives).
 - **Container test vectors:** [`../test-vectors/archive`](../test-vectors/archive): archives each app made, plain and with a password, and crafted ones every reader refuses, with the kind of error.
 

@@ -1,0 +1,47 @@
+[
+  {
+    "assetIds" : [
+      "038c6cef-a824-46a4-a416-0e864764e587"
+    ],
+    "createdAt" : "2026-11-25T21:59:16Z",
+    "id" : "603b61c5-16a1-4454-96ac-13ae6cf17674",
+    "isExample" : false,
+    "name" : "Service Auto Exemplu SRL",
+    "phone" : "0700000001",
+    "taxID" : "12345678",
+    "trades" : [
+      "mechanic"
+    ],
+    "updatedAt" : "2026-11-20T08:09:00Z",
+    "wouldCallAgain" : true
+  },
+  {
+    "address" : "Str. Exemplu nr. 1, București",
+    "assetIds" : [
+
+    ],
+    "createdAt" : "2026-11-25T21:59:16Z",
+    "email" : "nume@exemplu.ro",
+    "id" : "5f1af6c4-3fcd-49b4-b558-727e360dec30",
+    "isExample" : false,
+    "name" : "Magazin Piese Exemplu",
+    "trades" : [
+      "other"
+    ],
+    "updatedAt" : "2026-11-20T08:10:00Z"
+  },
+  {
+    "assetIds" : [
+      "31432ef9-3d87-42e2-99eb-04d6117c9f98"
+    ],
+    "createdAt" : "2026-11-25T21:59:16Z",
+    "id" : "50b449e1-0196-49a9-9e37-51f19c88b249",
+    "isExample" : false,
+    "name" : "Chiriaș Exemplu",
+    "phone" : "0700000002",
+    "trades" : [
+      "tenant"
+    ],
+    "updatedAt" : "2026-11-20T08:24:00Z"
+  }
+]
