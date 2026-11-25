@@ -44,5 +44,5 @@ TEST_RUNNER_GOLDEN_ARCHIVES_WRITE=1 xcodebuild test -project ios/DosarCuSina.xco
 
 ## Who reads them
 
-- **Android** (a later piece of Phase 1): imports `ios/household.dosar` and `ios/household-password.dosar` and compares what came in with `ios/expected/`, record by record.
+- **Android**: `GoldenIosArchivesTest` (in `android/archive`) imports `ios/household.dosar` and `ios/household-password.dosar` into an empty binder and compares what came in, written out again as the archive's records, with `ios/expected/`, record by record and every vault file by its SHA-256. A difference fails unless it is on the test's written list of allowed ones (`Allowed`), each with why; today that list is empty.
 - **iOS**: imports its own (above), and, once `android/` exists, Android's.
