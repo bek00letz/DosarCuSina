@@ -10,6 +10,7 @@ plain ZIP file (DEFLATE or STORE entries) with JSON inside, readable with
 - **JSON Schema:** [`dosar-v3.schema.json`](dosar-v3.schema.json)
 - **Golden fixtures:** [`../fixtures/dosar-v3/household`](../fixtures/dosar-v3/household) (v3) and [`../fixtures/dosar-v2/ios-export`](../fixtures/dosar-v2/ios-export) (v2, still importable). Every implementation must import both.
 - **With a password:** the same ZIP, encrypted whole; see [Password-protected archives](#password-protected-archives).
+- **Container test vectors:** [`../test-vectors/archive`](../test-vectors/archive): archives each app made, plain and with a password, and crafted ones every reader refuses, with the kind of error.
 
 ## Layout
 
