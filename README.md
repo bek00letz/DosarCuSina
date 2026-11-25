@@ -39,7 +39,7 @@ The app is in Romanian. It is for everyone, and built so that people who aren't 
 Pre-release. Not on the App Store yet.
 
 - **iOS only**, iOS 26 and later.
-- **Android is paused.** The code under `android/` is from an earlier version. The `.dosar` backup format ([spec](shared/schemas/dosar-v3.md), [fixtures](shared/fixtures)) is the cross-platform contract a future port will follow.
+- **Android is being ported**, by the plan in [docs/ANDROID_PLAN.md](docs/ANDROID_PLAN.md). The code under `android/` is still the earlier version. The `.dosar` backup format ([spec](shared/schemas/dosar-v3.md), [fixtures](shared/fixtures)) is the cross-platform contract the port follows.
 
 What is built, and what isn't yet, is in [SPEC.md](SPEC.md). Where work stands right now is in [docs/HANDOFF.md](docs/HANDOFF.md).
 
@@ -126,7 +126,7 @@ The captions are text in [marketing/app-store/captions.json](marketing/app-store
 | `ios/DosarCuSinaScreenshots/` | The UI tests that take the App Store's screenshots (their own scheme, never in the test run). |
 | `ios/Legacy/` | The first version of the app. Not compiled, kept as a way back. |
 | `shared/` | The `.dosar` format and fixtures, Romanian administrative standards, starter templates. |
-| `android/` | The paused Android version. |
+| `android/` | The Android version (the earlier one until the port's first phase replaces it). |
 | `tests/` | The test runner, plus legacy and Android scripts. |
 | `docs/` | Decisions, handoff notes, copy guide, archive. |
 | `marketing/` | The App Store listing's text, the screenshots' captions, the script that frames them and the framed set to upload (`app-store/screenshots/`). |

@@ -1,6 +1,6 @@
 # Dosar cu Șină for Android: the plan
 
-A plan for the owner to read and answer, written 25 November 2026. Nothing is built yet: building starts once the four questions at the end are answered. When they are, the answers go into [DECISIONS.md](DECISIONS.md) and this file says which were chosen.
+A plan for the owner, written 25 November 2026. **The owner took all four recommendations the same day** (reading documents with an open-source reader that runs only on the phone, after a side-by-side test; the binder on the phone with `.dosar` backups for the first release; Android's own look with the same care; Kotlin, Compose and Room, Android 11 and later, Google Play, `com.ar.dosarcusina.app`). They are in [DECISIONS.md](DECISIONS.md) (2026-11-25). Where the phases stand is in [HANDOFF.md](HANDOFF.md).
 
 ## What we are making
 
@@ -88,7 +88,7 @@ An accessibility and "every size" pass, the break-it and framework reviews that 
 
 One thing to say plainly: **an iPhone and an Android phone in the same household can't share one binder live** under any of the options below. They move it with a `.dosar` copy, both ways.
 
-## Four questions for you
+## Four questions for you (answered: the recommendation each time)
 
 ### 1. Reading documents on the phone
 

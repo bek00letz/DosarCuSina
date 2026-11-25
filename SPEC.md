@@ -671,7 +671,7 @@ The privacy policy and the help page (what the app is, how to ask for help, how 
 
 ## 11. Not built yet
 
-- **Android port.** Paused. The code under `android/` is from the first version and does not follow this spec. The `.dosar` format is the contract it will follow.
+- **Android port.** Started, by the plan in [docs/ANDROID_PLAN.md](docs/ANDROID_PLAN.md); nothing of it is built yet. The code under `android/` is from the first version and does not follow this spec. The `.dosar` format is the contract it follows.
 - **Partners.** Optional, privacy-first offers from vetted companies (an insurance broker, for example) on fair commission. See the decision log.
 - **Household sharing** through iCloud.
 - **Reminders app** integration. Not built; Calendar is.
