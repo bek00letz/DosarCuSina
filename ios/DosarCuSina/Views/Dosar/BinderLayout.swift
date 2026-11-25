@@ -95,7 +95,7 @@ enum BinderLayout {
     /// more. A category without a box of its own (tenants, people) is never named: its sections
     /// live inside another. Empty once everything has a box.
     static func addBoxNames(offered: [TemplateInfo], templates: [TemplateInfo], assets: [AssetInfo]) -> (names: [String], more: Bool) {
-        let byKey = Dictionary(CategoryTemplate.oncePerKey(templates).map { ($0.key, $0) }, uniquingKeysWith: { first, _ in first })
+        let byKey = Dictionary(templates.map { ($0.key, $0) }, uniquingKeysWith: { first, _ in first })
         let waiting = offered.filter { $0.isOnHome && $0.box != .insideOther && !holdsAnything($0, templates: byKey, assets: assets) }
         let folded = waiting.filter { $0.box == .wholeCategory }.sorted { $0.homeOrder < $1.homeOrder }
         let ordered = folded + waiting.filter { $0.box != .wholeCategory }
@@ -117,7 +117,7 @@ enum BinderLayout {
 
     static func defaultOrder(templates: [TemplateInfo], assets: [AssetInfo], hasContacts: Bool) -> [BinderBoxID] {
         var result: [BinderBoxID] = []
-        let byKey = Dictionary(CategoryTemplate.oncePerKey(templates).map { ($0.key, $0) }, uniquingKeysWith: { first, _ in first })
+        let byKey = Dictionary(templates.map { ($0.key, $0) }, uniquingKeysWith: { first, _ in first })
         let topLevel = assets.filter(\.isTopLevel).sorted { $0.createdAt < $1.createdAt }
         for template in templates.sorted(by: { $0.homeOrder < $1.homeOrder }) where template.isOnHome {
             switch template.box {
