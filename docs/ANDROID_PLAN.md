@@ -39,7 +39,7 @@ Rules that are checked, not remembered, carry over too: the Android build gets a
 - One small format point to settle here: the format names scanned pages `page-<n>.heic`. Android can write HEIC (the Pixel 6a can), but not every Android phone can. My recommendation: Android writes HEIC where the phone can and JPEG where it can't, and the format says a page may be either (the iOS reader already reads a page by the path the archive gives). That is a format change, so it waits for your OK.
 
 ### Phase 2: the store and the one way to save (two or three agents)
-- The database (Room, on SQLite) in the same shape as the iOS models, with migrations tested from the first version on.
+- The database (Room, on SQLite) in the same shape as the iOS models (database version 19), with migrations tested from the first version on. As on iOS, no link deletes what it points at: a record goes with what it holds only through one path (`RecordContents`), and each held record keeps its holder's id. What belongs to one phone (which copy a record is, since when a cycle is known, when a category was last locked anywhere) stays out of backups, as `DossierV3.stayOnThePhone` says.
 - The unit of work: every save once, everything or nothing, change times kept by one writer, card numbers masked, "Anulează" for every step (`UndoReceipt`), deletions that take what a record holds.
 - The catalog read from `shared/catalog/`, categories of one's own, the repair list (`DataRepairs`), the examples.
 
