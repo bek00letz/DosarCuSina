@@ -143,16 +143,11 @@ class CalendarDayVectorsTest {
     private companion object {
         /**
          * The short, written list of cases Android answers differently from the iPhone, on
-         * purpose, each with why: the day, zone and minute, and Android's moment.
-         *
-         * - Lord Howe Island's clocks skip half an hour (02:00–02:30) when summer time starts.
-         *   `CalendarDay.moment(atMinute:)` means the first minute after the gap, 02:30, which
-         *   Android gives; Foundation's `nextDate` finds no 02:00 that day and gives the next
-         *   day's, a day late. A question for the owner, in the pull request.
+         * purpose, each with why: the day, zone and minute, and Android's moment. Empty: the one
+         * case it held (a time Lord Howe Island's half-hour gap skips, which the iPhone put on the
+         * next day) is fixed on iOS, and both now give the first minute after the gap.
          */
-        val ANSWERED_DIFFERENTLY: Map<String, Long> = mapOf(
-            "2026-10-04 Australia/Lord_Howe 120" to 1_791_041_400L,
-        )
+        val ANSWERED_DIFFERENTLY: Map<String, Long> = emptyMap()
     }
 
     /** Foundation counts weekdays from Sunday, 1, to Saturday, 7. */
