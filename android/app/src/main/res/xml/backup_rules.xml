@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Android 11. The same rules as data_extraction_rules.xml: everything goes only in a
+     transfer to a new phone, never to the cloud. -->
+<full-backup-content>
+    <include domain="root" path="." requireFlags="deviceToDeviceTransfer" />
+    <include domain="device_root" path="." requireFlags="deviceToDeviceTransfer" />
+</full-backup-content>

@@ -1,0 +1,15 @@
+# detekt for every module, on top of detekt's own defaults (buildUponDefaultConfig).
+#
+# This is where the Android counterpart of scripts/architecture-check.sh grows:
+# later phases add the rules that keep one path per job (the app's calendar, plurals
+# from resources, saves through the unit of work, side effects through one
+# coordinator), here and as Android Lint checks.
+
+config:
+  validation: true
+  warningsAsErrors: true
+
+naming:
+  FunctionNaming:
+    # Compose's functions are named like types.
+    ignoreAnnotated: ['Composable']
