@@ -1,5 +1,6 @@
 package com.ar.dosarcusina.archive
 
+import com.ar.dosarcusina.core.values.DosarCalendar
 import java.io.ByteArrayOutputStream
 import java.text.Normalizer
 import java.time.Instant
@@ -172,12 +173,12 @@ object DosarZipEngine {
      * Writes an archive to a sink, one file at a time. Each file is checked against the limits
      * before a byte of it is written; what the writer accepts, [Reader] reads. A file is
      * compressed only when that makes it smaller and keeps it within what the reader lets a file
-     * expand; otherwise it is stored as it is. Dates are written in [zone], the app's time zone.
+     * expand; otherwise it is stored as it is. Dates are written in [zone], the app's time zone ([DosarCalendar.zone]).
      */
     class Writer(
         private val sink: ArchiveByteSink,
         val limits: Limits = Limits.standard,
-        private val zone: ZoneId = ZoneId.systemDefault(),
+        private val zone: ZoneId = DosarCalendar.zone(),
     ) {
         private class Record(
             val pathBytes: ByteArray,
@@ -308,12 +309,13 @@ object DosarZipEngine {
 
     /**
      * Reads an archive's directory, then each file on request, a piece at a time. Every file is
-     * checked against the limits before any of it is read. Dates are read in [zone].
+     * checked against the limits before any of it is read. Dates are read in [zone], the app's time zone
+     * ([DosarCalendar.zone]).
      */
     class Reader(
         private val source: ArchiveByteSource,
         val limits: Limits = Limits.standard,
-        zone: ZoneId = ZoneId.systemDefault(),
+        zone: ZoneId = DosarCalendar.zone(),
     ) {
         /** One file, as the directory describes it. */
         @ConsistentCopyVisibility
