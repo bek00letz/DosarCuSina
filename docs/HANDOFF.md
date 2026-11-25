@@ -111,6 +111,13 @@ Newest first. Copy this template:
 - **Decisions:** entries added to or questioned in DECISIONS.md, or "none".
 ```
 
+### 2026-11-26 — owner (with Claude) — `claude/golden-archives-on-ci`
+- **Did:** a failed `build-and-test` run keeps the iOS golden archives made afresh, as it keeps the String Catalogs: `GoldenArchiveTests` writes them to `TEST_RUNNER_GOLDEN_ARCHIVES_OUT` when the committed ones are out of date, and `tests/run_tests.sh` points it at the run's `test-results` (`golden-archives/`, laid out as `shared/fixtures/golden/ios/`). AGENTS.md's `build-and-test` row and "Where things are documented" say so, beside the copy matrix.
+- **Tests:** on GitHub; the out-of-date path itself was not run (it needs a change to what a backup holds).
+- **Left open:** none.
+- **Next:** Phase 1 goes on with the Android importer.
+- **Decisions:** none.
+
 ### 2026-11-25 — owner (with Claude) — `claude/android-p1-golden-ios`
 - **Did:** Phase 1 of the Android port, the iOS side. The writer names each scanned page and thumbnail by its bytes (`page-2.jpg` for a JPEG, `.heic` otherwise: `DossierV3.Path.pictureExtension`, through `ShareInbox.type(sniffing:)`); the importer already took a picture by its bytes, now pinned with an older archive's JPEG named `.heic` (`ArchivePicturesTests`). The iOS golden archives in `shared/fixtures/golden/ios/` (`household.dosar`, `household-password.dosar`, their contents unpacked in `expected/`), made by `GoldenArchiveTests` from a placeholder household built through the app's actions (`GoldenHousehold`), fresh or failing by contents (ids by place, `createdAt` and the app's version left out), and both imported back into an empty binder record by record; the pictures and PDFs it files are committed in `golden/inputs/`. `shared/fixtures/golden/README.md` says what each file is and how to refresh them (`TEST_RUNNER_GOLDEN_ARCHIVES_WRITE=1`).
 - **Tests:** `GoldenArchiveTests` and `ArchivePicturesTests` only, on iPhone 18 Pro, iOS 27.0 (one run with the write switch, one without); the full suite on GitHub.
