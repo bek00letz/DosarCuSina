@@ -25,7 +25,9 @@ Rules that are checked, not remembered, carry over too: the Android build gets a
 
 ## Phases, in order
 
-### Phase 0: groundwork (one agent)
+### Phase 0: groundwork (one agent) — done
+**Done** on 25 November 2026 (`claude/android-phase-0-f26361`): `core`, `archive` and `app` in `android/`, the first version in `android/Legacy/`, and the checks `android-build-and-test` and `android-lint` (Android Lint and detekt, warnings as errors; detekt is a 2.0 alpha, the first built for Kotlin 2.4). [README.md](../README.md#android) says how to build and test.
+
 - A new Gradle project in `android/`, the old one moved to `android/Legacy/`.
 - An Android workflow on GitHub (build, unit tests, lint, the architecture rules) that runs on every pull request beside the four iOS checks. You add it as a required check in the repository's settings (I can't change branch protection without your OK).
 - Pure Kotlin modules for everything that doesn't need a phone (the archive, the engines, capture's readers), so their tests run in seconds on GitHub's Linux machines, with no emulator.
