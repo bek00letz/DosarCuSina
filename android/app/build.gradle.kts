@@ -7,7 +7,10 @@ plugins {
 
 android {
     namespace = "com.ar.dosarcusina.app"
-    compileSdk = 37
+    // The newest Android APIs, minor release included: Compose asks for 37.1 or later.
+    compileSdk {
+        version = release(37) { minorApiLevel = 2 }
+    }
 
     defaultConfig {
         // The iPhone app's id, never the first Android version's (docs/DECISIONS.md, 2026-11-25).
