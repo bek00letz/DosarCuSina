@@ -1,4 +1,5 @@
 import Foundation
+import UniformTypeIdentifiers
 
 /// The `.dosar` v3 records, field for field as `shared/schemas/dosar-v3.md`
 /// describes them. Identifiers are lowercase UUID strings, timestamps are
@@ -25,6 +26,15 @@ public enum DossierV3 {
         public static let opis = "opis.pdf"
 
         public static let dataFiles = [templates, assets, obligations, history, serviceItems, providers, measurements, attachments, issuerLessons]
+
+        /// The extension a scanned page or a thumbnail is written under, by what its bytes are
+        /// (`ShareInbox.type(sniffing:)`, the one way the app knows a file by its first bytes):
+        /// `jpg` for a JPEG, `heic` for anything else, as every page was named before. A reader
+        /// never goes by it: it knows a picture by its bytes, so an archive written before this
+        /// rule, with a JPEG page named `.heic`, reads as it always did.
+        public static func pictureExtension(of data: Data) -> String {
+            ShareInbox.type(sniffing: data) == .jpeg ? "jpg" : "heic"
+        }
     }
 
     public struct Manifest: Codable, Hashable, Sendable {
@@ -248,7 +258,7 @@ public enum DossierV3 {
         public var sha256: String?
         /// The original file, `vault/<id>.<ext>`, when there is one.
         public var path: String?
-        /// Scanned pages, `vault/<id>/page-<n>.heic`, in order.
+        /// Scanned pages, `vault/<id>/page-<n>.heic` or `.jpg` by what each is (`Path.pictureExtension`), in order.
         public var pagePaths: [String]
         /// `vault/<id>/thumbnail.<ext>`.
         public var thumbnailPath: String?
