@@ -662,7 +662,10 @@ struct HistoryVectorsTests {
         }
         let visit = draft.filing(on: state.asset, form: form, provider: provider)
         let clock = now
-        let outcome = try await CaptureFiler(context: state.context, calendar: calendar, now: { clock }).file(.visit(visit))
+        var filer = CaptureFiler(context: state.context, calendar: calendar, now: { clock })
+        // A category locked by default (Sănătate) opens with Face ID, as the visit form asks for it.
+        filer.vault = BiometricVaultManager(authenticator: FakeAuthenticator(.succeed), appLockEnabled: { false }, observesAppLifecycle: false)
+        let outcome = try await filer.file(.visit(visit))
         if let made = outcome.visit { state.entries.append(made) }
         return outcome.receipt
     }
