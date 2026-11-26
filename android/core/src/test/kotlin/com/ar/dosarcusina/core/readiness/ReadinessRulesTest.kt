@@ -58,4 +58,13 @@ class ReadinessRulesTest {
         val broken = files + (TravelData.File.RULES to rules)
         assertThrows<TravelError> { TravelData.read { broken.getValue(it) } }
     }
+
+    @Test
+    fun `travel data for a type the catalog doesn't declare is an export out of step`() {
+        val files = TravelData.File.entries.associateWith(TravelData::resource)
+        val documents = files.getValue(TravelData.File.DOCUMENTS)
+            .replace("\"documentType.passport\"", "\"documentType.atlantis\"")
+        val broken = files + (TravelData.File.DOCUMENTS to documents)
+        assertThrows<TravelError> { TravelData.read { broken.getValue(it) } }
+    }
 }

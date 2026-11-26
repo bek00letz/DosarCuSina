@@ -8,6 +8,7 @@ import com.ar.dosarcusina.core.values.CalendarDay
 import com.ar.dosarcusina.core.values.KeptObject
 import com.ar.dosarcusina.store.Step
 import com.ar.dosarcusina.store.Tables
+import com.ar.dosarcusina.store.obligations.DeadlineMutations
 import com.ar.dosarcusina.store.readings.HeroMetric
 import com.ar.dosarcusina.store.readings.HouseholdReadings
 import com.ar.dosarcusina.store.schema.Asset
@@ -52,7 +53,7 @@ internal object SectionMaking {
         )
         for (planned in section.obligations) {
             if (!planned.isSelected) continue
-            SectionDeadlines.make(step, planned.blueprint, asset, planned.firstDue, today, now, catalog)
+            DeadlineMutations.makeObligation(step, planned.blueprint, asset, planned.firstDue, today, now, catalog)
         }
         // A new section has no readings before its first, so this never asks.
         val fields = section.template.keptSections.items.flatMap { it.fields }

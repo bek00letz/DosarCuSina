@@ -3,12 +3,14 @@ package com.ar.dosarcusina.store.obligations
 import com.ar.dosarcusina.core.deadlines.missedCyclesStayOwed
 import com.ar.dosarcusina.archive.binder.BuiltIns
 import com.ar.dosarcusina.archive.v3.FieldDefinition
+import com.ar.dosarcusina.archive.v3.FieldValues
 import com.ar.dosarcusina.archive.v3.ObligationBlueprint
 import com.ar.dosarcusina.archive.v3.RecurrenceRule
 import com.ar.dosarcusina.catalog.CategorySwitches
 import com.ar.dosarcusina.catalog.RecurrenceContext
 import com.ar.dosarcusina.catalog.RecurrenceEngine
 import com.ar.dosarcusina.catalog.SeriesStep
+import com.ar.dosarcusina.catalog.recurrenceRule
 import com.ar.dosarcusina.catalog.remindersFor
 import com.ar.dosarcusina.core.deadlines.CompletionShape
 import com.ar.dosarcusina.core.readings.ReadingSource
@@ -72,27 +74,54 @@ object DeadlineMutations {
         val values = asset.keptValues.value
         val due = firstDue ?: RecurrenceEngine.firstDue(blueprint, values, today)
             ?: throw ObligationActionError.MissingFirstDueDate(blueprint.key)
-        val rule = blueprint.recurrence?.let(RecurrenceRule.codec::decode) ?: RecurrenceRule.None
-        val counter = (rule as? RecurrenceRule.Metric)?.let { metric ->
+        val counter = (blueprint.recurrenceRule as? RecurrenceRule.Metric)?.let { metric ->
             currentMetric(step, asset, builtIns)?.let { it + metric.every }
         }
-        val made = Obligation(
-            title = blueprint.title,
-            kindRaw = blueprint.kind,
-            dueDayISO = StoredDay.text(due),
-            dueMetric = counter,
-            blueprintKey = blueprint.key,
-            notes = blueprint.note.takeUnless { CategorySwitches.isServiceBlueprint(blueprint.key) },
-            estimatedCostAmount = blueprint.estimatedCost?.amount,
-            estimatedCostCurrency = blueprint.estimatedCost?.currency,
-            isExample = asset.isExample,
-            asset = asset.pk,
-            createdAt = now,
-            updatedAt = now,
-        ).withKeptRecurrence(KeptObject.made(rule, RecurrenceRule.codec))
-            .withKeptReminders(KeptObject.made(blueprint.remindersFor(values), StoredReminders.codec))
-        return step.insert(made)
+        return step.insert(made(blueprint, due, values, now, asset.isExample, asset.pk, counter))
     }
+
+    /**
+     * Makes the household's own deadline from [blueprint] in [step] (the rental income declaration,
+     * [com.ar.dosarcusina.store.templates.HouseholdDeadlines]), first due on [due]: one of no section,
+     * reminding as the blueprint says, its note the blueprint's, an example while [isExample].
+     */
+    fun makeHouseholdObligation(
+        step: Step,
+        blueprint: ObligationBlueprint,
+        due: CalendarDay,
+        now: Instant,
+        isExample: Boolean,
+    ): Obligation = step.insert(made(blueprint, due, FieldValues(), now, isExample, asset = null, dueMetric = null))
+
+    /**
+     * The one record a deadline made from [blueprint] is, by [makeObligation] and
+     * [makeHouseholdObligation]: its rule, its reminders for the section's [values], its note (a
+     * service's rule is no note) and its cost the blueprint's.
+     */
+    @Suppress("LongParameterList") // What a new deadline is made from.
+    private fun made(
+        blueprint: ObligationBlueprint,
+        due: CalendarDay,
+        values: FieldValues,
+        now: Instant,
+        isExample: Boolean,
+        asset: Long?,
+        dueMetric: Double?,
+    ): Obligation = Obligation(
+        title = blueprint.title,
+        kindRaw = blueprint.kind,
+        dueDayISO = StoredDay.text(due),
+        dueMetric = dueMetric,
+        blueprintKey = blueprint.key,
+        notes = blueprint.note.takeUnless { CategorySwitches.isServiceBlueprint(blueprint.key) },
+        estimatedCostAmount = blueprint.estimatedCost?.amount,
+        estimatedCostCurrency = blueprint.estimatedCost?.currency,
+        isExample = isExample,
+        asset = asset,
+        createdAt = now,
+        updatedAt = now,
+    ).withKeptRecurrence(KeptObject.made(blueprint.recurrenceRule, RecurrenceRule.codec))
+        .withKeptReminders(KeptObject.made(blueprint.remindersFor(values), StoredReminders.codec))
 
     /**
      * What the engine knows when [obligation] moves to its next cycle: its section's values and counter
