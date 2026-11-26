@@ -55,13 +55,13 @@ object DosarFormat {
     /** [day] in [style]: a day past its month's end keeps its own number; a month past 12 goes on to the next year. */
     fun write(day: CalendarDay, style: DateStyle): String {
         val shown = if (day.month in 1..RomanianMonths.COUNT) day else CalendarDay.of(day.localDate())
-        return write(shown.year, shown.month, shown.day, style)
+        return writeNumbers(shown.year, shown.month, shown.day, style)
     }
 
     /** The day [moment] falls on in [zone], in [style]. */
     fun write(moment: Instant, style: DateStyle, zone: ZoneId = DosarCalendar.zone()): String {
         val wall = LocalDateTime.ofInstant(moment, zone)
-        return write(wall.year, wall.monthValue, wall.dayOfMonth, style)
+        return writeNumbers(wall.year, wall.monthValue, wall.dayOfMonth, style)
     }
 
     /** „08/28”: the month a bank card is valid through, as cards print it. */
@@ -82,16 +82,19 @@ object DosarFormat {
         return twoDigits(minute / MINUTES_IN_HOUR) + ":" + twoDigits(minute % MINUTES_IN_HOUR)
     }
 
-    private fun write(year: Int, month: Int, day: Int, style: DateStyle): String = when (style) {
-        DateStyle.DAY -> "$day ${RomanianMonths.abbreviated(month)} $year"
-        DateStyle.LONG_DAY -> "$day ${RomanianMonths.wide(month)} $year"
-        DateStyle.DAY_MONTH -> "$day ${RomanianMonths.wide(month)}"
-        DateStyle.MONTH_YEAR -> "${RomanianMonths.wide(month)} $year"
-        DateStyle.NUMERIC_DAY -> "${twoDigits(day)}.${twoDigits(month)}.$year"
-    }
-
-    private fun twoDigits(number: Int): String = number.toString().padStart(2, '0')
 }
+
+/** A day's numbers in [style]. */
+private fun writeNumbers(year: Int, month: Int, day: Int, style: DateStyle): String = when (style) {
+    DateStyle.DAY -> "$day ${RomanianMonths.abbreviated(month)} $year"
+    DateStyle.LONG_DAY -> "$day ${RomanianMonths.wide(month)} $year"
+    DateStyle.DAY_MONTH -> "$day ${RomanianMonths.wide(month)}"
+    DateStyle.MONTH_YEAR -> "${RomanianMonths.wide(month)} $year"
+    DateStyle.NUMERIC_DAY -> "${twoDigits(day)}.${twoDigits(month)}.$year"
+}
+
+/** „05”: a number with two digits at least, in ASCII, as dates and times are written. */
+private fun twoDigits(number: Int): String = number.toString().padStart(2, '0')
 
 /**
  * Romanian's month names as Foundation writes them in the app's locale (ro_RO), pinned by the iOS
