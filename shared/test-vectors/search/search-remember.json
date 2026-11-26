@@ -1,0 +1,151 @@
+{
+  "built" : "A token in a case's text is a number that passes its check, built when the test runs so the repository never holds one. {luhn:DIGITS}: DIGITS as written with the Luhn check digit after them. {iban:CC:BBAN}: CC, the two ISO 13616 check digits (98 minus BBAN + CC + \"00\" mod 97, letters as A=10 … Z=35), then BBAN. {iban4:CC:BBAN}: the same, in groups of four with a space between. {fours:DIGITS}: DIGITS in groups of four with a space between. Answers name the same tokens.",
+  "cases" : [
+    {
+      "foundLocked" : [
+
+      ],
+      "mayRemember" : true,
+      "query" : "golf"
+    },
+    {
+      "foundLocked" : [
+        false
+      ],
+      "mayRemember" : true,
+      "query" : "golf"
+    },
+    {
+      "foundLocked" : [
+        true
+      ],
+      "mayRemember" : false,
+      "query" : "cazier"
+    },
+    {
+      "foundLocked" : [
+        false,
+        true
+      ],
+      "mayRemember" : false,
+      "query" : "cazier"
+    },
+    {
+      "foundLocked" : [
+        false
+      ],
+      "mayRemember" : false,
+      "query" : "4111 1111 1111 1111"
+    },
+    {
+      "foundLocked" : [
+
+      ],
+      "mayRemember" : false,
+      "query" : "cnp 1800101990006"
+    },
+    {
+      "foundLocked" : [
+        false
+      ],
+      "mayRemember" : true,
+      "query" : "B-123-ABC"
+    },
+    {
+      "adding" : "golf",
+      "limit" : 8,
+      "recent" : [
+        "golf"
+      ],
+      "to" : [
+
+      ]
+    },
+    {
+      "adding" : "Golf",
+      "limit" : 8,
+      "recent" : [
+        "Golf",
+        "rca"
+      ],
+      "to" : [
+        "golf",
+        "rca"
+      ]
+    },
+    {
+      "adding" : "  rca  ",
+      "limit" : 8,
+      "recent" : [
+        "rca",
+        "golf"
+      ],
+      "to" : [
+        "golf",
+        "RCA"
+      ]
+    },
+    {
+      "adding" : "poliță",
+      "limit" : 8,
+      "recent" : [
+        "poliță",
+        "golf"
+      ],
+      "to" : [
+        "polita",
+        "golf"
+      ]
+    },
+    {
+      "adding" : "",
+      "limit" : 8,
+      "recent" : [
+        "golf"
+      ],
+      "to" : [
+        "golf"
+      ]
+    },
+    {
+      "adding" : "   ",
+      "limit" : 8,
+      "recent" : [
+        "golf"
+      ],
+      "to" : [
+        "golf"
+      ]
+    },
+    {
+      "adding" : "nou",
+      "limit" : 3,
+      "recent" : [
+        "nou",
+        "a",
+        "b"
+      ],
+      "to" : [
+        "a",
+        "b",
+        "c"
+      ]
+    },
+    {
+      "adding" : "Şcoala",
+      "limit" : 8,
+      "recent" : [
+        "Şcoala",
+        "x"
+      ],
+      "to" : [
+        "școala",
+        "x"
+      ]
+    }
+  ],
+  "rule" : "SearchPrivacy.mayRemember(_:results:) and RecentSearches.adding(_:to:limit:): a search kept among the recent ones only when its words may be remembered and it found nothing locked; the same search in another case or without diacritics moves to the top",
+  "shape" : "Each case is one of two: query with foundLocked (for each result, whether it is in a locked section) gives mayRemember; adding, to and limit give recent, the list after adding.",
+  "source" : "ios/DosarCuSina/Services/Search/SearchPrivacy.swift, ios/DosarCuSina/Views/Search/SearchSupport.swift",
+  "writtenBy" : "ios/DosarCuSinaTests/SearchVectorsTests.swift"
+}

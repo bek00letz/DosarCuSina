@@ -1,0 +1,2803 @@
+{
+  "cases" : [
+    {
+      "deadlines" : [
+        {
+          "closesInTheApp" : false,
+          "cycleKnownSince" : null,
+          "cycleStart" : null,
+          "dueDay" : "2026-12-15",
+          "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0001",
+          "isExample" : false,
+          "isSensitive" : false,
+          "reminderMinuteOfDay" : null,
+          "reminders" : {
+            "consequence" : "legal",
+            "followUpAfterLapse" : null,
+            "graceDays" : 0,
+            "leadDays" : [
+              30,
+              7,
+              0
+            ],
+            "travelMarginDays" : 0
+          },
+          "snoozedUntil" : null,
+          "status" : "active"
+        }
+      ],
+      "defaultMinuteOfDay" : 540,
+      "limit" : 60,
+      "name" : "an ITP's leads and its follow-up",
+      "now" : 1793518200,
+      "plan" : [
+        {
+          "badge" : null,
+          "closesInTheApp" : false,
+          "cycle" : "2026-12-15",
+          "fireAt" : 1794726000,
+          "identifier" : "obligation.aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0001.d30",
+          "isProtected" : false,
+          "isTimeSensitive" : false,
+          "obligationId" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0001",
+          "showsAlert" : true,
+          "trigger" : "2026-11-15T09:00"
+        },
+        {
+          "badge" : null,
+          "closesInTheApp" : false,
+          "cycle" : "2026-12-15",
+          "fireAt" : 1796713200,
+          "identifier" : "obligation.aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0001.d7",
+          "isProtected" : false,
+          "isTimeSensitive" : false,
+          "obligationId" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0001",
+          "showsAlert" : true,
+          "trigger" : "2026-12-08T09:00"
+        },
+        {
+          "badge" : null,
+          "closesInTheApp" : false,
+          "cycle" : "2026-12-15",
+          "fireAt" : 1797318000,
+          "identifier" : "obligation.aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0001.d0",
+          "isProtected" : false,
+          "isTimeSensitive" : true,
+          "obligationId" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0001",
+          "showsAlert" : true,
+          "trigger" : "2026-12-15T09:00"
+        },
+        {
+          "badge" : null,
+          "closesInTheApp" : false,
+          "cycle" : "2026-12-15",
+          "fireAt" : 1797404400,
+          "identifier" : "obligation.aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0001.lapse",
+          "isProtected" : false,
+          "isTimeSensitive" : true,
+          "obligationId" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0001",
+          "showsAlert" : true,
+          "trigger" : "2026-12-16T09:00"
+        }
+      ],
+      "zone" : "Europe/Bucharest"
+    },
+    {
+      "deadlines" : [
+        {
+          "closesInTheApp" : false,
+          "cycleKnownSince" : null,
+          "cycleStart" : null,
+          "dueDay" : "2026-12-15",
+          "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0001",
+          "isExample" : false,
+          "isSensitive" : false,
+          "reminderMinuteOfDay" : null,
+          "reminders" : {
+            "consequence" : "legal",
+            "followUpAfterLapse" : null,
+            "graceDays" : 0,
+            "leadDays" : [
+              30,
+              7,
+              0
+            ],
+            "travelMarginDays" : 0
+          },
+          "snoozedUntil" : null,
+          "status" : "active"
+        }
+      ],
+      "defaultMinuteOfDay" : 540,
+      "limit" : 60,
+      "name" : "a lead whose time today has passed",
+      "now" : 1794729600,
+      "plan" : [
+        {
+          "badge" : null,
+          "closesInTheApp" : false,
+          "cycle" : "2026-12-15",
+          "fireAt" : 1796713200,
+          "identifier" : "obligation.aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0001.d7",
+          "isProtected" : false,
+          "isTimeSensitive" : false,
+          "obligationId" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0001",
+          "showsAlert" : true,
+          "trigger" : "2026-12-08T09:00"
+        },
+        {
+          "badge" : null,
+          "closesInTheApp" : false,
+          "cycle" : "2026-12-15",
+          "fireAt" : 1797318000,
+          "identifier" : "obligation.aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0001.d0",
+          "isProtected" : false,
+          "isTimeSensitive" : true,
+          "obligationId" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0001",
+          "showsAlert" : true,
+          "trigger" : "2026-12-15T09:00"
+        },
+        {
+          "badge" : null,
+          "closesInTheApp" : false,
+          "cycle" : "2026-12-15",
+          "fireAt" : 1797404400,
+          "identifier" : "obligation.aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0001.lapse",
+          "isProtected" : false,
+          "isTimeSensitive" : true,
+          "obligationId" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0001",
+          "showsAlert" : true,
+          "trigger" : "2026-12-16T09:00"
+        }
+      ],
+      "zone" : "Europe/Bucharest"
+    },
+    {
+      "deadlines" : [
+        {
+          "closesInTheApp" : false,
+          "cycleKnownSince" : null,
+          "cycleStart" : null,
+          "dueDay" : "2026-03-31",
+          "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0002",
+          "isExample" : false,
+          "isSensitive" : false,
+          "reminderMinuteOfDay" : null,
+          "reminders" : {
+            "consequence" : "financial",
+            "followUpAfterLapse" : null,
+            "graceDays" : 0,
+            "leadDays" : [
+              365,
+              60,
+              30,
+              0
+            ],
+            "travelMarginDays" : 0
+          },
+          "snoozedUntil" : null,
+          "status" : "active"
+        }
+      ],
+      "defaultMinuteOfDay" : 540,
+      "limit" : 60,
+      "name" : "leads in months from a month's end",
+      "now" : 1735682400,
+      "plan" : [
+        {
+          "badge" : null,
+          "closesInTheApp" : false,
+          "cycle" : "2026-03-31",
+          "fireAt" : 1743400800,
+          "identifier" : "obligation.aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0002.d365",
+          "isProtected" : false,
+          "isTimeSensitive" : false,
+          "obligationId" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0002",
+          "showsAlert" : true,
+          "trigger" : "2025-03-31T09:00"
+        },
+        {
+          "badge" : null,
+          "closesInTheApp" : false,
+          "cycle" : "2026-03-31",
+          "fireAt" : 1769842800,
+          "identifier" : "obligation.aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0002.d60",
+          "isProtected" : false,
+          "isTimeSensitive" : false,
+          "obligationId" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0002",
+          "showsAlert" : true,
+          "trigger" : "2026-01-31T09:00"
+        },
+        {
+          "badge" : null,
+          "closesInTheApp" : false,
+          "cycle" : "2026-03-31",
+          "fireAt" : 1772262000,
+          "identifier" : "obligation.aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0002.d30",
+          "isProtected" : false,
+          "isTimeSensitive" : false,
+          "obligationId" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0002",
+          "showsAlert" : true,
+          "trigger" : "2026-02-28T09:00"
+        },
+        {
+          "badge" : null,
+          "closesInTheApp" : false,
+          "cycle" : "2026-03-31",
+          "fireAt" : 1774936800,
+          "identifier" : "obligation.aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0002.d0",
+          "isProtected" : false,
+          "isTimeSensitive" : true,
+          "obligationId" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0002",
+          "showsAlert" : true,
+          "trigger" : "2026-03-31T09:00"
+        },
+        {
+          "badge" : null,
+          "closesInTheApp" : false,
+          "cycle" : "2026-03-31",
+          "fireAt" : 1775023200,
+          "identifier" : "obligation.aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0002.lapse",
+          "isProtected" : false,
+          "isTimeSensitive" : true,
+          "obligationId" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0002",
+          "showsAlert" : true,
+          "trigger" : "2026-04-01T09:00"
+        }
+      ],
+      "zone" : "Europe/Bucharest"
+    },
+    {
+      "deadlines" : [
+        {
+          "closesInTheApp" : false,
+          "cycleKnownSince" : null,
+          "cycleStart" : null,
+          "dueDay" : "2028-02-29",
+          "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0003",
+          "isExample" : false,
+          "isSensitive" : false,
+          "reminderMinuteOfDay" : null,
+          "reminders" : {
+            "consequence" : "health",
+            "followUpAfterLapse" : null,
+            "graceDays" : 7,
+            "leadDays" : [
+              730,
+              365,
+              30,
+              1
+            ],
+            "travelMarginDays" : 0
+          },
+          "snoozedUntil" : null,
+          "status" : "active"
+        }
+      ],
+      "defaultMinuteOfDay" : 540,
+      "limit" : 60,
+      "name" : "leads from a leap day",
+      "now" : 1796076000,
+      "plan" : [
+        {
+          "badge" : null,
+          "closesInTheApp" : false,
+          "cycle" : "2028-02-29",
+          "fireAt" : 1803798000,
+          "identifier" : "obligation.aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0003.d365",
+          "isProtected" : false,
+          "isTimeSensitive" : false,
+          "obligationId" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0003",
+          "showsAlert" : true,
+          "trigger" : "2027-02-28T09:00"
+        },
+        {
+          "badge" : null,
+          "closesInTheApp" : false,
+          "cycle" : "2028-02-29",
+          "fireAt" : 1832742000,
+          "identifier" : "obligation.aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0003.d30",
+          "isProtected" : false,
+          "isTimeSensitive" : false,
+          "obligationId" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0003",
+          "showsAlert" : true,
+          "trigger" : "2028-01-29T09:00"
+        },
+        {
+          "badge" : null,
+          "closesInTheApp" : false,
+          "cycle" : "2028-02-29",
+          "fireAt" : 1835334000,
+          "identifier" : "obligation.aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0003.d1",
+          "isProtected" : false,
+          "isTimeSensitive" : true,
+          "obligationId" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0003",
+          "showsAlert" : true,
+          "trigger" : "2028-02-28T09:00"
+        }
+      ],
+      "zone" : "Europe/Bucharest"
+    },
+    {
+      "deadlines" : [
+        {
+          "closesInTheApp" : false,
+          "cycleKnownSince" : null,
+          "cycleStart" : null,
+          "dueDay" : "2026-03-31",
+          "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0004",
+          "isExample" : false,
+          "isSensitive" : false,
+          "reminderMinuteOfDay" : null,
+          "reminders" : {
+            "consequence" : "legal",
+            "followUpAfterLapse" : null,
+            "graceDays" : 0,
+            "leadDays" : [
+              31,
+              30,
+              0
+            ],
+            "travelMarginDays" : 0
+          },
+          "snoozedUntil" : null,
+          "status" : "active"
+        }
+      ],
+      "defaultMinuteOfDay" : 540,
+      "limit" : 60,
+      "name" : "two leads on one day",
+      "now" : 1767218400,
+      "plan" : [
+        {
+          "badge" : null,
+          "closesInTheApp" : false,
+          "cycle" : "2026-03-31",
+          "fireAt" : 1772262000,
+          "identifier" : "obligation.aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0004.d30",
+          "isProtected" : false,
+          "isTimeSensitive" : false,
+          "obligationId" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0004",
+          "showsAlert" : true,
+          "trigger" : "2026-02-28T09:00"
+        },
+        {
+          "badge" : null,
+          "closesInTheApp" : false,
+          "cycle" : "2026-03-31",
+          "fireAt" : 1774936800,
+          "identifier" : "obligation.aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0004.d0",
+          "isProtected" : false,
+          "isTimeSensitive" : true,
+          "obligationId" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0004",
+          "showsAlert" : true,
+          "trigger" : "2026-03-31T09:00"
+        },
+        {
+          "badge" : null,
+          "closesInTheApp" : false,
+          "cycle" : "2026-03-31",
+          "fireAt" : 1775023200,
+          "identifier" : "obligation.aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0004.lapse",
+          "isProtected" : false,
+          "isTimeSensitive" : true,
+          "obligationId" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0004",
+          "showsAlert" : true,
+          "trigger" : "2026-04-01T09:00"
+        }
+      ],
+      "zone" : "Europe/Bucharest"
+    },
+    {
+      "deadlines" : [
+        {
+          "closesInTheApp" : false,
+          "cycleKnownSince" : null,
+          "cycleStart" : "2026-11-23",
+          "dueDay" : "2026-11-26",
+          "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0005",
+          "isExample" : false,
+          "isSensitive" : false,
+          "reminderMinuteOfDay" : null,
+          "reminders" : {
+            "consequence" : "comfort",
+            "followUpAfterLapse" : null,
+            "graceDays" : 1,
+            "leadDays" : [
+              7,
+              1,
+              0
+            ],
+            "travelMarginDays" : 0
+          },
+          "snoozedUntil" : null,
+          "status" : "active"
+        },
+        {
+          "closesInTheApp" : false,
+          "cycleKnownSince" : null,
+          "cycleStart" : "2026-11-24",
+          "dueDay" : "2026-11-27",
+          "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0006",
+          "isExample" : false,
+          "isSensitive" : false,
+          "reminderMinuteOfDay" : null,
+          "reminders" : {
+            "consequence" : "comfort",
+            "followUpAfterLapse" : null,
+            "graceDays" : 0,
+            "leadDays" : [
+              7,
+              5
+            ],
+            "travelMarginDays" : 0
+          },
+          "snoozedUntil" : null,
+          "status" : "active"
+        }
+      ],
+      "defaultMinuteOfDay" : 540,
+      "limit" : 60,
+      "name" : "a lead longer than the repeat",
+      "now" : 1795125600,
+      "plan" : [
+        {
+          "badge" : null,
+          "closesInTheApp" : false,
+          "cycle" : "2026-11-26",
+          "fireAt" : 1795590000,
+          "identifier" : "obligation.aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0005.d1",
+          "isProtected" : false,
+          "isTimeSensitive" : false,
+          "obligationId" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0005",
+          "showsAlert" : true,
+          "trigger" : "2026-11-25T09:00"
+        },
+        {
+          "badge" : null,
+          "closesInTheApp" : false,
+          "cycle" : "2026-11-26",
+          "fireAt" : 1795676400,
+          "identifier" : "obligation.aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0005.d0",
+          "isProtected" : false,
+          "isTimeSensitive" : false,
+          "obligationId" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0005",
+          "showsAlert" : true,
+          "trigger" : "2026-11-26T09:00"
+        },
+        {
+          "badge" : null,
+          "closesInTheApp" : false,
+          "cycle" : "2026-11-27",
+          "fireAt" : 1795762800,
+          "identifier" : "obligation.aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0006.d0",
+          "isProtected" : false,
+          "isTimeSensitive" : false,
+          "obligationId" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0006",
+          "showsAlert" : true,
+          "trigger" : "2026-11-27T09:00"
+        }
+      ],
+      "zone" : "Europe/Bucharest"
+    },
+    {
+      "deadlines" : [
+        {
+          "closesInTheApp" : false,
+          "cycleKnownSince" : null,
+          "cycleStart" : null,
+          "dueDay" : "2026-12-15",
+          "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0007",
+          "isExample" : false,
+          "isSensitive" : false,
+          "reminderMinuteOfDay" : null,
+          "reminders" : {
+            "consequence" : "legal",
+            "followUpAfterLapse" : null,
+            "graceDays" : 0,
+            "leadDays" : [
+              30,
+              7,
+              0
+            ],
+            "travelMarginDays" : 0
+          },
+          "snoozedUntil" : "2026-12-08",
+          "status" : "active"
+        }
+      ],
+      "defaultMinuteOfDay" : 540,
+      "limit" : 60,
+      "name" : "a snooze that ends on a lead's day",
+      "now" : 1795161600,
+      "plan" : [
+        {
+          "badge" : null,
+          "closesInTheApp" : false,
+          "cycle" : "2026-12-15",
+          "fireAt" : 1796713200,
+          "identifier" : "obligation.aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0007.d7",
+          "isProtected" : false,
+          "isTimeSensitive" : false,
+          "obligationId" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0007",
+          "showsAlert" : true,
+          "trigger" : "2026-12-08T09:00"
+        },
+        {
+          "badge" : null,
+          "closesInTheApp" : false,
+          "cycle" : "2026-12-15",
+          "fireAt" : 1797318000,
+          "identifier" : "obligation.aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0007.d0",
+          "isProtected" : false,
+          "isTimeSensitive" : true,
+          "obligationId" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0007",
+          "showsAlert" : true,
+          "trigger" : "2026-12-15T09:00"
+        },
+        {
+          "badge" : null,
+          "closesInTheApp" : false,
+          "cycle" : "2026-12-15",
+          "fireAt" : 1797404400,
+          "identifier" : "obligation.aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0007.lapse",
+          "isProtected" : false,
+          "isTimeSensitive" : true,
+          "obligationId" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0007",
+          "showsAlert" : true,
+          "trigger" : "2026-12-16T09:00"
+        }
+      ],
+      "zone" : "Europe/Bucharest"
+    },
+    {
+      "deadlines" : [
+        {
+          "closesInTheApp" : false,
+          "cycleKnownSince" : null,
+          "cycleStart" : null,
+          "dueDay" : "2026-12-15",
+          "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0008",
+          "isExample" : false,
+          "isSensitive" : false,
+          "reminderMinuteOfDay" : null,
+          "reminders" : {
+            "consequence" : "legal",
+            "followUpAfterLapse" : null,
+            "graceDays" : 0,
+            "leadDays" : [
+              30,
+              7,
+              0
+            ],
+            "travelMarginDays" : 0
+          },
+          "snoozedUntil" : "2026-12-10",
+          "status" : "active"
+        }
+      ],
+      "defaultMinuteOfDay" : 540,
+      "limit" : 60,
+      "name" : "a snooze between leads",
+      "now" : 1795161600,
+      "plan" : [
+        {
+          "badge" : null,
+          "closesInTheApp" : false,
+          "cycle" : "2026-12-15",
+          "fireAt" : 1796886000,
+          "identifier" : "obligation.aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0008.snooze",
+          "isProtected" : false,
+          "isTimeSensitive" : false,
+          "obligationId" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0008",
+          "showsAlert" : true,
+          "trigger" : "2026-12-10T09:00"
+        },
+        {
+          "badge" : null,
+          "closesInTheApp" : false,
+          "cycle" : "2026-12-15",
+          "fireAt" : 1797318000,
+          "identifier" : "obligation.aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0008.d0",
+          "isProtected" : false,
+          "isTimeSensitive" : true,
+          "obligationId" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0008",
+          "showsAlert" : true,
+          "trigger" : "2026-12-15T09:00"
+        },
+        {
+          "badge" : null,
+          "closesInTheApp" : false,
+          "cycle" : "2026-12-15",
+          "fireAt" : 1797404400,
+          "identifier" : "obligation.aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0008.lapse",
+          "isProtected" : false,
+          "isTimeSensitive" : true,
+          "obligationId" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0008",
+          "showsAlert" : true,
+          "trigger" : "2026-12-16T09:00"
+        }
+      ],
+      "zone" : "Europe/Bucharest"
+    },
+    {
+      "deadlines" : [
+        {
+          "closesInTheApp" : false,
+          "cycleKnownSince" : null,
+          "cycleStart" : null,
+          "dueDay" : "2026-12-15",
+          "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0009",
+          "isExample" : false,
+          "isSensitive" : false,
+          "reminderMinuteOfDay" : null,
+          "reminders" : {
+            "consequence" : "legal",
+            "followUpAfterLapse" : null,
+            "graceDays" : 0,
+            "leadDays" : [
+              30,
+              7,
+              0
+            ],
+            "travelMarginDays" : 0
+          },
+          "snoozedUntil" : "2026-12-16",
+          "status" : "active"
+        }
+      ],
+      "defaultMinuteOfDay" : 540,
+      "limit" : 60,
+      "name" : "a snooze that ends on the follow-up's day",
+      "now" : 1797235200,
+      "plan" : [
+        {
+          "badge" : null,
+          "closesInTheApp" : false,
+          "cycle" : "2026-12-15",
+          "fireAt" : 1797404400,
+          "identifier" : "obligation.aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0009.lapse",
+          "isProtected" : false,
+          "isTimeSensitive" : true,
+          "obligationId" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0009",
+          "showsAlert" : true,
+          "trigger" : "2026-12-16T09:00"
+        }
+      ],
+      "zone" : "Europe/Bucharest"
+    },
+    {
+      "deadlines" : [
+        {
+          "closesInTheApp" : false,
+          "cycleKnownSince" : null,
+          "cycleStart" : null,
+          "dueDay" : "2026-12-15",
+          "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0010",
+          "isExample" : false,
+          "isSensitive" : false,
+          "reminderMinuteOfDay" : null,
+          "reminders" : {
+            "consequence" : "legal",
+            "followUpAfterLapse" : null,
+            "graceDays" : 0,
+            "leadDays" : [
+              30,
+              7,
+              0
+            ],
+            "travelMarginDays" : 0
+          },
+          "snoozedUntil" : "2026-12-08",
+          "status" : "active"
+        }
+      ],
+      "defaultMinuteOfDay" : 540,
+      "limit" : 60,
+      "name" : "a snooze already over",
+      "now" : 1796803200,
+      "plan" : [
+        {
+          "badge" : null,
+          "closesInTheApp" : false,
+          "cycle" : "2026-12-15",
+          "fireAt" : 1797318000,
+          "identifier" : "obligation.aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0010.d0",
+          "isProtected" : false,
+          "isTimeSensitive" : true,
+          "obligationId" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0010",
+          "showsAlert" : true,
+          "trigger" : "2026-12-15T09:00"
+        },
+        {
+          "badge" : null,
+          "closesInTheApp" : false,
+          "cycle" : "2026-12-15",
+          "fireAt" : 1797404400,
+          "identifier" : "obligation.aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0010.lapse",
+          "isProtected" : false,
+          "isTimeSensitive" : true,
+          "obligationId" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0010",
+          "showsAlert" : true,
+          "trigger" : "2026-12-16T09:00"
+        }
+      ],
+      "zone" : "Europe/Bucharest"
+    },
+    {
+      "deadlines" : [
+        {
+          "closesInTheApp" : false,
+          "cycleKnownSince" : null,
+          "cycleStart" : null,
+          "dueDay" : "2026-04-29",
+          "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0011",
+          "isExample" : false,
+          "isSensitive" : false,
+          "reminderMinuteOfDay" : 210,
+          "reminders" : {
+            "consequence" : "legal",
+            "followUpAfterLapse" : null,
+            "graceDays" : 0,
+            "leadDays" : [
+              30,
+              7
+            ],
+            "travelMarginDays" : 0
+          },
+          "snoozedUntil" : null,
+          "status" : "active"
+        },
+        {
+          "closesInTheApp" : false,
+          "cycleKnownSince" : null,
+          "cycleStart" : null,
+          "dueDay" : "2026-03-29",
+          "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0012",
+          "isExample" : false,
+          "isSensitive" : false,
+          "reminderMinuteOfDay" : 180,
+          "reminders" : {
+            "consequence" : "comfort",
+            "followUpAfterLapse" : null,
+            "graceDays" : 0,
+            "leadDays" : [
+              0
+            ],
+            "travelMarginDays" : 0
+          },
+          "snoozedUntil" : null,
+          "status" : "active"
+        }
+      ],
+      "defaultMinuteOfDay" : 540,
+      "limit" : 60,
+      "name" : "a reminder time the clocks skip",
+      "now" : 1772316000,
+      "plan" : [
+        {
+          "badge" : null,
+          "closesInTheApp" : false,
+          "cycle" : "2026-04-29",
+          "fireAt" : 1774746000,
+          "identifier" : "obligation.aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0011.d30",
+          "isProtected" : false,
+          "isTimeSensitive" : false,
+          "obligationId" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0011",
+          "showsAlert" : true,
+          "trigger" : "2026-03-29T04:00"
+        },
+        {
+          "badge" : null,
+          "closesInTheApp" : false,
+          "cycle" : "2026-03-29",
+          "fireAt" : 1774746000,
+          "identifier" : "obligation.aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0012.d0",
+          "isProtected" : false,
+          "isTimeSensitive" : false,
+          "obligationId" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0012",
+          "showsAlert" : true,
+          "trigger" : "2026-03-29T04:00"
+        },
+        {
+          "badge" : null,
+          "closesInTheApp" : false,
+          "cycle" : "2026-04-29",
+          "fireAt" : 1776817800,
+          "identifier" : "obligation.aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0011.d7",
+          "isProtected" : false,
+          "isTimeSensitive" : false,
+          "obligationId" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0011",
+          "showsAlert" : true,
+          "trigger" : "2026-04-22T03:30"
+        },
+        {
+          "badge" : null,
+          "closesInTheApp" : false,
+          "cycle" : "2026-04-29",
+          "fireAt" : 1777509000,
+          "identifier" : "obligation.aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0011.lapse",
+          "isProtected" : false,
+          "isTimeSensitive" : true,
+          "obligationId" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0011",
+          "showsAlert" : true,
+          "trigger" : "2026-04-30T03:30"
+        }
+      ],
+      "zone" : "Europe/Bucharest"
+    },
+    {
+      "deadlines" : [
+        {
+          "closesInTheApp" : false,
+          "cycleKnownSince" : null,
+          "cycleStart" : null,
+          "dueDay" : "2026-03-09",
+          "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0013",
+          "isExample" : false,
+          "isSensitive" : false,
+          "reminderMinuteOfDay" : 150,
+          "reminders" : {
+            "consequence" : "financial",
+            "followUpAfterLapse" : null,
+            "graceDays" : 0,
+            "leadDays" : [
+              1,
+              0
+            ],
+            "travelMarginDays" : 0
+          },
+          "snoozedUntil" : null,
+          "status" : "active"
+        }
+      ],
+      "defaultMinuteOfDay" : 540,
+      "limit" : 60,
+      "name" : "a reminder time in New York's skipped hour",
+      "now" : 1772341200,
+      "plan" : [
+        {
+          "badge" : null,
+          "closesInTheApp" : false,
+          "cycle" : "2026-03-09",
+          "fireAt" : 1772953200,
+          "identifier" : "obligation.aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0013.d1",
+          "isProtected" : false,
+          "isTimeSensitive" : true,
+          "obligationId" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0013",
+          "showsAlert" : true,
+          "trigger" : "2026-03-08T03:00"
+        },
+        {
+          "badge" : null,
+          "closesInTheApp" : false,
+          "cycle" : "2026-03-09",
+          "fireAt" : 1773037800,
+          "identifier" : "obligation.aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0013.d0",
+          "isProtected" : false,
+          "isTimeSensitive" : true,
+          "obligationId" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0013",
+          "showsAlert" : true,
+          "trigger" : "2026-03-09T02:30"
+        },
+        {
+          "badge" : null,
+          "closesInTheApp" : false,
+          "cycle" : "2026-03-09",
+          "fireAt" : 1773124200,
+          "identifier" : "obligation.aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0013.lapse",
+          "isProtected" : false,
+          "isTimeSensitive" : true,
+          "obligationId" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0013",
+          "showsAlert" : true,
+          "trigger" : "2026-03-10T02:30"
+        }
+      ],
+      "zone" : "America/New_York"
+    },
+    {
+      "deadlines" : [
+        {
+          "closesInTheApp" : false,
+          "cycleKnownSince" : null,
+          "cycleStart" : null,
+          "dueDay" : "2026-10-05",
+          "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0014",
+          "isExample" : false,
+          "isSensitive" : false,
+          "reminderMinuteOfDay" : 135,
+          "reminders" : {
+            "consequence" : "health",
+            "followUpAfterLapse" : null,
+            "graceDays" : 0,
+            "leadDays" : [
+              1,
+              0
+            ],
+            "travelMarginDays" : 0
+          },
+          "snoozedUntil" : null,
+          "status" : "active"
+        },
+        {
+          "closesInTheApp" : false,
+          "cycleKnownSince" : null,
+          "cycleStart" : null,
+          "dueDay" : "2026-10-04",
+          "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0015",
+          "isExample" : false,
+          "isSensitive" : false,
+          "reminderMinuteOfDay" : 120,
+          "reminders" : {
+            "consequence" : "comfort",
+            "followUpAfterLapse" : null,
+            "graceDays" : 0,
+            "leadDays" : [
+              0
+            ],
+            "travelMarginDays" : 0
+          },
+          "snoozedUntil" : null,
+          "status" : "active"
+        }
+      ],
+      "defaultMinuteOfDay" : 540,
+      "limit" : 60,
+      "name" : "a reminder time in Lord Howe Island's half-hour gap",
+      "now" : 1789824600,
+      "plan" : [
+        {
+          "badge" : null,
+          "closesInTheApp" : false,
+          "cycle" : "2026-10-05",
+          "fireAt" : 1791041400,
+          "identifier" : "obligation.aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0014.d1",
+          "isProtected" : false,
+          "isTimeSensitive" : true,
+          "obligationId" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0014",
+          "showsAlert" : true,
+          "trigger" : "2026-10-04T02:30"
+        },
+        {
+          "badge" : null,
+          "closesInTheApp" : false,
+          "cycle" : "2026-10-04",
+          "fireAt" : 1791041400,
+          "identifier" : "obligation.aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0015.d0",
+          "isProtected" : false,
+          "isTimeSensitive" : false,
+          "obligationId" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0015",
+          "showsAlert" : true,
+          "trigger" : "2026-10-04T02:30"
+        },
+        {
+          "badge" : null,
+          "closesInTheApp" : false,
+          "cycle" : "2026-10-05",
+          "fireAt" : 1791126900,
+          "identifier" : "obligation.aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0014.d0",
+          "isProtected" : false,
+          "isTimeSensitive" : true,
+          "obligationId" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0014",
+          "showsAlert" : true,
+          "trigger" : "2026-10-05T02:15"
+        }
+      ],
+      "zone" : "Australia/Lord_Howe"
+    },
+    {
+      "deadlines" : [
+        {
+          "closesInTheApp" : false,
+          "cycleKnownSince" : null,
+          "cycleStart" : null,
+          "dueDay" : "2026-11-10",
+          "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0016",
+          "isExample" : false,
+          "isSensitive" : false,
+          "reminderMinuteOfDay" : 2000,
+          "reminders" : {
+            "consequence" : "financial",
+            "followUpAfterLapse" : null,
+            "graceDays" : 0,
+            "leadDays" : [
+              1
+            ],
+            "travelMarginDays" : 0
+          },
+          "snoozedUntil" : null,
+          "status" : "active"
+        },
+        {
+          "closesInTheApp" : false,
+          "cycleKnownSince" : null,
+          "cycleStart" : null,
+          "dueDay" : "2026-11-11",
+          "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0017",
+          "isExample" : false,
+          "isSensitive" : false,
+          "reminderMinuteOfDay" : -5,
+          "reminders" : {
+            "consequence" : "financial",
+            "followUpAfterLapse" : null,
+            "graceDays" : 0,
+            "leadDays" : [
+              1
+            ],
+            "travelMarginDays" : 0
+          },
+          "snoozedUntil" : null,
+          "status" : "active"
+        }
+      ],
+      "defaultMinuteOfDay" : 540,
+      "limit" : 60,
+      "name" : "a reminder time held to the day",
+      "now" : 1793484000,
+      "plan" : [
+        {
+          "badge" : null,
+          "closesInTheApp" : false,
+          "cycle" : "2026-11-10",
+          "fireAt" : 1794261540,
+          "identifier" : "obligation.aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0016.d1",
+          "isProtected" : false,
+          "isTimeSensitive" : true,
+          "obligationId" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0016",
+          "showsAlert" : true,
+          "trigger" : "2026-11-09T23:59"
+        },
+        {
+          "badge" : null,
+          "closesInTheApp" : false,
+          "cycle" : "2026-11-11",
+          "fireAt" : 1794261600,
+          "identifier" : "obligation.aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0017.d1",
+          "isProtected" : false,
+          "isTimeSensitive" : true,
+          "obligationId" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0017",
+          "showsAlert" : true,
+          "trigger" : "2026-11-10T00:00"
+        },
+        {
+          "badge" : null,
+          "closesInTheApp" : false,
+          "cycle" : "2026-11-10",
+          "fireAt" : 1794434340,
+          "identifier" : "obligation.aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0016.lapse",
+          "isProtected" : false,
+          "isTimeSensitive" : true,
+          "obligationId" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0016",
+          "showsAlert" : true,
+          "trigger" : "2026-11-11T23:59"
+        },
+        {
+          "badge" : null,
+          "closesInTheApp" : false,
+          "cycle" : "2026-11-11",
+          "fireAt" : 1794434400,
+          "identifier" : "obligation.aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0017.lapse",
+          "isProtected" : false,
+          "isTimeSensitive" : true,
+          "obligationId" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0017",
+          "showsAlert" : true,
+          "trigger" : "2026-11-12T00:00"
+        }
+      ],
+      "zone" : "Europe/Bucharest"
+    },
+    {
+      "deadlines" : [
+        {
+          "closesInTheApp" : false,
+          "cycleKnownSince" : null,
+          "cycleStart" : null,
+          "dueDay" : "2026-10-31",
+          "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0018",
+          "isExample" : false,
+          "isSensitive" : false,
+          "reminderMinuteOfDay" : null,
+          "reminders" : {
+            "consequence" : "legal",
+            "followUpAfterLapse" : null,
+            "graceDays" : 0,
+            "leadDays" : [
+              30,
+              7,
+              0
+            ],
+            "travelMarginDays" : 0
+          },
+          "snoozedUntil" : null,
+          "status" : "active"
+        },
+        {
+          "closesInTheApp" : false,
+          "cycleKnownSince" : null,
+          "cycleStart" : null,
+          "dueDay" : "2026-10-01",
+          "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0019",
+          "isExample" : false,
+          "isSensitive" : false,
+          "reminderMinuteOfDay" : null,
+          "reminders" : {
+            "consequence" : "legal",
+            "followUpAfterLapse" : null,
+            "graceDays" : 0,
+            "leadDays" : [
+              30,
+              7,
+              0
+            ],
+            "travelMarginDays" : 0
+          },
+          "snoozedUntil" : null,
+          "status" : "active"
+        },
+        {
+          "closesInTheApp" : false,
+          "cycleKnownSince" : null,
+          "cycleStart" : null,
+          "dueDay" : "2026-10-31",
+          "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0020",
+          "isExample" : false,
+          "isSensitive" : false,
+          "reminderMinuteOfDay" : null,
+          "reminders" : {
+            "consequence" : "health",
+            "followUpAfterLapse" : null,
+            "graceDays" : 7,
+            "leadDays" : [
+              7,
+              1
+            ],
+            "travelMarginDays" : 0
+          },
+          "snoozedUntil" : null,
+          "status" : "active"
+        },
+        {
+          "closesInTheApp" : false,
+          "cycleKnownSince" : null,
+          "cycleStart" : null,
+          "dueDay" : "2026-10-20",
+          "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0021",
+          "isExample" : false,
+          "isSensitive" : false,
+          "reminderMinuteOfDay" : null,
+          "reminders" : {
+            "consequence" : "legal",
+            "followUpAfterLapse" : null,
+            "graceDays" : 0,
+            "leadDays" : [
+              30,
+              7,
+              0
+            ],
+            "travelMarginDays" : 0
+          },
+          "snoozedUntil" : "2026-11-05",
+          "status" : "active"
+        }
+      ],
+      "defaultMinuteOfDay" : 540,
+      "limit" : 60,
+      "name" : "a deadline already passed",
+      "now" : 1793512800,
+      "plan" : [
+        {
+          "badge" : null,
+          "closesInTheApp" : false,
+          "cycle" : "2026-10-31",
+          "fireAt" : 1793516400,
+          "identifier" : "obligation.aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0018.lapse",
+          "isProtected" : false,
+          "isTimeSensitive" : true,
+          "obligationId" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0018",
+          "showsAlert" : true,
+          "trigger" : "2026-11-01T09:00"
+        },
+        {
+          "badge" : null,
+          "closesInTheApp" : false,
+          "cycle" : "2026-10-20",
+          "fireAt" : 1793862000,
+          "identifier" : "obligation.aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0021.snooze",
+          "isProtected" : false,
+          "isTimeSensitive" : true,
+          "obligationId" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0021",
+          "showsAlert" : true,
+          "trigger" : "2026-11-05T09:00"
+        }
+      ],
+      "zone" : "Europe/Bucharest"
+    },
+    {
+      "deadlines" : [
+        {
+          "closesInTheApp" : true,
+          "cycleKnownSince" : null,
+          "cycleStart" : null,
+          "dueDay" : "2027-08-31",
+          "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0022",
+          "isExample" : false,
+          "isSensitive" : false,
+          "reminderMinuteOfDay" : null,
+          "reminders" : {
+            "consequence" : "legal",
+            "followUpAfterLapse" : null,
+            "graceDays" : 0,
+            "leadDays" : [
+              90,
+              0
+            ],
+            "travelMarginDays" : 180
+          },
+          "snoozedUntil" : null,
+          "status" : "active"
+        }
+      ],
+      "defaultMinuteOfDay" : 540,
+      "limit" : 60,
+      "name" : "a passport counts from its travel cut-off",
+      "now" : 1780261200,
+      "plan" : [
+        {
+          "badge" : null,
+          "closesInTheApp" : true,
+          "cycle" : "2027-08-31",
+          "fireAt" : 1795849200,
+          "identifier" : "obligation.aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0022.t90",
+          "isProtected" : false,
+          "isTimeSensitive" : false,
+          "obligationId" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0022",
+          "showsAlert" : true,
+          "trigger" : "2026-11-28T09:00"
+        },
+        {
+          "badge" : null,
+          "closesInTheApp" : true,
+          "cycle" : "2027-08-31",
+          "fireAt" : 1803798000,
+          "identifier" : "obligation.aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0022.t0",
+          "isProtected" : false,
+          "isTimeSensitive" : false,
+          "obligationId" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0022",
+          "showsAlert" : true,
+          "trigger" : "2027-02-28T09:00"
+        },
+        {
+          "badge" : null,
+          "closesInTheApp" : true,
+          "cycle" : "2027-08-31",
+          "fireAt" : 1819778400,
+          "identifier" : "obligation.aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0022.lapse",
+          "isProtected" : false,
+          "isTimeSensitive" : true,
+          "obligationId" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0022",
+          "showsAlert" : true,
+          "trigger" : "2027-09-01T09:00"
+        }
+      ],
+      "zone" : "Europe/Bucharest"
+    },
+    {
+      "deadlines" : [
+        {
+          "closesInTheApp" : true,
+          "cycleKnownSince" : null,
+          "cycleStart" : null,
+          "dueDay" : "2027-08-31",
+          "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0023",
+          "isExample" : false,
+          "isSensitive" : false,
+          "reminderMinuteOfDay" : null,
+          "reminders" : {
+            "consequence" : "legal",
+            "followUpAfterLapse" : null,
+            "graceDays" : 0,
+            "leadDays" : [
+              90,
+              0
+            ],
+            "travelMarginDays" : 180
+          },
+          "snoozedUntil" : null,
+          "status" : "active"
+        }
+      ],
+      "defaultMinuteOfDay" : 540,
+      "limit" : 60,
+      "name" : "a passport past its cut-off",
+      "now" : 1805097600,
+      "plan" : [
+        {
+          "badge" : null,
+          "closesInTheApp" : true,
+          "cycle" : "2027-08-31",
+          "fireAt" : 1819778400,
+          "identifier" : "obligation.aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0023.lapse",
+          "isProtected" : false,
+          "isTimeSensitive" : true,
+          "obligationId" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0023",
+          "showsAlert" : true,
+          "trigger" : "2027-09-01T09:00"
+        }
+      ],
+      "zone" : "Europe/Bucharest"
+    },
+    {
+      "deadlines" : [
+        {
+          "closesInTheApp" : false,
+          "cycleKnownSince" : 1793613600,
+          "cycleStart" : null,
+          "dueDay" : "2026-11-22",
+          "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0024",
+          "isExample" : false,
+          "isSensitive" : false,
+          "reminderMinuteOfDay" : null,
+          "reminders" : {
+            "consequence" : "legal",
+            "followUpAfterLapse" : null,
+            "graceDays" : 0,
+            "leadDays" : [
+              90,
+              30,
+              7
+            ],
+            "travelMarginDays" : 0
+          },
+          "snoozedUntil" : null,
+          "status" : "active"
+        },
+        {
+          "closesInTheApp" : false,
+          "cycleKnownSince" : 1793599200,
+          "cycleStart" : null,
+          "dueDay" : "2026-11-22",
+          "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0025",
+          "isExample" : false,
+          "isSensitive" : false,
+          "reminderMinuteOfDay" : null,
+          "reminders" : {
+            "consequence" : "legal",
+            "followUpAfterLapse" : null,
+            "graceDays" : 0,
+            "leadDays" : [
+              90,
+              30
+            ],
+            "travelMarginDays" : 0
+          },
+          "snoozedUntil" : null,
+          "status" : "active"
+        },
+        {
+          "closesInTheApp" : false,
+          "cycleKnownSince" : 1790830800,
+          "cycleStart" : null,
+          "dueDay" : "2026-11-22",
+          "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0026",
+          "isExample" : false,
+          "isSensitive" : false,
+          "reminderMinuteOfDay" : null,
+          "reminders" : {
+            "consequence" : "legal",
+            "followUpAfterLapse" : null,
+            "graceDays" : 0,
+            "leadDays" : [
+              30,
+              7
+            ],
+            "travelMarginDays" : 0
+          },
+          "snoozedUntil" : null,
+          "status" : "active"
+        },
+        {
+          "closesInTheApp" : false,
+          "cycleKnownSince" : 1793613600,
+          "cycleStart" : null,
+          "dueDay" : "2026-11-03",
+          "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0027",
+          "isExample" : false,
+          "isSensitive" : false,
+          "reminderMinuteOfDay" : null,
+          "reminders" : {
+            "consequence" : "legal",
+            "followUpAfterLapse" : null,
+            "graceDays" : 0,
+            "leadDays" : [
+              30,
+              0
+            ],
+            "travelMarginDays" : 0
+          },
+          "snoozedUntil" : null,
+          "status" : "active"
+        },
+        {
+          "closesInTheApp" : false,
+          "cycleKnownSince" : 1793613600,
+          "cycleStart" : null,
+          "dueDay" : "2026-11-03",
+          "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0028",
+          "isExample" : false,
+          "isSensitive" : false,
+          "reminderMinuteOfDay" : null,
+          "reminders" : {
+            "consequence" : "legal",
+            "followUpAfterLapse" : null,
+            "graceDays" : 0,
+            "leadDays" : [
+              30
+            ],
+            "travelMarginDays" : 0
+          },
+          "snoozedUntil" : null,
+          "status" : "active"
+        }
+      ],
+      "defaultMinuteOfDay" : 540,
+      "limit" : 60,
+      "name" : "a card known after its warnings passed",
+      "now" : 1793613600,
+      "plan" : [
+        {
+          "badge" : null,
+          "closesInTheApp" : false,
+          "cycle" : "2026-11-03",
+          "fireAt" : 1793689200,
+          "identifier" : "obligation.aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0027.d0",
+          "isProtected" : false,
+          "isTimeSensitive" : true,
+          "obligationId" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0027",
+          "showsAlert" : true,
+          "trigger" : "2026-11-03T09:00"
+        },
+        {
+          "badge" : null,
+          "closesInTheApp" : false,
+          "cycle" : "2026-11-03",
+          "fireAt" : 1793689200,
+          "identifier" : "obligation.aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0028.catchup",
+          "isProtected" : false,
+          "isTimeSensitive" : true,
+          "obligationId" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0028",
+          "showsAlert" : true,
+          "trigger" : "2026-11-03T09:00"
+        },
+        {
+          "badge" : null,
+          "closesInTheApp" : false,
+          "cycle" : "2026-11-03",
+          "fireAt" : 1793775600,
+          "identifier" : "obligation.aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0027.lapse",
+          "isProtected" : false,
+          "isTimeSensitive" : true,
+          "obligationId" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0027",
+          "showsAlert" : true,
+          "trigger" : "2026-11-04T09:00"
+        },
+        {
+          "badge" : null,
+          "closesInTheApp" : false,
+          "cycle" : "2026-11-03",
+          "fireAt" : 1793775600,
+          "identifier" : "obligation.aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0028.lapse",
+          "isProtected" : false,
+          "isTimeSensitive" : true,
+          "obligationId" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0028",
+          "showsAlert" : true,
+          "trigger" : "2026-11-04T09:00"
+        },
+        {
+          "badge" : null,
+          "closesInTheApp" : false,
+          "cycle" : "2026-11-22",
+          "fireAt" : 1794726000,
+          "identifier" : "obligation.aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0024.d7",
+          "isProtected" : false,
+          "isTimeSensitive" : false,
+          "obligationId" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0024",
+          "showsAlert" : true,
+          "trigger" : "2026-11-15T09:00"
+        },
+        {
+          "badge" : null,
+          "closesInTheApp" : false,
+          "cycle" : "2026-11-22",
+          "fireAt" : 1794726000,
+          "identifier" : "obligation.aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0026.d7",
+          "isProtected" : false,
+          "isTimeSensitive" : false,
+          "obligationId" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0026",
+          "showsAlert" : true,
+          "trigger" : "2026-11-15T09:00"
+        },
+        {
+          "badge" : null,
+          "closesInTheApp" : false,
+          "cycle" : "2026-11-22",
+          "fireAt" : 1795417200,
+          "identifier" : "obligation.aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0024.lapse",
+          "isProtected" : false,
+          "isTimeSensitive" : true,
+          "obligationId" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0024",
+          "showsAlert" : true,
+          "trigger" : "2026-11-23T09:00"
+        },
+        {
+          "badge" : null,
+          "closesInTheApp" : false,
+          "cycle" : "2026-11-22",
+          "fireAt" : 1795417200,
+          "identifier" : "obligation.aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0025.lapse",
+          "isProtected" : false,
+          "isTimeSensitive" : true,
+          "obligationId" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0025",
+          "showsAlert" : true,
+          "trigger" : "2026-11-23T09:00"
+        },
+        {
+          "badge" : null,
+          "closesInTheApp" : false,
+          "cycle" : "2026-11-22",
+          "fireAt" : 1795417200,
+          "identifier" : "obligation.aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0026.lapse",
+          "isProtected" : false,
+          "isTimeSensitive" : true,
+          "obligationId" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0026",
+          "showsAlert" : true,
+          "trigger" : "2026-11-23T09:00"
+        }
+      ],
+      "zone" : "Europe/Bucharest"
+    },
+    {
+      "deadlines" : [
+        {
+          "closesInTheApp" : false,
+          "cycleKnownSince" : 1793606400,
+          "cycleStart" : null,
+          "dueDay" : "2026-11-22",
+          "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0029",
+          "isExample" : false,
+          "isSensitive" : false,
+          "reminderMinuteOfDay" : null,
+          "reminders" : {
+            "consequence" : "legal",
+            "followUpAfterLapse" : null,
+            "graceDays" : 0,
+            "leadDays" : [
+              90,
+              30
+            ],
+            "travelMarginDays" : 0
+          },
+          "snoozedUntil" : "2026-11-05",
+          "status" : "active"
+        }
+      ],
+      "defaultMinuteOfDay" : 540,
+      "limit" : 60,
+      "name" : "a catch-up held back by a snooze",
+      "now" : 1793613600,
+      "plan" : [
+        {
+          "badge" : null,
+          "closesInTheApp" : false,
+          "cycle" : "2026-11-22",
+          "fireAt" : 1793862000,
+          "identifier" : "obligation.aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0029.snooze",
+          "isProtected" : false,
+          "isTimeSensitive" : false,
+          "obligationId" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0029",
+          "showsAlert" : true,
+          "trigger" : "2026-11-05T09:00"
+        },
+        {
+          "badge" : null,
+          "closesInTheApp" : false,
+          "cycle" : "2026-11-22",
+          "fireAt" : 1795417200,
+          "identifier" : "obligation.aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0029.lapse",
+          "isProtected" : false,
+          "isTimeSensitive" : true,
+          "obligationId" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0029",
+          "showsAlert" : true,
+          "trigger" : "2026-11-23T09:00"
+        }
+      ],
+      "zone" : "Europe/Bucharest"
+    },
+    {
+      "deadlines" : [
+        {
+          "closesInTheApp" : true,
+          "cycleKnownSince" : 1806562800,
+          "cycleStart" : null,
+          "dueDay" : "2027-08-31",
+          "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0030",
+          "isExample" : false,
+          "isSensitive" : false,
+          "reminderMinuteOfDay" : null,
+          "reminders" : {
+            "consequence" : "legal",
+            "followUpAfterLapse" : null,
+            "graceDays" : 0,
+            "leadDays" : [
+              90,
+              0
+            ],
+            "travelMarginDays" : 180
+          },
+          "snoozedUntil" : null,
+          "status" : "active"
+        }
+      ],
+      "defaultMinuteOfDay" : 540,
+      "limit" : 60,
+      "name" : "a passport known after its cut-off",
+      "now" : 1806562800,
+      "plan" : [
+        {
+          "badge" : null,
+          "closesInTheApp" : true,
+          "cycle" : "2027-08-31",
+          "fireAt" : 1806645600,
+          "identifier" : "obligation.aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0030.catchup",
+          "isProtected" : false,
+          "isTimeSensitive" : false,
+          "obligationId" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0030",
+          "showsAlert" : true,
+          "trigger" : "2027-04-02T09:00"
+        },
+        {
+          "badge" : null,
+          "closesInTheApp" : true,
+          "cycle" : "2027-08-31",
+          "fireAt" : 1819778400,
+          "identifier" : "obligation.aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0030.lapse",
+          "isProtected" : false,
+          "isTimeSensitive" : true,
+          "obligationId" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0030",
+          "showsAlert" : true,
+          "trigger" : "2027-09-01T09:00"
+        }
+      ],
+      "zone" : "Europe/Bucharest"
+    },
+    {
+      "deadlines" : [
+        {
+          "closesInTheApp" : false,
+          "cycleKnownSince" : null,
+          "cycleStart" : null,
+          "dueDay" : "2026-11-20",
+          "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0031",
+          "isExample" : false,
+          "isSensitive" : false,
+          "reminderMinuteOfDay" : null,
+          "reminders" : {
+            "consequence" : "legal",
+            "followUpAfterLapse" : null,
+            "graceDays" : 0,
+            "leadDays" : [
+              30,
+              7,
+              0
+            ],
+            "travelMarginDays" : 0
+          },
+          "snoozedUntil" : null,
+          "status" : "paused"
+        },
+        {
+          "closesInTheApp" : false,
+          "cycleKnownSince" : null,
+          "cycleStart" : null,
+          "dueDay" : "2026-11-20",
+          "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0032",
+          "isExample" : false,
+          "isSensitive" : false,
+          "reminderMinuteOfDay" : null,
+          "reminders" : {
+            "consequence" : "legal",
+            "followUpAfterLapse" : null,
+            "graceDays" : 0,
+            "leadDays" : [
+              30,
+              7,
+              0
+            ],
+            "travelMarginDays" : 0
+          },
+          "snoozedUntil" : null,
+          "status" : "done"
+        },
+        {
+          "closesInTheApp" : false,
+          "cycleKnownSince" : null,
+          "cycleStart" : null,
+          "dueDay" : "2026-11-20",
+          "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0033",
+          "isExample" : false,
+          "isSensitive" : false,
+          "reminderMinuteOfDay" : null,
+          "reminders" : {
+            "consequence" : "legal",
+            "followUpAfterLapse" : null,
+            "graceDays" : 0,
+            "leadDays" : [
+              30,
+              7,
+              0
+            ],
+            "travelMarginDays" : 0
+          },
+          "snoozedUntil" : null,
+          "status" : "archived"
+        },
+        {
+          "closesInTheApp" : false,
+          "cycleKnownSince" : null,
+          "cycleStart" : null,
+          "dueDay" : "2026-11-20",
+          "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0034",
+          "isExample" : true,
+          "isSensitive" : false,
+          "reminderMinuteOfDay" : null,
+          "reminders" : {
+            "consequence" : "legal",
+            "followUpAfterLapse" : null,
+            "graceDays" : 0,
+            "leadDays" : [
+              30,
+              7,
+              0
+            ],
+            "travelMarginDays" : 0
+          },
+          "snoozedUntil" : null,
+          "status" : "active"
+        },
+        {
+          "closesInTheApp" : false,
+          "cycleKnownSince" : null,
+          "cycleStart" : null,
+          "dueDay" : "2026-11-21",
+          "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0035",
+          "isExample" : false,
+          "isSensitive" : false,
+          "reminderMinuteOfDay" : null,
+          "reminders" : {
+            "consequence" : "newer",
+            "followUpAfterLapse" : null,
+            "graceDays" : 0,
+            "leadDays" : [
+              1,
+              0
+            ],
+            "travelMarginDays" : 0
+          },
+          "snoozedUntil" : null,
+          "status" : "newer"
+        },
+        {
+          "closesInTheApp" : false,
+          "cycleKnownSince" : null,
+          "cycleStart" : null,
+          "dueDay" : "2026-11-22",
+          "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0036",
+          "isExample" : false,
+          "isSensitive" : true,
+          "reminderMinuteOfDay" : null,
+          "reminders" : {
+            "consequence" : "comfort",
+            "followUpAfterLapse" : null,
+            "graceDays" : 0,
+            "leadDays" : [
+              1,
+              0
+            ],
+            "travelMarginDays" : 0
+          },
+          "snoozedUntil" : null,
+          "status" : "active"
+        },
+        {
+          "closesInTheApp" : true,
+          "cycleKnownSince" : null,
+          "cycleStart" : null,
+          "dueDay" : "2026-11-23",
+          "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0037",
+          "isExample" : false,
+          "isSensitive" : false,
+          "reminderMinuteOfDay" : null,
+          "reminders" : {
+            "consequence" : "financial",
+            "followUpAfterLapse" : false,
+            "graceDays" : 0,
+            "leadDays" : [
+              2,
+              1,
+              0
+            ],
+            "travelMarginDays" : 0
+          },
+          "snoozedUntil" : null,
+          "status" : "active"
+        }
+      ],
+      "defaultMinuteOfDay" : 540,
+      "limit" : 60,
+      "name" : "what reminds and what doesn't",
+      "now" : 1793484000,
+      "plan" : [
+        {
+          "badge" : null,
+          "closesInTheApp" : false,
+          "cycle" : "2026-11-21",
+          "fireAt" : 1795158000,
+          "identifier" : "obligation.aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0035.d1",
+          "isProtected" : false,
+          "isTimeSensitive" : true,
+          "obligationId" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0035",
+          "showsAlert" : true,
+          "trigger" : "2026-11-20T09:00"
+        },
+        {
+          "badge" : null,
+          "closesInTheApp" : false,
+          "cycle" : "2026-11-21",
+          "fireAt" : 1795244400,
+          "identifier" : "obligation.aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0035.d0",
+          "isProtected" : false,
+          "isTimeSensitive" : true,
+          "obligationId" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0035",
+          "showsAlert" : true,
+          "trigger" : "2026-11-21T09:00"
+        },
+        {
+          "badge" : null,
+          "closesInTheApp" : false,
+          "cycle" : "2026-11-22",
+          "fireAt" : 1795244400,
+          "identifier" : "obligation.aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0036.d1",
+          "isProtected" : true,
+          "isTimeSensitive" : false,
+          "obligationId" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0036",
+          "showsAlert" : true,
+          "trigger" : "2026-11-21T09:00"
+        },
+        {
+          "badge" : null,
+          "closesInTheApp" : true,
+          "cycle" : "2026-11-23",
+          "fireAt" : 1795244400,
+          "identifier" : "obligation.aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0037.d2",
+          "isProtected" : false,
+          "isTimeSensitive" : false,
+          "obligationId" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0037",
+          "showsAlert" : true,
+          "trigger" : "2026-11-21T09:00"
+        },
+        {
+          "badge" : null,
+          "closesInTheApp" : false,
+          "cycle" : "2026-11-21",
+          "fireAt" : 1795330800,
+          "identifier" : "obligation.aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0035.lapse",
+          "isProtected" : false,
+          "isTimeSensitive" : true,
+          "obligationId" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0035",
+          "showsAlert" : true,
+          "trigger" : "2026-11-22T09:00"
+        },
+        {
+          "badge" : null,
+          "closesInTheApp" : false,
+          "cycle" : "2026-11-22",
+          "fireAt" : 1795330800,
+          "identifier" : "obligation.aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0036.d0",
+          "isProtected" : true,
+          "isTimeSensitive" : false,
+          "obligationId" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0036",
+          "showsAlert" : true,
+          "trigger" : "2026-11-22T09:00"
+        },
+        {
+          "badge" : null,
+          "closesInTheApp" : true,
+          "cycle" : "2026-11-23",
+          "fireAt" : 1795330800,
+          "identifier" : "obligation.aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0037.d1",
+          "isProtected" : false,
+          "isTimeSensitive" : true,
+          "obligationId" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0037",
+          "showsAlert" : true,
+          "trigger" : "2026-11-22T09:00"
+        },
+        {
+          "badge" : null,
+          "closesInTheApp" : true,
+          "cycle" : "2026-11-23",
+          "fireAt" : 1795417200,
+          "identifier" : "obligation.aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0037.d0",
+          "isProtected" : false,
+          "isTimeSensitive" : true,
+          "obligationId" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0037",
+          "showsAlert" : true,
+          "trigger" : "2026-11-23T09:00"
+        }
+      ],
+      "zone" : "Europe/Bucharest"
+    },
+    {
+      "deadlines" : [
+        {
+          "closesInTheApp" : false,
+          "cycleKnownSince" : null,
+          "cycleStart" : null,
+          "dueDay" : "2026-12-01",
+          "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0038",
+          "isExample" : false,
+          "isSensitive" : false,
+          "reminderMinuteOfDay" : null,
+          "reminders" : {
+            "consequence" : "legal",
+            "followUpAfterLapse" : null,
+            "graceDays" : 0,
+            "leadDays" : [
+              7,
+              1,
+              0
+            ],
+            "travelMarginDays" : 0
+          },
+          "snoozedUntil" : null,
+          "status" : "active"
+        },
+        {
+          "closesInTheApp" : false,
+          "cycleKnownSince" : null,
+          "cycleStart" : null,
+          "dueDay" : "2026-11-28",
+          "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0039",
+          "isExample" : false,
+          "isSensitive" : false,
+          "reminderMinuteOfDay" : 30,
+          "reminders" : {
+            "consequence" : "health",
+            "followUpAfterLapse" : null,
+            "graceDays" : 0,
+            "leadDays" : [
+              1,
+              0
+            ],
+            "travelMarginDays" : 0
+          },
+          "snoozedUntil" : null,
+          "status" : "active"
+        }
+      ],
+      "defaultMinuteOfDay" : 1200,
+      "limit" : 60,
+      "name" : "far from Bucharest: Pacific/Kiritimati",
+      "now" : 1795737600,
+      "plan" : [
+        {
+          "badge" : null,
+          "closesInTheApp" : false,
+          "cycle" : "2026-11-28",
+          "fireAt" : 1795775400,
+          "identifier" : "obligation.aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0039.d0",
+          "isProtected" : false,
+          "isTimeSensitive" : true,
+          "obligationId" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0039",
+          "showsAlert" : true,
+          "trigger" : "2026-11-28T00:30"
+        },
+        {
+          "badge" : null,
+          "closesInTheApp" : false,
+          "cycle" : "2026-12-01",
+          "fireAt" : 1796018400,
+          "identifier" : "obligation.aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0038.d1",
+          "isProtected" : false,
+          "isTimeSensitive" : true,
+          "obligationId" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0038",
+          "showsAlert" : true,
+          "trigger" : "2026-11-30T20:00"
+        },
+        {
+          "badge" : null,
+          "closesInTheApp" : false,
+          "cycle" : "2026-12-01",
+          "fireAt" : 1796104800,
+          "identifier" : "obligation.aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0038.d0",
+          "isProtected" : false,
+          "isTimeSensitive" : true,
+          "obligationId" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0038",
+          "showsAlert" : true,
+          "trigger" : "2026-12-01T20:00"
+        },
+        {
+          "badge" : null,
+          "closesInTheApp" : false,
+          "cycle" : "2026-12-01",
+          "fireAt" : 1796191200,
+          "identifier" : "obligation.aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0038.lapse",
+          "isProtected" : false,
+          "isTimeSensitive" : true,
+          "obligationId" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0038",
+          "showsAlert" : true,
+          "trigger" : "2026-12-02T20:00"
+        }
+      ],
+      "zone" : "Pacific/Kiritimati"
+    },
+    {
+      "deadlines" : [
+        {
+          "closesInTheApp" : false,
+          "cycleKnownSince" : null,
+          "cycleStart" : null,
+          "dueDay" : "2026-12-01",
+          "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0038",
+          "isExample" : false,
+          "isSensitive" : false,
+          "reminderMinuteOfDay" : null,
+          "reminders" : {
+            "consequence" : "legal",
+            "followUpAfterLapse" : null,
+            "graceDays" : 0,
+            "leadDays" : [
+              7,
+              1,
+              0
+            ],
+            "travelMarginDays" : 0
+          },
+          "snoozedUntil" : null,
+          "status" : "active"
+        },
+        {
+          "closesInTheApp" : false,
+          "cycleKnownSince" : null,
+          "cycleStart" : null,
+          "dueDay" : "2026-11-28",
+          "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0039",
+          "isExample" : false,
+          "isSensitive" : false,
+          "reminderMinuteOfDay" : 30,
+          "reminders" : {
+            "consequence" : "health",
+            "followUpAfterLapse" : null,
+            "graceDays" : 0,
+            "leadDays" : [
+              1,
+              0
+            ],
+            "travelMarginDays" : 0
+          },
+          "snoozedUntil" : null,
+          "status" : "active"
+        }
+      ],
+      "defaultMinuteOfDay" : 1200,
+      "limit" : 60,
+      "name" : "far from Bucharest: Pacific/Pago_Pago",
+      "now" : 1795737600,
+      "plan" : [
+        {
+          "badge" : null,
+          "closesInTheApp" : false,
+          "cycle" : "2026-11-28",
+          "fireAt" : 1795779000,
+          "identifier" : "obligation.aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0039.d1",
+          "isProtected" : false,
+          "isTimeSensitive" : true,
+          "obligationId" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0039",
+          "showsAlert" : true,
+          "trigger" : "2026-11-27T00:30"
+        },
+        {
+          "badge" : null,
+          "closesInTheApp" : false,
+          "cycle" : "2026-11-28",
+          "fireAt" : 1795865400,
+          "identifier" : "obligation.aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0039.d0",
+          "isProtected" : false,
+          "isTimeSensitive" : true,
+          "obligationId" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0039",
+          "showsAlert" : true,
+          "trigger" : "2026-11-28T00:30"
+        },
+        {
+          "badge" : null,
+          "closesInTheApp" : false,
+          "cycle" : "2026-12-01",
+          "fireAt" : 1796108400,
+          "identifier" : "obligation.aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0038.d1",
+          "isProtected" : false,
+          "isTimeSensitive" : true,
+          "obligationId" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0038",
+          "showsAlert" : true,
+          "trigger" : "2026-11-30T20:00"
+        },
+        {
+          "badge" : null,
+          "closesInTheApp" : false,
+          "cycle" : "2026-12-01",
+          "fireAt" : 1796194800,
+          "identifier" : "obligation.aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0038.d0",
+          "isProtected" : false,
+          "isTimeSensitive" : true,
+          "obligationId" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0038",
+          "showsAlert" : true,
+          "trigger" : "2026-12-01T20:00"
+        },
+        {
+          "badge" : null,
+          "closesInTheApp" : false,
+          "cycle" : "2026-12-01",
+          "fireAt" : 1796281200,
+          "identifier" : "obligation.aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0038.lapse",
+          "isProtected" : false,
+          "isTimeSensitive" : true,
+          "obligationId" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0038",
+          "showsAlert" : true,
+          "trigger" : "2026-12-02T20:00"
+        }
+      ],
+      "zone" : "Pacific/Pago_Pago"
+    },
+    {
+      "deadlines" : [
+        {
+          "closesInTheApp" : false,
+          "cycleKnownSince" : null,
+          "cycleStart" : null,
+          "dueDay" : "2026-12-01",
+          "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0038",
+          "isExample" : false,
+          "isSensitive" : false,
+          "reminderMinuteOfDay" : null,
+          "reminders" : {
+            "consequence" : "legal",
+            "followUpAfterLapse" : null,
+            "graceDays" : 0,
+            "leadDays" : [
+              7,
+              1,
+              0
+            ],
+            "travelMarginDays" : 0
+          },
+          "snoozedUntil" : null,
+          "status" : "active"
+        },
+        {
+          "closesInTheApp" : false,
+          "cycleKnownSince" : null,
+          "cycleStart" : null,
+          "dueDay" : "2026-11-28",
+          "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0039",
+          "isExample" : false,
+          "isSensitive" : false,
+          "reminderMinuteOfDay" : 30,
+          "reminders" : {
+            "consequence" : "health",
+            "followUpAfterLapse" : null,
+            "graceDays" : 0,
+            "leadDays" : [
+              1,
+              0
+            ],
+            "travelMarginDays" : 0
+          },
+          "snoozedUntil" : null,
+          "status" : "active"
+        }
+      ],
+      "defaultMinuteOfDay" : 1200,
+      "limit" : 60,
+      "name" : "far from Bucharest: UTC",
+      "now" : 1795737600,
+      "plan" : [
+        {
+          "badge" : null,
+          "closesInTheApp" : false,
+          "cycle" : "2026-11-28",
+          "fireAt" : 1795739400,
+          "identifier" : "obligation.aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0039.d1",
+          "isProtected" : false,
+          "isTimeSensitive" : true,
+          "obligationId" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0039",
+          "showsAlert" : true,
+          "trigger" : "2026-11-27T00:30"
+        },
+        {
+          "badge" : null,
+          "closesInTheApp" : false,
+          "cycle" : "2026-11-28",
+          "fireAt" : 1795825800,
+          "identifier" : "obligation.aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0039.d0",
+          "isProtected" : false,
+          "isTimeSensitive" : true,
+          "obligationId" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0039",
+          "showsAlert" : true,
+          "trigger" : "2026-11-28T00:30"
+        },
+        {
+          "badge" : null,
+          "closesInTheApp" : false,
+          "cycle" : "2026-12-01",
+          "fireAt" : 1796068800,
+          "identifier" : "obligation.aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0038.d1",
+          "isProtected" : false,
+          "isTimeSensitive" : true,
+          "obligationId" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0038",
+          "showsAlert" : true,
+          "trigger" : "2026-11-30T20:00"
+        },
+        {
+          "badge" : null,
+          "closesInTheApp" : false,
+          "cycle" : "2026-12-01",
+          "fireAt" : 1796155200,
+          "identifier" : "obligation.aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0038.d0",
+          "isProtected" : false,
+          "isTimeSensitive" : true,
+          "obligationId" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0038",
+          "showsAlert" : true,
+          "trigger" : "2026-12-01T20:00"
+        },
+        {
+          "badge" : null,
+          "closesInTheApp" : false,
+          "cycle" : "2026-12-01",
+          "fireAt" : 1796241600,
+          "identifier" : "obligation.aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0038.lapse",
+          "isProtected" : false,
+          "isTimeSensitive" : true,
+          "obligationId" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0038",
+          "showsAlert" : true,
+          "trigger" : "2026-12-02T20:00"
+        }
+      ],
+      "zone" : "UTC"
+    },
+    {
+      "deadlines" : [
+        {
+          "closesInTheApp" : false,
+          "cycleKnownSince" : null,
+          "cycleStart" : null,
+          "dueDay" : "2026-12-01",
+          "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0040",
+          "isExample" : false,
+          "isSensitive" : false,
+          "reminderMinuteOfDay" : null,
+          "reminders" : {
+            "consequence" : "comfort",
+            "followUpAfterLapse" : null,
+            "graceDays" : 0,
+            "leadDays" : [
+              21,
+              14,
+              7,
+              0
+            ],
+            "travelMarginDays" : 0
+          },
+          "snoozedUntil" : null,
+          "status" : "active"
+        },
+        {
+          "closesInTheApp" : false,
+          "cycleKnownSince" : null,
+          "cycleStart" : null,
+          "dueDay" : "2026-12-04",
+          "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0041",
+          "isExample" : false,
+          "isSensitive" : false,
+          "reminderMinuteOfDay" : null,
+          "reminders" : {
+            "consequence" : "legal",
+            "followUpAfterLapse" : null,
+            "graceDays" : 0,
+            "leadDays" : [
+              21,
+              14,
+              7,
+              0
+            ],
+            "travelMarginDays" : 0
+          },
+          "snoozedUntil" : null,
+          "status" : "active"
+        },
+        {
+          "closesInTheApp" : false,
+          "cycleKnownSince" : null,
+          "cycleStart" : null,
+          "dueDay" : "2026-12-07",
+          "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0042",
+          "isExample" : false,
+          "isSensitive" : false,
+          "reminderMinuteOfDay" : null,
+          "reminders" : {
+            "consequence" : "health",
+            "followUpAfterLapse" : null,
+            "graceDays" : 0,
+            "leadDays" : [
+              21,
+              14,
+              7,
+              0
+            ],
+            "travelMarginDays" : 0
+          },
+          "snoozedUntil" : null,
+          "status" : "active"
+        },
+        {
+          "closesInTheApp" : false,
+          "cycleKnownSince" : null,
+          "cycleStart" : null,
+          "dueDay" : "2026-12-10",
+          "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0043",
+          "isExample" : false,
+          "isSensitive" : false,
+          "reminderMinuteOfDay" : null,
+          "reminders" : {
+            "consequence" : "financial",
+            "followUpAfterLapse" : null,
+            "graceDays" : 0,
+            "leadDays" : [
+              21,
+              14,
+              7,
+              0
+            ],
+            "travelMarginDays" : 0
+          },
+          "snoozedUntil" : null,
+          "status" : "active"
+        },
+        {
+          "closesInTheApp" : false,
+          "cycleKnownSince" : null,
+          "cycleStart" : null,
+          "dueDay" : "2026-12-13",
+          "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0044",
+          "isExample" : false,
+          "isSensitive" : false,
+          "reminderMinuteOfDay" : null,
+          "reminders" : {
+            "consequence" : "comfort",
+            "followUpAfterLapse" : null,
+            "graceDays" : 0,
+            "leadDays" : [
+              21,
+              14,
+              7,
+              0
+            ],
+            "travelMarginDays" : 0
+          },
+          "snoozedUntil" : null,
+          "status" : "active"
+        },
+        {
+          "closesInTheApp" : false,
+          "cycleKnownSince" : null,
+          "cycleStart" : null,
+          "dueDay" : "2026-12-16",
+          "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0045",
+          "isExample" : false,
+          "isSensitive" : false,
+          "reminderMinuteOfDay" : null,
+          "reminders" : {
+            "consequence" : "legal",
+            "followUpAfterLapse" : null,
+            "graceDays" : 0,
+            "leadDays" : [
+              21,
+              14,
+              7,
+              0
+            ],
+            "travelMarginDays" : 0
+          },
+          "snoozedUntil" : null,
+          "status" : "active"
+        },
+        {
+          "closesInTheApp" : false,
+          "cycleKnownSince" : null,
+          "cycleStart" : null,
+          "dueDay" : "2026-12-19",
+          "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0046",
+          "isExample" : false,
+          "isSensitive" : false,
+          "reminderMinuteOfDay" : null,
+          "reminders" : {
+            "consequence" : "health",
+            "followUpAfterLapse" : null,
+            "graceDays" : 0,
+            "leadDays" : [
+              21,
+              14,
+              7,
+              0
+            ],
+            "travelMarginDays" : 0
+          },
+          "snoozedUntil" : null,
+          "status" : "active"
+        },
+        {
+          "closesInTheApp" : false,
+          "cycleKnownSince" : null,
+          "cycleStart" : null,
+          "dueDay" : "2026-12-22",
+          "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0047",
+          "isExample" : false,
+          "isSensitive" : false,
+          "reminderMinuteOfDay" : null,
+          "reminders" : {
+            "consequence" : "financial",
+            "followUpAfterLapse" : null,
+            "graceDays" : 0,
+            "leadDays" : [
+              21,
+              14,
+              7,
+              0
+            ],
+            "travelMarginDays" : 0
+          },
+          "snoozedUntil" : null,
+          "status" : "active"
+        },
+        {
+          "closesInTheApp" : false,
+          "cycleKnownSince" : null,
+          "cycleStart" : null,
+          "dueDay" : "2026-12-25",
+          "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0048",
+          "isExample" : false,
+          "isSensitive" : false,
+          "reminderMinuteOfDay" : null,
+          "reminders" : {
+            "consequence" : "comfort",
+            "followUpAfterLapse" : null,
+            "graceDays" : 0,
+            "leadDays" : [
+              21,
+              14,
+              7,
+              0
+            ],
+            "travelMarginDays" : 0
+          },
+          "snoozedUntil" : null,
+          "status" : "active"
+        },
+        {
+          "closesInTheApp" : false,
+          "cycleKnownSince" : null,
+          "cycleStart" : null,
+          "dueDay" : "2026-12-28",
+          "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0049",
+          "isExample" : false,
+          "isSensitive" : false,
+          "reminderMinuteOfDay" : null,
+          "reminders" : {
+            "consequence" : "legal",
+            "followUpAfterLapse" : null,
+            "graceDays" : 0,
+            "leadDays" : [
+              21,
+              14,
+              7,
+              0
+            ],
+            "travelMarginDays" : 0
+          },
+          "snoozedUntil" : null,
+          "status" : "active"
+        }
+      ],
+      "defaultMinuteOfDay" : 540,
+      "limit" : 8,
+      "name" : "more than the phone keeps",
+      "now" : 1793484000,
+      "plan" : [
+        {
+          "badge" : null,
+          "closesInTheApp" : false,
+          "cycle" : "2026-12-04",
+          "fireAt" : 1794553200,
+          "identifier" : "obligation.aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0041.d21",
+          "isProtected" : false,
+          "isTimeSensitive" : false,
+          "obligationId" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0041",
+          "showsAlert" : true,
+          "trigger" : "2026-11-13T09:00"
+        },
+        {
+          "badge" : null,
+          "closesInTheApp" : false,
+          "cycle" : "2026-12-07",
+          "fireAt" : 1794812400,
+          "identifier" : "obligation.aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0042.d21",
+          "isProtected" : false,
+          "isTimeSensitive" : false,
+          "obligationId" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0042",
+          "showsAlert" : true,
+          "trigger" : "2026-11-16T09:00"
+        },
+        {
+          "badge" : null,
+          "closesInTheApp" : false,
+          "cycle" : "2026-12-10",
+          "fireAt" : 1795071600,
+          "identifier" : "obligation.aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0043.d21",
+          "isProtected" : false,
+          "isTimeSensitive" : false,
+          "obligationId" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0043",
+          "showsAlert" : true,
+          "trigger" : "2026-11-19T09:00"
+        },
+        {
+          "badge" : null,
+          "closesInTheApp" : false,
+          "cycle" : "2026-12-16",
+          "fireAt" : 1795590000,
+          "identifier" : "obligation.aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0045.d21",
+          "isProtected" : false,
+          "isTimeSensitive" : false,
+          "obligationId" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0045",
+          "showsAlert" : true,
+          "trigger" : "2026-11-25T09:00"
+        },
+        {
+          "badge" : null,
+          "closesInTheApp" : false,
+          "cycle" : "2026-12-19",
+          "fireAt" : 1795849200,
+          "identifier" : "obligation.aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0046.d21",
+          "isProtected" : false,
+          "isTimeSensitive" : false,
+          "obligationId" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0046",
+          "showsAlert" : true,
+          "trigger" : "2026-11-28T09:00"
+        },
+        {
+          "badge" : null,
+          "closesInTheApp" : false,
+          "cycle" : "2026-12-22",
+          "fireAt" : 1796108400,
+          "identifier" : "obligation.aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0047.d21",
+          "isProtected" : false,
+          "isTimeSensitive" : false,
+          "obligationId" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0047",
+          "showsAlert" : true,
+          "trigger" : "2026-12-01T09:00"
+        },
+        {
+          "badge" : null,
+          "closesInTheApp" : false,
+          "cycle" : "2026-12-28",
+          "fireAt" : 1796626800,
+          "identifier" : "obligation.aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0049.d21",
+          "isProtected" : false,
+          "isTimeSensitive" : false,
+          "obligationId" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0049",
+          "showsAlert" : true,
+          "trigger" : "2026-12-07T09:00"
+        },
+        {
+          "badge" : null,
+          "closesInTheApp" : false,
+          "cycle" : null,
+          "fireAt" : 1794207600,
+          "identifier" : "obligation.continue",
+          "isProtected" : false,
+          "isTimeSensitive" : false,
+          "obligationId" : null,
+          "showsAlert" : true,
+          "trigger" : "2026-11-09T09:00"
+        }
+      ],
+      "zone" : "Europe/Bucharest"
+    },
+    {
+      "deadlines" : [
+        {
+          "closesInTheApp" : false,
+          "cycleKnownSince" : null,
+          "cycleStart" : null,
+          "dueDay" : "2026-11-02",
+          "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0050",
+          "isExample" : false,
+          "isSensitive" : false,
+          "reminderMinuteOfDay" : null,
+          "reminders" : {
+            "consequence" : "comfort",
+            "followUpAfterLapse" : null,
+            "graceDays" : 0,
+            "leadDays" : [
+              0
+            ],
+            "travelMarginDays" : 0
+          },
+          "snoozedUntil" : null,
+          "status" : "active"
+        },
+        {
+          "closesInTheApp" : false,
+          "cycleKnownSince" : null,
+          "cycleStart" : null,
+          "dueDay" : "2026-11-02",
+          "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0051",
+          "isExample" : false,
+          "isSensitive" : false,
+          "reminderMinuteOfDay" : 600,
+          "reminders" : {
+            "consequence" : "comfort",
+            "followUpAfterLapse" : null,
+            "graceDays" : 0,
+            "leadDays" : [
+              0
+            ],
+            "travelMarginDays" : 0
+          },
+          "snoozedUntil" : null,
+          "status" : "active"
+        },
+        {
+          "closesInTheApp" : false,
+          "cycleKnownSince" : null,
+          "cycleStart" : null,
+          "dueDay" : "2026-11-02",
+          "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0052",
+          "isExample" : false,
+          "isSensitive" : false,
+          "reminderMinuteOfDay" : 660,
+          "reminders" : {
+            "consequence" : "comfort",
+            "followUpAfterLapse" : null,
+            "graceDays" : 0,
+            "leadDays" : [
+              0
+            ],
+            "travelMarginDays" : 0
+          },
+          "snoozedUntil" : null,
+          "status" : "active"
+        },
+        {
+          "closesInTheApp" : false,
+          "cycleKnownSince" : null,
+          "cycleStart" : null,
+          "dueDay" : "2026-11-02",
+          "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0053",
+          "isExample" : false,
+          "isSensitive" : false,
+          "reminderMinuteOfDay" : 720,
+          "reminders" : {
+            "consequence" : "comfort",
+            "followUpAfterLapse" : null,
+            "graceDays" : 0,
+            "leadDays" : [
+              0
+            ],
+            "travelMarginDays" : 0
+          },
+          "snoozedUntil" : null,
+          "status" : "active"
+        }
+      ],
+      "defaultMinuteOfDay" : 540,
+      "limit" : 3,
+      "name" : "more than the phone keeps, running out tomorrow",
+      "now" : 1793520000,
+      "plan" : [
+        {
+          "badge" : null,
+          "closesInTheApp" : false,
+          "cycle" : "2026-11-02",
+          "fireAt" : 1793602800,
+          "identifier" : "obligation.aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0050.d0",
+          "isProtected" : false,
+          "isTimeSensitive" : false,
+          "obligationId" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0050",
+          "showsAlert" : true,
+          "trigger" : "2026-11-02T09:00"
+        },
+        {
+          "badge" : null,
+          "closesInTheApp" : false,
+          "cycle" : "2026-11-02",
+          "fireAt" : 1793606400,
+          "identifier" : "obligation.aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0051.d0",
+          "isProtected" : false,
+          "isTimeSensitive" : false,
+          "obligationId" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0051",
+          "showsAlert" : true,
+          "trigger" : "2026-11-02T10:00"
+        },
+        {
+          "badge" : null,
+          "closesInTheApp" : false,
+          "cycle" : null,
+          "fireAt" : 1793608200,
+          "identifier" : "obligation.continue",
+          "isProtected" : false,
+          "isTimeSensitive" : false,
+          "obligationId" : null,
+          "showsAlert" : true,
+          "trigger" : "2026-11-02T10:30"
+        }
+      ],
+      "zone" : "Europe/Bucharest"
+    },
+    {
+      "deadlines" : [
+        {
+          "closesInTheApp" : false,
+          "cycleKnownSince" : null,
+          "cycleStart" : null,
+          "dueDay" : "2026-11-10",
+          "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0054",
+          "isExample" : false,
+          "isSensitive" : false,
+          "reminderMinuteOfDay" : null,
+          "reminders" : {
+            "consequence" : "legal",
+            "followUpAfterLapse" : null,
+            "graceDays" : 0,
+            "leadDays" : [
+              30,
+              7,
+              0
+            ],
+            "travelMarginDays" : 0
+          },
+          "snoozedUntil" : null,
+          "status" : "active"
+        }
+      ],
+      "defaultMinuteOfDay" : 540,
+      "limit" : 0,
+      "name" : "more than the phone keeps, nothing kept",
+      "now" : 1793484000,
+      "plan" : [
+        {
+          "badge" : null,
+          "closesInTheApp" : false,
+          "cycle" : null,
+          "fireAt" : 1793602800,
+          "identifier" : "obligation.continue",
+          "isProtected" : false,
+          "isTimeSensitive" : false,
+          "obligationId" : null,
+          "showsAlert" : true,
+          "trigger" : "2026-11-02T09:00"
+        }
+      ],
+      "zone" : "Europe/Bucharest"
+    }
+  ],
+  "rule" : "ReminderPlanner.plan(_:now:calendar:defaultMinuteOfDay:limit:)",
+  "shape" : "now (seconds since 1970), zone, defaultMinuteOfDay (the general reminder time), limit (how many the phone keeps); deadlines: each one's id, stored status, due day, snoozedUntil, stored reminders (as in reminder-profile), cycleStart (its reminders are those of the cycle that began then, null keeps every lead), reminderMinuteOfDay (null for the general time), isSensitive, isExample, cycleKnownSince (seconds since 1970, or null) and closesInTheApp. plan: every reminder in order, each with its identifier, the deadline and cycle it is about, when it fires (seconds since 1970) and its date parts as the system gets them, whether it is time-sensitive, protected or closes in the app, its badge (null: none) and whether it shows. No words.",
+  "source" : "ios/DosarCuSina/Services/Reminders/ReminderPlanner.swift",
+  "writtenBy" : "ios/DosarCuSinaTests/UrgencyVectorsTests.swift"
+}

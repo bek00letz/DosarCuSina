@@ -27,6 +27,13 @@ class BinderLocks private constructor(
      */
     val anySectionLocked: Boolean get() = unread || lockedKeys.isNotEmpty()
 
+    /**
+     * Whether the sections of the category [key] are locked on this phone, for a key this answer was
+     * asked about (a category whose record is here, or one a section names): the same answer as
+     * [CategoryLocks.isSensitive]. While the binder couldn't be read, every category is.
+     */
+    fun isLocked(key: String): Boolean = unread || key in lockedKeys
+
     override fun equals(other: Any?): Boolean =
         other is BinderLocks && other.lockedKeys == lockedKeys && other.unread == unread
 

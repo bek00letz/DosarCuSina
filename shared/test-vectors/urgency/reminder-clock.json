@@ -1,0 +1,234 @@
+{
+  "cases" : [
+    {
+      "clamped" : -100,
+      "is" : 0
+    },
+    {
+      "clamped" : -1,
+      "is" : 0
+    },
+    {
+      "clamped" : 0,
+      "is" : 0
+    },
+    {
+      "clamped" : 540,
+      "is" : 540
+    },
+    {
+      "clamped" : 1439,
+      "is" : 1439
+    },
+    {
+      "clamped" : 1440,
+      "is" : 1439
+    },
+    {
+      "clamped" : 5000,
+      "is" : 1439
+    },
+    {
+      "day" : "2026-11-26",
+      "fireAt" : 1795676400,
+      "minute" : 540,
+      "minuteOfDay" : 540,
+      "trigger" : "2026-11-26T09:00",
+      "zone" : "Europe/Bucharest"
+    },
+    {
+      "day" : "2026-03-29",
+      "fireAt" : 1774746000,
+      "minute" : 210,
+      "minuteOfDay" : 240,
+      "trigger" : "2026-03-29T04:00",
+      "zone" : "Europe/Bucharest"
+    },
+    {
+      "day" : "2026-03-29",
+      "fireAt" : 1774746000,
+      "minute" : 180,
+      "minuteOfDay" : 240,
+      "trigger" : "2026-03-29T04:00",
+      "zone" : "Europe/Bucharest"
+    },
+    {
+      "day" : "2026-03-29",
+      "fireAt" : 1774746000,
+      "minute" : 240,
+      "minuteOfDay" : 240,
+      "trigger" : "2026-03-29T04:00",
+      "zone" : "Europe/Bucharest"
+    },
+    {
+      "day" : "2026-10-25",
+      "fireAt" : 1792888200,
+      "minute" : 210,
+      "minuteOfDay" : 210,
+      "trigger" : "2026-10-25T03:30",
+      "zone" : "Europe/Bucharest"
+    },
+    {
+      "day" : "2026-03-08",
+      "fireAt" : 1772953200,
+      "minute" : 150,
+      "minuteOfDay" : 180,
+      "trigger" : "2026-03-08T03:00",
+      "zone" : "America/New_York"
+    },
+    {
+      "day" : "2026-10-04",
+      "fireAt" : 1791041400,
+      "minute" : 120,
+      "minuteOfDay" : 150,
+      "trigger" : "2026-10-04T02:30",
+      "zone" : "Australia/Lord_Howe"
+    },
+    {
+      "day" : "2026-10-04",
+      "fireAt" : 1791041400,
+      "minute" : 135,
+      "minuteOfDay" : 150,
+      "trigger" : "2026-10-04T02:30",
+      "zone" : "Australia/Lord_Howe"
+    },
+    {
+      "day" : "2026-10-04",
+      "fireAt" : 1791041400,
+      "minute" : 150,
+      "minuteOfDay" : 150,
+      "trigger" : "2026-10-04T02:30",
+      "zone" : "Australia/Lord_Howe"
+    },
+    {
+      "day" : "2027-04-04",
+      "fireAt" : 1806763500,
+      "minute" : 105,
+      "minuteOfDay" : 105,
+      "trigger" : "2027-04-04T01:45",
+      "zone" : "Australia/Lord_Howe"
+    },
+    {
+      "day" : "2026-11-25",
+      "fireAt" : 1795600740,
+      "minute" : 1439,
+      "minuteOfDay" : 1439,
+      "trigger" : "2026-11-25T23:59",
+      "zone" : "Pacific/Kiritimati"
+    },
+    {
+      "day" : "2026-11-25",
+      "fireAt" : 1795604400,
+      "minute" : 0,
+      "minuteOfDay" : 0,
+      "trigger" : "2026-11-25T00:00",
+      "zone" : "Pacific/Pago_Pago"
+    },
+    {
+      "day" : "2026-11-26",
+      "fireAt" : 1795730340,
+      "minute" : 2000,
+      "minuteOfDay" : 1439,
+      "trigger" : "2026-11-26T23:59",
+      "zone" : "Europe/Bucharest"
+    },
+    {
+      "day" : "2026-11-26",
+      "fireAt" : 1795644000,
+      "minute" : -5,
+      "minuteOfDay" : 0,
+      "trigger" : "2026-11-26T00:00",
+      "zone" : "Europe/Bucharest"
+    },
+    {
+      "day" : "2026-02-30",
+      "fireAt" : 1772249400,
+      "minute" : 540,
+      "minuteOfDay" : 540,
+      "trigger" : "2026-02-28T09:00",
+      "zone" : "Asia/Kolkata"
+    },
+    {
+      "now" : 1795676400,
+      "skipped" : {
+        "day" : "2027-03-28",
+        "remindsAt" : 240
+      },
+      "springForward" : 210,
+      "zone" : "Europe/Bucharest"
+    },
+    {
+      "now" : 1795676400,
+      "skipped" : {
+        "day" : "2027-03-28",
+        "remindsAt" : 240
+      },
+      "springForward" : 180,
+      "zone" : "Europe/Bucharest"
+    },
+    {
+      "now" : 1795676400,
+      "skipped" : null,
+      "springForward" : 240,
+      "zone" : "Europe/Bucharest"
+    },
+    {
+      "now" : 1795676400,
+      "skipped" : null,
+      "springForward" : 540,
+      "zone" : "Europe/Bucharest"
+    },
+    {
+      "now" : 1806217200,
+      "skipped" : {
+        "day" : "2028-03-26",
+        "remindsAt" : 240
+      },
+      "springForward" : 210,
+      "zone" : "Europe/Bucharest"
+    },
+    {
+      "now" : 1795644000,
+      "skipped" : {
+        "day" : "2027-10-03",
+        "remindsAt" : 150
+      },
+      "springForward" : 135,
+      "zone" : "Australia/Lord_Howe"
+    },
+    {
+      "now" : 1795644000,
+      "skipped" : {
+        "day" : "2027-10-03",
+        "remindsAt" : 150
+      },
+      "springForward" : 120,
+      "zone" : "Australia/Lord_Howe"
+    },
+    {
+      "now" : 1795701600,
+      "skipped" : {
+        "day" : "2027-03-14",
+        "remindsAt" : 180
+      },
+      "springForward" : 150,
+      "zone" : "America/New_York"
+    },
+    {
+      "now" : 1795663800,
+      "skipped" : null,
+      "springForward" : 150,
+      "zone" : "Asia/Kolkata"
+    },
+    {
+      "now" : 1795633200,
+      "skipped" : null,
+      "springForward" : 30,
+      "zone" : "Pacific/Kiritimati"
+    }
+  ],
+  "rule" : "ReminderClock.clamped, ReminderPlanner.fireDate(day:minuteOfDay:calendar:), ReminderTrigger.components(firingAt:calendar:), ReminderClock.minuteOfDay(of:) and springForward(minuteOfDay:after:)",
+  "shape" : "clamped: a minute of the day, is: held to 0…1439. day, minute, zone: the moment a reminder set for that time fires (seconds since 1970; a time the clocks skip is the first minute after the gap, a time shown twice the first of the two), its date parts as the system gets them (yyyy-MM-ddTHH:mm, Gregorian, in that zone) and the minute the wall clock shows then. springForward: a reminder time, now (seconds since 1970) and zone: the next day within a year the clocks skip it and the time it comes at then, or null.",
+  "source" : "ios/Shared/ReminderClock.swift, ios/DosarCuSina/Services/Reminders/ReminderPlanner.swift, ios/DosarCuSina/Services/Reminders/ReminderTrigger.swift",
+  "writtenBy" : "ios/DosarCuSinaTests/UrgencyVectorsTests.swift"
+}

@@ -2,6 +2,7 @@ package com.ar.dosarcusina.store.repairs
 
 import com.ar.dosarcusina.archive.v3.FieldDefinition
 import com.ar.dosarcusina.core.values.CalendarDay
+import com.ar.dosarcusina.core.values.MeasurementUnit
 import com.ar.dosarcusina.store.BinderView
 import com.ar.dosarcusina.store.Tables
 import com.ar.dosarcusina.store.schema.CategoryTemplate
@@ -62,6 +63,46 @@ sealed interface DataRepairSubject {
     data class LessonLabel(val lessonId: UUID, val named: Named?) : DataRepairSubject {
         data class Named(val issuerName: String, val label: String)
     }
+
+    /**
+     * A counter reading that looks wrong, as the iOS app's `.reading`: worded by [unit] („Kilometrajul la
+     * [section]” for kilometres, „Contorul la [section]” for another counter). With [to], it lost its last
+     * digits: „… pare greșit: [value]. Corectez la [to]?”; without, it is ten times off its neighbours:
+     * „… pare greșit: [value], pe [day]. Îl scot din citiri?”.
+     */
+    data class Reading(
+        val logId: UUID,
+        val value: Double,
+        val to: Double?,
+        val unit: MeasurementUnit?,
+        val section: String,
+        val day: CalendarDay,
+    ) : DataRepairSubject
+
+    /**
+     * A visit's reading that was the visit form's estimate, as the iOS app's `.estimatedVisitReading`:
+     * „[Kilometrajul|Contorul] la [section] la vizita din [day], [value], pare o estimare: e mai mare decât
+     * citirea de după. O scot din citiri?”.
+     */
+    data class EstimatedVisitReading(
+        val entryId: UUID,
+        val value: Double,
+        val unit: MeasurementUnit?,
+        val section: String,
+        val day: CalendarDay,
+    ) : DataRepairSubject
+
+    /**
+     * A section's hero value that isn't what its readings say, as the iOS app's `.hero`: „… pare greșit:
+     * [from]. Corectez la [to]?”, or with no [from], „… lipsește, deși are citiri. Pun [to]?”.
+     */
+    data class Hero(
+        val assetId: UUID,
+        val from: Double?,
+        val to: Double,
+        val unit: MeasurementUnit?,
+        val section: String,
+    ) : DataRepairSubject
 }
 
 /** A record by its kind and its key (`Table.keyOf`: its id, a category's key), as the iOS app's `RecordRef`. */

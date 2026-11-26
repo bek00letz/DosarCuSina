@@ -1,0 +1,138 @@
+{
+  "cases" : [
+    {
+      "allowsTimeSensitiveReminders" : true,
+      "consequence" : "legal",
+      "followsUpByDefault" : true,
+      "maxAttentionWindowDays" : 30,
+      "weight" : 100
+    },
+    {
+      "allowsTimeSensitiveReminders" : true,
+      "consequence" : "financial",
+      "followsUpByDefault" : true,
+      "maxAttentionWindowDays" : 21,
+      "weight" : 80
+    },
+    {
+      "allowsTimeSensitiveReminders" : true,
+      "consequence" : "health",
+      "followsUpByDefault" : false,
+      "maxAttentionWindowDays" : 7,
+      "weight" : 60
+    },
+    {
+      "allowsTimeSensitiveReminders" : false,
+      "consequence" : "comfort",
+      "followsUpByDefault" : false,
+      "maxAttentionWindowDays" : 3,
+      "weight" : 10
+    },
+    {
+      "reads" : "legal",
+      "storedConsequence" : "legal"
+    },
+    {
+      "reads" : "financial",
+      "storedConsequence" : "financial"
+    },
+    {
+      "reads" : "health",
+      "storedConsequence" : "health"
+    },
+    {
+      "reads" : "comfort",
+      "storedConsequence" : "comfort"
+    },
+    {
+      "reads" : "legal",
+      "storedConsequence" : "Legal"
+    },
+    {
+      "reads" : "legal",
+      "storedConsequence" : "newer"
+    },
+    {
+      "reads" : "legal",
+      "storedConsequence" : ""
+    },
+    {
+      "reads" : "legal",
+      "storedConsequence" : null
+    },
+    {
+      "reads" : "active",
+      "storedStatus" : "active"
+    },
+    {
+      "reads" : "paused",
+      "storedStatus" : "paused"
+    },
+    {
+      "reads" : "done",
+      "storedStatus" : "done"
+    },
+    {
+      "reads" : "archived",
+      "storedStatus" : "archived"
+    },
+    {
+      "reads" : "active",
+      "storedStatus" : "snoozed"
+    },
+    {
+      "reads" : "active",
+      "storedStatus" : ""
+    },
+    {
+      "reads" : "active",
+      "storedStatus" : null
+    },
+    {
+      "isAlarming" : true,
+      "needsAttentionNow" : true,
+      "order" : 0,
+      "tone" : "overdue",
+      "urgency" : "overdue"
+    },
+    {
+      "isAlarming" : true,
+      "needsAttentionNow" : true,
+      "order" : 1,
+      "tone" : "soon",
+      "urgency" : "today"
+    },
+    {
+      "isAlarming" : false,
+      "needsAttentionNow" : true,
+      "order" : 2,
+      "tone" : "soon",
+      "urgency" : "withinGrace"
+    },
+    {
+      "isAlarming" : false,
+      "needsAttentionNow" : true,
+      "order" : 3,
+      "tone" : "soon",
+      "urgency" : "soon"
+    },
+    {
+      "isAlarming" : false,
+      "needsAttentionNow" : false,
+      "order" : 4,
+      "tone" : "calm",
+      "urgency" : "upcoming"
+    },
+    {
+      "isAlarming" : false,
+      "needsAttentionNow" : false,
+      "order" : 5,
+      "tone" : "calm",
+      "urgency" : "later"
+    }
+  ],
+  "rule" : "Consequence (its weight, window, time-sensitive reminders, default follow-up) and Consequence(stored:); ObligationStatus(stored:); AttentionUrgency's order, tone, isAlarming and needsAttentionNow",
+  "shape" : "consequence: what it says of itself. storedConsequence / storedStatus: a stored text (null when missing), reads: what this build reads it as (unknown is the loudest). urgency: its place from the most urgent (order 0), its tone, whether the badge counts it and whether it needs the person now.",
+  "source" : "ios/DosarCuSina/Models/Obligations/ObligationTypes.swift, ios/Shared/Urgency.swift",
+  "writtenBy" : "ios/DosarCuSinaTests/UrgencyVectorsTests.swift"
+}

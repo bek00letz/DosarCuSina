@@ -19,7 +19,6 @@ class WaitingStep internal constructor(
 /** The steps that wait, each as the iOS app declares it. */
 object WaitingSteps {
     private const val CAPTURE_REPAIRS = "CaptureRepairs and the document and visit actions (Phase 3)"
-    private const val READINGS = "ReadingSeries and HouseholdMutations' readings (Phase 3)"
     private const val POLICIES = "the policy facts (BlueprintFacts, DeadlineFacts) and ObligationActions (Phase 3)"
     private const val PAPERS = "PaperIdentity and the history actions (Phase 3)"
 
@@ -37,11 +36,6 @@ object WaitingSteps {
         DataRepairStepId.DOUBLE_COMPLETIONS, DataRepairGroup.DEADLINES_CLOSED_TWICE,
         "LikelyDoubleCompletions, RecurrenceEngine and ObligationActions (Phase 3)",
     )
-    val counterOutliers = WaitingStep(DataRepairStepId.COUNTER_OUTLIERS, DataRepairGroup.COUNTERS, READINGS)
-    val estimatedVisitReadings = WaitingStep(
-        DataRepairStepId.ESTIMATED_VISIT_READINGS, DataRepairGroup.ESTIMATES_KEPT_AS_READINGS, READINGS,
-    )
-    val heroFromReadings = WaitingStep(DataRepairStepId.HERO_FROM_READINGS, DataRepairGroup.COUNTERS, READINGS)
     val cascoInRcaFields = WaitingStep(DataRepairStepId.CASCO_IN_RCA_FIELDS, DataRepairGroup.CASCO_IN_RCA, POLICIES)
     val homePolicyWithoutDeadline = WaitingStep(
         DataRepairStepId.HOME_POLICY_WITHOUT_DEADLINE, DataRepairGroup.POLICIES_WITHOUT_DEADLINE, POLICIES,
@@ -63,7 +57,8 @@ object WaitingSteps {
     val sameVisitTwice = WaitingStep(DataRepairStepId.SAME_VISIT_TWICE, DataRepairGroup.VISITS_LOGGED_TWICE, PAPERS)
     val estimatedBillReadings = WaitingStep(
         DataRepairStepId.ESTIMATED_BILL_READINGS, DataRepairGroup.ESTIMATED_INDEXES,
-        "ReadingSeries and capture's bill reading cues (Phase 3)",
+        "capture's bill reader (BillReader: the bill's layout, its meter index and how it says the index " +
+            "was taken) and SubscriptionMeter.number (capture, Phase 5)",
     )
     val sectionsIntoTheirHome = WaitingStep(
         DataRepairStepId.SECTIONS_INTO_THEIR_HOME, DataRepairGroup.BELONGS_TO_ANOTHER_SECTION,
