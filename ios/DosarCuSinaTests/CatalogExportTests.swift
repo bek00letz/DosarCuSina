@@ -16,8 +16,8 @@ import Testing
 /// - `keys.json`: the built-in field, deadline and category keys code names
 ///   (`BuiltInFieldKeys.swift`, `SubscriptionFields`, `BuiltInTemplates.Key`);
 /// - `ownCategories.json`: what a category of one's own is made of besides the answers to its
-///   switches (`CategorySwitches`): the pockets it starts with, and each way of counting a service
-///   with its counter field and its service deadline;
+///   switches (`CategorySwitches`): the pockets it starts with, each way of counting a service
+///   with its counter field and its service deadline, and „Recuperate” (`LostRecordsStep`);
 /// - `household.json`: the household's own deadlines (`HouseholdRules.blueprints`).
 ///
 /// Fresh or failing, as `CopyMatrixTests` keeps docs/COPY_MATRIX.md: the test writes the files
@@ -201,7 +201,19 @@ struct CatalogExportTests {
             Counter(counter: counter.rawValue, defaultEvery: counter.defaultEvery, field: CategorySwitches.counterField(counter),
                     service: CategorySwitches.serviceBlueprint(CategorySwitches.Service(counter)))
         }
+        /// „Recuperate”, the category of one's own the repair list keeps records in whose section
+        /// was deleted on another device (`LostRecordsStep`): one key and one section id on every
+        /// device, and on both apps, so two devices that keep records there make one.
+        var recovered = Recovered()
         var writtenBy = CatalogExportTests.writtenBy
+    }
+
+    struct Recovered: Encodable {
+        var key = LostRecordsStep.categoryKey
+        var name = LostRecordsStep.name
+        var symbol = LostRecordsStep.symbol
+        var pockets = LostRecordsStep.pockets.map(\.rawValue)
+        var sectionID = LostRecordsStep.sectionID
     }
 
     /// The household's own deadlines (`HouseholdRules.blueprints`): what a deadline with no

@@ -29,6 +29,7 @@ import com.ar.dosarcusina.store.schema.CategoryTemplate
 import com.ar.dosarcusina.store.schema.Obligation
 import com.ar.dosarcusina.store.schema.StoredMoment
 import com.ar.dosarcusina.store.schema.keptRecurrence
+import java.time.Instant
 import java.util.UUID
 import kotlinx.coroutines.runBlocking
 
@@ -300,17 +301,7 @@ class TemplateStore(
         tint: String,
         parts: CategoryParts,
         isSensitive: Boolean,
-    ): CategoryTemplate {
-        val now = StoredMoment.kept(unit.clock())
-        val order = CategoryOrder.after(step.all(Tables.templates).map { it.homeOrder })
-        val blank = CategoryTemplate(
-            key = key, name = name, symbol = symbol, tintRaw = tint, isBuiltIn = false, homeOrder = order,
-            createdAt = now, updatedAt = now,
-        )
-        val made = step.insert(blank.withParts(parts))
-        step.lockMadeWith(made, isSensitive)
-        return made
-    }
+    ): CategoryTemplate = makeCustom(step, key, name, symbol, tint, parts, isSensitive, unit.clock())
 
     private fun effects(switches: CategorySwitches, template: CategoryTemplate, view: BinderView): SwitchEffects {
         val before = template.parts.blueprints.map { it.key }.filter(CategorySwitches::isServiceBlueprint).toSet()
@@ -392,6 +383,33 @@ class TemplateStore(
         templates.sortedWith(compareBy({ it.homeOrder }, { it.createdAt }))
 
     companion object {
+        /**
+         * Makes a category of the person's own in [step] at [now], last on the binder, with the lock
+         * [isSensitive] says (kept as this phone's choice before the step saves): the one way one is
+         * made, for every `createCustom` and the repair list's „Recuperate”.
+         */
+        @Suppress("LongParameterList") // What a new category is made of.
+        internal fun makeCustom(
+            step: Step,
+            key: String,
+            name: String,
+            symbol: String,
+            tint: String,
+            parts: CategoryParts,
+            isSensitive: Boolean,
+            now: Instant,
+        ): CategoryTemplate {
+            val made = StoredMoment.kept(now)
+            val order = CategoryOrder.after(step.all(Tables.templates).map { it.homeOrder })
+            val blank = CategoryTemplate(
+                key = key, name = name, symbol = symbol, tintRaw = tint, isBuiltIn = false, homeOrder = order,
+                createdAt = made, updatedAt = made,
+            )
+            val template = step.insert(blank.withParts(parts))
+            step.lockMadeWith(template, isSensitive)
+            return template
+        }
+
         /** What every category of one's own's key starts with (`TemplateDefinition.customKeyPrefix`). */
         const val CUSTOM_KEY_PREFIX = "custom."
 

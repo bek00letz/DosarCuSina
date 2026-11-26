@@ -92,7 +92,7 @@ class DataRepairs(
             FirstVersionDeadlinesStep,
             WaitingSteps.staleDocumentLinks,
             WaitingSteps.visitsWithoutInvoice,
-            WaitingSteps.duplicateProviders,
+            DuplicateProvidersStep,
             DoubleCompletionsStep,
             CounterOutliersStep,
             EstimatedVisitReadingsStep,
@@ -109,7 +109,7 @@ class DataRepairs(
             WaitingSteps.sameVisitTwice,
             DayYearsStep,
             WaitingSteps.estimatedBillReadings,
-            WaitingSteps.sectionsIntoTheirHome,
+            SectionsIntoTheirHomeStep,
             OwnCategoryBoxesStep,
             OwnCategoryVisitsStep,
             ServiceNotesStep,
@@ -118,7 +118,7 @@ class DataRepairs(
             WaitingSteps.citizenships,
             PersonalLessonLabelsStep,
             WaitingSteps.labourParts,
-            WaitingSteps.lostRecords,
+            LostRecordsStep,
         )
 
         private val byId: Map<DataRepairStepId, DataRepairStep> = steps.associateBy { it.id }

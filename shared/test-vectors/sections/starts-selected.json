@@ -1,0 +1,1510 @@
+{
+  "cases" : [
+    {
+      "category" : "vehicle",
+      "kept" : {
+
+      },
+      "name" : "vehicle, nothing typed",
+      "planned" : [
+        {
+          "asksFirstDate" : true,
+          "firstDue" : null,
+          "isSelected" : false,
+          "key" : "vehicle.itp",
+          "startsSelected" : false
+        },
+        {
+          "asksFirstDate" : true,
+          "firstDue" : null,
+          "isSelected" : false,
+          "key" : "vehicle.rca",
+          "startsSelected" : false
+        },
+        {
+          "asksFirstDate" : true,
+          "firstDue" : null,
+          "isSelected" : false,
+          "key" : "vehicle.vignette",
+          "startsSelected" : false
+        },
+        {
+          "asksFirstDate" : false,
+          "firstDue" : "2027-11-26",
+          "isSelected" : true,
+          "key" : "vehicle.service",
+          "startsSelected" : true
+        },
+        {
+          "asksFirstDate" : false,
+          "firstDue" : "2027-04-15",
+          "isSelected" : true,
+          "key" : "vehicle.tyres",
+          "startsSelected" : true
+        },
+        {
+          "asksFirstDate" : true,
+          "firstDue" : null,
+          "isSelected" : false,
+          "key" : "vehicle.casco",
+          "startsSelected" : false
+        },
+        {
+          "asksFirstDate" : true,
+          "firstDue" : null,
+          "isSelected" : false,
+          "key" : "vehicle.kit",
+          "startsSelected" : false
+        }
+      ],
+      "values" : {
+
+      }
+    },
+    {
+      "category" : "vehicle",
+      "kept" : {
+        "vehicle.purchaseDate" : {
+          "type" : "date",
+          "value" : "2027-03-15"
+        },
+        "vehicle.warrantyUntil" : {
+          "type" : "date",
+          "value" : "2027-03-15"
+        }
+      },
+      "name" : "vehicle, every date field on 2027-03-15",
+      "planned" : [
+        {
+          "asksFirstDate" : true,
+          "firstDue" : null,
+          "isSelected" : false,
+          "key" : "vehicle.itp",
+          "startsSelected" : false
+        },
+        {
+          "asksFirstDate" : true,
+          "firstDue" : null,
+          "isSelected" : false,
+          "key" : "vehicle.rca",
+          "startsSelected" : false
+        },
+        {
+          "asksFirstDate" : true,
+          "firstDue" : null,
+          "isSelected" : false,
+          "key" : "vehicle.vignette",
+          "startsSelected" : false
+        },
+        {
+          "asksFirstDate" : false,
+          "firstDue" : "2027-11-26",
+          "isSelected" : true,
+          "key" : "vehicle.service",
+          "startsSelected" : true
+        },
+        {
+          "asksFirstDate" : false,
+          "firstDue" : "2027-04-15",
+          "isSelected" : true,
+          "key" : "vehicle.tyres",
+          "startsSelected" : true
+        },
+        {
+          "asksFirstDate" : true,
+          "firstDue" : null,
+          "isSelected" : false,
+          "key" : "vehicle.casco",
+          "startsSelected" : false
+        },
+        {
+          "asksFirstDate" : true,
+          "firstDue" : null,
+          "isSelected" : false,
+          "key" : "vehicle.kit",
+          "startsSelected" : false
+        }
+      ],
+      "values" : {
+        "vehicle.purchaseDate" : {
+          "type" : "date",
+          "value" : "2027-03-15"
+        },
+        "vehicle.warrantyUntil" : {
+          "type" : "date",
+          "value" : "2027-03-15"
+        }
+      }
+    },
+    {
+      "category" : "home",
+      "kept" : {
+
+      },
+      "name" : "home, nothing typed",
+      "planned" : [
+        {
+          "asksFirstDate" : true,
+          "firstDue" : null,
+          "isSelected" : false,
+          "key" : "home.boilerCheck",
+          "startsSelected" : false
+        },
+        {
+          "asksFirstDate" : true,
+          "firstDue" : null,
+          "isSelected" : false,
+          "key" : "home.gasCheck",
+          "startsSelected" : false
+        },
+        {
+          "asksFirstDate" : true,
+          "firstDue" : null,
+          "isSelected" : false,
+          "key" : "home.gasRevision",
+          "startsSelected" : false
+        },
+        {
+          "asksFirstDate" : true,
+          "firstDue" : null,
+          "isSelected" : false,
+          "key" : "home.pad",
+          "startsSelected" : false
+        },
+        {
+          "asksFirstDate" : true,
+          "firstDue" : null,
+          "isSelected" : false,
+          "key" : "home.insurance",
+          "startsSelected" : false
+        },
+        {
+          "asksFirstDate" : false,
+          "firstDue" : "2027-03-31",
+          "isSelected" : true,
+          "key" : "home.buildingTax",
+          "startsSelected" : true
+        },
+        {
+          "asksFirstDate" : true,
+          "firstDue" : null,
+          "isSelected" : false,
+          "key" : "home.chimney",
+          "startsSelected" : false
+        }
+      ],
+      "values" : {
+
+      }
+    },
+    {
+      "category" : "home",
+      "kept" : {
+
+      },
+      "name" : "home, every date field on 2027-03-15",
+      "planned" : [
+        {
+          "asksFirstDate" : true,
+          "firstDue" : null,
+          "isSelected" : false,
+          "key" : "home.boilerCheck",
+          "startsSelected" : false
+        },
+        {
+          "asksFirstDate" : true,
+          "firstDue" : null,
+          "isSelected" : false,
+          "key" : "home.gasCheck",
+          "startsSelected" : false
+        },
+        {
+          "asksFirstDate" : true,
+          "firstDue" : null,
+          "isSelected" : false,
+          "key" : "home.gasRevision",
+          "startsSelected" : false
+        },
+        {
+          "asksFirstDate" : true,
+          "firstDue" : null,
+          "isSelected" : false,
+          "key" : "home.pad",
+          "startsSelected" : false
+        },
+        {
+          "asksFirstDate" : true,
+          "firstDue" : null,
+          "isSelected" : false,
+          "key" : "home.insurance",
+          "startsSelected" : false
+        },
+        {
+          "asksFirstDate" : false,
+          "firstDue" : "2027-03-31",
+          "isSelected" : true,
+          "key" : "home.buildingTax",
+          "startsSelected" : true
+        },
+        {
+          "asksFirstDate" : true,
+          "firstDue" : null,
+          "isSelected" : false,
+          "key" : "home.chimney",
+          "startsSelected" : false
+        }
+      ],
+      "values" : {
+
+      }
+    },
+    {
+      "category" : "documents",
+      "kept" : {
+
+      },
+      "name" : "documents, nothing typed",
+      "planned" : [
+        {
+          "asksFirstDate" : true,
+          "firstDue" : null,
+          "isSelected" : false,
+          "key" : "document.renew",
+          "startsSelected" : false
+        }
+      ],
+      "values" : {
+
+      }
+    },
+    {
+      "category" : "documents",
+      "kept" : {
+        "document.birthDate" : {
+          "type" : "date",
+          "value" : "2027-03-15"
+        },
+        "document.expiry" : {
+          "type" : "date",
+          "value" : "2027-03-15"
+        },
+        "document.issueDate" : {
+          "type" : "date",
+          "value" : "2027-03-15"
+        }
+      },
+      "name" : "documents, every date field on 2027-03-15",
+      "planned" : [
+        {
+          "asksFirstDate" : false,
+          "firstDue" : "2027-03-15",
+          "isSelected" : true,
+          "key" : "document.renew",
+          "startsSelected" : true
+        }
+      ],
+      "values" : {
+        "document.birthDate" : {
+          "type" : "date",
+          "value" : "2027-03-15"
+        },
+        "document.expiry" : {
+          "type" : "date",
+          "value" : "2027-03-15"
+        },
+        "document.issueDate" : {
+          "type" : "date",
+          "value" : "2027-03-15"
+        }
+      }
+    },
+    {
+      "category" : "pet",
+      "kept" : {
+
+      },
+      "name" : "pet, nothing typed",
+      "planned" : [
+        {
+          "asksFirstDate" : true,
+          "firstDue" : null,
+          "isSelected" : false,
+          "key" : "pet.rabies",
+          "startsSelected" : false
+        },
+        {
+          "asksFirstDate" : true,
+          "firstDue" : null,
+          "isSelected" : false,
+          "key" : "pet.vaccine",
+          "startsSelected" : false
+        },
+        {
+          "asksFirstDate" : false,
+          "firstDue" : "2027-02-26",
+          "isSelected" : true,
+          "key" : "pet.dewormInternal",
+          "startsSelected" : true
+        },
+        {
+          "asksFirstDate" : false,
+          "firstDue" : "2026-12-26",
+          "isSelected" : true,
+          "key" : "pet.dewormExternal",
+          "startsSelected" : true
+        },
+        {
+          "asksFirstDate" : false,
+          "firstDue" : "2027-01-07",
+          "isSelected" : false,
+          "key" : "pet.grooming",
+          "startsSelected" : false
+        }
+      ],
+      "values" : {
+
+      }
+    },
+    {
+      "category" : "pet",
+      "kept" : {
+        "pet.birthDate" : {
+          "type" : "date",
+          "value" : "2027-03-15"
+        }
+      },
+      "name" : "pet, every date field on 2027-03-15",
+      "planned" : [
+        {
+          "asksFirstDate" : true,
+          "firstDue" : null,
+          "isSelected" : false,
+          "key" : "pet.rabies",
+          "startsSelected" : false
+        },
+        {
+          "asksFirstDate" : true,
+          "firstDue" : null,
+          "isSelected" : false,
+          "key" : "pet.vaccine",
+          "startsSelected" : false
+        },
+        {
+          "asksFirstDate" : false,
+          "firstDue" : "2027-02-26",
+          "isSelected" : true,
+          "key" : "pet.dewormInternal",
+          "startsSelected" : true
+        },
+        {
+          "asksFirstDate" : false,
+          "firstDue" : "2026-12-26",
+          "isSelected" : true,
+          "key" : "pet.dewormExternal",
+          "startsSelected" : true
+        },
+        {
+          "asksFirstDate" : false,
+          "firstDue" : "2027-01-07",
+          "isSelected" : false,
+          "key" : "pet.grooming",
+          "startsSelected" : false
+        }
+      ],
+      "values" : {
+        "pet.birthDate" : {
+          "type" : "date",
+          "value" : "2027-03-15"
+        }
+      }
+    },
+    {
+      "category" : "health",
+      "kept" : {
+
+      },
+      "name" : "health, nothing typed",
+      "planned" : [
+        {
+          "asksFirstDate" : false,
+          "firstDue" : "2027-11-26",
+          "isSelected" : true,
+          "key" : "health.checkup",
+          "startsSelected" : true
+        },
+        {
+          "asksFirstDate" : false,
+          "firstDue" : "2027-05-26",
+          "isSelected" : true,
+          "key" : "health.dentist",
+          "startsSelected" : true
+        },
+        {
+          "asksFirstDate" : true,
+          "firstDue" : null,
+          "isSelected" : false,
+          "key" : "health.tetanus",
+          "startsSelected" : false
+        },
+        {
+          "asksFirstDate" : false,
+          "firstDue" : "2027-10-15",
+          "isSelected" : false,
+          "key" : "health.flu",
+          "startsSelected" : false
+        },
+        {
+          "asksFirstDate" : true,
+          "firstDue" : null,
+          "isSelected" : false,
+          "key" : "health.euCard",
+          "startsSelected" : false
+        }
+      ],
+      "values" : {
+
+      }
+    },
+    {
+      "category" : "health",
+      "kept" : {
+        "health.birthDate" : {
+          "type" : "date",
+          "value" : "2027-03-15"
+        }
+      },
+      "name" : "health, every date field on 2027-03-15",
+      "planned" : [
+        {
+          "asksFirstDate" : false,
+          "firstDue" : "2027-11-26",
+          "isSelected" : true,
+          "key" : "health.checkup",
+          "startsSelected" : true
+        },
+        {
+          "asksFirstDate" : false,
+          "firstDue" : "2027-05-26",
+          "isSelected" : true,
+          "key" : "health.dentist",
+          "startsSelected" : true
+        },
+        {
+          "asksFirstDate" : true,
+          "firstDue" : null,
+          "isSelected" : false,
+          "key" : "health.tetanus",
+          "startsSelected" : false
+        },
+        {
+          "asksFirstDate" : false,
+          "firstDue" : "2027-10-15",
+          "isSelected" : false,
+          "key" : "health.flu",
+          "startsSelected" : false
+        },
+        {
+          "asksFirstDate" : true,
+          "firstDue" : null,
+          "isSelected" : false,
+          "key" : "health.euCard",
+          "startsSelected" : false
+        }
+      ],
+      "values" : {
+        "health.birthDate" : {
+          "type" : "date",
+          "value" : "2027-03-15"
+        }
+      }
+    },
+    {
+      "category" : "purchase",
+      "kept" : {
+        "purchase.warrantyMonths" : {
+          "type" : "number",
+          "value" : 24
+        }
+      },
+      "name" : "purchase, nothing typed",
+      "planned" : [
+        {
+          "asksFirstDate" : true,
+          "firstDue" : null,
+          "isSelected" : false,
+          "key" : "purchase.warrantyEnds",
+          "startsSelected" : false
+        }
+      ],
+      "values" : {
+
+      }
+    },
+    {
+      "category" : "purchase",
+      "kept" : {
+        "purchase.date" : {
+          "type" : "date",
+          "value" : "2027-03-15"
+        },
+        "purchase.warrantyMonths" : {
+          "type" : "number",
+          "value" : 24
+        },
+        "purchase.warrantyUntil" : {
+          "type" : "date",
+          "value" : "2027-03-15"
+        }
+      },
+      "name" : "purchase, every date field on 2027-03-15",
+      "planned" : [
+        {
+          "asksFirstDate" : false,
+          "firstDue" : "2027-03-15",
+          "isSelected" : true,
+          "key" : "purchase.warrantyEnds",
+          "startsSelected" : true
+        }
+      ],
+      "values" : {
+        "purchase.date" : {
+          "type" : "date",
+          "value" : "2027-03-15"
+        },
+        "purchase.warrantyUntil" : {
+          "type" : "date",
+          "value" : "2027-03-15"
+        }
+      }
+    },
+    {
+      "category" : "subscription",
+      "kept" : {
+        "subscription.cycle" : {
+          "type" : "text",
+          "value" : "billing.monthly"
+        },
+        "subscription.group" : {
+          "type" : "text",
+          "value" : "subscriptionGroup.other"
+        }
+      },
+      "name" : "subscription, nothing typed",
+      "planned" : [
+        {
+          "asksFirstDate" : true,
+          "firstDue" : null,
+          "isSelected" : false,
+          "key" : "subscription.contractEnd",
+          "startsSelected" : false
+        },
+        {
+          "asksFirstDate" : true,
+          "firstDue" : null,
+          "isSelected" : false,
+          "key" : "subscription.minimumEnds",
+          "startsSelected" : false
+        },
+        {
+          "asksFirstDate" : true,
+          "firstDue" : null,
+          "isSelected" : false,
+          "key" : "subscription.bill",
+          "startsSelected" : false
+        }
+      ],
+      "values" : {
+
+      }
+    },
+    {
+      "category" : "subscription",
+      "kept" : {
+        "subscription.contractEnd" : {
+          "type" : "date",
+          "value" : "2027-03-15"
+        },
+        "subscription.cycle" : {
+          "type" : "text",
+          "value" : "billing.monthly"
+        },
+        "subscription.group" : {
+          "type" : "text",
+          "value" : "subscriptionGroup.other"
+        },
+        "subscription.minimumUntil" : {
+          "type" : "date",
+          "value" : "2027-03-15"
+        },
+        "subscription.renewalDate" : {
+          "type" : "date",
+          "value" : "2027-03-15"
+        },
+        "subscription.startDate" : {
+          "type" : "date",
+          "value" : "2027-03-15"
+        }
+      },
+      "name" : "subscription, every date field on 2027-03-15",
+      "planned" : [
+        {
+          "asksFirstDate" : false,
+          "firstDue" : "2027-03-15",
+          "isSelected" : true,
+          "key" : "subscription.contractEnd",
+          "startsSelected" : true
+        },
+        {
+          "asksFirstDate" : false,
+          "firstDue" : "2027-03-15",
+          "isSelected" : true,
+          "key" : "subscription.minimumEnds",
+          "startsSelected" : true
+        },
+        {
+          "asksFirstDate" : true,
+          "firstDue" : null,
+          "isSelected" : false,
+          "key" : "subscription.bill",
+          "startsSelected" : false
+        }
+      ],
+      "values" : {
+        "subscription.contractEnd" : {
+          "type" : "date",
+          "value" : "2027-03-15"
+        },
+        "subscription.minimumUntil" : {
+          "type" : "date",
+          "value" : "2027-03-15"
+        },
+        "subscription.renewalDate" : {
+          "type" : "date",
+          "value" : "2027-03-15"
+        },
+        "subscription.startDate" : {
+          "type" : "date",
+          "value" : "2027-03-15"
+        }
+      }
+    },
+    {
+      "category" : "other",
+      "kept" : {
+
+      },
+      "name" : "other, nothing typed",
+      "planned" : [
+
+      ],
+      "values" : {
+
+      }
+    },
+    {
+      "category" : "other",
+      "kept" : {
+        "other.purchaseDate" : {
+          "type" : "date",
+          "value" : "2027-03-15"
+        },
+        "other.warrantyUntil" : {
+          "type" : "date",
+          "value" : "2027-03-15"
+        }
+      },
+      "name" : "other, every date field on 2027-03-15",
+      "planned" : [
+
+      ],
+      "values" : {
+        "other.purchaseDate" : {
+          "type" : "date",
+          "value" : "2027-03-15"
+        },
+        "other.warrantyUntil" : {
+          "type" : "date",
+          "value" : "2027-03-15"
+        }
+      }
+    },
+    {
+      "category" : "bike",
+      "kept" : {
+
+      },
+      "name" : "bike, nothing typed",
+      "planned" : [
+        {
+          "asksFirstDate" : false,
+          "firstDue" : "2026-12-26",
+          "isSelected" : true,
+          "key" : "bike.chainLube",
+          "startsSelected" : true
+        },
+        {
+          "asksFirstDate" : false,
+          "firstDue" : "2027-05-26",
+          "isSelected" : true,
+          "key" : "bike.brakes",
+          "startsSelected" : true
+        },
+        {
+          "asksFirstDate" : false,
+          "firstDue" : "2027-11-26",
+          "isSelected" : true,
+          "key" : "bike.chain",
+          "startsSelected" : true
+        },
+        {
+          "asksFirstDate" : false,
+          "firstDue" : "2027-11-26",
+          "isSelected" : false,
+          "key" : "bike.fork",
+          "startsSelected" : false
+        }
+      ],
+      "values" : {
+
+      }
+    },
+    {
+      "category" : "bike",
+      "kept" : {
+        "bike.purchaseDate" : {
+          "type" : "date",
+          "value" : "2027-03-15"
+        },
+        "bike.warrantyUntil" : {
+          "type" : "date",
+          "value" : "2027-03-15"
+        }
+      },
+      "name" : "bike, every date field on 2027-03-15",
+      "planned" : [
+        {
+          "asksFirstDate" : false,
+          "firstDue" : "2026-12-26",
+          "isSelected" : true,
+          "key" : "bike.chainLube",
+          "startsSelected" : true
+        },
+        {
+          "asksFirstDate" : false,
+          "firstDue" : "2027-05-26",
+          "isSelected" : true,
+          "key" : "bike.brakes",
+          "startsSelected" : true
+        },
+        {
+          "asksFirstDate" : false,
+          "firstDue" : "2027-11-26",
+          "isSelected" : true,
+          "key" : "bike.chain",
+          "startsSelected" : true
+        },
+        {
+          "asksFirstDate" : false,
+          "firstDue" : "2027-11-26",
+          "isSelected" : false,
+          "key" : "bike.fork",
+          "startsSelected" : false
+        }
+      ],
+      "values" : {
+        "bike.purchaseDate" : {
+          "type" : "date",
+          "value" : "2027-03-15"
+        },
+        "bike.warrantyUntil" : {
+          "type" : "date",
+          "value" : "2027-03-15"
+        }
+      }
+    },
+    {
+      "category" : "plants",
+      "kept" : {
+
+      },
+      "name" : "plants, nothing typed",
+      "planned" : [
+        {
+          "asksFirstDate" : false,
+          "firstDue" : "2026-12-03",
+          "isSelected" : true,
+          "key" : "plants.water",
+          "startsSelected" : true
+        },
+        {
+          "asksFirstDate" : false,
+          "firstDue" : "2026-12-26",
+          "isSelected" : true,
+          "key" : "plants.feed",
+          "startsSelected" : true
+        },
+        {
+          "asksFirstDate" : false,
+          "firstDue" : "2028-11-26",
+          "isSelected" : false,
+          "key" : "plants.repot",
+          "startsSelected" : false
+        }
+      ],
+      "values" : {
+
+      }
+    },
+    {
+      "category" : "plants",
+      "kept" : {
+
+      },
+      "name" : "plants, every date field on 2027-03-15",
+      "planned" : [
+        {
+          "asksFirstDate" : false,
+          "firstDue" : "2026-12-03",
+          "isSelected" : true,
+          "key" : "plants.water",
+          "startsSelected" : true
+        },
+        {
+          "asksFirstDate" : false,
+          "firstDue" : "2026-12-26",
+          "isSelected" : true,
+          "key" : "plants.feed",
+          "startsSelected" : true
+        },
+        {
+          "asksFirstDate" : false,
+          "firstDue" : "2028-11-26",
+          "isSelected" : false,
+          "key" : "plants.repot",
+          "startsSelected" : false
+        }
+      ],
+      "values" : {
+
+      }
+    },
+    {
+      "category" : "tenancy",
+      "kept" : {
+
+      },
+      "name" : "tenancy, nothing typed",
+      "planned" : [
+        {
+          "asksFirstDate" : true,
+          "firstDue" : null,
+          "isSelected" : false,
+          "key" : "tenancy.end",
+          "startsSelected" : false
+        }
+      ],
+      "values" : {
+
+      }
+    },
+    {
+      "category" : "tenancy",
+      "kept" : {
+        "tenancy.end" : {
+          "type" : "date",
+          "value" : "2027-03-15"
+        },
+        "tenancy.start" : {
+          "type" : "date",
+          "value" : "2027-03-15"
+        }
+      },
+      "name" : "tenancy, every date field on 2027-03-15",
+      "planned" : [
+        {
+          "asksFirstDate" : false,
+          "firstDue" : "2027-03-15",
+          "isSelected" : true,
+          "key" : "tenancy.end",
+          "startsSelected" : true
+        }
+      ],
+      "values" : {
+        "tenancy.end" : {
+          "type" : "date",
+          "value" : "2027-03-15"
+        },
+        "tenancy.start" : {
+          "type" : "date",
+          "value" : "2027-03-15"
+        }
+      }
+    },
+    {
+      "category" : "member",
+      "kept" : {
+
+      },
+      "name" : "member, nothing typed",
+      "planned" : [
+
+      ],
+      "values" : {
+
+      }
+    },
+    {
+      "category" : "member",
+      "kept" : {
+
+      },
+      "name" : "member, every date field on 2027-03-15",
+      "planned" : [
+
+      ],
+      "values" : {
+
+      }
+    },
+    {
+      "category" : "espresso",
+      "kept" : {
+
+      },
+      "name" : "espresso, nothing typed",
+      "planned" : [
+        {
+          "asksFirstDate" : false,
+          "firstDue" : "2026-12-10",
+          "isSelected" : true,
+          "key" : "espresso.backflush",
+          "startsSelected" : true
+        },
+        {
+          "asksFirstDate" : false,
+          "firstDue" : "2027-01-26",
+          "isSelected" : true,
+          "key" : "espresso.descale",
+          "startsSelected" : true
+        },
+        {
+          "asksFirstDate" : false,
+          "firstDue" : "2027-01-26",
+          "isSelected" : true,
+          "key" : "espresso.filter",
+          "startsSelected" : true
+        }
+      ],
+      "values" : {
+
+      }
+    },
+    {
+      "category" : "espresso",
+      "kept" : {
+        "espresso.purchaseDate" : {
+          "type" : "date",
+          "value" : "2027-03-15"
+        },
+        "espresso.warrantyUntil" : {
+          "type" : "date",
+          "value" : "2027-03-15"
+        }
+      },
+      "name" : "espresso, every date field on 2027-03-15",
+      "planned" : [
+        {
+          "asksFirstDate" : false,
+          "firstDue" : "2026-12-10",
+          "isSelected" : true,
+          "key" : "espresso.backflush",
+          "startsSelected" : true
+        },
+        {
+          "asksFirstDate" : false,
+          "firstDue" : "2027-01-26",
+          "isSelected" : true,
+          "key" : "espresso.descale",
+          "startsSelected" : true
+        },
+        {
+          "asksFirstDate" : false,
+          "firstDue" : "2027-01-26",
+          "isSelected" : true,
+          "key" : "espresso.filter",
+          "startsSelected" : true
+        }
+      ],
+      "values" : {
+        "espresso.purchaseDate" : {
+          "type" : "date",
+          "value" : "2027-03-15"
+        },
+        "espresso.warrantyUntil" : {
+          "type" : "date",
+          "value" : "2027-03-15"
+        }
+      }
+    },
+    {
+      "category" : "purchase",
+      "kept" : {
+        "purchase.date" : {
+          "type" : "date",
+          "value" : "2026-11-01"
+        },
+        "purchase.warrantyMonths" : {
+          "type" : "number",
+          "value" : 24
+        },
+        "purchase.warrantyUntil" : {
+          "type" : "date",
+          "value" : "2028-11-01"
+        }
+      },
+      "name" : "a purchase's warranty from its day and months",
+      "planned" : [
+        {
+          "asksFirstDate" : false,
+          "firstDue" : "2028-11-01",
+          "isSelected" : true,
+          "key" : "purchase.warrantyEnds",
+          "startsSelected" : true
+        }
+      ],
+      "values" : {
+        "purchase.date" : {
+          "type" : "date",
+          "value" : "2026-11-01"
+        },
+        "purchase.warrantyMonths" : {
+          "type" : "number",
+          "value" : 24
+        }
+      }
+    },
+    {
+      "category" : "purchase",
+      "kept" : {
+        "purchase.date" : {
+          "type" : "date",
+          "value" : "2026-08-31"
+        },
+        "purchase.warrantyMonths" : {
+          "type" : "number",
+          "value" : 24
+        },
+        "purchase.warrantyUntil" : {
+          "type" : "date",
+          "value" : "2028-08-31"
+        }
+      },
+      "name" : "a purchase's warranty from its day and the usual months",
+      "planned" : [
+        {
+          "asksFirstDate" : false,
+          "firstDue" : "2028-08-31",
+          "isSelected" : true,
+          "key" : "purchase.warrantyEnds",
+          "startsSelected" : true
+        }
+      ],
+      "values" : {
+        "purchase.date" : {
+          "type" : "date",
+          "value" : "2026-08-31"
+        }
+      }
+    },
+    {
+      "category" : "documents",
+      "kept" : {
+        "document.expiry" : {
+          "type" : "date",
+          "value" : "2027-02-28"
+        },
+        "document.issueDate" : {
+          "type" : "date",
+          "value" : "2026-08-31"
+        },
+        "document.type" : {
+          "type" : "text",
+          "value" : "documentType.criminalRecord"
+        },
+        "document.variant" : {
+          "type" : "text",
+          "value" : "documentVariant.criminalRecord.judicial"
+        }
+      },
+      "name" : "a cazier judiciar valid six months from its issue",
+      "planned" : [
+        {
+          "asksFirstDate" : false,
+          "firstDue" : "2027-02-28",
+          "isSelected" : true,
+          "key" : "document.renew",
+          "startsSelected" : true
+        }
+      ],
+      "values" : {
+        "document.issueDate" : {
+          "type" : "date",
+          "value" : "2026-08-31"
+        },
+        "document.type" : {
+          "type" : "text",
+          "value" : "documentType.criminalRecord"
+        },
+        "document.variant" : {
+          "type" : "text",
+          "value" : "documentVariant.criminalRecord.judicial"
+        }
+      }
+    },
+    {
+      "category" : "documents",
+      "kept" : {
+        "document.issueDate" : {
+          "type" : "date",
+          "value" : "2026-08-31"
+        },
+        "document.type" : {
+          "type" : "text",
+          "value" : "documentType.criminalRecord"
+        },
+        "document.variant" : {
+          "type" : "text",
+          "value" : "documentVariant.criminalRecord.fiscal"
+        }
+      },
+      "name" : "a cazier fiscal has no validity of its own",
+      "planned" : [
+        {
+          "asksFirstDate" : true,
+          "firstDue" : null,
+          "isSelected" : false,
+          "key" : "document.renew",
+          "startsSelected" : false
+        }
+      ],
+      "values" : {
+        "document.issueDate" : {
+          "type" : "date",
+          "value" : "2026-08-31"
+        },
+        "document.type" : {
+          "type" : "text",
+          "value" : "documentType.criminalRecord"
+        },
+        "document.variant" : {
+          "type" : "text",
+          "value" : "documentVariant.criminalRecord.fiscal"
+        }
+      }
+    },
+    {
+      "category" : "documents",
+      "kept" : {
+        "document.expiry" : {
+          "type" : "date",
+          "value" : "2031-05-10"
+        },
+        "document.type" : {
+          "type" : "text",
+          "value" : "documentType.passport"
+        }
+      },
+      "name" : "a passport stored by its label",
+      "planned" : [
+        {
+          "asksFirstDate" : false,
+          "firstDue" : "2031-05-10",
+          "isSelected" : true,
+          "key" : "document.renew",
+          "startsSelected" : true
+        }
+      ],
+      "values" : {
+        "document.expiry" : {
+          "type" : "date",
+          "value" : "2031-05-10"
+        },
+        "document.type" : {
+          "type" : "text",
+          "value" : "Pasaport"
+        }
+      }
+    },
+    {
+      "category" : "documents",
+      "kept" : {
+        "document.type" : {
+          "type" : "text",
+          "value" : "documentType.passport"
+        }
+      },
+      "name" : "a variant left behind when the type changed",
+      "planned" : [
+        {
+          "asksFirstDate" : true,
+          "firstDue" : null,
+          "isSelected" : false,
+          "key" : "document.renew",
+          "startsSelected" : false
+        }
+      ],
+      "values" : {
+        "document.type" : {
+          "type" : "text",
+          "value" : "documentType.passport"
+        },
+        "document.variant" : {
+          "type" : "text",
+          "value" : "documentVariant.idCard.electronic"
+        }
+      }
+    },
+    {
+      "category" : "documents",
+      "kept" : {
+        "document.expiry" : {
+          "type" : "date",
+          "value" : "2026-01-10"
+        },
+        "document.type" : {
+          "type" : "text",
+          "value" : "documentType.idCard"
+        }
+      },
+      "name" : "an identity card already expired",
+      "planned" : [
+        {
+          "asksFirstDate" : false,
+          "firstDue" : "2026-01-10",
+          "isSelected" : true,
+          "key" : "document.renew",
+          "startsSelected" : true
+        }
+      ],
+      "values" : {
+        "document.expiry" : {
+          "type" : "date",
+          "value" : "2026-01-10"
+        },
+        "document.type" : {
+          "type" : "text",
+          "value" : "documentType.idCard"
+        }
+      }
+    },
+    {
+      "category" : "subscription",
+      "kept" : {
+        "subscription.cycle" : {
+          "type" : "text",
+          "value" : "billing.yearly"
+        },
+        "subscription.group" : {
+          "type" : "text",
+          "value" : "subscriptionGroup.other"
+        },
+        "subscription.renewalDate" : {
+          "type" : "date",
+          "value" : "2027-02-01"
+        }
+      },
+      "name" : "a yearly subscription renews on its day",
+      "planned" : [
+        {
+          "asksFirstDate" : false,
+          "firstDue" : "2027-02-01",
+          "isSelected" : true,
+          "key" : "subscription.renewal",
+          "startsSelected" : true
+        },
+        {
+          "asksFirstDate" : true,
+          "firstDue" : null,
+          "isSelected" : false,
+          "key" : "subscription.contractEnd",
+          "startsSelected" : false
+        },
+        {
+          "asksFirstDate" : true,
+          "firstDue" : null,
+          "isSelected" : false,
+          "key" : "subscription.minimumEnds",
+          "startsSelected" : false
+        },
+        {
+          "asksFirstDate" : true,
+          "firstDue" : null,
+          "isSelected" : false,
+          "key" : "subscription.bill",
+          "startsSelected" : false
+        }
+      ],
+      "values" : {
+        "subscription.cycle" : {
+          "type" : "text",
+          "value" : "billing.yearly"
+        },
+        "subscription.renewalDate" : {
+          "type" : "date",
+          "value" : "2027-02-01"
+        }
+      }
+    },
+    {
+      "category" : "subscription",
+      "kept" : {
+        "subscription.cycle" : {
+          "type" : "text",
+          "value" : "billing.monthly"
+        },
+        "subscription.group" : {
+          "type" : "text",
+          "value" : "subscriptionGroup.other"
+        },
+        "subscription.renewalDate" : {
+          "type" : "date",
+          "value" : "2027-02-01"
+        }
+      },
+      "name" : "a monthly subscription has no renewal",
+      "planned" : [
+        {
+          "asksFirstDate" : true,
+          "firstDue" : null,
+          "isSelected" : false,
+          "key" : "subscription.contractEnd",
+          "startsSelected" : false
+        },
+        {
+          "asksFirstDate" : true,
+          "firstDue" : null,
+          "isSelected" : false,
+          "key" : "subscription.minimumEnds",
+          "startsSelected" : false
+        },
+        {
+          "asksFirstDate" : true,
+          "firstDue" : null,
+          "isSelected" : false,
+          "key" : "subscription.bill",
+          "startsSelected" : false
+        }
+      ],
+      "values" : {
+        "subscription.renewalDate" : {
+          "type" : "date",
+          "value" : "2027-02-01"
+        }
+      }
+    },
+    {
+      "category" : "subscription",
+      "kept" : {
+        "subscription.cycle" : {
+          "type" : "text",
+          "value" : "billing.monthly"
+        },
+        "subscription.group" : {
+          "type" : "text",
+          "value" : "subscriptionGroup.utilities"
+        },
+        "subscription.minimumMonths" : {
+          "type" : "number",
+          "value" : 13
+        },
+        "subscription.minimumUntil" : {
+          "type" : "date",
+          "value" : "2027-02-28"
+        },
+        "subscription.service" : {
+          "type" : "text",
+          "value" : "service.gas"
+        },
+        "subscription.startDate" : {
+          "type" : "date",
+          "value" : "2026-01-31"
+        }
+      },
+      "name" : "a gas subscription's group and its minimum period",
+      "planned" : [
+        {
+          "asksFirstDate" : true,
+          "firstDue" : null,
+          "isSelected" : false,
+          "key" : "subscription.contractEnd",
+          "startsSelected" : false
+        },
+        {
+          "asksFirstDate" : false,
+          "firstDue" : "2027-02-28",
+          "isSelected" : true,
+          "key" : "subscription.minimumEnds",
+          "startsSelected" : true
+        },
+        {
+          "asksFirstDate" : true,
+          "firstDue" : null,
+          "isSelected" : false,
+          "key" : "subscription.bill",
+          "startsSelected" : false
+        }
+      ],
+      "values" : {
+        "subscription.minimumMonths" : {
+          "type" : "number",
+          "value" : 13
+        },
+        "subscription.service" : {
+          "type" : "text",
+          "value" : "service.gas"
+        },
+        "subscription.startDate" : {
+          "type" : "date",
+          "value" : "2026-01-31"
+        }
+      }
+    },
+    {
+      "category" : "tenancy",
+      "kept" : {
+        "tenancy.end" : {
+          "type" : "date",
+          "value" : "2027-12-31"
+        },
+        "tenancy.start" : {
+          "type" : "date",
+          "value" : "2026-01-01"
+        }
+      },
+      "name" : "a tenancy that ends",
+      "planned" : [
+        {
+          "asksFirstDate" : false,
+          "firstDue" : "2027-12-31",
+          "isSelected" : true,
+          "key" : "tenancy.end",
+          "startsSelected" : true
+        }
+      ],
+      "values" : {
+        "tenancy.end" : {
+          "type" : "date",
+          "value" : "2027-12-31"
+        },
+        "tenancy.start" : {
+          "type" : "date",
+          "value" : "2026-01-01"
+        }
+      }
+    }
+  ],
+  "rule" : "AssetActions.plannedObligations(for:values:) and PlannedObligation.startsSelected(_:firstDue:), over FieldValues.applyingRules(of:previous:calendar:)",
+  "shape" : "today is 2026-11-26 in Bucharest. category: a built-in's key; values: what the form holds, as a backup writes them. kept: the values as saving a new section keeps them (defaults, values that no longer belong taken out, derived values worked out), with choices as keys. planned: each deadline that applies, in the category's order: its blueprint's key, its first day (null when it is to be asked), whether it starts ticked and whether its day had to be asked, and the rule's own answer (startsSelected).",
+  "source" : "ios/DosarCuSina/Services/Obligations/AssetActions.swift, ios/DosarCuSina/Models/Fields/FieldValue.swift, ios/DosarCuSina/Models/Fields/FieldDefinition.swift",
+  "writtenBy" : "ios/DosarCuSinaTests/SectionVectorsTests.swift"
+}

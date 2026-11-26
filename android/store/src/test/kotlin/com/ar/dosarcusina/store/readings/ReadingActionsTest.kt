@@ -16,6 +16,7 @@ import com.ar.dosarcusina.store.schema.Asset
 import com.ar.dosarcusina.store.schema.HistoryEntry
 import com.ar.dosarcusina.store.schema.MeasurementLog
 import com.ar.dosarcusina.store.schema.keptValues
+import com.ar.dosarcusina.store.sections.AssetActions
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNotNull
@@ -42,7 +43,7 @@ class ReadingActionsTest {
 
     private val binder = TestBinderStore().also { it.launch.installBuiltIns(noon("2026-01-01")) }
 
-    private fun actions(day: String) = AssetReadingActions(binder.unit, now = { noon(day) })
+    private fun actions(day: String) = AssetActions(binder.unit, now = { noon(day) })
 
     /** A car with its first reading, as making a section records its hero value. */
     private fun car(km: Double = 145_000.0, day: String = "2026-01-10", example: Boolean = false): Asset {
