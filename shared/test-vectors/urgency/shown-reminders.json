@@ -1,0 +1,148 @@
+{
+  "cases" : [
+    {
+      "cycle" : null,
+      "identifier" : "obligation.badge.2026-11-27",
+      "isOutdated" : true,
+      "isProtected" : false,
+      "locked" : [
+        "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0002"
+      ],
+      "obligationId" : null,
+      "openCycles" : {
+        "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0001" : "2026-11-30",
+        "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0002" : "2026-12-05"
+      }
+    },
+    {
+      "cycle" : null,
+      "identifier" : "obligation.continue",
+      "isOutdated" : true,
+      "isProtected" : false,
+      "locked" : [
+        "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0002"
+      ],
+      "obligationId" : null,
+      "openCycles" : {
+        "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0001" : "2026-11-30",
+        "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0002" : "2026-12-05"
+      }
+    },
+    {
+      "cycle" : "2026-11-30",
+      "identifier" : "a",
+      "isOutdated" : false,
+      "isProtected" : false,
+      "locked" : [
+        "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0002"
+      ],
+      "obligationId" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0001",
+      "openCycles" : {
+        "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0001" : "2026-11-30",
+        "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0002" : "2026-12-05"
+      }
+    },
+    {
+      "cycle" : "2026-10-30",
+      "identifier" : "b",
+      "isOutdated" : true,
+      "isProtected" : false,
+      "locked" : [
+        "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0002"
+      ],
+      "obligationId" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0001",
+      "openCycles" : {
+        "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0001" : "2026-11-30",
+        "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0002" : "2026-12-05"
+      }
+    },
+    {
+      "cycle" : null,
+      "identifier" : "c",
+      "isOutdated" : false,
+      "isProtected" : false,
+      "locked" : [
+        "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0002"
+      ],
+      "obligationId" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0001",
+      "openCycles" : {
+        "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0001" : "2026-11-30",
+        "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0002" : "2026-12-05"
+      }
+    },
+    {
+      "cycle" : "2026-11-30",
+      "identifier" : "d",
+      "isOutdated" : true,
+      "isProtected" : false,
+      "locked" : [
+        "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0002"
+      ],
+      "obligationId" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0003",
+      "openCycles" : {
+        "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0001" : "2026-11-30",
+        "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0002" : "2026-12-05"
+      }
+    },
+    {
+      "cycle" : "2026-12-05",
+      "identifier" : "e",
+      "isOutdated" : true,
+      "isProtected" : false,
+      "locked" : [
+        "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0002"
+      ],
+      "obligationId" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0002",
+      "openCycles" : {
+        "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0001" : "2026-11-30",
+        "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0002" : "2026-12-05"
+      }
+    },
+    {
+      "cycle" : "2026-12-05",
+      "identifier" : "f",
+      "isOutdated" : false,
+      "isProtected" : true,
+      "locked" : [
+        "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0002"
+      ],
+      "obligationId" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0002",
+      "openCycles" : {
+        "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0001" : "2026-11-30",
+        "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0002" : "2026-12-05"
+      }
+    },
+    {
+      "cycle" : "2026-11-30",
+      "identifier" : "g",
+      "isOutdated" : false,
+      "isProtected" : true,
+      "locked" : [
+        "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0002"
+      ],
+      "obligationId" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0001",
+      "openCycles" : {
+        "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0001" : "2026-11-30",
+        "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0002" : "2026-12-05"
+      }
+    },
+    {
+      "cycle" : "2026-11-05",
+      "identifier" : "h",
+      "isOutdated" : true,
+      "isProtected" : true,
+      "locked" : [
+        "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0002"
+      ],
+      "obligationId" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0002",
+      "openCycles" : {
+        "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0001" : "2026-11-30",
+        "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0002" : "2026-12-05"
+      }
+    }
+  ],
+  "rule" : "NotificationReconciler.isOutdated(_:openCycles:locked:)",
+  "shape" : "openCycles: the due day of each deadline that still reminds; locked: the deadlines whose category is locked now; a reminder shown in Notification Center (its identifier, deadline, cycle and whether it was written with a locked category's words); isOutdated: whether a pass clears it (its cycle closed or gone, or it names a deadline locked since).",
+  "source" : "ios/DosarCuSina/Services/Reminders/NotificationReconciler.swift",
+  "writtenBy" : "ios/DosarCuSinaTests/UrgencyVectorsTests.swift"
+}

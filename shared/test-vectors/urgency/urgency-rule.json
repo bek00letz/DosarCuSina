@@ -1,0 +1,2056 @@
+{
+  "cases" : [
+    {
+      "attentionStart" : "2026-03-31",
+      "due" : "2026-03-31",
+      "name" : "nothing reminds",
+      "reminderAnchor" : "2026-03-31",
+      "rule" : {
+        "firstLeadDays" : 0,
+        "graceDays" : 0,
+        "maxWindowDays" : 0,
+        "travelMarginDays" : 0
+      },
+      "sweep" : {
+        "changes" : [
+          {
+            "from" : "2026-02-25",
+            "urgency" : "later"
+          },
+          {
+            "from" : "2026-03-01",
+            "urgency" : "upcoming"
+          },
+          {
+            "from" : "2026-03-31",
+            "urgency" : "today"
+          },
+          {
+            "from" : "2026-04-01",
+            "urgency" : "overdue"
+          }
+        ],
+        "from" : "2026-02-25",
+        "to" : "2026-04-03"
+      },
+      "travelCutoff" : null,
+      "windowDays" : 0
+    },
+    {
+      "attentionStart" : "2028-02-29",
+      "due" : "2028-02-29",
+      "name" : "nothing reminds",
+      "reminderAnchor" : "2028-02-29",
+      "rule" : {
+        "firstLeadDays" : 0,
+        "graceDays" : 0,
+        "maxWindowDays" : 0,
+        "travelMarginDays" : 0
+      },
+      "sweep" : {
+        "changes" : [
+          {
+            "from" : "2028-01-26",
+            "urgency" : "later"
+          },
+          {
+            "from" : "2028-01-30",
+            "urgency" : "upcoming"
+          },
+          {
+            "from" : "2028-02-29",
+            "urgency" : "today"
+          },
+          {
+            "from" : "2028-03-01",
+            "urgency" : "overdue"
+          }
+        ],
+        "from" : "2028-01-26",
+        "to" : "2028-03-03"
+      },
+      "travelCutoff" : null,
+      "windowDays" : 0
+    },
+    {
+      "attentionStart" : "2027-08-31",
+      "due" : "2027-08-31",
+      "name" : "nothing reminds",
+      "reminderAnchor" : "2027-08-31",
+      "rule" : {
+        "firstLeadDays" : 0,
+        "graceDays" : 0,
+        "maxWindowDays" : 0,
+        "travelMarginDays" : 0
+      },
+      "sweep" : {
+        "changes" : [
+          {
+            "from" : "2027-07-28",
+            "urgency" : "later"
+          },
+          {
+            "from" : "2027-08-01",
+            "urgency" : "upcoming"
+          },
+          {
+            "from" : "2027-08-31",
+            "urgency" : "today"
+          },
+          {
+            "from" : "2027-09-01",
+            "urgency" : "overdue"
+          }
+        ],
+        "from" : "2027-07-28",
+        "to" : "2027-09-03"
+      },
+      "travelCutoff" : null,
+      "windowDays" : 0
+    },
+    {
+      "attentionStart" : "2026-12-25",
+      "due" : "2026-12-25",
+      "name" : "nothing reminds",
+      "reminderAnchor" : "2026-12-25",
+      "rule" : {
+        "firstLeadDays" : 0,
+        "graceDays" : 0,
+        "maxWindowDays" : 0,
+        "travelMarginDays" : 0
+      },
+      "sweep" : {
+        "changes" : [
+          {
+            "from" : "2026-11-21",
+            "urgency" : "later"
+          },
+          {
+            "from" : "2026-11-25",
+            "urgency" : "upcoming"
+          },
+          {
+            "from" : "2026-12-25",
+            "urgency" : "today"
+          },
+          {
+            "from" : "2026-12-26",
+            "urgency" : "overdue"
+          }
+        ],
+        "from" : "2026-11-21",
+        "to" : "2026-12-28"
+      },
+      "travelCutoff" : null,
+      "windowDays" : 0
+    },
+    {
+      "attentionStart" : "2026-02-28",
+      "due" : "2026-03-31",
+      "name" : "a legal deadline, a month ahead",
+      "reminderAnchor" : "2026-03-31",
+      "rule" : {
+        "firstLeadDays" : 30,
+        "graceDays" : 0,
+        "maxWindowDays" : 30,
+        "travelMarginDays" : 0
+      },
+      "sweep" : {
+        "changes" : [
+          {
+            "from" : "2026-02-25",
+            "urgency" : "later"
+          },
+          {
+            "from" : "2026-02-28",
+            "urgency" : "soon"
+          },
+          {
+            "from" : "2026-03-31",
+            "urgency" : "today"
+          },
+          {
+            "from" : "2026-04-01",
+            "urgency" : "overdue"
+          }
+        ],
+        "from" : "2026-02-25",
+        "to" : "2026-04-03"
+      },
+      "travelCutoff" : null,
+      "windowDays" : 31
+    },
+    {
+      "attentionStart" : "2028-01-29",
+      "due" : "2028-02-29",
+      "name" : "a legal deadline, a month ahead",
+      "reminderAnchor" : "2028-02-29",
+      "rule" : {
+        "firstLeadDays" : 30,
+        "graceDays" : 0,
+        "maxWindowDays" : 30,
+        "travelMarginDays" : 0
+      },
+      "sweep" : {
+        "changes" : [
+          {
+            "from" : "2028-01-26",
+            "urgency" : "later"
+          },
+          {
+            "from" : "2028-01-29",
+            "urgency" : "soon"
+          },
+          {
+            "from" : "2028-02-29",
+            "urgency" : "today"
+          },
+          {
+            "from" : "2028-03-01",
+            "urgency" : "overdue"
+          }
+        ],
+        "from" : "2028-01-26",
+        "to" : "2028-03-03"
+      },
+      "travelCutoff" : null,
+      "windowDays" : 31
+    },
+    {
+      "attentionStart" : "2027-07-31",
+      "due" : "2027-08-31",
+      "name" : "a legal deadline, a month ahead",
+      "reminderAnchor" : "2027-08-31",
+      "rule" : {
+        "firstLeadDays" : 30,
+        "graceDays" : 0,
+        "maxWindowDays" : 30,
+        "travelMarginDays" : 0
+      },
+      "sweep" : {
+        "changes" : [
+          {
+            "from" : "2027-07-28",
+            "urgency" : "later"
+          },
+          {
+            "from" : "2027-07-31",
+            "urgency" : "soon"
+          },
+          {
+            "from" : "2027-08-31",
+            "urgency" : "today"
+          },
+          {
+            "from" : "2027-09-01",
+            "urgency" : "overdue"
+          }
+        ],
+        "from" : "2027-07-28",
+        "to" : "2027-09-03"
+      },
+      "travelCutoff" : null,
+      "windowDays" : 31
+    },
+    {
+      "attentionStart" : "2026-11-25",
+      "due" : "2026-12-25",
+      "name" : "a legal deadline, a month ahead",
+      "reminderAnchor" : "2026-12-25",
+      "rule" : {
+        "firstLeadDays" : 30,
+        "graceDays" : 0,
+        "maxWindowDays" : 30,
+        "travelMarginDays" : 0
+      },
+      "sweep" : {
+        "changes" : [
+          {
+            "from" : "2026-11-21",
+            "urgency" : "later"
+          },
+          {
+            "from" : "2026-11-25",
+            "urgency" : "soon"
+          },
+          {
+            "from" : "2026-12-25",
+            "urgency" : "today"
+          },
+          {
+            "from" : "2026-12-26",
+            "urgency" : "overdue"
+          }
+        ],
+        "from" : "2026-11-21",
+        "to" : "2026-12-28"
+      },
+      "travelCutoff" : null,
+      "windowDays" : 30
+    },
+    {
+      "attentionStart" : "2026-02-28",
+      "due" : "2026-03-31",
+      "name" : "an identity card, three months ahead, a month's window",
+      "reminderAnchor" : "2026-03-31",
+      "rule" : {
+        "firstLeadDays" : 90,
+        "graceDays" : 0,
+        "maxWindowDays" : 30,
+        "travelMarginDays" : 0
+      },
+      "sweep" : {
+        "changes" : [
+          {
+            "from" : "2026-02-25",
+            "urgency" : "later"
+          },
+          {
+            "from" : "2026-02-28",
+            "urgency" : "soon"
+          },
+          {
+            "from" : "2026-03-31",
+            "urgency" : "today"
+          },
+          {
+            "from" : "2026-04-01",
+            "urgency" : "overdue"
+          }
+        ],
+        "from" : "2026-02-25",
+        "to" : "2026-04-03"
+      },
+      "travelCutoff" : null,
+      "windowDays" : 31
+    },
+    {
+      "attentionStart" : "2028-01-29",
+      "due" : "2028-02-29",
+      "name" : "an identity card, three months ahead, a month's window",
+      "reminderAnchor" : "2028-02-29",
+      "rule" : {
+        "firstLeadDays" : 90,
+        "graceDays" : 0,
+        "maxWindowDays" : 30,
+        "travelMarginDays" : 0
+      },
+      "sweep" : {
+        "changes" : [
+          {
+            "from" : "2028-01-26",
+            "urgency" : "later"
+          },
+          {
+            "from" : "2028-01-29",
+            "urgency" : "soon"
+          },
+          {
+            "from" : "2028-02-29",
+            "urgency" : "today"
+          },
+          {
+            "from" : "2028-03-01",
+            "urgency" : "overdue"
+          }
+        ],
+        "from" : "2028-01-26",
+        "to" : "2028-03-03"
+      },
+      "travelCutoff" : null,
+      "windowDays" : 31
+    },
+    {
+      "attentionStart" : "2027-07-31",
+      "due" : "2027-08-31",
+      "name" : "an identity card, three months ahead, a month's window",
+      "reminderAnchor" : "2027-08-31",
+      "rule" : {
+        "firstLeadDays" : 90,
+        "graceDays" : 0,
+        "maxWindowDays" : 30,
+        "travelMarginDays" : 0
+      },
+      "sweep" : {
+        "changes" : [
+          {
+            "from" : "2027-07-28",
+            "urgency" : "later"
+          },
+          {
+            "from" : "2027-07-31",
+            "urgency" : "soon"
+          },
+          {
+            "from" : "2027-08-31",
+            "urgency" : "today"
+          },
+          {
+            "from" : "2027-09-01",
+            "urgency" : "overdue"
+          }
+        ],
+        "from" : "2027-07-28",
+        "to" : "2027-09-03"
+      },
+      "travelCutoff" : null,
+      "windowDays" : 31
+    },
+    {
+      "attentionStart" : "2026-11-25",
+      "due" : "2026-12-25",
+      "name" : "an identity card, three months ahead, a month's window",
+      "reminderAnchor" : "2026-12-25",
+      "rule" : {
+        "firstLeadDays" : 90,
+        "graceDays" : 0,
+        "maxWindowDays" : 30,
+        "travelMarginDays" : 0
+      },
+      "sweep" : {
+        "changes" : [
+          {
+            "from" : "2026-11-21",
+            "urgency" : "later"
+          },
+          {
+            "from" : "2026-11-25",
+            "urgency" : "soon"
+          },
+          {
+            "from" : "2026-12-25",
+            "urgency" : "today"
+          },
+          {
+            "from" : "2026-12-26",
+            "urgency" : "overdue"
+          }
+        ],
+        "from" : "2026-11-21",
+        "to" : "2026-12-28"
+      },
+      "travelCutoff" : null,
+      "windowDays" : 30
+    },
+    {
+      "attentionStart" : "2026-03-24",
+      "due" : "2026-03-31",
+      "name" : "a week's lead in a month's window",
+      "reminderAnchor" : "2026-03-31",
+      "rule" : {
+        "firstLeadDays" : 7,
+        "graceDays" : 0,
+        "maxWindowDays" : 30,
+        "travelMarginDays" : 0
+      },
+      "sweep" : {
+        "changes" : [
+          {
+            "from" : "2026-02-25",
+            "urgency" : "later"
+          },
+          {
+            "from" : "2026-03-01",
+            "urgency" : "upcoming"
+          },
+          {
+            "from" : "2026-03-24",
+            "urgency" : "soon"
+          },
+          {
+            "from" : "2026-03-31",
+            "urgency" : "today"
+          },
+          {
+            "from" : "2026-04-01",
+            "urgency" : "overdue"
+          }
+        ],
+        "from" : "2026-02-25",
+        "to" : "2026-04-03"
+      },
+      "travelCutoff" : null,
+      "windowDays" : 7
+    },
+    {
+      "attentionStart" : "2028-02-22",
+      "due" : "2028-02-29",
+      "name" : "a week's lead in a month's window",
+      "reminderAnchor" : "2028-02-29",
+      "rule" : {
+        "firstLeadDays" : 7,
+        "graceDays" : 0,
+        "maxWindowDays" : 30,
+        "travelMarginDays" : 0
+      },
+      "sweep" : {
+        "changes" : [
+          {
+            "from" : "2028-01-26",
+            "urgency" : "later"
+          },
+          {
+            "from" : "2028-01-30",
+            "urgency" : "upcoming"
+          },
+          {
+            "from" : "2028-02-22",
+            "urgency" : "soon"
+          },
+          {
+            "from" : "2028-02-29",
+            "urgency" : "today"
+          },
+          {
+            "from" : "2028-03-01",
+            "urgency" : "overdue"
+          }
+        ],
+        "from" : "2028-01-26",
+        "to" : "2028-03-03"
+      },
+      "travelCutoff" : null,
+      "windowDays" : 7
+    },
+    {
+      "attentionStart" : "2027-08-24",
+      "due" : "2027-08-31",
+      "name" : "a week's lead in a month's window",
+      "reminderAnchor" : "2027-08-31",
+      "rule" : {
+        "firstLeadDays" : 7,
+        "graceDays" : 0,
+        "maxWindowDays" : 30,
+        "travelMarginDays" : 0
+      },
+      "sweep" : {
+        "changes" : [
+          {
+            "from" : "2027-07-28",
+            "urgency" : "later"
+          },
+          {
+            "from" : "2027-08-01",
+            "urgency" : "upcoming"
+          },
+          {
+            "from" : "2027-08-24",
+            "urgency" : "soon"
+          },
+          {
+            "from" : "2027-08-31",
+            "urgency" : "today"
+          },
+          {
+            "from" : "2027-09-01",
+            "urgency" : "overdue"
+          }
+        ],
+        "from" : "2027-07-28",
+        "to" : "2027-09-03"
+      },
+      "travelCutoff" : null,
+      "windowDays" : 7
+    },
+    {
+      "attentionStart" : "2026-12-18",
+      "due" : "2026-12-25",
+      "name" : "a week's lead in a month's window",
+      "reminderAnchor" : "2026-12-25",
+      "rule" : {
+        "firstLeadDays" : 7,
+        "graceDays" : 0,
+        "maxWindowDays" : 30,
+        "travelMarginDays" : 0
+      },
+      "sweep" : {
+        "changes" : [
+          {
+            "from" : "2026-11-21",
+            "urgency" : "later"
+          },
+          {
+            "from" : "2026-11-25",
+            "urgency" : "upcoming"
+          },
+          {
+            "from" : "2026-12-18",
+            "urgency" : "soon"
+          },
+          {
+            "from" : "2026-12-25",
+            "urgency" : "today"
+          },
+          {
+            "from" : "2026-12-26",
+            "urgency" : "overdue"
+          }
+        ],
+        "from" : "2026-11-21",
+        "to" : "2026-12-28"
+      },
+      "travelCutoff" : null,
+      "windowDays" : 7
+    },
+    {
+      "attentionStart" : "2026-03-29",
+      "due" : "2026-03-31",
+      "name" : "a payment two days ahead",
+      "reminderAnchor" : "2026-03-31",
+      "rule" : {
+        "firstLeadDays" : 2,
+        "graceDays" : 0,
+        "maxWindowDays" : 21,
+        "travelMarginDays" : 0
+      },
+      "sweep" : {
+        "changes" : [
+          {
+            "from" : "2026-02-25",
+            "urgency" : "later"
+          },
+          {
+            "from" : "2026-03-01",
+            "urgency" : "upcoming"
+          },
+          {
+            "from" : "2026-03-29",
+            "urgency" : "soon"
+          },
+          {
+            "from" : "2026-03-31",
+            "urgency" : "today"
+          },
+          {
+            "from" : "2026-04-01",
+            "urgency" : "overdue"
+          }
+        ],
+        "from" : "2026-02-25",
+        "to" : "2026-04-03"
+      },
+      "travelCutoff" : null,
+      "windowDays" : 2
+    },
+    {
+      "attentionStart" : "2028-02-27",
+      "due" : "2028-02-29",
+      "name" : "a payment two days ahead",
+      "reminderAnchor" : "2028-02-29",
+      "rule" : {
+        "firstLeadDays" : 2,
+        "graceDays" : 0,
+        "maxWindowDays" : 21,
+        "travelMarginDays" : 0
+      },
+      "sweep" : {
+        "changes" : [
+          {
+            "from" : "2028-01-26",
+            "urgency" : "later"
+          },
+          {
+            "from" : "2028-01-30",
+            "urgency" : "upcoming"
+          },
+          {
+            "from" : "2028-02-27",
+            "urgency" : "soon"
+          },
+          {
+            "from" : "2028-02-29",
+            "urgency" : "today"
+          },
+          {
+            "from" : "2028-03-01",
+            "urgency" : "overdue"
+          }
+        ],
+        "from" : "2028-01-26",
+        "to" : "2028-03-03"
+      },
+      "travelCutoff" : null,
+      "windowDays" : 2
+    },
+    {
+      "attentionStart" : "2027-08-29",
+      "due" : "2027-08-31",
+      "name" : "a payment two days ahead",
+      "reminderAnchor" : "2027-08-31",
+      "rule" : {
+        "firstLeadDays" : 2,
+        "graceDays" : 0,
+        "maxWindowDays" : 21,
+        "travelMarginDays" : 0
+      },
+      "sweep" : {
+        "changes" : [
+          {
+            "from" : "2027-07-28",
+            "urgency" : "later"
+          },
+          {
+            "from" : "2027-08-01",
+            "urgency" : "upcoming"
+          },
+          {
+            "from" : "2027-08-29",
+            "urgency" : "soon"
+          },
+          {
+            "from" : "2027-08-31",
+            "urgency" : "today"
+          },
+          {
+            "from" : "2027-09-01",
+            "urgency" : "overdue"
+          }
+        ],
+        "from" : "2027-07-28",
+        "to" : "2027-09-03"
+      },
+      "travelCutoff" : null,
+      "windowDays" : 2
+    },
+    {
+      "attentionStart" : "2026-12-23",
+      "due" : "2026-12-25",
+      "name" : "a payment two days ahead",
+      "reminderAnchor" : "2026-12-25",
+      "rule" : {
+        "firstLeadDays" : 2,
+        "graceDays" : 0,
+        "maxWindowDays" : 21,
+        "travelMarginDays" : 0
+      },
+      "sweep" : {
+        "changes" : [
+          {
+            "from" : "2026-11-21",
+            "urgency" : "later"
+          },
+          {
+            "from" : "2026-11-25",
+            "urgency" : "upcoming"
+          },
+          {
+            "from" : "2026-12-23",
+            "urgency" : "soon"
+          },
+          {
+            "from" : "2026-12-25",
+            "urgency" : "today"
+          },
+          {
+            "from" : "2026-12-26",
+            "urgency" : "overdue"
+          }
+        ],
+        "from" : "2026-11-21",
+        "to" : "2026-12-28"
+      },
+      "travelCutoff" : null,
+      "windowDays" : 2
+    },
+    {
+      "attentionStart" : "2026-03-30",
+      "due" : "2026-03-31",
+      "name" : "on the day only, a financial window",
+      "reminderAnchor" : "2026-03-31",
+      "rule" : {
+        "firstLeadDays" : 0,
+        "graceDays" : 0,
+        "maxWindowDays" : 21,
+        "travelMarginDays" : 0
+      },
+      "sweep" : {
+        "changes" : [
+          {
+            "from" : "2026-02-25",
+            "urgency" : "later"
+          },
+          {
+            "from" : "2026-03-01",
+            "urgency" : "upcoming"
+          },
+          {
+            "from" : "2026-03-30",
+            "urgency" : "soon"
+          },
+          {
+            "from" : "2026-03-31",
+            "urgency" : "today"
+          },
+          {
+            "from" : "2026-04-01",
+            "urgency" : "overdue"
+          }
+        ],
+        "from" : "2026-02-25",
+        "to" : "2026-04-03"
+      },
+      "travelCutoff" : null,
+      "windowDays" : 1
+    },
+    {
+      "attentionStart" : "2028-02-28",
+      "due" : "2028-02-29",
+      "name" : "on the day only, a financial window",
+      "reminderAnchor" : "2028-02-29",
+      "rule" : {
+        "firstLeadDays" : 0,
+        "graceDays" : 0,
+        "maxWindowDays" : 21,
+        "travelMarginDays" : 0
+      },
+      "sweep" : {
+        "changes" : [
+          {
+            "from" : "2028-01-26",
+            "urgency" : "later"
+          },
+          {
+            "from" : "2028-01-30",
+            "urgency" : "upcoming"
+          },
+          {
+            "from" : "2028-02-28",
+            "urgency" : "soon"
+          },
+          {
+            "from" : "2028-02-29",
+            "urgency" : "today"
+          },
+          {
+            "from" : "2028-03-01",
+            "urgency" : "overdue"
+          }
+        ],
+        "from" : "2028-01-26",
+        "to" : "2028-03-03"
+      },
+      "travelCutoff" : null,
+      "windowDays" : 1
+    },
+    {
+      "attentionStart" : "2027-08-30",
+      "due" : "2027-08-31",
+      "name" : "on the day only, a financial window",
+      "reminderAnchor" : "2027-08-31",
+      "rule" : {
+        "firstLeadDays" : 0,
+        "graceDays" : 0,
+        "maxWindowDays" : 21,
+        "travelMarginDays" : 0
+      },
+      "sweep" : {
+        "changes" : [
+          {
+            "from" : "2027-07-28",
+            "urgency" : "later"
+          },
+          {
+            "from" : "2027-08-01",
+            "urgency" : "upcoming"
+          },
+          {
+            "from" : "2027-08-30",
+            "urgency" : "soon"
+          },
+          {
+            "from" : "2027-08-31",
+            "urgency" : "today"
+          },
+          {
+            "from" : "2027-09-01",
+            "urgency" : "overdue"
+          }
+        ],
+        "from" : "2027-07-28",
+        "to" : "2027-09-03"
+      },
+      "travelCutoff" : null,
+      "windowDays" : 1
+    },
+    {
+      "attentionStart" : "2026-12-24",
+      "due" : "2026-12-25",
+      "name" : "on the day only, a financial window",
+      "reminderAnchor" : "2026-12-25",
+      "rule" : {
+        "firstLeadDays" : 0,
+        "graceDays" : 0,
+        "maxWindowDays" : 21,
+        "travelMarginDays" : 0
+      },
+      "sweep" : {
+        "changes" : [
+          {
+            "from" : "2026-11-21",
+            "urgency" : "later"
+          },
+          {
+            "from" : "2026-11-25",
+            "urgency" : "upcoming"
+          },
+          {
+            "from" : "2026-12-24",
+            "urgency" : "soon"
+          },
+          {
+            "from" : "2026-12-25",
+            "urgency" : "today"
+          },
+          {
+            "from" : "2026-12-26",
+            "urgency" : "overdue"
+          }
+        ],
+        "from" : "2026-11-21",
+        "to" : "2026-12-28"
+      },
+      "travelCutoff" : null,
+      "windowDays" : 1
+    },
+    {
+      "attentionStart" : "2026-03-24",
+      "due" : "2026-03-31",
+      "name" : "a vaccine with a week's grace",
+      "reminderAnchor" : "2026-03-31",
+      "rule" : {
+        "firstLeadDays" : 7,
+        "graceDays" : 7,
+        "maxWindowDays" : 7,
+        "travelMarginDays" : 0
+      },
+      "sweep" : {
+        "changes" : [
+          {
+            "from" : "2026-02-25",
+            "urgency" : "later"
+          },
+          {
+            "from" : "2026-03-01",
+            "urgency" : "upcoming"
+          },
+          {
+            "from" : "2026-03-24",
+            "urgency" : "soon"
+          },
+          {
+            "from" : "2026-03-31",
+            "urgency" : "today"
+          },
+          {
+            "from" : "2026-04-01",
+            "urgency" : "withinGrace"
+          },
+          {
+            "from" : "2026-04-08",
+            "urgency" : "overdue"
+          }
+        ],
+        "from" : "2026-02-25",
+        "to" : "2026-04-10"
+      },
+      "travelCutoff" : null,
+      "windowDays" : 7
+    },
+    {
+      "attentionStart" : "2028-02-22",
+      "due" : "2028-02-29",
+      "name" : "a vaccine with a week's grace",
+      "reminderAnchor" : "2028-02-29",
+      "rule" : {
+        "firstLeadDays" : 7,
+        "graceDays" : 7,
+        "maxWindowDays" : 7,
+        "travelMarginDays" : 0
+      },
+      "sweep" : {
+        "changes" : [
+          {
+            "from" : "2028-01-26",
+            "urgency" : "later"
+          },
+          {
+            "from" : "2028-01-30",
+            "urgency" : "upcoming"
+          },
+          {
+            "from" : "2028-02-22",
+            "urgency" : "soon"
+          },
+          {
+            "from" : "2028-02-29",
+            "urgency" : "today"
+          },
+          {
+            "from" : "2028-03-01",
+            "urgency" : "withinGrace"
+          },
+          {
+            "from" : "2028-03-08",
+            "urgency" : "overdue"
+          }
+        ],
+        "from" : "2028-01-26",
+        "to" : "2028-03-10"
+      },
+      "travelCutoff" : null,
+      "windowDays" : 7
+    },
+    {
+      "attentionStart" : "2027-08-24",
+      "due" : "2027-08-31",
+      "name" : "a vaccine with a week's grace",
+      "reminderAnchor" : "2027-08-31",
+      "rule" : {
+        "firstLeadDays" : 7,
+        "graceDays" : 7,
+        "maxWindowDays" : 7,
+        "travelMarginDays" : 0
+      },
+      "sweep" : {
+        "changes" : [
+          {
+            "from" : "2027-07-28",
+            "urgency" : "later"
+          },
+          {
+            "from" : "2027-08-01",
+            "urgency" : "upcoming"
+          },
+          {
+            "from" : "2027-08-24",
+            "urgency" : "soon"
+          },
+          {
+            "from" : "2027-08-31",
+            "urgency" : "today"
+          },
+          {
+            "from" : "2027-09-01",
+            "urgency" : "withinGrace"
+          },
+          {
+            "from" : "2027-09-08",
+            "urgency" : "overdue"
+          }
+        ],
+        "from" : "2027-07-28",
+        "to" : "2027-09-10"
+      },
+      "travelCutoff" : null,
+      "windowDays" : 7
+    },
+    {
+      "attentionStart" : "2026-12-18",
+      "due" : "2026-12-25",
+      "name" : "a vaccine with a week's grace",
+      "reminderAnchor" : "2026-12-25",
+      "rule" : {
+        "firstLeadDays" : 7,
+        "graceDays" : 7,
+        "maxWindowDays" : 7,
+        "travelMarginDays" : 0
+      },
+      "sweep" : {
+        "changes" : [
+          {
+            "from" : "2026-11-21",
+            "urgency" : "later"
+          },
+          {
+            "from" : "2026-11-25",
+            "urgency" : "upcoming"
+          },
+          {
+            "from" : "2026-12-18",
+            "urgency" : "soon"
+          },
+          {
+            "from" : "2026-12-25",
+            "urgency" : "today"
+          },
+          {
+            "from" : "2026-12-26",
+            "urgency" : "withinGrace"
+          },
+          {
+            "from" : "2027-01-02",
+            "urgency" : "overdue"
+          }
+        ],
+        "from" : "2026-11-21",
+        "to" : "2027-01-04"
+      },
+      "travelCutoff" : null,
+      "windowDays" : 7
+    },
+    {
+      "attentionStart" : "2026-03-30",
+      "due" : "2026-03-31",
+      "name" : "a chore on the day with three days' grace",
+      "reminderAnchor" : "2026-03-31",
+      "rule" : {
+        "firstLeadDays" : 0,
+        "graceDays" : 3,
+        "maxWindowDays" : 3,
+        "travelMarginDays" : 0
+      },
+      "sweep" : {
+        "changes" : [
+          {
+            "from" : "2026-02-25",
+            "urgency" : "later"
+          },
+          {
+            "from" : "2026-03-01",
+            "urgency" : "upcoming"
+          },
+          {
+            "from" : "2026-03-30",
+            "urgency" : "soon"
+          },
+          {
+            "from" : "2026-03-31",
+            "urgency" : "today"
+          },
+          {
+            "from" : "2026-04-01",
+            "urgency" : "withinGrace"
+          },
+          {
+            "from" : "2026-04-04",
+            "urgency" : "overdue"
+          }
+        ],
+        "from" : "2026-02-25",
+        "to" : "2026-04-06"
+      },
+      "travelCutoff" : null,
+      "windowDays" : 1
+    },
+    {
+      "attentionStart" : "2028-02-28",
+      "due" : "2028-02-29",
+      "name" : "a chore on the day with three days' grace",
+      "reminderAnchor" : "2028-02-29",
+      "rule" : {
+        "firstLeadDays" : 0,
+        "graceDays" : 3,
+        "maxWindowDays" : 3,
+        "travelMarginDays" : 0
+      },
+      "sweep" : {
+        "changes" : [
+          {
+            "from" : "2028-01-26",
+            "urgency" : "later"
+          },
+          {
+            "from" : "2028-01-30",
+            "urgency" : "upcoming"
+          },
+          {
+            "from" : "2028-02-28",
+            "urgency" : "soon"
+          },
+          {
+            "from" : "2028-02-29",
+            "urgency" : "today"
+          },
+          {
+            "from" : "2028-03-01",
+            "urgency" : "withinGrace"
+          },
+          {
+            "from" : "2028-03-04",
+            "urgency" : "overdue"
+          }
+        ],
+        "from" : "2028-01-26",
+        "to" : "2028-03-06"
+      },
+      "travelCutoff" : null,
+      "windowDays" : 1
+    },
+    {
+      "attentionStart" : "2027-08-30",
+      "due" : "2027-08-31",
+      "name" : "a chore on the day with three days' grace",
+      "reminderAnchor" : "2027-08-31",
+      "rule" : {
+        "firstLeadDays" : 0,
+        "graceDays" : 3,
+        "maxWindowDays" : 3,
+        "travelMarginDays" : 0
+      },
+      "sweep" : {
+        "changes" : [
+          {
+            "from" : "2027-07-28",
+            "urgency" : "later"
+          },
+          {
+            "from" : "2027-08-01",
+            "urgency" : "upcoming"
+          },
+          {
+            "from" : "2027-08-30",
+            "urgency" : "soon"
+          },
+          {
+            "from" : "2027-08-31",
+            "urgency" : "today"
+          },
+          {
+            "from" : "2027-09-01",
+            "urgency" : "withinGrace"
+          },
+          {
+            "from" : "2027-09-04",
+            "urgency" : "overdue"
+          }
+        ],
+        "from" : "2027-07-28",
+        "to" : "2027-09-06"
+      },
+      "travelCutoff" : null,
+      "windowDays" : 1
+    },
+    {
+      "attentionStart" : "2026-12-24",
+      "due" : "2026-12-25",
+      "name" : "a chore on the day with three days' grace",
+      "reminderAnchor" : "2026-12-25",
+      "rule" : {
+        "firstLeadDays" : 0,
+        "graceDays" : 3,
+        "maxWindowDays" : 3,
+        "travelMarginDays" : 0
+      },
+      "sweep" : {
+        "changes" : [
+          {
+            "from" : "2026-11-21",
+            "urgency" : "later"
+          },
+          {
+            "from" : "2026-11-25",
+            "urgency" : "upcoming"
+          },
+          {
+            "from" : "2026-12-24",
+            "urgency" : "soon"
+          },
+          {
+            "from" : "2026-12-25",
+            "urgency" : "today"
+          },
+          {
+            "from" : "2026-12-26",
+            "urgency" : "withinGrace"
+          },
+          {
+            "from" : "2026-12-29",
+            "urgency" : "overdue"
+          }
+        ],
+        "from" : "2026-11-21",
+        "to" : "2026-12-31"
+      },
+      "travelCutoff" : null,
+      "windowDays" : 1
+    },
+    {
+      "attentionStart" : "2025-09-30",
+      "due" : "2026-03-31",
+      "name" : "a passport",
+      "reminderAnchor" : "2025-09-30",
+      "rule" : {
+        "firstLeadDays" : 90,
+        "graceDays" : 0,
+        "maxWindowDays" : 30,
+        "travelMarginDays" : 180
+      },
+      "sweep" : {
+        "changes" : [
+          {
+            "from" : "2025-08-27",
+            "urgency" : "later"
+          },
+          {
+            "from" : "2025-08-31",
+            "urgency" : "upcoming"
+          },
+          {
+            "from" : "2025-09-30",
+            "urgency" : "soon"
+          },
+          {
+            "from" : "2026-03-31",
+            "urgency" : "today"
+          },
+          {
+            "from" : "2026-04-01",
+            "urgency" : "overdue"
+          }
+        ],
+        "from" : "2025-08-27",
+        "to" : "2026-04-03"
+      },
+      "travelCutoff" : "2025-09-30",
+      "windowDays" : 182
+    },
+    {
+      "attentionStart" : "2027-08-29",
+      "due" : "2028-02-29",
+      "name" : "a passport",
+      "reminderAnchor" : "2027-08-29",
+      "rule" : {
+        "firstLeadDays" : 90,
+        "graceDays" : 0,
+        "maxWindowDays" : 30,
+        "travelMarginDays" : 180
+      },
+      "sweep" : {
+        "changes" : [
+          {
+            "from" : "2027-07-26",
+            "urgency" : "later"
+          },
+          {
+            "from" : "2027-07-30",
+            "urgency" : "upcoming"
+          },
+          {
+            "from" : "2027-08-29",
+            "urgency" : "soon"
+          },
+          {
+            "from" : "2028-02-29",
+            "urgency" : "today"
+          },
+          {
+            "from" : "2028-03-01",
+            "urgency" : "overdue"
+          }
+        ],
+        "from" : "2027-07-26",
+        "to" : "2028-03-03"
+      },
+      "travelCutoff" : "2027-08-29",
+      "windowDays" : 184
+    },
+    {
+      "attentionStart" : "2027-02-28",
+      "due" : "2027-08-31",
+      "name" : "a passport",
+      "reminderAnchor" : "2027-02-28",
+      "rule" : {
+        "firstLeadDays" : 90,
+        "graceDays" : 0,
+        "maxWindowDays" : 30,
+        "travelMarginDays" : 180
+      },
+      "sweep" : {
+        "changes" : [
+          {
+            "from" : "2027-01-25",
+            "urgency" : "later"
+          },
+          {
+            "from" : "2027-01-29",
+            "urgency" : "upcoming"
+          },
+          {
+            "from" : "2027-02-28",
+            "urgency" : "soon"
+          },
+          {
+            "from" : "2027-08-31",
+            "urgency" : "today"
+          },
+          {
+            "from" : "2027-09-01",
+            "urgency" : "overdue"
+          }
+        ],
+        "from" : "2027-01-25",
+        "to" : "2027-09-03"
+      },
+      "travelCutoff" : "2027-02-28",
+      "windowDays" : 184
+    },
+    {
+      "attentionStart" : "2026-06-25",
+      "due" : "2026-12-25",
+      "name" : "a passport",
+      "reminderAnchor" : "2026-06-25",
+      "rule" : {
+        "firstLeadDays" : 90,
+        "graceDays" : 0,
+        "maxWindowDays" : 30,
+        "travelMarginDays" : 180
+      },
+      "sweep" : {
+        "changes" : [
+          {
+            "from" : "2026-05-22",
+            "urgency" : "later"
+          },
+          {
+            "from" : "2026-05-26",
+            "urgency" : "upcoming"
+          },
+          {
+            "from" : "2026-06-25",
+            "urgency" : "soon"
+          },
+          {
+            "from" : "2026-12-25",
+            "urgency" : "today"
+          },
+          {
+            "from" : "2026-12-26",
+            "urgency" : "overdue"
+          }
+        ],
+        "from" : "2026-05-22",
+        "to" : "2026-12-28"
+      },
+      "travelCutoff" : "2026-06-25",
+      "windowDays" : 183
+    },
+    {
+      "attentionStart" : "2026-02-28",
+      "due" : "2026-03-31",
+      "name" : "a travel margin and no window",
+      "reminderAnchor" : "2026-02-28",
+      "rule" : {
+        "firstLeadDays" : 0,
+        "graceDays" : 0,
+        "maxWindowDays" : 0,
+        "travelMarginDays" : 30
+      },
+      "sweep" : {
+        "changes" : [
+          {
+            "from" : "2026-01-25",
+            "urgency" : "later"
+          },
+          {
+            "from" : "2026-01-29",
+            "urgency" : "upcoming"
+          },
+          {
+            "from" : "2026-02-28",
+            "urgency" : "soon"
+          },
+          {
+            "from" : "2026-03-31",
+            "urgency" : "today"
+          },
+          {
+            "from" : "2026-04-01",
+            "urgency" : "overdue"
+          }
+        ],
+        "from" : "2026-01-25",
+        "to" : "2026-04-03"
+      },
+      "travelCutoff" : "2026-02-28",
+      "windowDays" : 31
+    },
+    {
+      "attentionStart" : "2028-01-29",
+      "due" : "2028-02-29",
+      "name" : "a travel margin and no window",
+      "reminderAnchor" : "2028-01-29",
+      "rule" : {
+        "firstLeadDays" : 0,
+        "graceDays" : 0,
+        "maxWindowDays" : 0,
+        "travelMarginDays" : 30
+      },
+      "sweep" : {
+        "changes" : [
+          {
+            "from" : "2027-12-26",
+            "urgency" : "later"
+          },
+          {
+            "from" : "2027-12-30",
+            "urgency" : "upcoming"
+          },
+          {
+            "from" : "2028-01-29",
+            "urgency" : "soon"
+          },
+          {
+            "from" : "2028-02-29",
+            "urgency" : "today"
+          },
+          {
+            "from" : "2028-03-01",
+            "urgency" : "overdue"
+          }
+        ],
+        "from" : "2027-12-26",
+        "to" : "2028-03-03"
+      },
+      "travelCutoff" : "2028-01-29",
+      "windowDays" : 31
+    },
+    {
+      "attentionStart" : "2027-07-31",
+      "due" : "2027-08-31",
+      "name" : "a travel margin and no window",
+      "reminderAnchor" : "2027-07-31",
+      "rule" : {
+        "firstLeadDays" : 0,
+        "graceDays" : 0,
+        "maxWindowDays" : 0,
+        "travelMarginDays" : 30
+      },
+      "sweep" : {
+        "changes" : [
+          {
+            "from" : "2027-06-27",
+            "urgency" : "later"
+          },
+          {
+            "from" : "2027-07-01",
+            "urgency" : "upcoming"
+          },
+          {
+            "from" : "2027-07-31",
+            "urgency" : "soon"
+          },
+          {
+            "from" : "2027-08-31",
+            "urgency" : "today"
+          },
+          {
+            "from" : "2027-09-01",
+            "urgency" : "overdue"
+          }
+        ],
+        "from" : "2027-06-27",
+        "to" : "2027-09-03"
+      },
+      "travelCutoff" : "2027-07-31",
+      "windowDays" : 31
+    },
+    {
+      "attentionStart" : "2026-11-25",
+      "due" : "2026-12-25",
+      "name" : "a travel margin and no window",
+      "reminderAnchor" : "2026-11-25",
+      "rule" : {
+        "firstLeadDays" : 0,
+        "graceDays" : 0,
+        "maxWindowDays" : 0,
+        "travelMarginDays" : 30
+      },
+      "sweep" : {
+        "changes" : [
+          {
+            "from" : "2026-10-22",
+            "urgency" : "later"
+          },
+          {
+            "from" : "2026-10-26",
+            "urgency" : "upcoming"
+          },
+          {
+            "from" : "2026-11-25",
+            "urgency" : "soon"
+          },
+          {
+            "from" : "2026-12-25",
+            "urgency" : "today"
+          },
+          {
+            "from" : "2026-12-26",
+            "urgency" : "overdue"
+          }
+        ],
+        "from" : "2026-10-22",
+        "to" : "2026-12-28"
+      },
+      "travelCutoff" : "2026-11-25",
+      "windowDays" : 30
+    },
+    {
+      "attentionStart" : "2026-02-14",
+      "due" : "2026-03-31",
+      "name" : "a travel margin of 45 days",
+      "reminderAnchor" : "2026-02-14",
+      "rule" : {
+        "firstLeadDays" : 14,
+        "graceDays" : 2,
+        "maxWindowDays" : 21,
+        "travelMarginDays" : 45
+      },
+      "sweep" : {
+        "changes" : [
+          {
+            "from" : "2026-01-11",
+            "urgency" : "later"
+          },
+          {
+            "from" : "2026-01-15",
+            "urgency" : "upcoming"
+          },
+          {
+            "from" : "2026-02-14",
+            "urgency" : "soon"
+          },
+          {
+            "from" : "2026-03-31",
+            "urgency" : "today"
+          },
+          {
+            "from" : "2026-04-01",
+            "urgency" : "withinGrace"
+          },
+          {
+            "from" : "2026-04-03",
+            "urgency" : "overdue"
+          }
+        ],
+        "from" : "2026-01-11",
+        "to" : "2026-04-05"
+      },
+      "travelCutoff" : "2026-02-14",
+      "windowDays" : 45
+    },
+    {
+      "attentionStart" : "2028-01-15",
+      "due" : "2028-02-29",
+      "name" : "a travel margin of 45 days",
+      "reminderAnchor" : "2028-01-15",
+      "rule" : {
+        "firstLeadDays" : 14,
+        "graceDays" : 2,
+        "maxWindowDays" : 21,
+        "travelMarginDays" : 45
+      },
+      "sweep" : {
+        "changes" : [
+          {
+            "from" : "2027-12-12",
+            "urgency" : "later"
+          },
+          {
+            "from" : "2027-12-16",
+            "urgency" : "upcoming"
+          },
+          {
+            "from" : "2028-01-15",
+            "urgency" : "soon"
+          },
+          {
+            "from" : "2028-02-29",
+            "urgency" : "today"
+          },
+          {
+            "from" : "2028-03-01",
+            "urgency" : "withinGrace"
+          },
+          {
+            "from" : "2028-03-03",
+            "urgency" : "overdue"
+          }
+        ],
+        "from" : "2027-12-12",
+        "to" : "2028-03-05"
+      },
+      "travelCutoff" : "2028-01-15",
+      "windowDays" : 45
+    },
+    {
+      "attentionStart" : "2027-07-17",
+      "due" : "2027-08-31",
+      "name" : "a travel margin of 45 days",
+      "reminderAnchor" : "2027-07-17",
+      "rule" : {
+        "firstLeadDays" : 14,
+        "graceDays" : 2,
+        "maxWindowDays" : 21,
+        "travelMarginDays" : 45
+      },
+      "sweep" : {
+        "changes" : [
+          {
+            "from" : "2027-06-13",
+            "urgency" : "later"
+          },
+          {
+            "from" : "2027-06-17",
+            "urgency" : "upcoming"
+          },
+          {
+            "from" : "2027-07-17",
+            "urgency" : "soon"
+          },
+          {
+            "from" : "2027-08-31",
+            "urgency" : "today"
+          },
+          {
+            "from" : "2027-09-01",
+            "urgency" : "withinGrace"
+          },
+          {
+            "from" : "2027-09-03",
+            "urgency" : "overdue"
+          }
+        ],
+        "from" : "2027-06-13",
+        "to" : "2027-09-05"
+      },
+      "travelCutoff" : "2027-07-17",
+      "windowDays" : 45
+    },
+    {
+      "attentionStart" : "2026-11-10",
+      "due" : "2026-12-25",
+      "name" : "a travel margin of 45 days",
+      "reminderAnchor" : "2026-11-10",
+      "rule" : {
+        "firstLeadDays" : 14,
+        "graceDays" : 2,
+        "maxWindowDays" : 21,
+        "travelMarginDays" : 45
+      },
+      "sweep" : {
+        "changes" : [
+          {
+            "from" : "2026-10-07",
+            "urgency" : "later"
+          },
+          {
+            "from" : "2026-10-11",
+            "urgency" : "upcoming"
+          },
+          {
+            "from" : "2026-11-10",
+            "urgency" : "soon"
+          },
+          {
+            "from" : "2026-12-25",
+            "urgency" : "today"
+          },
+          {
+            "from" : "2026-12-26",
+            "urgency" : "withinGrace"
+          },
+          {
+            "from" : "2026-12-28",
+            "urgency" : "overdue"
+          }
+        ],
+        "from" : "2026-10-07",
+        "to" : "2026-12-30"
+      },
+      "travelCutoff" : "2026-11-10",
+      "windowDays" : 45
+    },
+    {
+      "attentionStart" : "2026-02-28",
+      "due" : "2026-03-31",
+      "name" : "a year's lead",
+      "reminderAnchor" : "2026-03-31",
+      "rule" : {
+        "firstLeadDays" : 365,
+        "graceDays" : 0,
+        "maxWindowDays" : 30,
+        "travelMarginDays" : 0
+      },
+      "sweep" : {
+        "changes" : [
+          {
+            "from" : "2026-02-25",
+            "urgency" : "later"
+          },
+          {
+            "from" : "2026-02-28",
+            "urgency" : "soon"
+          },
+          {
+            "from" : "2026-03-31",
+            "urgency" : "today"
+          },
+          {
+            "from" : "2026-04-01",
+            "urgency" : "overdue"
+          }
+        ],
+        "from" : "2026-02-25",
+        "to" : "2026-04-03"
+      },
+      "travelCutoff" : null,
+      "windowDays" : 31
+    },
+    {
+      "attentionStart" : "2028-01-29",
+      "due" : "2028-02-29",
+      "name" : "a year's lead",
+      "reminderAnchor" : "2028-02-29",
+      "rule" : {
+        "firstLeadDays" : 365,
+        "graceDays" : 0,
+        "maxWindowDays" : 30,
+        "travelMarginDays" : 0
+      },
+      "sweep" : {
+        "changes" : [
+          {
+            "from" : "2028-01-26",
+            "urgency" : "later"
+          },
+          {
+            "from" : "2028-01-29",
+            "urgency" : "soon"
+          },
+          {
+            "from" : "2028-02-29",
+            "urgency" : "today"
+          },
+          {
+            "from" : "2028-03-01",
+            "urgency" : "overdue"
+          }
+        ],
+        "from" : "2028-01-26",
+        "to" : "2028-03-03"
+      },
+      "travelCutoff" : null,
+      "windowDays" : 31
+    },
+    {
+      "attentionStart" : "2027-07-31",
+      "due" : "2027-08-31",
+      "name" : "a year's lead",
+      "reminderAnchor" : "2027-08-31",
+      "rule" : {
+        "firstLeadDays" : 365,
+        "graceDays" : 0,
+        "maxWindowDays" : 30,
+        "travelMarginDays" : 0
+      },
+      "sweep" : {
+        "changes" : [
+          {
+            "from" : "2027-07-28",
+            "urgency" : "later"
+          },
+          {
+            "from" : "2027-07-31",
+            "urgency" : "soon"
+          },
+          {
+            "from" : "2027-08-31",
+            "urgency" : "today"
+          },
+          {
+            "from" : "2027-09-01",
+            "urgency" : "overdue"
+          }
+        ],
+        "from" : "2027-07-28",
+        "to" : "2027-09-03"
+      },
+      "travelCutoff" : null,
+      "windowDays" : 31
+    },
+    {
+      "attentionStart" : "2026-11-25",
+      "due" : "2026-12-25",
+      "name" : "a year's lead",
+      "reminderAnchor" : "2026-12-25",
+      "rule" : {
+        "firstLeadDays" : 365,
+        "graceDays" : 0,
+        "maxWindowDays" : 30,
+        "travelMarginDays" : 0
+      },
+      "sweep" : {
+        "changes" : [
+          {
+            "from" : "2026-11-21",
+            "urgency" : "later"
+          },
+          {
+            "from" : "2026-11-25",
+            "urgency" : "soon"
+          },
+          {
+            "from" : "2026-12-25",
+            "urgency" : "today"
+          },
+          {
+            "from" : "2026-12-26",
+            "urgency" : "overdue"
+          }
+        ],
+        "from" : "2026-11-21",
+        "to" : "2026-12-28"
+      },
+      "travelCutoff" : null,
+      "windowDays" : 30
+    },
+    {
+      "attentionStart" : "2026-03-31",
+      "due" : "2026-03-31",
+      "name" : "lengths out of bounds",
+      "reminderAnchor" : "2026-03-31",
+      "rule" : {
+        "firstLeadDays" : 36500,
+        "graceDays" : 0,
+        "maxWindowDays" : 0,
+        "travelMarginDays" : 0
+      },
+      "sweep" : {
+        "changes" : [
+          {
+            "from" : "2026-02-25",
+            "urgency" : "later"
+          },
+          {
+            "from" : "2026-03-01",
+            "urgency" : "upcoming"
+          },
+          {
+            "from" : "2026-03-31",
+            "urgency" : "today"
+          },
+          {
+            "from" : "2026-04-01",
+            "urgency" : "overdue"
+          }
+        ],
+        "from" : "2026-02-25",
+        "to" : "2026-04-03"
+      },
+      "travelCutoff" : null,
+      "windowDays" : 0
+    },
+    {
+      "attentionStart" : "2028-02-29",
+      "due" : "2028-02-29",
+      "name" : "lengths out of bounds",
+      "reminderAnchor" : "2028-02-29",
+      "rule" : {
+        "firstLeadDays" : 36500,
+        "graceDays" : 0,
+        "maxWindowDays" : 0,
+        "travelMarginDays" : 0
+      },
+      "sweep" : {
+        "changes" : [
+          {
+            "from" : "2028-01-26",
+            "urgency" : "later"
+          },
+          {
+            "from" : "2028-01-30",
+            "urgency" : "upcoming"
+          },
+          {
+            "from" : "2028-02-29",
+            "urgency" : "today"
+          },
+          {
+            "from" : "2028-03-01",
+            "urgency" : "overdue"
+          }
+        ],
+        "from" : "2028-01-26",
+        "to" : "2028-03-03"
+      },
+      "travelCutoff" : null,
+      "windowDays" : 0
+    },
+    {
+      "attentionStart" : "2027-08-31",
+      "due" : "2027-08-31",
+      "name" : "lengths out of bounds",
+      "reminderAnchor" : "2027-08-31",
+      "rule" : {
+        "firstLeadDays" : 36500,
+        "graceDays" : 0,
+        "maxWindowDays" : 0,
+        "travelMarginDays" : 0
+      },
+      "sweep" : {
+        "changes" : [
+          {
+            "from" : "2027-07-28",
+            "urgency" : "later"
+          },
+          {
+            "from" : "2027-08-01",
+            "urgency" : "upcoming"
+          },
+          {
+            "from" : "2027-08-31",
+            "urgency" : "today"
+          },
+          {
+            "from" : "2027-09-01",
+            "urgency" : "overdue"
+          }
+        ],
+        "from" : "2027-07-28",
+        "to" : "2027-09-03"
+      },
+      "travelCutoff" : null,
+      "windowDays" : 0
+    },
+    {
+      "attentionStart" : "2026-12-25",
+      "due" : "2026-12-25",
+      "name" : "lengths out of bounds",
+      "reminderAnchor" : "2026-12-25",
+      "rule" : {
+        "firstLeadDays" : 36500,
+        "graceDays" : 0,
+        "maxWindowDays" : 0,
+        "travelMarginDays" : 0
+      },
+      "sweep" : {
+        "changes" : [
+          {
+            "from" : "2026-11-21",
+            "urgency" : "later"
+          },
+          {
+            "from" : "2026-11-25",
+            "urgency" : "upcoming"
+          },
+          {
+            "from" : "2026-12-25",
+            "urgency" : "today"
+          },
+          {
+            "from" : "2026-12-26",
+            "urgency" : "overdue"
+          }
+        ],
+        "from" : "2026-11-21",
+        "to" : "2026-12-28"
+      },
+      "travelCutoff" : null,
+      "windowDays" : 0
+    }
+  ],
+  "rule" : "UrgencyRule(graceDays:firstLeadDays:maxWindowDays:travelMarginDays:): travelCutoff(before:), reminderAnchor(for:), attentionStart(before:), windowDays(before:) and urgency(of:today:)",
+  "shape" : "rule: the rule as made (every length held to 0…36500); due: its due day; then its travel cut-off (null without a margin), the day its reminders count from, the first day it needs the person and how many days ahead that is. sweep: its urgency on every day from from to to, written only where it changes: each change's first day and the urgency from then on.",
+  "source" : "ios/Shared/Urgency.swift",
+  "writtenBy" : "ios/DosarCuSinaTests/UrgencyVectorsTests.swift"
+}

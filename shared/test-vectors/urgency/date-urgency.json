@@ -1,0 +1,471 @@
+{
+  "cases" : [
+    {
+      "day" : "2027-03-31",
+      "deadlines" : [
+        {
+          "closesInTheApp" : false,
+          "cycleKnownSince" : null,
+          "cycleStart" : null,
+          "dueDay" : "2027-03-31",
+          "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0001",
+          "isExample" : false,
+          "isSensitive" : false,
+          "reminderMinuteOfDay" : null,
+          "reminders" : {
+            "consequence" : "legal",
+            "followUpAfterLapse" : null,
+            "graceDays" : 0,
+            "leadDays" : [
+              90,
+              30,
+              7
+            ],
+            "travelMarginDays" : 0
+          },
+          "snoozedUntil" : null,
+          "status" : "active"
+        },
+        {
+          "closesInTheApp" : false,
+          "cycleKnownSince" : null,
+          "cycleStart" : null,
+          "dueDay" : "2026-12-15",
+          "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0002",
+          "isExample" : false,
+          "isSensitive" : false,
+          "reminderMinuteOfDay" : null,
+          "reminders" : {
+            "consequence" : "legal",
+            "followUpAfterLapse" : null,
+            "graceDays" : 0,
+            "leadDays" : [
+              30,
+              7,
+              0
+            ],
+            "travelMarginDays" : 0
+          },
+          "snoozedUntil" : null,
+          "status" : "active"
+        }
+      ],
+      "name" : "an expiry and its deadline",
+      "rule" : {
+        "firstLeadDays" : 90,
+        "graceDays" : 0,
+        "maxWindowDays" : 30,
+        "travelMarginDays" : 0
+      }
+    },
+    {
+      "day" : "2026-12-15",
+      "deadlines" : [
+        {
+          "closesInTheApp" : false,
+          "cycleKnownSince" : null,
+          "cycleStart" : null,
+          "dueDay" : "2027-03-31",
+          "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0001",
+          "isExample" : false,
+          "isSensitive" : false,
+          "reminderMinuteOfDay" : null,
+          "reminders" : {
+            "consequence" : "legal",
+            "followUpAfterLapse" : null,
+            "graceDays" : 0,
+            "leadDays" : [
+              90,
+              30,
+              7
+            ],
+            "travelMarginDays" : 0
+          },
+          "snoozedUntil" : null,
+          "status" : "active"
+        },
+        {
+          "closesInTheApp" : false,
+          "cycleKnownSince" : null,
+          "cycleStart" : null,
+          "dueDay" : "2026-12-15",
+          "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0002",
+          "isExample" : false,
+          "isSensitive" : false,
+          "reminderMinuteOfDay" : null,
+          "reminders" : {
+            "consequence" : "legal",
+            "followUpAfterLapse" : null,
+            "graceDays" : 0,
+            "leadDays" : [
+              30,
+              7,
+              0
+            ],
+            "travelMarginDays" : 0
+          },
+          "snoozedUntil" : null,
+          "status" : "active"
+        }
+      ],
+      "name" : "an expiry and its deadline",
+      "rule" : {
+        "firstLeadDays" : 30,
+        "graceDays" : 0,
+        "maxWindowDays" : 30,
+        "travelMarginDays" : 0
+      }
+    },
+    {
+      "day" : "2027-04-01",
+      "deadlines" : [
+        {
+          "closesInTheApp" : false,
+          "cycleKnownSince" : null,
+          "cycleStart" : null,
+          "dueDay" : "2027-03-31",
+          "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0001",
+          "isExample" : false,
+          "isSensitive" : false,
+          "reminderMinuteOfDay" : null,
+          "reminders" : {
+            "consequence" : "legal",
+            "followUpAfterLapse" : null,
+            "graceDays" : 0,
+            "leadDays" : [
+              90,
+              30,
+              7
+            ],
+            "travelMarginDays" : 0
+          },
+          "snoozedUntil" : null,
+          "status" : "active"
+        },
+        {
+          "closesInTheApp" : false,
+          "cycleKnownSince" : null,
+          "cycleStart" : null,
+          "dueDay" : "2026-12-15",
+          "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0002",
+          "isExample" : false,
+          "isSensitive" : false,
+          "reminderMinuteOfDay" : null,
+          "reminders" : {
+            "consequence" : "legal",
+            "followUpAfterLapse" : null,
+            "graceDays" : 0,
+            "leadDays" : [
+              30,
+              7,
+              0
+            ],
+            "travelMarginDays" : 0
+          },
+          "snoozedUntil" : null,
+          "status" : "active"
+        }
+      ],
+      "name" : "an expiry and its deadline",
+      "rule" : {
+        "firstLeadDays" : 0,
+        "graceDays" : 0,
+        "maxWindowDays" : 0,
+        "travelMarginDays" : 0
+      }
+    },
+    {
+      "day" : "2026-12-14",
+      "deadlines" : [
+        {
+          "closesInTheApp" : false,
+          "cycleKnownSince" : null,
+          "cycleStart" : null,
+          "dueDay" : "2027-03-31",
+          "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0001",
+          "isExample" : false,
+          "isSensitive" : false,
+          "reminderMinuteOfDay" : null,
+          "reminders" : {
+            "consequence" : "legal",
+            "followUpAfterLapse" : null,
+            "graceDays" : 0,
+            "leadDays" : [
+              90,
+              30,
+              7
+            ],
+            "travelMarginDays" : 0
+          },
+          "snoozedUntil" : null,
+          "status" : "active"
+        },
+        {
+          "closesInTheApp" : false,
+          "cycleKnownSince" : null,
+          "cycleStart" : null,
+          "dueDay" : "2026-12-15",
+          "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0002",
+          "isExample" : false,
+          "isSensitive" : false,
+          "reminderMinuteOfDay" : null,
+          "reminders" : {
+            "consequence" : "legal",
+            "followUpAfterLapse" : null,
+            "graceDays" : 0,
+            "leadDays" : [
+              30,
+              7,
+              0
+            ],
+            "travelMarginDays" : 0
+          },
+          "snoozedUntil" : null,
+          "status" : "active"
+        }
+      ],
+      "name" : "an expiry and its deadline",
+      "rule" : {
+        "firstLeadDays" : 0,
+        "graceDays" : 0,
+        "maxWindowDays" : 0,
+        "travelMarginDays" : 0
+      }
+    },
+    {
+      "day" : "2027-01-10",
+      "deadlines" : [
+        {
+          "closesInTheApp" : false,
+          "cycleKnownSince" : null,
+          "cycleStart" : null,
+          "dueDay" : "2027-01-10",
+          "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0003",
+          "isExample" : false,
+          "isSensitive" : false,
+          "reminderMinuteOfDay" : null,
+          "reminders" : {
+            "consequence" : "financial",
+            "followUpAfterLapse" : null,
+            "graceDays" : 0,
+            "leadDays" : [
+              30
+            ],
+            "travelMarginDays" : 0
+          },
+          "snoozedUntil" : null,
+          "status" : "paused"
+        },
+        {
+          "closesInTheApp" : false,
+          "cycleKnownSince" : null,
+          "cycleStart" : null,
+          "dueDay" : "2027-02-10",
+          "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0004",
+          "isExample" : false,
+          "isSensitive" : false,
+          "reminderMinuteOfDay" : null,
+          "reminders" : {
+            "consequence" : "health",
+            "followUpAfterLapse" : null,
+            "graceDays" : 7,
+            "leadDays" : [
+              7
+            ],
+            "travelMarginDays" : 0
+          },
+          "snoozedUntil" : null,
+          "status" : "done"
+        },
+        {
+          "closesInTheApp" : false,
+          "cycleKnownSince" : null,
+          "cycleStart" : null,
+          "dueDay" : "2027-02-10",
+          "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0005",
+          "isExample" : false,
+          "isSensitive" : false,
+          "reminderMinuteOfDay" : null,
+          "reminders" : {
+            "consequence" : "comfort",
+            "followUpAfterLapse" : null,
+            "graceDays" : 3,
+            "leadDays" : [
+              0
+            ],
+            "travelMarginDays" : 0
+          },
+          "snoozedUntil" : null,
+          "status" : "active"
+        }
+      ],
+      "name" : "a paused deadline doesn't drive its date",
+      "rule" : {
+        "firstLeadDays" : 0,
+        "graceDays" : 0,
+        "maxWindowDays" : 0,
+        "travelMarginDays" : 0
+      }
+    },
+    {
+      "day" : "2027-02-10",
+      "deadlines" : [
+        {
+          "closesInTheApp" : false,
+          "cycleKnownSince" : null,
+          "cycleStart" : null,
+          "dueDay" : "2027-01-10",
+          "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0003",
+          "isExample" : false,
+          "isSensitive" : false,
+          "reminderMinuteOfDay" : null,
+          "reminders" : {
+            "consequence" : "financial",
+            "followUpAfterLapse" : null,
+            "graceDays" : 0,
+            "leadDays" : [
+              30
+            ],
+            "travelMarginDays" : 0
+          },
+          "snoozedUntil" : null,
+          "status" : "paused"
+        },
+        {
+          "closesInTheApp" : false,
+          "cycleKnownSince" : null,
+          "cycleStart" : null,
+          "dueDay" : "2027-02-10",
+          "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0004",
+          "isExample" : false,
+          "isSensitive" : false,
+          "reminderMinuteOfDay" : null,
+          "reminders" : {
+            "consequence" : "health",
+            "followUpAfterLapse" : null,
+            "graceDays" : 7,
+            "leadDays" : [
+              7
+            ],
+            "travelMarginDays" : 0
+          },
+          "snoozedUntil" : null,
+          "status" : "done"
+        },
+        {
+          "closesInTheApp" : false,
+          "cycleKnownSince" : null,
+          "cycleStart" : null,
+          "dueDay" : "2027-02-10",
+          "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0005",
+          "isExample" : false,
+          "isSensitive" : false,
+          "reminderMinuteOfDay" : null,
+          "reminders" : {
+            "consequence" : "comfort",
+            "followUpAfterLapse" : null,
+            "graceDays" : 3,
+            "leadDays" : [
+              0
+            ],
+            "travelMarginDays" : 0
+          },
+          "snoozedUntil" : null,
+          "status" : "active"
+        }
+      ],
+      "name" : "a paused deadline doesn't drive its date",
+      "rule" : {
+        "firstLeadDays" : 0,
+        "graceDays" : 3,
+        "maxWindowDays" : 3,
+        "travelMarginDays" : 0
+      }
+    },
+    {
+      "day" : "2027-08-31",
+      "deadlines" : [
+        {
+          "closesInTheApp" : false,
+          "cycleKnownSince" : null,
+          "cycleStart" : null,
+          "dueDay" : "2027-08-31",
+          "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0006",
+          "isExample" : false,
+          "isSensitive" : false,
+          "reminderMinuteOfDay" : null,
+          "reminders" : {
+            "consequence" : "legal",
+            "followUpAfterLapse" : null,
+            "graceDays" : 0,
+            "leadDays" : [
+              90,
+              0
+            ],
+            "travelMarginDays" : 180
+          },
+          "snoozedUntil" : null,
+          "status" : "active"
+        }
+      ],
+      "name" : "a passport's expiry",
+      "rule" : {
+        "firstLeadDays" : 90,
+        "graceDays" : 0,
+        "maxWindowDays" : 30,
+        "travelMarginDays" : 180
+      }
+    },
+    {
+      "day" : "2027-02-28",
+      "deadlines" : [
+        {
+          "closesInTheApp" : false,
+          "cycleKnownSince" : null,
+          "cycleStart" : null,
+          "dueDay" : "2027-08-31",
+          "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0006",
+          "isExample" : false,
+          "isSensitive" : false,
+          "reminderMinuteOfDay" : null,
+          "reminders" : {
+            "consequence" : "legal",
+            "followUpAfterLapse" : null,
+            "graceDays" : 0,
+            "leadDays" : [
+              90,
+              0
+            ],
+            "travelMarginDays" : 180
+          },
+          "snoozedUntil" : null,
+          "status" : "active"
+        }
+      ],
+      "name" : "a passport's expiry",
+      "rule" : {
+        "firstLeadDays" : 0,
+        "graceDays" : 0,
+        "maxWindowDays" : 0,
+        "travelMarginDays" : 0
+      }
+    },
+    {
+      "day" : "2026-11-26",
+      "deadlines" : [
+
+      ],
+      "name" : "a section with no deadline",
+      "rule" : {
+        "firstLeadDays" : 0,
+        "graceDays" : 0,
+        "maxWindowDays" : 0,
+        "travelMarginDays" : 0
+      }
+    }
+  ],
+  "rule" : "DateUrgency.rule(for:on:)",
+  "shape" : "deadlines: a section's deadlines (as in reminder-plan); day: a date its page shows; rule: the urgency rule that date is drawn with (the open deadline due that day's, else nothing reminds).",
+  "source" : "ios/DosarCuSina/Services/Attention/DateUrgency.swift",
+  "writtenBy" : "ios/DosarCuSinaTests/UrgencyVectorsTests.swift"
+}

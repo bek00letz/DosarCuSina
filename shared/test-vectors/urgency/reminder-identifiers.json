@@ -1,0 +1,293 @@
+{
+  "cases" : [
+    {
+      "cycles" : [
+        {
+          "cycle" : "2026-12-03",
+          "deliveredOn" : "2026-11-26"
+        },
+        {
+          "cycle" : "2026-03-08",
+          "deliveredOn" : "2026-03-01"
+        }
+      ],
+      "identifier" : "obligation.aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0001.d7",
+      "obligationId" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0001"
+    },
+    {
+      "cycles" : [
+        {
+          "cycle" : "2026-11-26",
+          "deliveredOn" : "2026-11-26"
+        },
+        {
+          "cycle" : "2026-03-01",
+          "deliveredOn" : "2026-03-01"
+        }
+      ],
+      "identifier" : "obligation.aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0001.d0",
+      "obligationId" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0001"
+    },
+    {
+      "cycles" : [
+        {
+          "cycle" : "2026-11-23",
+          "deliveredOn" : "2026-11-26"
+        },
+        {
+          "cycle" : "2026-02-26",
+          "deliveredOn" : "2026-03-01"
+        }
+      ],
+      "identifier" : "obligation.aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0001.d-3",
+      "obligationId" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0001"
+    },
+    {
+      "cycles" : [
+        {
+          "cycle" : null,
+          "deliveredOn" : "2026-11-26"
+        },
+        {
+          "cycle" : null,
+          "deliveredOn" : "2026-03-01"
+        }
+      ],
+      "identifier" : "obligation.aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0001.d",
+      "obligationId" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0001"
+    },
+    {
+      "cycles" : [
+        {
+          "cycle" : null,
+          "deliveredOn" : "2026-11-26"
+        },
+        {
+          "cycle" : null,
+          "deliveredOn" : "2026-03-01"
+        }
+      ],
+      "identifier" : "obligation.aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0001.dx",
+      "obligationId" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0001"
+    },
+    {
+      "cycles" : [
+        {
+          "cycle" : "2026-11-25",
+          "deliveredOn" : "2026-11-26"
+        },
+        {
+          "cycle" : "2026-02-28",
+          "deliveredOn" : "2026-03-01"
+        }
+      ],
+      "identifier" : "obligation.aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0001.lapse",
+      "obligationId" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0001"
+    },
+    {
+      "cycles" : [
+        {
+          "cycle" : null,
+          "deliveredOn" : "2026-11-26"
+        },
+        {
+          "cycle" : null,
+          "deliveredOn" : "2026-03-01"
+        }
+      ],
+      "identifier" : "obligation.aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0001.snooze",
+      "obligationId" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0001"
+    },
+    {
+      "cycles" : [
+        {
+          "cycle" : null,
+          "deliveredOn" : "2026-11-26"
+        },
+        {
+          "cycle" : null,
+          "deliveredOn" : "2026-03-01"
+        }
+      ],
+      "identifier" : "obligation.aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0001.catchup",
+      "obligationId" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0001"
+    },
+    {
+      "cycles" : [
+        {
+          "cycle" : null,
+          "deliveredOn" : "2026-11-26"
+        },
+        {
+          "cycle" : null,
+          "deliveredOn" : "2026-03-01"
+        }
+      ],
+      "identifier" : "obligation.aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0001.t30",
+      "obligationId" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0001"
+    },
+    {
+      "cycles" : [
+        {
+          "cycle" : "2026-12-26",
+          "deliveredOn" : "2026-11-26"
+        },
+        {
+          "cycle" : "2026-03-31",
+          "deliveredOn" : "2026-03-01"
+        }
+      ],
+      "identifier" : "obligation.AAAAAAAA-AAAA-4AAA-8AAA-AAAAAAAA0001.d30",
+      "obligationId" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0001"
+    },
+    {
+      "cycles" : [
+        {
+          "cycle" : "2026-12-03",
+          "deliveredOn" : "2026-11-26"
+        },
+        {
+          "cycle" : "2026-03-08",
+          "deliveredOn" : "2026-03-01"
+        }
+      ],
+      "identifier" : "obligation..aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0001.d7",
+      "obligationId" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0001"
+    },
+    {
+      "cycles" : [
+        {
+          "cycle" : "2026-12-03",
+          "deliveredOn" : "2026-11-26"
+        },
+        {
+          "cycle" : "2026-03-08",
+          "deliveredOn" : "2026-03-01"
+        }
+      ],
+      "identifier" : "obligation.aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0001..d7",
+      "obligationId" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0001"
+    },
+    {
+      "cycles" : [
+        {
+          "cycle" : "2026-12-03",
+          "deliveredOn" : "2026-11-26"
+        },
+        {
+          "cycle" : "2026-03-08",
+          "deliveredOn" : "2026-03-01"
+        }
+      ],
+      "identifier" : "obligation.aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0001.d7.",
+      "obligationId" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0001"
+    },
+    {
+      "cycles" : [
+        {
+          "cycle" : null,
+          "deliveredOn" : "2026-11-26"
+        },
+        {
+          "cycle" : null,
+          "deliveredOn" : "2026-03-01"
+        }
+      ],
+      "identifier" : "obligation.aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0001",
+      "obligationId" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0001"
+    },
+    {
+      "cycles" : [
+        {
+          "cycle" : null,
+          "deliveredOn" : "2026-11-26"
+        },
+        {
+          "cycle" : null,
+          "deliveredOn" : "2026-03-01"
+        }
+      ],
+      "identifier" : "obligation.badge.2026-11-27",
+      "obligationId" : null
+    },
+    {
+      "cycles" : [
+        {
+          "cycle" : null,
+          "deliveredOn" : "2026-11-26"
+        },
+        {
+          "cycle" : null,
+          "deliveredOn" : "2026-03-01"
+        }
+      ],
+      "identifier" : "obligation.continue",
+      "obligationId" : null
+    },
+    {
+      "cycles" : [
+        {
+          "cycle" : null,
+          "deliveredOn" : "2026-11-26"
+        },
+        {
+          "cycle" : null,
+          "deliveredOn" : "2026-03-01"
+        }
+      ],
+      "identifier" : "reminder.aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0001.d7",
+      "obligationId" : null
+    },
+    {
+      "cycles" : [
+        {
+          "cycle" : null,
+          "deliveredOn" : "2026-11-26"
+        },
+        {
+          "cycle" : null,
+          "deliveredOn" : "2026-03-01"
+        }
+      ],
+      "identifier" : "obligation.1-1-1-1-1.d7",
+      "obligationId" : null
+    },
+    {
+      "cycles" : [
+        {
+          "cycle" : "2126-11-02",
+          "deliveredOn" : "2026-11-26"
+        },
+        {
+          "cycle" : "2126-02-05",
+          "deliveredOn" : "2026-03-01"
+        }
+      ],
+      "identifier" : "obligation.aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0001.d36500",
+      "obligationId" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0001"
+    },
+    {
+      "cycles" : [
+        {
+          "cycle" : "2026-11-28",
+          "deliveredOn" : "2026-11-26"
+        },
+        {
+          "cycle" : "2026-03-03",
+          "deliveredOn" : "2026-03-01"
+        }
+      ],
+      "identifier" : "obligation.aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0001.d+2",
+      "obligationId" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0001"
+    },
+    {
+      "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0001",
+      "made" : "obligation.aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0001.d7",
+      "suffix" : "d7"
+    }
+  ],
+  "rule" : "ReminderPlanner.identifier(obligationId:suffix:), obligationId(fromIdentifier:) and cycle(fromIdentifier:deliveredOn:)",
+  "shape" : "identifier: a reminder's identifier; obligationId: the deadline it names (null for none); cycles: for a day it was delivered on, the cycle it was about when it carries none (a lead d<n> is n days later, the follow-up the day before; null when it can't be told). made: the identifier made for id and suffix.",
+  "source" : "ios/DosarCuSina/Services/Reminders/ReminderPlanner.swift",
+  "writtenBy" : "ios/DosarCuSinaTests/UrgencyVectorsTests.swift"
+}
