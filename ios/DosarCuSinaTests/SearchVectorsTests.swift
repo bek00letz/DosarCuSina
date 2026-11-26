@@ -243,6 +243,9 @@ struct SearchVectorsTests {
             ("RO49AAAA1B31007593840000", []), ("Cod \(sealed) de alarmă", []), (sealed, []), ("Coduri \(sealed)  \(sealed)x", []),
             ("Telefon 0722 123 456", []), ("VW Golf 2018", []), ("", []), ("fără cifre", []), ("Șofer: Ștefan Țăran", []),
             ("Suma 1 250 lei, CNP 1800101990006, card 4111111111111111", []),
+            ("Exemplu •••• · 2020", []), ("••••", []), ("Copie 1800101990006 · card •••• 1111", []),
+            ("1800101990006 · 2020", []), ("Pașaport   1800101990006  · 10 ianuarie 2027", []), ("Cod \(sealed) · VW Golf", []),
+            ("VW  Golf · 10 ianuarie 2027", []),
         ]
         let cases: [JSONValue] = inputs.map { input in
             let text = Built.expand(input.text)
@@ -250,14 +253,15 @@ struct SearchVectorsTests {
                 "text": .string(input.text),
                 "kept": keptJSON(input.kept),
                 "redacted": .string(SearchPrivacy.redacting(text, keeping: kept(input.kept))),
+                "shown": .string(SearchPrivacy.shown(text, keeping: kept(input.kept))),
                 "mayRemember": .bool(SearchPrivacy.mayRemember(text)),
             ])
         }
         return Vectors(
             name: "search-redacting",
-            rule: "SearchPrivacy.redacting(_:keeping:) and mayRemember(_:): what the index and the recent searches never keep (a CNP-shaped number, a card number, masked or not, a sealed value), a section's own typed values kept whole",
+            rule: "SearchPrivacy.redacting(_:keeping:), shown(_:keeping:) and mayRemember(_:): what the index and the recent searches never keep (a CNP-shaped number, a card number, masked or not, a sealed value), a section's own typed values kept whole; the line a result shows under its title by the same rule, keeping what is already masked",
             source: "ios/DosarCuSina/Services/Search/SearchPrivacy.swift",
-            shape: "text: a text (with built tokens). kept: the section's typed values kept whole (text, field type). redacted: what search keeps of it. mayRemember: whether it may be remembered as typed (nothing kept whole).",
+            shape: "text: a text (with built tokens). kept: the section's typed values kept whole (text, field type). redacted: what search keeps of it. shown: the text as a result's line under its title may show it. mayRemember: whether it may be remembered as typed (nothing kept whole).",
             cases: cases
         )
     }
@@ -341,7 +345,8 @@ struct SearchVectorsTests {
     /// two trades that looks after an open section and a locked one; documents filed through a
     /// deadline, a visit and a part, archived, read off an identity document, one of the whole
     /// household's, one that names nothing and one filed in an open section through a locked
-    /// section's deadline; a section's line with a value search never keeps and a year.
+    /// section's deadline; a section's line with a value search never keeps and a year, and one
+    /// with a CNP and a masked card number; what each section's change and deletion read again.
     static func records() throws -> Vectors {
         let container = try makeInMemoryContainer()
         let context = PersistenceController.context(in: container)
@@ -382,6 +387,7 @@ struct SearchVectorsTests {
             sections: [FieldSection(key: "main", title: "Date", fields: [
                 FieldDefinition(key: "paper.number", label: "Număr", type: .text, role: .documentNumber, isSensitive: true),
                 FieldDefinition(key: "paper.holder", label: "Titular", type: .text, role: .holder),
+                FieldDefinition(key: "paper.copy", label: "Exemplar", type: .text, role: .subtitle),
             ])],
             behavior: CategoryBehavior(visit: .none, singular: nil)
         )
@@ -405,6 +411,8 @@ struct SearchVectorsTests {
         ]), notes: "Microcip \(chip) citit la vaccin")
         let passport = Asset(id: id(3), name: "Pașaport Ana", templateKey: papers.key, values: FieldValues([
             "paper.number": .text("RX 123456"), "paper.holder": .text("Ana Exemplu"),
+            // A CNP typed into a line its row shows, and a card number as the binder keeps it.
+            "paper.copy": .text("Copie 1800101990006 · card •••• 1111"),
         ]), notes: "Ține-l în sertar")
         let stray = Asset(id: id(4), name: "Secțiune fără categorie", templateKey: "search.absent", notes: "sosește mai târziu")
         for (offset, section) in [golf, rex, passport, stray].enumerated() {
@@ -504,6 +512,23 @@ struct SearchVectorsTests {
 
         let builder = SearchIndexBuilder(context: context, calendar: calendar)
         let documents = try builder.buildByRecord().values.flatMap { $0 }.sorted { $0.id < $1.id }
+        // What a change to each section reads again, and its deletion; a category's reads everything (null).
+        func named(_ ids: Set<PersistentIdentifier>?) -> JSONValue {
+            guard let ids else { return .null }
+            return .array(ids.compactMap { Self.recordName($0, in: context) }.sorted().map(JSONValue.string))
+        }
+        var rereads: [JSONValue] = try [golf, rex, passport, stray].map { section in
+            .object([
+                "section": .string(section.id.uuidString),
+                "changed": named(try builder.recordsShowing(section.persistentModelID)),
+                "deleted": named(try builder.recordsShowingDeleted(section.persistentModelID)),
+            ])
+        }
+        rereads.append(.object([
+            "category": .string(papers.key),
+            "changed": named(try builder.recordsShowing(templates[2].persistentModelID)),
+            "deleted": named(try builder.recordsShowingDeleted(templates[2].persistentModelID)),
+        ]))
         var days: Set<CalendarDay> = []
         for obligation in [rca, vignette, renewal, tax, strayDeadline] { days.insert(obligation.dueDay) }
         for entry in [pads, revision, vaccine, counter, wiping, oilChange] { days.insert(CalendarDay(entry.occurredAt, calendar: calendar)) }
@@ -526,9 +551,21 @@ struct SearchVectorsTests {
             name: "search-records",
             rule: "SearchIndexBuilder.buildByRecord(): what each record of a binder gives the index, secrets and what a category keeps out of search left out, CNP-shaped numbers, card numbers and sealed values taken out, a section's own typed values kept whole; a document locked by every section it belongs to (Attachment.isSensitive(among:binder:)), a firm naming only the open sections it looks after, a section's line as its page says it (HeroFacts.subtitle) with what search never keeps masked",
             source: "ios/DosarCuSina/Services/Search/SearchIndexBuilder.swift",
-            shape: "One case: household (its categories with their fields and components, and whether each is locked here; its sections with each value as stored and as shown; deadlines, records of history with their parts, firms and documents, linked by id), words (the time zone days were counted in, each day and trade as the rows say it, and the word for an archived document) and documents: every document the index holds, by id, with its route.",
-            cases: [.object(["household": household, "words": words, "documents": .array(expected)])]
+            shape: "One case: household (its categories with their fields and components, and whether each is locked here; its sections with each value as stored and as shown; deadlines, records of history with their parts, firms and documents, linked by id), words (the time zone days were counted in, each day and trade as the rows say it, and the word for an archived document), documents: every document the index holds, by id, with its route, and rereads: for each section (and one category), the records whose documents are read again when it changes and when it is deleted, as kind:id sorted (null: everything is read again).",
+            cases: [.object(["household": household, "words": words, "documents": .array(expected), "rereads": .array(rereads)])]
         )
+    }
+
+    /// A record as the rereads name it: its kind as a route names it and its id ("document:…").
+    static func recordName(_ id: PersistentIdentifier, in context: ModelContext) -> String? {
+        switch context.model(for: id) {
+        case let asset as Asset: "asset:\(asset.id.uuidString)"
+        case let obligation as Obligation: "obligation:\(obligation.id.uuidString)"
+        case let entry as HistoryEntry: "historyEntry:\(entry.id.uuidString)"
+        case let provider as Provider: "provider:\(provider.id.uuidString)"
+        case let attachment as DosarCuSina.Attachment: "document:\(attachment.id.uuidString)"
+        default: nil
+        }
     }
 
     static func route(_ route: AppRoute) -> JSONValue {

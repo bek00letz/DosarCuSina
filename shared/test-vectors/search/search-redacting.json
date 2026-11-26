@@ -7,6 +7,7 @@
       ],
       "mayRemember" : false,
       "redacted" : "CNP ",
+      "shown" : "CNP",
       "text" : "CNP 1800101990006"
     },
     {
@@ -15,6 +16,7 @@
       ],
       "mayRemember" : false,
       "redacted" : "",
+      "shown" : "",
       "text" : "1800101990006"
     },
     {
@@ -23,6 +25,7 @@
       ],
       "mayRemember" : false,
       "redacted" : "CNP:, nascut",
+      "shown" : "CNP:, nascut",
       "text" : "CNP:1800101990006, nascut"
     },
     {
@@ -31,6 +34,7 @@
       ],
       "mayRemember" : true,
       "redacted" : "18001019900061",
+      "shown" : "18001019900061",
       "text" : "18001019900061"
     },
     {
@@ -39,6 +43,7 @@
       ],
       "mayRemember" : true,
       "redacted" : "180010199000",
+      "shown" : "180010199000",
       "text" : "180010199000"
     },
     {
@@ -47,6 +52,7 @@
       ],
       "mayRemember" : false,
       "redacted" : "Tel  și ",
+      "shown" : "Tel și",
       "text" : "Tel 1800101990006 și 1800101990006"
     },
     {
@@ -55,6 +61,7 @@
       ],
       "mayRemember" : false,
       "redacted" : "xy",
+      "shown" : "xy",
       "text" : "x1800101990006y"
     },
     {
@@ -63,6 +70,7 @@
       ],
       "mayRemember" : false,
       "redacted" : "Plătit cu  la service",
+      "shown" : "Plătit cu •••• 1111 la service",
       "text" : "Plătit cu 4111 1111 1111 1111 la service"
     },
     {
@@ -71,6 +79,7 @@
       ],
       "mayRemember" : false,
       "redacted" : "Card ",
+      "shown" : "Card •••• 4444",
       "text" : "Card 5555-5555-5555-4444"
     },
     {
@@ -79,6 +88,7 @@
       ],
       "mayRemember" : false,
       "redacted" : "card ",
+      "shown" : "card •••• 1111",
       "text" : "card •••• 1111"
     },
     {
@@ -87,6 +97,7 @@
       ],
       "mayRemember" : false,
       "redacted" : " și restul",
+      "shown" : "•••• •••• •••• 4444 și restul",
       "text" : "•••• •••• •••• 4444 și restul"
     },
     {
@@ -98,6 +109,7 @@
       ],
       "mayRemember" : false,
       "redacted" : "Microcip {luhn:64200000000123} citit",
+      "shown" : "Microcip {luhn:64200000000123} citit",
       "text" : "Microcip {luhn:64200000000123} citit"
     },
     {
@@ -106,6 +118,7 @@
       ],
       "mayRemember" : false,
       "redacted" : "Microcip  citit",
+      "shown" : "Microcip •••• 1234 citit",
       "text" : "Microcip {luhn:64200000000123} citit"
     },
     {
@@ -117,6 +130,7 @@
       ],
       "mayRemember" : false,
       "redacted" : "Cip {luhn:64200000000123}, card ",
+      "shown" : "Cip {luhn:64200000000123}, card •••• 1111",
       "text" : "Cip {luhn:64200000000123}, card 4111 1111 1111 1111"
     },
     {
@@ -125,6 +139,7 @@
       ],
       "mayRemember" : true,
       "redacted" : "IBAN RO49 AAAA 1B31 0075 9384 0000",
+      "shown" : "IBAN RO49 AAAA 1B31 0075 9384 0000",
       "text" : "IBAN RO49 AAAA 1B31 0075 9384 0000"
     },
     {
@@ -133,6 +148,7 @@
       ],
       "mayRemember" : true,
       "redacted" : "RO49AAAA1B31007593840000",
+      "shown" : "RO49AAAA1B31007593840000",
       "text" : "RO49AAAA1B31007593840000"
     },
     {
@@ -141,6 +157,7 @@
       ],
       "mayRemember" : false,
       "redacted" : "Cod de alarmă",
+      "shown" : "Cod de alarmă",
       "text" : "Cod sealed:v1:AAAA de alarmă"
     },
     {
@@ -149,6 +166,7 @@
       ],
       "mayRemember" : false,
       "redacted" : "",
+      "shown" : "",
       "text" : "sealed:v1:AAAA"
     },
     {
@@ -157,6 +175,7 @@
       ],
       "mayRemember" : false,
       "redacted" : "Coduri ",
+      "shown" : "Coduri",
       "text" : "Coduri sealed:v1:AAAA  sealed:v1:AAAAx"
     },
     {
@@ -165,6 +184,7 @@
       ],
       "mayRemember" : true,
       "redacted" : "Telefon 0722 123 456",
+      "shown" : "Telefon 0722 123 456",
       "text" : "Telefon 0722 123 456"
     },
     {
@@ -173,6 +193,7 @@
       ],
       "mayRemember" : true,
       "redacted" : "VW Golf 2018",
+      "shown" : "VW Golf 2018",
       "text" : "VW Golf 2018"
     },
     {
@@ -181,6 +202,7 @@
       ],
       "mayRemember" : true,
       "redacted" : "",
+      "shown" : "",
       "text" : ""
     },
     {
@@ -189,6 +211,7 @@
       ],
       "mayRemember" : true,
       "redacted" : "fără cifre",
+      "shown" : "fără cifre",
       "text" : "fără cifre"
     },
     {
@@ -197,6 +220,7 @@
       ],
       "mayRemember" : true,
       "redacted" : "Șofer: Ștefan Țăran",
+      "shown" : "Șofer: Ștefan Țăran",
       "text" : "Șofer: Ștefan Țăran"
     },
     {
@@ -205,11 +229,75 @@
       ],
       "mayRemember" : false,
       "redacted" : "Suma 1 250 lei, CNP , card ",
+      "shown" : "Suma 1 250 lei, CNP , card •••• 1111",
       "text" : "Suma 1 250 lei, CNP 1800101990006, card 4111111111111111"
+    },
+    {
+      "kept" : [
+
+      ],
+      "mayRemember" : false,
+      "redacted" : "Exemplu · 2020",
+      "shown" : "Exemplu •••• · 2020",
+      "text" : "Exemplu •••• · 2020"
+    },
+    {
+      "kept" : [
+
+      ],
+      "mayRemember" : false,
+      "redacted" : "",
+      "shown" : "••••",
+      "text" : "••••"
+    },
+    {
+      "kept" : [
+
+      ],
+      "mayRemember" : false,
+      "redacted" : "Copie  · card ",
+      "shown" : "Copie · card •••• 1111",
+      "text" : "Copie 1800101990006 · card •••• 1111"
+    },
+    {
+      "kept" : [
+
+      ],
+      "mayRemember" : false,
+      "redacted" : " · 2020",
+      "shown" : "2020",
+      "text" : "1800101990006 · 2020"
+    },
+    {
+      "kept" : [
+
+      ],
+      "mayRemember" : false,
+      "redacted" : "Pașaport     · 10 ianuarie 2027",
+      "shown" : "Pașaport · 10 ianuarie 2027",
+      "text" : "Pașaport   1800101990006  · 10 ianuarie 2027"
+    },
+    {
+      "kept" : [
+
+      ],
+      "mayRemember" : false,
+      "redacted" : "Cod · VW Golf",
+      "shown" : "Cod · VW Golf",
+      "text" : "Cod sealed:v1:AAAA · VW Golf"
+    },
+    {
+      "kept" : [
+
+      ],
+      "mayRemember" : true,
+      "redacted" : "VW  Golf · 10 ianuarie 2027",
+      "shown" : "VW  Golf · 10 ianuarie 2027",
+      "text" : "VW  Golf · 10 ianuarie 2027"
     }
   ],
-  "rule" : "SearchPrivacy.redacting(_:keeping:) and mayRemember(_:): what the index and the recent searches never keep (a CNP-shaped number, a card number, masked or not, a sealed value), a section's own typed values kept whole",
-  "shape" : "text: a text (with built tokens). kept: the section's typed values kept whole (text, field type). redacted: what search keeps of it. mayRemember: whether it may be remembered as typed (nothing kept whole).",
+  "rule" : "SearchPrivacy.redacting(_:keeping:), shown(_:keeping:) and mayRemember(_:): what the index and the recent searches never keep (a CNP-shaped number, a card number, masked or not, a sealed value), a section's own typed values kept whole; the line a result shows under its title by the same rule, keeping what is already masked",
+  "shape" : "text: a text (with built tokens). kept: the section's typed values kept whole (text, field type). redacted: what search keeps of it. shown: the text as a result's line under its title may show it. mayRemember: whether it may be remembered as typed (nothing kept whole).",
   "source" : "ios/DosarCuSina/Services/Search/SearchPrivacy.swift",
   "writtenBy" : "ios/DosarCuSinaTests/SearchVectorsTests.swift"
 }

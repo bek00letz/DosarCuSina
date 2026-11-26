@@ -131,6 +131,10 @@
               "weight" : 6
             },
             {
+              "text" : "Exemplar Copie  · card ",
+              "weight" : 6
+            },
+            {
               "text" : "Ține-l în sertar",
               "weight" : 3
             }
@@ -142,7 +146,7 @@
             "id" : "5E000000-AB00-4C00-8D00-E00000001003",
             "kind" : "asset"
           },
-          "subtitle" : "Acte",
+          "subtitle" : "Copie · card •••• 1111",
           "title" : "Pașaport Ana"
         },
         {
@@ -468,7 +472,7 @@
             "id" : "5E000000-AB00-4C00-8D00-E00000001058",
             "kind" : "document"
           },
-          "subtitle" : "",
+          "subtitle" : null,
           "title" : "Contract chirie"
         },
         {
@@ -498,7 +502,7 @@
             "id" : "5E000000-AB00-4C00-8D00-E00000001059",
             "kind" : "document"
           },
-          "subtitle" : "",
+          "subtitle" : null,
           "title" : "scan.pdf"
         },
         {
@@ -1018,7 +1022,7 @@
             "id" : "5E000000-AB00-4C00-8D00-E00000001012",
             "kind" : "provider"
           },
-          "subtitle" : "",
+          "subtitle" : null,
           "title" : "Piese Exemplu"
         },
         {
@@ -1210,6 +1214,13 @@
             "templateKey" : "search.papers",
             "updatedAt" : "2026-02-03T10:00:00Z",
             "values" : {
+              "paper.copy" : {
+                "shown" : "Copie 1800101990006 · card •••• 1111",
+                "value" : {
+                  "type" : "text",
+                  "value" : "Copie 1800101990006 · card •••• 1111"
+                }
+              },
               "paper.holder" : {
                 "shown" : "Ana Exemplu",
                 "value" : {
@@ -1787,6 +1798,16 @@
                 ],
                 "role" : "holder",
                 "type" : "text"
+              },
+              {
+                "isSensitive" : false,
+                "key" : "paper.copy",
+                "label" : "Exemplar",
+                "options" : [
+
+                ],
+                "role" : "subtitle",
+                "type" : "text"
               }
             ],
             "isLocked" : true,
@@ -1795,6 +1816,71 @@
           }
         ]
       },
+      "rereads" : [
+        {
+          "changed" : [
+            "asset:5E000000-AB00-4C00-8D00-E00000001001",
+            "document:5E000000-AB00-4C00-8D00-E00000001051",
+            "document:5E000000-AB00-4C00-8D00-E00000001052",
+            "document:5E000000-AB00-4C00-8D00-E00000001053",
+            "document:5E000000-AB00-4C00-8D00-E00000001054",
+            "document:5E000000-AB00-4C00-8D00-E00000001057",
+            "document:5E000000-AB00-4C00-8D00-E00000001061",
+            "historyEntry:5E000000-AB00-4C00-8D00-E00000001031",
+            "historyEntry:5E000000-AB00-4C00-8D00-E00000001032",
+            "historyEntry:5E000000-AB00-4C00-8D00-E00000001035",
+            "historyEntry:5E000000-AB00-4C00-8D00-E00000001036",
+            "obligation:5E000000-AB00-4C00-8D00-E00000001021",
+            "obligation:5E000000-AB00-4C00-8D00-E00000001022",
+            "provider:5E000000-AB00-4C00-8D00-E00000001011"
+          ],
+          "deleted" : [
+            "document:5E000000-AB00-4C00-8D00-E00000001059"
+          ],
+          "section" : "5E000000-AB00-4C00-8D00-E00000001001"
+        },
+        {
+          "changed" : [
+            "asset:5E000000-AB00-4C00-8D00-E00000001002",
+            "document:5E000000-AB00-4C00-8D00-E00000001055",
+            "historyEntry:5E000000-AB00-4C00-8D00-E00000001033"
+          ],
+          "deleted" : [
+            "document:5E000000-AB00-4C00-8D00-E00000001059"
+          ],
+          "section" : "5E000000-AB00-4C00-8D00-E00000001002"
+        },
+        {
+          "changed" : [
+            "asset:5E000000-AB00-4C00-8D00-E00000001003",
+            "document:5E000000-AB00-4C00-8D00-E00000001056",
+            "document:5E000000-AB00-4C00-8D00-E00000001061",
+            "historyEntry:5E000000-AB00-4C00-8D00-E00000001034",
+            "obligation:5E000000-AB00-4C00-8D00-E00000001023",
+            "provider:5E000000-AB00-4C00-8D00-E00000001011"
+          ],
+          "deleted" : [
+            "document:5E000000-AB00-4C00-8D00-E00000001059"
+          ],
+          "section" : "5E000000-AB00-4C00-8D00-E00000001003"
+        },
+        {
+          "changed" : [
+            "asset:5E000000-AB00-4C00-8D00-E00000001004",
+            "document:5E000000-AB00-4C00-8D00-E00000001059",
+            "obligation:5E000000-AB00-4C00-8D00-E00000001025"
+          ],
+          "deleted" : [
+            "document:5E000000-AB00-4C00-8D00-E00000001059"
+          ],
+          "section" : "5E000000-AB00-4C00-8D00-E00000001004"
+        },
+        {
+          "category" : "search.papers",
+          "changed" : null,
+          "deleted" : null
+        }
+      ],
       "words" : {
         "archived" : "arhivat",
         "days" : {
@@ -1836,7 +1922,7 @@
     }
   ],
   "rule" : "SearchIndexBuilder.buildByRecord(): what each record of a binder gives the index, secrets and what a category keeps out of search left out, CNP-shaped numbers, card numbers and sealed values taken out, a section's own typed values kept whole; a document locked by every section it belongs to (Attachment.isSensitive(among:binder:)), a firm naming only the open sections it looks after, a section's line as its page says it (HeroFacts.subtitle) with what search never keeps masked",
-  "shape" : "One case: household (its categories with their fields and components, and whether each is locked here; its sections with each value as stored and as shown; deadlines, records of history with their parts, firms and documents, linked by id), words (the time zone days were counted in, each day and trade as the rows say it, and the word for an archived document) and documents: every document the index holds, by id, with its route.",
+  "shape" : "One case: household (its categories with their fields and components, and whether each is locked here; its sections with each value as stored and as shown; deadlines, records of history with their parts, firms and documents, linked by id), words (the time zone days were counted in, each day and trade as the rows say it, and the word for an archived document), documents: every document the index holds, by id, with its route, and rereads: for each section (and one category), the records whose documents are read again when it changes and when it is deleted, as kind:id sorted (null: everything is read again).",
   "source" : "ios/DosarCuSina/Services/Search/SearchIndexBuilder.swift",
   "writtenBy" : "ios/DosarCuSinaTests/SearchVectorsTests.swift"
 }

@@ -101,6 +101,9 @@ public struct SearchIndexBuilder {
             attachments += items.flatMap { $0.attachments ?? [] }
             attachments += (asset.measurements ?? []).flatMap { $0.attachments ?? [] }
             result.formUnion(attachments.map(\.persistentModelID))
+            // A section whose category hasn't arrived is locked (`BinderLocks`), so it can change
+            // whether anything of the binder is: what the documents that name no section read.
+            if try !categoryIsHere(asset.templateKey) { result.formUnion(try documentsNamingNoSection()) }
         case Self.entity(Obligation.self):
             result.insert(id)
             result.formUnion((try fetch(Obligation.self, id)?.attachments ?? []).map(\.persistentModelID))
@@ -131,6 +134,33 @@ public struct SearchIndexBuilder {
             break
         }
         return result
+    }
+
+    /// The records whose documents show something of a deleted record, beside its own documents,
+    /// which go with it. `nil` when the deletion can reach any record (a category), so everything
+    /// is read again. A section gone may have been the one whose category hadn't arrived, the
+    /// last thing of the binder that read as locked: the documents that name no section read again.
+    public func recordsShowingDeleted(_ id: PersistentIdentifier) throws -> Set<PersistentIdentifier>? {
+        switch id.entityName {
+        case Self.entity(CategoryTemplate.self): nil
+        case Self.entity(Asset.self): try documentsNamingNoSection()
+        default: []
+        }
+    }
+
+    /// The documents that name no section that can be found (`RouteLock.unknownSection`), whose
+    /// lock is the whole binder's (`Attachment.isSensitive(among:binder:)`).
+    func documentsNamingNoSection() throws -> Set<PersistentIdentifier> {
+        let unfiled = try context.fetch(FetchDescriptor<Attachment>(predicate: #Predicate { $0.asset == nil }))
+        // Which section a document names never depends on the categories, only on its links.
+        return Set(unfiled.filter { $0.lock(among: [:]) == .unknownSection }.map(\.persistentModelID))
+    }
+
+    /// Whether the category `key` has its record here.
+    private func categoryIsHere(_ key: String) throws -> Bool {
+        var descriptor = FetchDescriptor<CategoryTemplate>(predicate: #Predicate { $0.key == key })
+        descriptor.fetchLimit = 1
+        return try !context.fetch(descriptor).isEmpty
     }
 
     /// A model's entity name, as a `PersistentIdentifier` carries it.
@@ -169,10 +199,13 @@ public struct SearchIndexBuilder {
     }
 
     /// The document with every CNP-shaped number, card number and sealed value taken out of
-    /// what can be matched; what its section keeps whole (`kept`) stays, as it is stored.
+    /// what can be matched (`SearchPrivacy.redacting`) and of the line its row shows under the
+    /// title (`SearchPrivacy.shown`, which keeps what is already masked); what its section keeps
+    /// whole (`kept`) stays, as it is stored.
     static func redacted(_ document: SearchDocument, keeping kept: PaymentCardNumbers.KeptWhole) -> SearchDocument {
         var result = document
         result.fields = document.fields.map { SearchField(SearchPrivacy.redacting($0.text, keeping: kept), weight: $0.weight) }
+        result.subtitle = document.subtitle.map { SearchPrivacy.shown($0, keeping: kept) }.flatMap { $0.isEmpty ? nil : $0 }
         return result
     }
 
