@@ -1,0 +1,401 @@
+{
+  "cases" : [
+    {
+      "key" : "country.RO",
+      "rule" : "key(forNationality:)",
+      "text" : "ROU"
+    },
+    {
+      "key" : "country.RO",
+      "rule" : "key(forNationality:)",
+      "text" : "Română / ROU"
+    },
+    {
+      "key" : "country.RO",
+      "rule" : "key(forNationality:)",
+      "text" : "rou"
+    },
+    {
+      "key" : "country.RO",
+      "rule" : "key(forNationality:)",
+      "text" : "Romana"
+    },
+    {
+      "key" : "country.RO",
+      "rule" : "key(forNationality:)",
+      "text" : "România"
+    },
+    {
+      "key" : "country.DE",
+      "rule" : "key(forNationality:)",
+      "text" : "D"
+    },
+    {
+      "key" : "country.DE",
+      "rule" : "key(forNationality:)",
+      "text" : "Germania / D"
+    },
+    {
+      "key" : "country.GB",
+      "rule" : "key(forNationality:)",
+      "text" : "GBN"
+    },
+    {
+      "key" : "country.MD",
+      "rule" : "key(forNationality:)",
+      "text" : "MDA"
+    },
+    {
+      "key" : "country.MD",
+      "rule" : "key(forNationality:)",
+      "text" : "Moldovan"
+    },
+    {
+      "key" : "country.MD",
+      "rule" : "key(forNationality:)",
+      "text" : "Republica Moldova"
+    },
+    {
+      "key" : "country.MD",
+      "rule" : "key(forNationality:)",
+      "text" : "country.MD"
+    },
+    {
+      "key" : "country.stateless",
+      "rule" : "key(forNationality:)",
+      "text" : "XXA"
+    },
+    {
+      "key" : "country.stateless",
+      "rule" : "key(forNationality:)",
+      "text" : "Apatrid"
+    },
+    {
+      "key" : "country.XK",
+      "rule" : "key(forNationality:)",
+      "text" : "RKS"
+    },
+    {
+      "key" : null,
+      "rule" : "key(forNationality:)",
+      "text" : ""
+    },
+    {
+      "key" : null,
+      "rule" : "key(forNationality:)",
+      "text" : "   "
+    },
+    {
+      "key" : null,
+      "rule" : "key(forNationality:)",
+      "text" : "Atlantis"
+    },
+    {
+      "key" : "country.RO",
+      "rule" : "key(forNationality:)",
+      "text" : "ROU / MDA"
+    },
+    {
+      "documents" : [
+        {
+          "document.nationality" : {
+            "text" : "MDA"
+          }
+        },
+        {
+          "document.nationality" : {
+            "text" : "Română / ROU"
+          }
+        },
+        {
+          "document.nationality" : {
+            "text" : "Atlantis"
+          }
+        },
+        {
+
+        }
+      ],
+      "kept" : [
+        "country.MD",
+        "country.RO"
+      ],
+      "name" : "a list",
+      "of" : [
+        "country.MD",
+        "country.RO"
+      ],
+      "ofWithoutDocuments" : [
+        "country.MD",
+        "country.RO"
+      ],
+      "person" : {
+        "choices" : [
+          "country.MD",
+          "country.RO",
+          "country.RO"
+        ]
+      },
+      "rule" : "kept(in:), of(person:documents:)"
+    },
+    {
+      "documents" : [
+        {
+          "document.nationality" : {
+            "text" : "MDA"
+          }
+        },
+        {
+          "document.nationality" : {
+            "text" : "Română / ROU"
+          }
+        },
+        {
+          "document.nationality" : {
+            "text" : "Atlantis"
+          }
+        },
+        {
+
+        }
+      ],
+      "kept" : [
+        "country.RO"
+      ],
+      "name" : "one key kept as text by an earlier version",
+      "of" : [
+        "country.RO"
+      ],
+      "ofWithoutDocuments" : [
+        "country.RO"
+      ],
+      "person" : {
+        "text" : "country.RO"
+      },
+      "rule" : "kept(in:), of(person:documents:)"
+    },
+    {
+      "documents" : [
+        {
+          "document.nationality" : {
+            "text" : "MDA"
+          }
+        },
+        {
+          "document.nationality" : {
+            "text" : "Română / ROU"
+          }
+        },
+        {
+          "document.nationality" : {
+            "text" : "Atlantis"
+          }
+        },
+        {
+
+        }
+      ],
+      "kept" : [
+
+      ],
+      "name" : "a name kept as text",
+      "of" : [
+        "country.MD",
+        "country.RO"
+      ],
+      "ofWithoutDocuments" : [
+
+      ],
+      "person" : {
+        "text" : "Moldova"
+      },
+      "rule" : "kept(in:), of(person:documents:)"
+    },
+    {
+      "documents" : [
+        {
+          "document.nationality" : {
+            "text" : "MDA"
+          }
+        },
+        {
+          "document.nationality" : {
+            "text" : "Română / ROU"
+          }
+        },
+        {
+          "document.nationality" : {
+            "text" : "Atlantis"
+          }
+        },
+        {
+
+        }
+      ],
+      "kept" : [
+        "country.stateless"
+      ],
+      "name" : "keys this build doesn't know",
+      "of" : [
+        "country.stateless"
+      ],
+      "ofWithoutDocuments" : [
+        "country.stateless"
+      ],
+      "person" : {
+        "choices" : [
+          "country.ZZ",
+          "country.stateless"
+        ]
+      },
+      "rule" : "kept(in:), of(person:documents:)"
+    },
+    {
+      "documents" : [
+        {
+          "document.nationality" : {
+            "text" : "MDA"
+          }
+        },
+        {
+          "document.nationality" : {
+            "text" : "Română / ROU"
+          }
+        },
+        {
+          "document.nationality" : {
+            "text" : "Atlantis"
+          }
+        },
+        {
+
+        }
+      ],
+      "kept" : [
+
+      ],
+      "name" : "nothing",
+      "of" : [
+        "country.MD",
+        "country.RO"
+      ],
+      "ofWithoutDocuments" : [
+
+      ],
+      "person" : null,
+      "rule" : "kept(in:), of(person:documents:)"
+    },
+    {
+      "document" : {
+        "document.nationality" : {
+          "text" : "MDA"
+        }
+      },
+      "key" : "country.MD",
+      "rule" : "printed(on:)"
+    },
+    {
+      "document" : {
+        "document.nationality" : {
+          "text" : "Română / ROU"
+        }
+      },
+      "key" : "country.RO",
+      "rule" : "printed(on:)"
+    },
+    {
+      "document" : {
+        "document.nationality" : {
+          "text" : "Atlantis"
+        }
+      },
+      "key" : null,
+      "rule" : "printed(on:)"
+    },
+    {
+      "document" : {
+
+      },
+      "key" : null,
+      "rule" : "printed(on:)"
+    },
+    {
+      "citizenships" : [
+        "country.MD",
+        "country.RO"
+      ],
+      "kept" : {
+        "choices" : [
+          "country.MD",
+          "country.RO"
+        ]
+      },
+      "name" : "a new list, put in order",
+      "person" : {
+        "text" : "country.RO"
+      },
+      "rule" : "keeping(_:in:)"
+    },
+    {
+      "citizenships" : [
+        "country.RO",
+        "country.MD"
+      ],
+      "kept" : null,
+      "name" : "the same list",
+      "person" : {
+        "choices" : [
+          "country.MD",
+          "country.RO"
+        ]
+      },
+      "rule" : "keeping(_:in:)"
+    },
+    {
+      "citizenships" : [
+        "country.MD",
+        "country.RO"
+      ],
+      "kept" : null,
+      "name" : "the list it keeps, given out of order",
+      "person" : {
+        "choices" : [
+          "country.MD",
+          "country.RO"
+        ]
+      },
+      "rule" : "keeping(_:in:)"
+    },
+    {
+      "citizenships" : [
+
+      ],
+      "kept" : null,
+      "name" : "nothing to keep",
+      "person" : {
+        "text" : "country.RO"
+      },
+      "rule" : "keeping(_:in:)"
+    },
+    {
+      "citizenships" : [
+        "country.stateless",
+        "country.DE",
+        "country.DE"
+      ],
+      "kept" : {
+        "choices" : [
+          "country.DE",
+          "country.stateless"
+        ]
+      },
+      "name" : "onto no citizenship",
+      "person" : null,
+      "rule" : "keeping(_:in:)"
+    }
+  ],
+  "rule" : "Citizenship: key(forNationality:), kept(in:), of(person:documents:), printed(on:), keeping(_:in:)",
+  "shape" : "cases[] by rule: key(forNationality:) reads text into a stored key or null; kept and of read a person's member.citizenship value (null for none) and their documents' document.nationality; printed(on:) one document's; keeping gives the person's new member.citizenship value, or null when nothing changes",
+  "source" : "ios/DosarCuSina/Models/Fields/Citizenship.swift",
+  "writtenBy" : "ios/DosarCuSinaTests/ReadinessVectorsTests.swift"
+}
