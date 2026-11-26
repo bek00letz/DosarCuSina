@@ -74,6 +74,9 @@ object RomanianNumber {
 
         /** Decimals where the kind is whole (kilometres, counts). */
         NOT_WHOLE("notWhole"),
+
+        /** A money amount with more digits than the binder keeps exactly ([Money.keepsExactly]). */
+        TOO_MANY_DIGITS("tooManyDigits"),
     }
 
     /** A reading, or why there is none. */
@@ -107,17 +110,20 @@ object RomanianNumber {
         val sign = TextRules.characters(text).firstOrNull()?.takeIf { it == "-" || it == "\u2212" }
         val negative = sign != null
         val unsigned = sign?.let { TextRules.trimming(text.substring(it.length), TextRules::isWhitespace) } ?: text
-        val parsed = GroupedDigits.read(unsigned, kind)
-        val problem = when {
-            parsed == null -> Problem.UNREADABLE
-            negative && parsed.value.signum() != 0 -> Problem.NEGATIVE
-            kind.isWhole && DecimalText.normalized(parsed.value).scale() > 0 -> Problem.NOT_WHOLE
-            else -> null
-        }
-        if (parsed == null || problem != null) return Outcome.Refused(problem ?: Problem.UNREADABLE)
+        val parsed = GroupedDigits.read(unsigned, kind) ?: return Outcome.Refused(Problem.UNREADABLE)
+        problem(parsed.value, negative, kind)?.let { return Outcome.Refused(it) }
         val needsCheck = parsed.ambiguous && origin == NumberOrigin.DOCUMENT
         return Outcome.Read(Reading(parsed.value, parsed.ambiguous, needsCheck))
     }
+
+    /** Why a number read clearly still isn't one of [kind], in the iOS reader's order; null when it is. */
+    private fun problem(value: BigDecimal, negative: Boolean, kind: NumberKind): Problem? =
+        when {
+            negative && value.signum() != 0 -> Problem.NEGATIVE
+            kind.isWhole && DecimalText.normalized(value).scale() > 0 -> Problem.NOT_WHOLE
+            kind == NumberKind.MONEY && !Money.keepsExactly(value) -> Problem.TOO_MANY_DIGITS
+            else -> null
+        }
 
     /** The value of [raw], or null when it isn't clearly a number of [kind]. */
     fun value(

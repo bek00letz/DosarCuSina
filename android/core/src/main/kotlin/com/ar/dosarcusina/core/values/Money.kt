@@ -39,9 +39,26 @@ class Money(amount: BigDecimal, currency: String = DEFAULT_CURRENCY) {
         /** Currencies offered first in pickers. Any ISO 4217 code is accepted. */
         val COMMON_CURRENCIES: List<String> = listOf("RON", "EUR", "USD")
 
-        /** An amount in the machine form archives and stored JSON use ("12.50"); null when it isn't one. */
+        /**
+         * The most significant digits an amount may have: what the iOS app's store keeps exactly
+         * (it holds an amount through a Double), as `Money.mostDigits` says. Up to
+         * 9.999.999.999.999,99 lei, or as many decimals as fit in the 15.
+         */
+        const val MOST_DIGITS: Int = 15
+
+        /**
+         * Whether the binder keeps [amount] exactly: at most [MOST_DIGITS] significant digits. What
+         * is typed or read ([RomanianNumber.read] for money) and what a backup brings ([of]) both ask it.
+         */
+        fun keepsExactly(amount: BigDecimal): Boolean =
+            amount.signum() == 0 || amount.abs().stripTrailingZeros().precision() <= MOST_DIGITS
+
+        /**
+         * An amount in the machine form archives and stored JSON use ("12.50"); null when it isn't
+         * one, or has more digits than the binder keeps exactly ([keepsExactly]).
+         */
         fun of(amountString: String, currency: String): Money? =
-            RomanianNumber.canonical(amountString)?.let { Money(it, currency) }
+            RomanianNumber.canonical(amountString)?.takeIf(::keepsExactly)?.let { Money(it, currency) }
 
         /** The stored form read back: both keys text, the amount in machine form; null otherwise. */
         fun fromJson(element: JsonElement): Money? {
