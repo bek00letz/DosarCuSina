@@ -1,0 +1,3376 @@
+{
+  "cases" : [
+    {
+      "action" : {
+        "do" : "complete"
+      },
+      "before" : [
+
+      ],
+      "canUndo" : true,
+      "deadline" : {
+        "blueprintKey" : null,
+        "dueDay" : "2026-12-05",
+        "dueMetric" : null,
+        "estimatedCost" : null,
+        "kind" : "payment",
+        "recurrence" : {
+          "anchor" : "dueDate",
+          "every" : 1,
+          "type" : "interval",
+          "unit" : "month"
+        },
+        "reference" : null,
+        "reminderMinuteOfDay" : null,
+        "reminders" : {
+          "consequence" : "financial",
+          "followUpAfterLapse" : true,
+          "graceDays" : 0,
+          "leadDays" : [
+            2,
+            0
+          ]
+        },
+        "remindersCustomized" : false,
+        "snoozedUntil" : null,
+        "status" : "active",
+        "title" : "Chirie"
+      },
+      "history" : [
+        {
+          "cost" : null,
+          "cycleDueDay" : "2026-11-05",
+          "hasDeadline" : true,
+          "kind" : "payment",
+          "metricReading" : null,
+          "nextDueDay" : "2026-12-05",
+          "note" : null,
+          "occurredAt" : 1795687200,
+          "previousDueMetric" : null,
+          "previousStatus" : "active",
+          "rating" : null,
+          "title" : "Chirie"
+        }
+      ],
+      "name" : "rent paid on time",
+      "now" : 1795687200,
+      "readings" : [
+
+      ],
+      "receipt" : true,
+      "refused" : null,
+      "section" : null,
+      "start" : {
+        "dueDay" : "2026-11-05",
+        "kind" : "payment",
+        "recurrence" : {
+          "anchor" : "dueDate",
+          "every" : 1,
+          "type" : "interval",
+          "unit" : "month"
+        },
+        "reminders" : null,
+        "title" : "Chirie"
+      },
+      "undoRestores" : true
+    },
+    {
+      "action" : {
+        "do" : "complete"
+      },
+      "before" : [
+
+      ],
+      "canUndo" : true,
+      "deadline" : {
+        "blueprintKey" : null,
+        "dueDay" : "2026-09-05",
+        "dueMetric" : null,
+        "estimatedCost" : null,
+        "kind" : "payment",
+        "recurrence" : {
+          "anchor" : "dueDate",
+          "every" : 1,
+          "type" : "interval",
+          "unit" : "month"
+        },
+        "reference" : null,
+        "reminderMinuteOfDay" : null,
+        "reminders" : {
+          "consequence" : "financial",
+          "followUpAfterLapse" : true,
+          "graceDays" : 0,
+          "leadDays" : [
+            2,
+            0
+          ]
+        },
+        "remindersCustomized" : false,
+        "snoozedUntil" : null,
+        "status" : "active",
+        "title" : "Chirie"
+      },
+      "history" : [
+        {
+          "cost" : null,
+          "cycleDueDay" : "2026-08-05",
+          "hasDeadline" : true,
+          "kind" : "payment",
+          "metricReading" : null,
+          "nextDueDay" : "2026-09-05",
+          "note" : null,
+          "occurredAt" : 1795687200,
+          "previousDueMetric" : null,
+          "previousStatus" : "active",
+          "rating" : null,
+          "title" : "Chirie"
+        }
+      ],
+      "name" : "rent paid three months late closes one month",
+      "now" : 1795687200,
+      "readings" : [
+
+      ],
+      "receipt" : true,
+      "refused" : null,
+      "section" : null,
+      "start" : {
+        "dueDay" : "2026-08-05",
+        "kind" : "payment",
+        "recurrence" : {
+          "anchor" : "dueDate",
+          "every" : 1,
+          "type" : "interval",
+          "unit" : "month"
+        },
+        "reminders" : null,
+        "title" : "Chirie"
+      },
+      "undoRestores" : true
+    },
+    {
+      "action" : {
+        "do" : "complete"
+      },
+      "before" : [
+
+      ],
+      "canUndo" : true,
+      "deadline" : {
+        "blueprintKey" : null,
+        "dueDay" : "2026-11-29",
+        "dueMetric" : null,
+        "estimatedCost" : null,
+        "kind" : "routine",
+        "recurrence" : {
+          "anchor" : "dueDate",
+          "every" : 3,
+          "type" : "interval",
+          "unit" : "day"
+        },
+        "reference" : null,
+        "reminderMinuteOfDay" : null,
+        "reminders" : {
+          "consequence" : "comfort",
+          "followUpAfterLapse" : false,
+          "graceDays" : 3,
+          "leadDays" : [
+            0
+          ]
+        },
+        "remindersCustomized" : false,
+        "snoozedUntil" : null,
+        "status" : "active",
+        "title" : "Udat plantele"
+      },
+      "history" : [
+        {
+          "cost" : null,
+          "cycleDueDay" : "2026-11-20",
+          "hasDeadline" : true,
+          "kind" : "maintenance",
+          "metricReading" : null,
+          "nextDueDay" : "2026-11-29",
+          "note" : null,
+          "occurredAt" : 1795687200,
+          "previousDueMetric" : null,
+          "previousStatus" : "active",
+          "rating" : null,
+          "title" : "Udat plantele"
+        }
+      ],
+      "name" : "a chore done late moves past the day",
+      "now" : 1795687200,
+      "readings" : [
+
+      ],
+      "receipt" : true,
+      "refused" : null,
+      "section" : null,
+      "start" : {
+        "dueDay" : "2026-11-20",
+        "kind" : "routine",
+        "recurrence" : {
+          "anchor" : "dueDate",
+          "every" : 3,
+          "type" : "interval",
+          "unit" : "day"
+        },
+        "reminders" : null,
+        "title" : "Udat plantele"
+      },
+      "undoRestores" : true
+    },
+    {
+      "action" : {
+        "do" : "complete",
+        "on" : 1795000000
+      },
+      "before" : [
+
+      ],
+      "canUndo" : true,
+      "deadline" : {
+        "blueprintKey" : null,
+        "dueDay" : "2026-11-23",
+        "dueMetric" : null,
+        "estimatedCost" : null,
+        "kind" : "routine",
+        "recurrence" : {
+          "anchor" : "dueDate",
+          "every" : 3,
+          "type" : "interval",
+          "unit" : "day"
+        },
+        "reference" : null,
+        "reminderMinuteOfDay" : null,
+        "reminders" : {
+          "consequence" : "comfort",
+          "followUpAfterLapse" : false,
+          "graceDays" : 3,
+          "leadDays" : [
+            0
+          ]
+        },
+        "remindersCustomized" : false,
+        "snoozedUntil" : null,
+        "status" : "active",
+        "title" : "Udat plantele"
+      },
+      "history" : [
+        {
+          "cost" : null,
+          "cycleDueDay" : "2026-11-20",
+          "hasDeadline" : true,
+          "kind" : "maintenance",
+          "metricReading" : null,
+          "nextDueDay" : "2026-11-23",
+          "note" : null,
+          "occurredAt" : 1795000000,
+          "previousDueMetric" : null,
+          "previousStatus" : "active",
+          "rating" : null,
+          "title" : "Udat plantele"
+        }
+      ],
+      "name" : "a chore done on a day of one's own",
+      "now" : 1795687200,
+      "readings" : [
+
+      ],
+      "receipt" : true,
+      "refused" : null,
+      "section" : null,
+      "start" : {
+        "dueDay" : "2026-11-20",
+        "kind" : "routine",
+        "recurrence" : {
+          "anchor" : "dueDate",
+          "every" : 3,
+          "type" : "interval",
+          "unit" : "day"
+        },
+        "reminders" : null,
+        "title" : "Udat plantele"
+      },
+      "undoRestores" : true
+    },
+    {
+      "action" : {
+        "cycle" : "2026-11-05",
+        "do" : "complete"
+      },
+      "before" : [
+        {
+          "do" : "complete"
+        }
+      ],
+      "canUndo" : false,
+      "deadline" : {
+        "blueprintKey" : null,
+        "dueDay" : "2026-12-05",
+        "dueMetric" : null,
+        "estimatedCost" : null,
+        "kind" : "payment",
+        "recurrence" : {
+          "anchor" : "dueDate",
+          "every" : 1,
+          "type" : "interval",
+          "unit" : "month"
+        },
+        "reference" : null,
+        "reminderMinuteOfDay" : null,
+        "reminders" : {
+          "consequence" : "financial",
+          "followUpAfterLapse" : true,
+          "graceDays" : 0,
+          "leadDays" : [
+            2,
+            0
+          ]
+        },
+        "remindersCustomized" : false,
+        "snoozedUntil" : null,
+        "status" : "active",
+        "title" : "Chirie"
+      },
+      "history" : [
+        {
+          "cost" : null,
+          "cycleDueDay" : "2026-11-05",
+          "hasDeadline" : true,
+          "kind" : "payment",
+          "metricReading" : null,
+          "nextDueDay" : "2026-12-05",
+          "note" : null,
+          "occurredAt" : 1795687200,
+          "previousDueMetric" : null,
+          "previousStatus" : "active",
+          "rating" : null,
+          "title" : "Chirie"
+        }
+      ],
+      "name" : "a cycle already closed is never closed again",
+      "now" : 1795687200,
+      "readings" : [
+
+      ],
+      "receipt" : false,
+      "refused" : "cycleClosed",
+      "section" : null,
+      "start" : {
+        "dueDay" : "2026-11-05",
+        "kind" : "payment",
+        "recurrence" : {
+          "anchor" : "dueDate",
+          "every" : 1,
+          "type" : "interval",
+          "unit" : "month"
+        },
+        "reminders" : null,
+        "title" : "Chirie"
+      },
+      "undoRestores" : null
+    },
+    {
+      "action" : {
+        "cycle" : "2026-11-05",
+        "do" : "complete"
+      },
+      "before" : [
+
+      ],
+      "canUndo" : true,
+      "deadline" : {
+        "blueprintKey" : null,
+        "dueDay" : "2026-12-05",
+        "dueMetric" : null,
+        "estimatedCost" : null,
+        "kind" : "payment",
+        "recurrence" : {
+          "anchor" : "dueDate",
+          "every" : 1,
+          "type" : "interval",
+          "unit" : "month"
+        },
+        "reference" : null,
+        "reminderMinuteOfDay" : null,
+        "reminders" : {
+          "consequence" : "financial",
+          "followUpAfterLapse" : true,
+          "graceDays" : 0,
+          "leadDays" : [
+            2,
+            0
+          ]
+        },
+        "remindersCustomized" : false,
+        "snoozedUntil" : null,
+        "status" : "active",
+        "title" : "Chirie"
+      },
+      "history" : [
+        {
+          "cost" : null,
+          "cycleDueDay" : "2026-11-05",
+          "hasDeadline" : true,
+          "kind" : "payment",
+          "metricReading" : null,
+          "nextDueDay" : "2026-12-05",
+          "note" : null,
+          "occurredAt" : 1795687200,
+          "previousDueMetric" : null,
+          "previousStatus" : "active",
+          "rating" : null,
+          "title" : "Chirie"
+        }
+      ],
+      "name" : "the cycle the person saw is closed",
+      "now" : 1795687200,
+      "readings" : [
+
+      ],
+      "receipt" : true,
+      "refused" : null,
+      "section" : null,
+      "start" : {
+        "dueDay" : "2026-11-05",
+        "kind" : "payment",
+        "recurrence" : {
+          "anchor" : "dueDate",
+          "every" : 1,
+          "type" : "interval",
+          "unit" : "month"
+        },
+        "reminders" : null,
+        "title" : "Chirie"
+      },
+      "undoRestores" : true
+    },
+    {
+      "action" : {
+        "do" : "complete"
+      },
+      "before" : [
+        {
+          "do" : "pause"
+        }
+      ],
+      "canUndo" : false,
+      "deadline" : {
+        "blueprintKey" : null,
+        "dueDay" : "2026-11-05",
+        "dueMetric" : null,
+        "estimatedCost" : null,
+        "kind" : "payment",
+        "recurrence" : {
+          "anchor" : "dueDate",
+          "every" : 1,
+          "type" : "interval",
+          "unit" : "month"
+        },
+        "reference" : null,
+        "reminderMinuteOfDay" : null,
+        "reminders" : {
+          "consequence" : "financial",
+          "followUpAfterLapse" : true,
+          "graceDays" : 0,
+          "leadDays" : [
+            2,
+            0
+          ]
+        },
+        "remindersCustomized" : false,
+        "snoozedUntil" : null,
+        "status" : "paused",
+        "title" : "Chirie"
+      },
+      "history" : [
+
+      ],
+      "name" : "a paused deadline isn't completed",
+      "now" : 1795687200,
+      "readings" : [
+
+      ],
+      "receipt" : false,
+      "refused" : "notActive",
+      "section" : null,
+      "start" : {
+        "dueDay" : "2026-11-05",
+        "kind" : "payment",
+        "recurrence" : {
+          "anchor" : "dueDate",
+          "every" : 1,
+          "type" : "interval",
+          "unit" : "month"
+        },
+        "reminders" : null,
+        "title" : "Chirie"
+      },
+      "undoRestores" : null
+    },
+    {
+      "action" : {
+        "cost" : {
+          "amount" : "250",
+          "currency" : "RON"
+        },
+        "do" : "complete",
+        "note" : "Filtru schimbat",
+        "rating" : 9
+      },
+      "before" : [
+
+      ],
+      "canUndo" : true,
+      "deadline" : {
+        "blueprintKey" : null,
+        "dueDay" : "2026-12-10",
+        "dueMetric" : null,
+        "estimatedCost" : null,
+        "kind" : "maintenance",
+        "recurrence" : {
+          "type" : "none"
+        },
+        "reference" : null,
+        "reminderMinuteOfDay" : null,
+        "reminders" : {
+          "consequence" : "comfort",
+          "followUpAfterLapse" : false,
+          "graceDays" : 14,
+          "leadDays" : [
+            14,
+            1
+          ]
+        },
+        "remindersCustomized" : false,
+        "snoozedUntil" : null,
+        "status" : "done",
+        "title" : "Revizie centrală"
+      },
+      "history" : [
+        {
+          "cost" : {
+            "amount" : "250",
+            "currency" : "RON"
+          },
+          "cycleDueDay" : "2026-12-10",
+          "hasDeadline" : true,
+          "kind" : "maintenance",
+          "metricReading" : null,
+          "nextDueDay" : null,
+          "note" : "Filtru schimbat",
+          "occurredAt" : 1795687200,
+          "previousDueMetric" : null,
+          "previousStatus" : "active",
+          "rating" : 5,
+          "title" : "Revizie centrală"
+        }
+      ],
+      "name" : "a one-off closes",
+      "now" : 1795687200,
+      "readings" : [
+
+      ],
+      "receipt" : true,
+      "refused" : null,
+      "section" : null,
+      "start" : {
+        "dueDay" : "2026-12-10",
+        "kind" : "maintenance",
+        "recurrence" : {
+          "type" : "none"
+        },
+        "reminders" : null,
+        "title" : "Revizie centrală"
+      },
+      "undoRestores" : true
+    },
+    {
+      "action" : {
+        "continuingOn" : "2027-12-10",
+        "do" : "complete"
+      },
+      "before" : [
+
+      ],
+      "canUndo" : true,
+      "deadline" : {
+        "blueprintKey" : null,
+        "dueDay" : "2027-12-10",
+        "dueMetric" : null,
+        "estimatedCost" : null,
+        "kind" : "maintenance",
+        "recurrence" : {
+          "type" : "none"
+        },
+        "reference" : null,
+        "reminderMinuteOfDay" : null,
+        "reminders" : {
+          "consequence" : "comfort",
+          "followUpAfterLapse" : false,
+          "graceDays" : 14,
+          "leadDays" : [
+            14,
+            1
+          ]
+        },
+        "remindersCustomized" : false,
+        "snoozedUntil" : null,
+        "status" : "active",
+        "title" : "Revizie centrală"
+      },
+      "history" : [
+        {
+          "cost" : null,
+          "cycleDueDay" : "2026-12-10",
+          "hasDeadline" : true,
+          "kind" : "maintenance",
+          "metricReading" : null,
+          "nextDueDay" : "2027-12-10",
+          "note" : null,
+          "occurredAt" : 1795687200,
+          "previousDueMetric" : null,
+          "previousStatus" : "active",
+          "rating" : null,
+          "title" : "Revizie centrală"
+        }
+      ],
+      "name" : "a one-off goes on from a new day",
+      "now" : 1795687200,
+      "readings" : [
+
+      ],
+      "receipt" : true,
+      "refused" : null,
+      "section" : null,
+      "start" : {
+        "dueDay" : "2026-12-10",
+        "kind" : "maintenance",
+        "recurrence" : {
+          "type" : "none"
+        },
+        "reminders" : null,
+        "title" : "Revizie centrală"
+      },
+      "undoRestores" : true
+    },
+    {
+      "action" : {
+        "continuingOn" : "2026-11-26",
+        "do" : "complete"
+      },
+      "before" : [
+
+      ],
+      "canUndo" : false,
+      "deadline" : {
+        "blueprintKey" : null,
+        "dueDay" : "2026-12-10",
+        "dueMetric" : null,
+        "estimatedCost" : null,
+        "kind" : "maintenance",
+        "recurrence" : {
+          "type" : "none"
+        },
+        "reference" : null,
+        "reminderMinuteOfDay" : null,
+        "reminders" : {
+          "consequence" : "comfort",
+          "followUpAfterLapse" : false,
+          "graceDays" : 14,
+          "leadDays" : [
+            14,
+            1
+          ]
+        },
+        "remindersCustomized" : false,
+        "snoozedUntil" : null,
+        "status" : "active",
+        "title" : "Revizie centrală"
+      },
+      "history" : [
+
+      ],
+      "name" : "a new day that has passed",
+      "now" : 1795687200,
+      "readings" : [
+
+      ],
+      "receipt" : false,
+      "refused" : "newDayHasPassed",
+      "section" : null,
+      "start" : {
+        "dueDay" : "2026-12-10",
+        "kind" : "maintenance",
+        "recurrence" : {
+          "type" : "none"
+        },
+        "reminders" : null,
+        "title" : "Revizie centrală"
+      },
+      "undoRestores" : null
+    },
+    {
+      "action" : {
+        "do" : "complete"
+      },
+      "before" : [
+        {
+          "days" : 3,
+          "do" : "snooze"
+        }
+      ],
+      "canUndo" : true,
+      "deadline" : {
+        "blueprintKey" : null,
+        "dueDay" : "2026-12-05",
+        "dueMetric" : null,
+        "estimatedCost" : null,
+        "kind" : "payment",
+        "recurrence" : {
+          "anchor" : "dueDate",
+          "every" : 1,
+          "type" : "interval",
+          "unit" : "month"
+        },
+        "reference" : null,
+        "reminderMinuteOfDay" : null,
+        "reminders" : {
+          "consequence" : "financial",
+          "followUpAfterLapse" : true,
+          "graceDays" : 0,
+          "leadDays" : [
+            2,
+            0
+          ]
+        },
+        "remindersCustomized" : false,
+        "snoozedUntil" : null,
+        "status" : "active",
+        "title" : "Chirie"
+      },
+      "history" : [
+        {
+          "cost" : null,
+          "cycleDueDay" : "2026-11-05",
+          "hasDeadline" : true,
+          "kind" : "payment",
+          "metricReading" : null,
+          "nextDueDay" : "2026-12-05",
+          "note" : null,
+          "occurredAt" : 1795687200,
+          "previousDueMetric" : null,
+          "previousStatus" : "active",
+          "rating" : null,
+          "title" : "Chirie"
+        }
+      ],
+      "name" : "completing lets go of a snooze",
+      "now" : 1795687200,
+      "readings" : [
+
+      ],
+      "receipt" : true,
+      "refused" : null,
+      "section" : null,
+      "start" : {
+        "dueDay" : "2026-11-05",
+        "kind" : "payment",
+        "recurrence" : {
+          "anchor" : "dueDate",
+          "every" : 1,
+          "type" : "interval",
+          "unit" : "month"
+        },
+        "reminders" : null,
+        "title" : "Chirie"
+      },
+      "undoRestores" : true
+    },
+    {
+      "action" : {
+        "cost" : {
+          "amount" : "180",
+          "currency" : "RON"
+        },
+        "do" : "complete"
+      },
+      "before" : [
+
+      ],
+      "canUndo" : true,
+      "deadline" : {
+        "blueprintKey" : "vehicle.itp",
+        "dueDay" : "2027-11-26",
+        "dueMetric" : null,
+        "estimatedCost" : {
+          "amount" : "180",
+          "currency" : "RON"
+        },
+        "kind" : "legal",
+        "recurrence" : {
+          "rule" : "vehicleITP",
+          "type" : "legal"
+        },
+        "reference" : null,
+        "reminderMinuteOfDay" : null,
+        "reminders" : {
+          "consequence" : "legal",
+          "followUpAfterLapse" : true,
+          "graceDays" : 0,
+          "leadDays" : [
+            30,
+            7
+          ]
+        },
+        "remindersCustomized" : false,
+        "snoozedUntil" : null,
+        "status" : "active",
+        "title" : "ITP"
+      },
+      "history" : [
+        {
+          "cost" : {
+            "amount" : "180",
+            "currency" : "RON"
+          },
+          "cycleDueDay" : "2026-12-01",
+          "hasDeadline" : true,
+          "kind" : "inspection",
+          "metricReading" : null,
+          "nextDueDay" : "2027-11-26",
+          "note" : null,
+          "occurredAt" : 1795687200,
+          "previousDueMetric" : null,
+          "previousStatus" : "active",
+          "rating" : null,
+          "title" : "ITP"
+        }
+      ],
+      "name" : "an ITP of a car thirteen years old",
+      "now" : 1795687200,
+      "readings" : [
+        {
+          "at" : 1780304400,
+          "unit" : "km",
+          "value" : 100000
+        },
+        {
+          "at" : 1788253200,
+          "unit" : "km",
+          "value" : 104500
+        }
+      ],
+      "receipt" : true,
+      "refused" : null,
+      "section" : {
+        "category" : "vehicle",
+        "name" : "VW Golf 2018",
+        "readings" : [
+          {
+            "at" : "2026-06-01T09:00:00Z",
+            "value" : 100000
+          },
+          {
+            "at" : "2026-09-01T09:00:00Z",
+            "value" : 104500
+          }
+        ],
+        "values" : {
+          "vehicle.plate" : {
+            "type" : "text",
+            "value" : "B-123-ABC"
+          },
+          "vehicle.year" : {
+            "type" : "number",
+            "value" : 2013
+          }
+        }
+      },
+      "start" : {
+        "blueprint" : "vehicle.itp",
+        "firstDue" : "2026-12-01"
+      },
+      "undoRestores" : true
+    },
+    {
+      "action" : {
+        "do" : "complete",
+        "metricReading" : 108000
+      },
+      "before" : [
+
+      ],
+      "canUndo" : true,
+      "deadline" : {
+        "blueprintKey" : "vehicle.service",
+        "dueDay" : "2027-10-26",
+        "dueMetric" : 123000,
+        "estimatedCost" : null,
+        "kind" : "maintenance",
+        "recurrence" : {
+          "every" : 15000,
+          "fallbackEvery" : 1,
+          "fallbackUnit" : "year",
+          "type" : "metric",
+          "unit" : "km"
+        },
+        "reference" : null,
+        "reminderMinuteOfDay" : null,
+        "reminders" : {
+          "consequence" : "comfort",
+          "followUpAfterLapse" : false,
+          "graceDays" : 30,
+          "leadDays" : [
+            14,
+            1
+          ]
+        },
+        "remindersCustomized" : false,
+        "snoozedUntil" : null,
+        "status" : "active",
+        "title" : "Revizie periodică"
+      },
+      "history" : [
+        {
+          "cost" : null,
+          "cycleDueDay" : "2026-12-01",
+          "hasDeadline" : true,
+          "kind" : "maintenance",
+          "metricReading" : 108000,
+          "nextDueDay" : "2027-10-26",
+          "note" : null,
+          "occurredAt" : 1795687200,
+          "previousDueMetric" : 119500,
+          "previousStatus" : "active",
+          "rating" : null,
+          "title" : "Revizie periodică"
+        }
+      ],
+      "name" : "a car's service with the kilometres",
+      "now" : 1795687200,
+      "readings" : [
+        {
+          "at" : 1780304400,
+          "unit" : "km",
+          "value" : 100000
+        },
+        {
+          "at" : 1788253200,
+          "unit" : "km",
+          "value" : 104500
+        },
+        {
+          "at" : 1795687200,
+          "unit" : "km",
+          "value" : 108000
+        }
+      ],
+      "receipt" : true,
+      "refused" : null,
+      "section" : {
+        "category" : "vehicle",
+        "name" : "VW Golf 2018",
+        "readings" : [
+          {
+            "at" : "2026-06-01T09:00:00Z",
+            "value" : 100000
+          },
+          {
+            "at" : "2026-09-01T09:00:00Z",
+            "value" : 104500
+          }
+        ],
+        "values" : {
+          "vehicle.plate" : {
+            "type" : "text",
+            "value" : "B-123-ABC"
+          },
+          "vehicle.year" : {
+            "type" : "number",
+            "value" : 2013
+          }
+        }
+      },
+      "start" : {
+        "blueprint" : "vehicle.service",
+        "firstDue" : "2026-12-01"
+      },
+      "undoRestores" : true
+    },
+    {
+      "action" : {
+        "do" : "complete",
+        "metricReading" : 90000
+      },
+      "before" : [
+
+      ],
+      "canUndo" : false,
+      "deadline" : {
+        "blueprintKey" : "vehicle.service",
+        "dueDay" : "2026-12-01",
+        "dueMetric" : 119500,
+        "estimatedCost" : null,
+        "kind" : "maintenance",
+        "recurrence" : {
+          "every" : 15000,
+          "fallbackEvery" : 1,
+          "fallbackUnit" : "year",
+          "type" : "metric",
+          "unit" : "km"
+        },
+        "reference" : null,
+        "reminderMinuteOfDay" : null,
+        "reminders" : {
+          "consequence" : "comfort",
+          "followUpAfterLapse" : false,
+          "graceDays" : 30,
+          "leadDays" : [
+            14,
+            1
+          ]
+        },
+        "remindersCustomized" : false,
+        "snoozedUntil" : null,
+        "status" : "active",
+        "title" : "Revizie periodică"
+      },
+      "history" : [
+
+      ],
+      "name" : "a car's service with a lower kilometres asks first",
+      "now" : 1795687200,
+      "readings" : [
+        {
+          "at" : 1780304400,
+          "unit" : "km",
+          "value" : 100000
+        },
+        {
+          "at" : 1788253200,
+          "unit" : "km",
+          "value" : 104500
+        }
+      ],
+      "receipt" : false,
+      "refused" : "lowerReading",
+      "section" : {
+        "category" : "vehicle",
+        "name" : "VW Golf 2018",
+        "readings" : [
+          {
+            "at" : "2026-06-01T09:00:00Z",
+            "value" : 100000
+          },
+          {
+            "at" : "2026-09-01T09:00:00Z",
+            "value" : 104500
+          }
+        ],
+        "values" : {
+          "vehicle.plate" : {
+            "type" : "text",
+            "value" : "B-123-ABC"
+          },
+          "vehicle.year" : {
+            "type" : "number",
+            "value" : 2013
+          }
+        }
+      },
+      "start" : {
+        "blueprint" : "vehicle.service",
+        "firstDue" : "2026-12-01"
+      },
+      "undoRestores" : null
+    },
+    {
+      "action" : {
+        "do" : "complete"
+      },
+      "before" : [
+
+      ],
+      "canUndo" : true,
+      "deadline" : {
+        "blueprintKey" : "document.renew",
+        "dueDay" : "2027-05-12",
+        "dueMetric" : null,
+        "estimatedCost" : null,
+        "kind" : "renewal",
+        "recurrence" : {
+          "type" : "none"
+        },
+        "reference" : null,
+        "reminderMinuteOfDay" : null,
+        "reminders" : {
+          "consequence" : "legal",
+          "followUpAfterLapse" : true,
+          "graceDays" : 0,
+          "leadDays" : [
+            90,
+            0
+          ],
+          "travelMarginDays" : 180
+        },
+        "remindersCustomized" : false,
+        "snoozedUntil" : null,
+        "status" : "done",
+        "title" : "Reînnoire"
+      },
+      "history" : [
+        {
+          "cost" : null,
+          "cycleDueDay" : "2027-05-12",
+          "hasDeadline" : true,
+          "kind" : "note",
+          "metricReading" : null,
+          "nextDueDay" : null,
+          "note" : null,
+          "occurredAt" : 1795687200,
+          "previousDueMetric" : null,
+          "previousStatus" : "active",
+          "rating" : null,
+          "title" : "Reînnoire"
+        }
+      ],
+      "name" : "a passport's renewal closes whatever its repeat",
+      "now" : 1795687200,
+      "readings" : [
+
+      ],
+      "receipt" : true,
+      "refused" : null,
+      "section" : {
+        "category" : "documents",
+        "name" : "Pașaport",
+        "readings" : [
+
+        ],
+        "values" : {
+          "document.expiry" : {
+            "type" : "date",
+            "value" : "2027-08-12"
+          },
+          "document.type" : {
+            "type" : "text",
+            "value" : "documentType.passport"
+          }
+        }
+      },
+      "start" : {
+        "blueprint" : "document.renew",
+        "firstDue" : "2027-05-12"
+      },
+      "undoRestores" : true
+    },
+    {
+      "action" : {
+        "do" : "complete"
+      },
+      "before" : [
+        {
+          "do" : "setRecurrence",
+          "rule" : {
+            "anchor" : "completion",
+            "every" : 2,
+            "type" : "interval",
+            "unit" : "year"
+          }
+        }
+      ],
+      "canUndo" : true,
+      "deadline" : {
+        "blueprintKey" : "health.euCard",
+        "dueDay" : "2027-03-01",
+        "dueMetric" : null,
+        "estimatedCost" : null,
+        "kind" : "renewal",
+        "recurrence" : {
+          "anchor" : "completion",
+          "every" : 2,
+          "type" : "interval",
+          "unit" : "year"
+        },
+        "reference" : null,
+        "reminderMinuteOfDay" : null,
+        "reminders" : {
+          "consequence" : "financial",
+          "followUpAfterLapse" : true,
+          "graceDays" : 0,
+          "leadDays" : [
+            30,
+            7
+          ]
+        },
+        "remindersCustomized" : false,
+        "snoozedUntil" : null,
+        "status" : "done",
+        "title" : "Card european de sănătate"
+      },
+      "history" : [
+        {
+          "cost" : null,
+          "cycleDueDay" : "2027-03-01",
+          "hasDeadline" : true,
+          "kind" : "note",
+          "metricReading" : null,
+          "nextDueDay" : null,
+          "note" : null,
+          "occurredAt" : 1795687200,
+          "previousDueMetric" : null,
+          "previousStatus" : "active",
+          "rating" : null,
+          "title" : "Card european de sănătate"
+        }
+      ],
+      "name" : "a European health card closes whatever its repeat",
+      "now" : 1795687200,
+      "readings" : [
+
+      ],
+      "receipt" : true,
+      "refused" : null,
+      "section" : {
+        "category" : "health",
+        "name" : "Fișa medicală",
+        "readings" : [
+
+        ],
+        "values" : {
+
+        }
+      },
+      "start" : {
+        "blueprint" : "health.euCard",
+        "firstDue" : "2027-03-01"
+      },
+      "undoRestores" : true
+    },
+    {
+      "action" : {
+        "do" : "complete"
+      },
+      "before" : [
+
+      ],
+      "canUndo" : true,
+      "deadline" : {
+        "blueprintKey" : "vehicle.tyres",
+        "dueDay" : "2027-04-15",
+        "dueMetric" : null,
+        "estimatedCost" : null,
+        "kind" : "maintenance",
+        "recurrence" : {
+          "dates" : [
+            "04-15",
+            "11-01"
+          ],
+          "type" : "fixedDates"
+        },
+        "reference" : null,
+        "reminderMinuteOfDay" : null,
+        "reminders" : {
+          "consequence" : "comfort",
+          "followUpAfterLapse" : false,
+          "graceDays" : 14,
+          "leadDays" : [
+            14
+          ]
+        },
+        "remindersCustomized" : false,
+        "snoozedUntil" : null,
+        "status" : "active",
+        "title" : "Schimb de anvelope"
+      },
+      "history" : [
+        {
+          "cost" : null,
+          "cycleDueDay" : "2026-11-01",
+          "hasDeadline" : true,
+          "kind" : "maintenance",
+          "metricReading" : null,
+          "nextDueDay" : "2027-04-15",
+          "note" : null,
+          "occurredAt" : 1795687200,
+          "previousDueMetric" : null,
+          "previousStatus" : "active",
+          "rating" : null,
+          "title" : "Schimb de anvelope"
+        }
+      ],
+      "name" : "a tyre change on its fixed dates",
+      "now" : 1795687200,
+      "readings" : [
+        {
+          "at" : 1780304400,
+          "unit" : "km",
+          "value" : 100000
+        },
+        {
+          "at" : 1788253200,
+          "unit" : "km",
+          "value" : 104500
+        }
+      ],
+      "receipt" : true,
+      "refused" : null,
+      "section" : {
+        "category" : "vehicle",
+        "name" : "VW Golf 2018",
+        "readings" : [
+          {
+            "at" : "2026-06-01T09:00:00Z",
+            "value" : 100000
+          },
+          {
+            "at" : "2026-09-01T09:00:00Z",
+            "value" : 104500
+          }
+        ],
+        "values" : {
+          "vehicle.plate" : {
+            "type" : "text",
+            "value" : "B-123-ABC"
+          },
+          "vehicle.year" : {
+            "type" : "number",
+            "value" : 2013
+          }
+        }
+      },
+      "start" : {
+        "blueprint" : "vehicle.tyres",
+        "firstDue" : "2026-11-01"
+      },
+      "undoRestores" : true
+    },
+    {
+      "action" : {
+        "days" : 3,
+        "do" : "snooze"
+      },
+      "before" : [
+
+      ],
+      "canUndo" : true,
+      "deadline" : {
+        "blueprintKey" : null,
+        "dueDay" : "2026-11-05",
+        "dueMetric" : null,
+        "estimatedCost" : null,
+        "kind" : "payment",
+        "recurrence" : {
+          "anchor" : "dueDate",
+          "every" : 1,
+          "type" : "interval",
+          "unit" : "month"
+        },
+        "reference" : null,
+        "reminderMinuteOfDay" : null,
+        "reminders" : {
+          "consequence" : "financial",
+          "followUpAfterLapse" : true,
+          "graceDays" : 0,
+          "leadDays" : [
+            2,
+            0
+          ]
+        },
+        "remindersCustomized" : false,
+        "snoozedUntil" : "2026-11-29",
+        "status" : "active",
+        "title" : "Chirie"
+      },
+      "history" : [
+
+      ],
+      "name" : "a snooze of three days",
+      "now" : 1795687200,
+      "readings" : [
+
+      ],
+      "receipt" : true,
+      "refused" : null,
+      "section" : null,
+      "start" : {
+        "dueDay" : "2026-11-05",
+        "kind" : "payment",
+        "recurrence" : {
+          "anchor" : "dueDate",
+          "every" : 1,
+          "type" : "interval",
+          "unit" : "month"
+        },
+        "reminders" : null,
+        "title" : "Chirie"
+      },
+      "undoRestores" : true
+    },
+    {
+      "action" : {
+        "days" : 0,
+        "do" : "snooze"
+      },
+      "before" : [
+
+      ],
+      "canUndo" : true,
+      "deadline" : {
+        "blueprintKey" : null,
+        "dueDay" : "2026-11-05",
+        "dueMetric" : null,
+        "estimatedCost" : null,
+        "kind" : "payment",
+        "recurrence" : {
+          "anchor" : "dueDate",
+          "every" : 1,
+          "type" : "interval",
+          "unit" : "month"
+        },
+        "reference" : null,
+        "reminderMinuteOfDay" : null,
+        "reminders" : {
+          "consequence" : "financial",
+          "followUpAfterLapse" : true,
+          "graceDays" : 0,
+          "leadDays" : [
+            2,
+            0
+          ]
+        },
+        "remindersCustomized" : false,
+        "snoozedUntil" : "2026-11-27",
+        "status" : "active",
+        "title" : "Chirie"
+      },
+      "history" : [
+
+      ],
+      "name" : "a snooze of no days is one",
+      "now" : 1795687200,
+      "readings" : [
+
+      ],
+      "receipt" : true,
+      "refused" : null,
+      "section" : null,
+      "start" : {
+        "dueDay" : "2026-11-05",
+        "kind" : "payment",
+        "recurrence" : {
+          "anchor" : "dueDate",
+          "every" : 1,
+          "type" : "interval",
+          "unit" : "month"
+        },
+        "reminders" : null,
+        "title" : "Chirie"
+      },
+      "undoRestores" : true
+    },
+    {
+      "action" : {
+        "days" : 3,
+        "do" : "snooze"
+      },
+      "before" : [
+        {
+          "do" : "pause"
+        }
+      ],
+      "canUndo" : false,
+      "deadline" : {
+        "blueprintKey" : null,
+        "dueDay" : "2026-11-05",
+        "dueMetric" : null,
+        "estimatedCost" : null,
+        "kind" : "payment",
+        "recurrence" : {
+          "anchor" : "dueDate",
+          "every" : 1,
+          "type" : "interval",
+          "unit" : "month"
+        },
+        "reference" : null,
+        "reminderMinuteOfDay" : null,
+        "reminders" : {
+          "consequence" : "financial",
+          "followUpAfterLapse" : true,
+          "graceDays" : 0,
+          "leadDays" : [
+            2,
+            0
+          ]
+        },
+        "remindersCustomized" : false,
+        "snoozedUntil" : null,
+        "status" : "paused",
+        "title" : "Chirie"
+      },
+      "history" : [
+
+      ],
+      "name" : "a paused deadline isn't snoozed",
+      "now" : 1795687200,
+      "readings" : [
+
+      ],
+      "receipt" : false,
+      "refused" : "notActive",
+      "section" : null,
+      "start" : {
+        "dueDay" : "2026-11-05",
+        "kind" : "payment",
+        "recurrence" : {
+          "anchor" : "dueDate",
+          "every" : 1,
+          "type" : "interval",
+          "unit" : "month"
+        },
+        "reminders" : null,
+        "title" : "Chirie"
+      },
+      "undoRestores" : null
+    },
+    {
+      "action" : {
+        "do" : "clearSnooze"
+      },
+      "before" : [
+        {
+          "days" : 3,
+          "do" : "snooze"
+        }
+      ],
+      "canUndo" : true,
+      "deadline" : {
+        "blueprintKey" : null,
+        "dueDay" : "2026-11-05",
+        "dueMetric" : null,
+        "estimatedCost" : null,
+        "kind" : "payment",
+        "recurrence" : {
+          "anchor" : "dueDate",
+          "every" : 1,
+          "type" : "interval",
+          "unit" : "month"
+        },
+        "reference" : null,
+        "reminderMinuteOfDay" : null,
+        "reminders" : {
+          "consequence" : "financial",
+          "followUpAfterLapse" : true,
+          "graceDays" : 0,
+          "leadDays" : [
+            2,
+            0
+          ]
+        },
+        "remindersCustomized" : false,
+        "snoozedUntil" : null,
+        "status" : "active",
+        "title" : "Chirie"
+      },
+      "history" : [
+
+      ],
+      "name" : "a snooze taken back",
+      "now" : 1795687200,
+      "readings" : [
+
+      ],
+      "receipt" : true,
+      "refused" : null,
+      "section" : null,
+      "start" : {
+        "dueDay" : "2026-11-05",
+        "kind" : "payment",
+        "recurrence" : {
+          "anchor" : "dueDate",
+          "every" : 1,
+          "type" : "interval",
+          "unit" : "month"
+        },
+        "reminders" : null,
+        "title" : "Chirie"
+      },
+      "undoRestores" : true
+    },
+    {
+      "action" : {
+        "day" : "2026-12-01",
+        "do" : "reschedule"
+      },
+      "before" : [
+        {
+          "days" : 3,
+          "do" : "snooze"
+        }
+      ],
+      "canUndo" : true,
+      "deadline" : {
+        "blueprintKey" : null,
+        "dueDay" : "2026-12-01",
+        "dueMetric" : null,
+        "estimatedCost" : null,
+        "kind" : "payment",
+        "recurrence" : {
+          "anchor" : "dueDate",
+          "every" : 1,
+          "type" : "interval",
+          "unit" : "month"
+        },
+        "reference" : null,
+        "reminderMinuteOfDay" : null,
+        "reminders" : {
+          "consequence" : "financial",
+          "followUpAfterLapse" : true,
+          "graceDays" : 0,
+          "leadDays" : [
+            2,
+            0
+          ]
+        },
+        "remindersCustomized" : false,
+        "snoozedUntil" : null,
+        "status" : "active",
+        "title" : "Chirie"
+      },
+      "history" : [
+
+      ],
+      "name" : "a reschedule lets go of a snooze",
+      "now" : 1795687200,
+      "readings" : [
+
+      ],
+      "receipt" : true,
+      "refused" : null,
+      "section" : null,
+      "start" : {
+        "dueDay" : "2026-11-05",
+        "kind" : "payment",
+        "recurrence" : {
+          "anchor" : "dueDate",
+          "every" : 1,
+          "type" : "interval",
+          "unit" : "month"
+        },
+        "reminders" : null,
+        "title" : "Chirie"
+      },
+      "undoRestores" : true
+    },
+    {
+      "action" : {
+        "do" : "pause"
+      },
+      "before" : [
+        {
+          "days" : 3,
+          "do" : "snooze"
+        }
+      ],
+      "canUndo" : true,
+      "deadline" : {
+        "blueprintKey" : null,
+        "dueDay" : "2026-11-05",
+        "dueMetric" : null,
+        "estimatedCost" : null,
+        "kind" : "payment",
+        "recurrence" : {
+          "anchor" : "dueDate",
+          "every" : 1,
+          "type" : "interval",
+          "unit" : "month"
+        },
+        "reference" : null,
+        "reminderMinuteOfDay" : null,
+        "reminders" : {
+          "consequence" : "financial",
+          "followUpAfterLapse" : true,
+          "graceDays" : 0,
+          "leadDays" : [
+            2,
+            0
+          ]
+        },
+        "remindersCustomized" : false,
+        "snoozedUntil" : null,
+        "status" : "paused",
+        "title" : "Chirie"
+      },
+      "history" : [
+
+      ],
+      "name" : "a pause lets go of a snooze",
+      "now" : 1795687200,
+      "readings" : [
+
+      ],
+      "receipt" : true,
+      "refused" : null,
+      "section" : null,
+      "start" : {
+        "dueDay" : "2026-11-05",
+        "kind" : "payment",
+        "recurrence" : {
+          "anchor" : "dueDate",
+          "every" : 1,
+          "type" : "interval",
+          "unit" : "month"
+        },
+        "reminders" : null,
+        "title" : "Chirie"
+      },
+      "undoRestores" : true
+    },
+    {
+      "action" : {
+        "do" : "resume"
+      },
+      "before" : [
+        {
+          "do" : "pause"
+        }
+      ],
+      "canUndo" : true,
+      "deadline" : {
+        "blueprintKey" : null,
+        "dueDay" : "2026-11-05",
+        "dueMetric" : null,
+        "estimatedCost" : null,
+        "kind" : "payment",
+        "recurrence" : {
+          "anchor" : "dueDate",
+          "every" : 1,
+          "type" : "interval",
+          "unit" : "month"
+        },
+        "reference" : null,
+        "reminderMinuteOfDay" : null,
+        "reminders" : {
+          "consequence" : "financial",
+          "followUpAfterLapse" : true,
+          "graceDays" : 0,
+          "leadDays" : [
+            2,
+            0
+          ]
+        },
+        "remindersCustomized" : false,
+        "snoozedUntil" : null,
+        "status" : "active",
+        "title" : "Chirie"
+      },
+      "history" : [
+
+      ],
+      "name" : "a resume",
+      "now" : 1795687200,
+      "readings" : [
+
+      ],
+      "receipt" : true,
+      "refused" : null,
+      "section" : null,
+      "start" : {
+        "dueDay" : "2026-11-05",
+        "kind" : "payment",
+        "recurrence" : {
+          "anchor" : "dueDate",
+          "every" : 1,
+          "type" : "interval",
+          "unit" : "month"
+        },
+        "reminders" : null,
+        "title" : "Chirie"
+      },
+      "undoRestores" : true
+    },
+    {
+      "action" : {
+        "do" : "archive"
+      },
+      "before" : [
+
+      ],
+      "canUndo" : true,
+      "deadline" : {
+        "blueprintKey" : null,
+        "dueDay" : "2026-11-05",
+        "dueMetric" : null,
+        "estimatedCost" : null,
+        "kind" : "payment",
+        "recurrence" : {
+          "anchor" : "dueDate",
+          "every" : 1,
+          "type" : "interval",
+          "unit" : "month"
+        },
+        "reference" : null,
+        "reminderMinuteOfDay" : null,
+        "reminders" : {
+          "consequence" : "financial",
+          "followUpAfterLapse" : true,
+          "graceDays" : 0,
+          "leadDays" : [
+            2,
+            0
+          ]
+        },
+        "remindersCustomized" : false,
+        "snoozedUntil" : null,
+        "status" : "archived",
+        "title" : "Chirie"
+      },
+      "history" : [
+
+      ],
+      "name" : "an archive",
+      "now" : 1795687200,
+      "readings" : [
+
+      ],
+      "receipt" : true,
+      "refused" : null,
+      "section" : null,
+      "start" : {
+        "dueDay" : "2026-11-05",
+        "kind" : "payment",
+        "recurrence" : {
+          "anchor" : "dueDate",
+          "every" : 1,
+          "type" : "interval",
+          "unit" : "month"
+        },
+        "reminders" : null,
+        "title" : "Chirie"
+      },
+      "undoRestores" : true
+    },
+    {
+      "action" : {
+        "do" : "delete"
+      },
+      "before" : [
+        {
+          "do" : "complete"
+        }
+      ],
+      "canUndo" : true,
+      "deadline" : null,
+      "history" : [
+        {
+          "cost" : null,
+          "cycleDueDay" : "2026-11-05",
+          "hasDeadline" : false,
+          "kind" : "payment",
+          "metricReading" : null,
+          "nextDueDay" : "2026-12-05",
+          "note" : null,
+          "occurredAt" : 1795687200,
+          "previousDueMetric" : null,
+          "previousStatus" : "active",
+          "rating" : null,
+          "title" : "Chirie"
+        }
+      ],
+      "name" : "a delete keeps what it closed",
+      "now" : 1795687200,
+      "readings" : [
+
+      ],
+      "receipt" : true,
+      "refused" : null,
+      "section" : null,
+      "start" : {
+        "dueDay" : "2026-11-05",
+        "kind" : "payment",
+        "recurrence" : {
+          "anchor" : "dueDate",
+          "every" : 1,
+          "type" : "interval",
+          "unit" : "month"
+        },
+        "reminders" : null,
+        "title" : "Chirie"
+      },
+      "undoRestores" : true
+    },
+    {
+      "action" : {
+        "do" : "setRecurrence",
+        "rule" : {
+          "anchor" : "dueDate",
+          "every" : 2,
+          "type" : "interval",
+          "unit" : "month"
+        }
+      },
+      "before" : [
+
+      ],
+      "canUndo" : true,
+      "deadline" : {
+        "blueprintKey" : null,
+        "dueDay" : "2026-11-05",
+        "dueMetric" : null,
+        "estimatedCost" : null,
+        "kind" : "payment",
+        "recurrence" : {
+          "anchor" : "dueDate",
+          "every" : 2,
+          "type" : "interval",
+          "unit" : "month"
+        },
+        "reference" : null,
+        "reminderMinuteOfDay" : null,
+        "reminders" : {
+          "consequence" : "financial",
+          "followUpAfterLapse" : true,
+          "graceDays" : 0,
+          "leadDays" : [
+            2,
+            0
+          ]
+        },
+        "remindersCustomized" : false,
+        "snoozedUntil" : null,
+        "status" : "active",
+        "title" : "Chirie"
+      },
+      "history" : [
+
+      ],
+      "name" : "a new repeat",
+      "now" : 1795687200,
+      "readings" : [
+
+      ],
+      "receipt" : true,
+      "refused" : null,
+      "section" : null,
+      "start" : {
+        "dueDay" : "2026-11-05",
+        "kind" : "payment",
+        "recurrence" : {
+          "anchor" : "dueDate",
+          "every" : 1,
+          "type" : "interval",
+          "unit" : "month"
+        },
+        "reminders" : null,
+        "title" : "Chirie"
+      },
+      "undoRestores" : true
+    },
+    {
+      "action" : {
+        "do" : "setRecurrence",
+        "rule" : {
+          "anchor" : "dueDate",
+          "every" : 3,
+          "type" : "interval",
+          "unit" : "month"
+        },
+        "startedFrom" : {
+          "anchor" : "dueDate",
+          "every" : 1,
+          "type" : "interval",
+          "unit" : "month"
+        }
+      },
+      "before" : [
+        {
+          "do" : "setRecurrence",
+          "rule" : {
+            "anchor" : "completion",
+            "every" : 1,
+            "type" : "interval",
+            "unit" : "month"
+          }
+        }
+      ],
+      "canUndo" : true,
+      "deadline" : {
+        "blueprintKey" : null,
+        "dueDay" : "2026-11-05",
+        "dueMetric" : null,
+        "estimatedCost" : null,
+        "kind" : "payment",
+        "recurrence" : {
+          "anchor" : "completion",
+          "every" : 3,
+          "type" : "interval",
+          "unit" : "month"
+        },
+        "reference" : null,
+        "reminderMinuteOfDay" : null,
+        "reminders" : {
+          "consequence" : "financial",
+          "followUpAfterLapse" : true,
+          "graceDays" : 0,
+          "leadDays" : [
+            2,
+            0
+          ]
+        },
+        "remindersCustomized" : false,
+        "snoozedUntil" : null,
+        "status" : "active",
+        "title" : "Chirie"
+      },
+      "history" : [
+
+      ],
+      "name" : "a repeat changed meanwhile stays where this edit left it",
+      "now" : 1795687200,
+      "readings" : [
+
+      ],
+      "receipt" : true,
+      "refused" : null,
+      "section" : null,
+      "start" : {
+        "dueDay" : "2026-11-05",
+        "kind" : "payment",
+        "recurrence" : {
+          "anchor" : "dueDate",
+          "every" : 1,
+          "type" : "interval",
+          "unit" : "month"
+        },
+        "reminders" : null,
+        "title" : "Chirie"
+      },
+      "undoRestores" : true
+    },
+    {
+      "action" : {
+        "do" : "setReminders",
+        "reminders" : {
+          "consequence" : "financial",
+          "graceDays" : 0,
+          "leadDays" : [
+            5,
+            1
+          ]
+        }
+      },
+      "before" : [
+
+      ],
+      "canUndo" : false,
+      "deadline" : {
+        "blueprintKey" : null,
+        "dueDay" : "2026-11-05",
+        "dueMetric" : null,
+        "estimatedCost" : null,
+        "kind" : "payment",
+        "recurrence" : {
+          "anchor" : "dueDate",
+          "every" : 1,
+          "type" : "interval",
+          "unit" : "month"
+        },
+        "reference" : null,
+        "reminderMinuteOfDay" : null,
+        "reminders" : {
+          "consequence" : "financial",
+          "followUpAfterLapse" : true,
+          "graceDays" : 0,
+          "leadDays" : [
+            5,
+            1
+          ]
+        },
+        "remindersCustomized" : true,
+        "snoozedUntil" : null,
+        "status" : "active",
+        "title" : "Chirie"
+      },
+      "history" : [
+
+      ],
+      "name" : "reminders of one's own",
+      "now" : 1795687200,
+      "readings" : [
+
+      ],
+      "receipt" : false,
+      "refused" : null,
+      "section" : null,
+      "start" : {
+        "dueDay" : "2026-11-05",
+        "kind" : "payment",
+        "recurrence" : {
+          "anchor" : "dueDate",
+          "every" : 1,
+          "type" : "interval",
+          "unit" : "month"
+        },
+        "reminders" : null,
+        "title" : "Chirie"
+      },
+      "undoRestores" : null
+    },
+    {
+      "action" : {
+        "do" : "restoreUsualReminders"
+      },
+      "before" : [
+        {
+          "do" : "setReminders",
+          "reminders" : {
+            "consequence" : "legal",
+            "graceDays" : 0,
+            "leadDays" : [
+              200
+            ]
+          }
+        }
+      ],
+      "canUndo" : true,
+      "deadline" : {
+        "blueprintKey" : "document.renew",
+        "dueDay" : "2027-05-12",
+        "dueMetric" : null,
+        "estimatedCost" : null,
+        "kind" : "renewal",
+        "recurrence" : {
+          "type" : "none"
+        },
+        "reference" : null,
+        "reminderMinuteOfDay" : null,
+        "reminders" : {
+          "consequence" : "legal",
+          "followUpAfterLapse" : true,
+          "graceDays" : 0,
+          "leadDays" : [
+            90,
+            0
+          ],
+          "travelMarginDays" : 180
+        },
+        "remindersCustomized" : false,
+        "snoozedUntil" : null,
+        "status" : "active",
+        "title" : "Reînnoire"
+      },
+      "history" : [
+
+      ],
+      "name" : "the usual reminders by hand follow the document again",
+      "now" : 1795687200,
+      "readings" : [
+
+      ],
+      "receipt" : true,
+      "refused" : null,
+      "section" : {
+        "category" : "documents",
+        "name" : "Pașaport",
+        "readings" : [
+
+        ],
+        "values" : {
+          "document.expiry" : {
+            "type" : "date",
+            "value" : "2027-08-12"
+          },
+          "document.type" : {
+            "type" : "text",
+            "value" : "documentType.passport"
+          }
+        }
+      },
+      "start" : {
+        "blueprint" : "document.renew",
+        "firstDue" : "2027-05-12"
+      },
+      "undoRestores" : true
+    },
+    {
+      "action" : {
+        "do" : "setReminders",
+        "reminders" : {
+          "consequence" : "financial",
+          "graceDays" : 0,
+          "leadDays" : [
+            7,
+            2,
+            0
+          ]
+        },
+        "startedFrom" : {
+          "consequence" : "financial",
+          "graceDays" : 0,
+          "leadDays" : [
+            2,
+            0
+          ]
+        }
+      },
+      "before" : [
+        {
+          "do" : "setReminders",
+          "reminders" : {
+            "consequence" : "financial",
+            "followUpAfterLapse" : false,
+            "graceDays" : 0,
+            "leadDays" : [
+              2,
+              0
+            ]
+          }
+        }
+      ],
+      "canUndo" : false,
+      "deadline" : {
+        "blueprintKey" : null,
+        "dueDay" : "2026-11-05",
+        "dueMetric" : null,
+        "estimatedCost" : null,
+        "kind" : "payment",
+        "recurrence" : {
+          "anchor" : "dueDate",
+          "every" : 1,
+          "type" : "interval",
+          "unit" : "month"
+        },
+        "reference" : null,
+        "reminderMinuteOfDay" : null,
+        "reminders" : {
+          "consequence" : "financial",
+          "followUpAfterLapse" : false,
+          "graceDays" : 0,
+          "leadDays" : [
+            7,
+            2,
+            0
+          ]
+        },
+        "remindersCustomized" : true,
+        "snoozedUntil" : null,
+        "status" : "active",
+        "title" : "Chirie"
+      },
+      "history" : [
+
+      ],
+      "name" : "reminders laid over a change made meanwhile",
+      "now" : 1795687200,
+      "readings" : [
+
+      ],
+      "receipt" : false,
+      "refused" : null,
+      "section" : null,
+      "start" : {
+        "dueDay" : "2026-11-05",
+        "kind" : "payment",
+        "recurrence" : {
+          "anchor" : "dueDate",
+          "every" : 1,
+          "type" : "interval",
+          "unit" : "month"
+        },
+        "reminders" : null,
+        "title" : "Chirie"
+      },
+      "undoRestores" : null
+    },
+    {
+      "action" : {
+        "do" : "setFollowUpAfterLapse",
+        "isOn" : false
+      },
+      "before" : [
+
+      ],
+      "canUndo" : false,
+      "deadline" : {
+        "blueprintKey" : null,
+        "dueDay" : "2026-11-05",
+        "dueMetric" : null,
+        "estimatedCost" : null,
+        "kind" : "payment",
+        "recurrence" : {
+          "anchor" : "dueDate",
+          "every" : 1,
+          "type" : "interval",
+          "unit" : "month"
+        },
+        "reference" : null,
+        "reminderMinuteOfDay" : null,
+        "reminders" : {
+          "consequence" : "financial",
+          "followUpAfterLapse" : false,
+          "graceDays" : 0,
+          "leadDays" : [
+            2,
+            0
+          ]
+        },
+        "remindersCustomized" : true,
+        "snoozedUntil" : null,
+        "status" : "active",
+        "title" : "Chirie"
+      },
+      "history" : [
+
+      ],
+      "name" : "the follow-up switched off",
+      "now" : 1795687200,
+      "readings" : [
+
+      ],
+      "receipt" : false,
+      "refused" : null,
+      "section" : null,
+      "start" : {
+        "dueDay" : "2026-11-05",
+        "kind" : "payment",
+        "recurrence" : {
+          "anchor" : "dueDate",
+          "every" : 1,
+          "type" : "interval",
+          "unit" : "month"
+        },
+        "reminders" : null,
+        "title" : "Chirie"
+      },
+      "undoRestores" : null
+    },
+    {
+      "action" : {
+        "do" : "setReminderTime",
+        "minuteOfDay" : 2000,
+        "startedFrom" : null
+      },
+      "before" : [
+
+      ],
+      "canUndo" : true,
+      "deadline" : {
+        "blueprintKey" : null,
+        "dueDay" : "2026-11-05",
+        "dueMetric" : null,
+        "estimatedCost" : null,
+        "kind" : "payment",
+        "recurrence" : {
+          "anchor" : "dueDate",
+          "every" : 1,
+          "type" : "interval",
+          "unit" : "month"
+        },
+        "reference" : null,
+        "reminderMinuteOfDay" : 1439,
+        "reminders" : {
+          "consequence" : "financial",
+          "followUpAfterLapse" : true,
+          "graceDays" : 0,
+          "leadDays" : [
+            2,
+            0
+          ]
+        },
+        "remindersCustomized" : false,
+        "snoozedUntil" : null,
+        "status" : "active",
+        "title" : "Chirie"
+      },
+      "history" : [
+
+      ],
+      "name" : "a reminder time of its own",
+      "now" : 1795687200,
+      "readings" : [
+
+      ],
+      "receipt" : true,
+      "refused" : null,
+      "section" : null,
+      "start" : {
+        "dueDay" : "2026-11-05",
+        "kind" : "payment",
+        "recurrence" : {
+          "anchor" : "dueDate",
+          "every" : 1,
+          "type" : "interval",
+          "unit" : "month"
+        },
+        "reminders" : null,
+        "title" : "Chirie"
+      },
+      "undoRestores" : true
+    },
+    {
+      "action" : {
+        "do" : "setReminderTime",
+        "minuteOfDay" : null,
+        "startedFrom" : null
+      },
+      "before" : [
+        {
+          "do" : "setReminderTime",
+          "minuteOfDay" : 480,
+          "startedFrom" : null
+        }
+      ],
+      "canUndo" : false,
+      "deadline" : {
+        "blueprintKey" : null,
+        "dueDay" : "2026-11-05",
+        "dueMetric" : null,
+        "estimatedCost" : null,
+        "kind" : "payment",
+        "recurrence" : {
+          "anchor" : "dueDate",
+          "every" : 1,
+          "type" : "interval",
+          "unit" : "month"
+        },
+        "reference" : null,
+        "reminderMinuteOfDay" : 480,
+        "reminders" : {
+          "consequence" : "financial",
+          "followUpAfterLapse" : true,
+          "graceDays" : 0,
+          "leadDays" : [
+            2,
+            0
+          ]
+        },
+        "remindersCustomized" : false,
+        "snoozedUntil" : null,
+        "status" : "active",
+        "title" : "Chirie"
+      },
+      "history" : [
+
+      ],
+      "name" : "a reminder time left as it was keeps one set meanwhile",
+      "now" : 1795687200,
+      "readings" : [
+
+      ],
+      "receipt" : true,
+      "refused" : null,
+      "section" : null,
+      "start" : {
+        "dueDay" : "2026-11-05",
+        "kind" : "payment",
+        "recurrence" : {
+          "anchor" : "dueDate",
+          "every" : 1,
+          "type" : "interval",
+          "unit" : "month"
+        },
+        "reminders" : null,
+        "title" : "Chirie"
+      },
+      "undoRestores" : null
+    },
+    {
+      "action" : {
+        "do" : "rename",
+        "title" : "  Chirie garsonieră  "
+      },
+      "before" : [
+
+      ],
+      "canUndo" : true,
+      "deadline" : {
+        "blueprintKey" : null,
+        "dueDay" : "2026-11-05",
+        "dueMetric" : null,
+        "estimatedCost" : null,
+        "kind" : "payment",
+        "recurrence" : {
+          "anchor" : "dueDate",
+          "every" : 1,
+          "type" : "interval",
+          "unit" : "month"
+        },
+        "reference" : null,
+        "reminderMinuteOfDay" : null,
+        "reminders" : {
+          "consequence" : "financial",
+          "followUpAfterLapse" : true,
+          "graceDays" : 0,
+          "leadDays" : [
+            2,
+            0
+          ]
+        },
+        "remindersCustomized" : false,
+        "snoozedUntil" : null,
+        "status" : "active",
+        "title" : "Chirie garsonieră"
+      },
+      "history" : [
+
+      ],
+      "name" : "a deadline of one's own renamed",
+      "now" : 1795687200,
+      "readings" : [
+
+      ],
+      "receipt" : true,
+      "refused" : null,
+      "section" : null,
+      "start" : {
+        "dueDay" : "2026-11-05",
+        "kind" : "payment",
+        "recurrence" : {
+          "anchor" : "dueDate",
+          "every" : 1,
+          "type" : "interval",
+          "unit" : "month"
+        },
+        "reminders" : null,
+        "title" : "Chirie"
+      },
+      "undoRestores" : true
+    },
+    {
+      "action" : {
+        "do" : "rename",
+        "title" : "   "
+      },
+      "before" : [
+
+      ],
+      "canUndo" : false,
+      "deadline" : {
+        "blueprintKey" : null,
+        "dueDay" : "2026-11-05",
+        "dueMetric" : null,
+        "estimatedCost" : null,
+        "kind" : "payment",
+        "recurrence" : {
+          "anchor" : "dueDate",
+          "every" : 1,
+          "type" : "interval",
+          "unit" : "month"
+        },
+        "reference" : null,
+        "reminderMinuteOfDay" : null,
+        "reminders" : {
+          "consequence" : "financial",
+          "followUpAfterLapse" : true,
+          "graceDays" : 0,
+          "leadDays" : [
+            2,
+            0
+          ]
+        },
+        "remindersCustomized" : false,
+        "snoozedUntil" : null,
+        "status" : "active",
+        "title" : "Chirie"
+      },
+      "history" : [
+
+      ],
+      "name" : "a blank name",
+      "now" : 1795687200,
+      "readings" : [
+
+      ],
+      "receipt" : false,
+      "refused" : "missingTitle",
+      "section" : null,
+      "start" : {
+        "dueDay" : "2026-11-05",
+        "kind" : "payment",
+        "recurrence" : {
+          "anchor" : "dueDate",
+          "every" : 1,
+          "type" : "interval",
+          "unit" : "month"
+        },
+        "reminders" : null,
+        "title" : "Chirie"
+      },
+      "undoRestores" : null
+    },
+    {
+      "action" : {
+        "do" : "rename",
+        "title" : "Inspecție"
+      },
+      "before" : [
+
+      ],
+      "canUndo" : false,
+      "deadline" : {
+        "blueprintKey" : "vehicle.itp",
+        "dueDay" : "2026-12-01",
+        "dueMetric" : null,
+        "estimatedCost" : {
+          "amount" : "180",
+          "currency" : "RON"
+        },
+        "kind" : "legal",
+        "recurrence" : {
+          "rule" : "vehicleITP",
+          "type" : "legal"
+        },
+        "reference" : null,
+        "reminderMinuteOfDay" : null,
+        "reminders" : {
+          "consequence" : "legal",
+          "followUpAfterLapse" : true,
+          "graceDays" : 0,
+          "leadDays" : [
+            30,
+            7
+          ]
+        },
+        "remindersCustomized" : false,
+        "snoozedUntil" : null,
+        "status" : "active",
+        "title" : "ITP"
+      },
+      "history" : [
+
+      ],
+      "name" : "a category's deadline keeps its name",
+      "now" : 1795687200,
+      "readings" : [
+        {
+          "at" : 1780304400,
+          "unit" : "km",
+          "value" : 100000
+        },
+        {
+          "at" : 1788253200,
+          "unit" : "km",
+          "value" : 104500
+        }
+      ],
+      "receipt" : false,
+      "refused" : "notPersonsOwn",
+      "section" : {
+        "category" : "vehicle",
+        "name" : "VW Golf 2018",
+        "readings" : [
+          {
+            "at" : "2026-06-01T09:00:00Z",
+            "value" : 100000
+          },
+          {
+            "at" : "2026-09-01T09:00:00Z",
+            "value" : 104500
+          }
+        ],
+        "values" : {
+          "vehicle.plate" : {
+            "type" : "text",
+            "value" : "B-123-ABC"
+          },
+          "vehicle.year" : {
+            "type" : "number",
+            "value" : 2013
+          }
+        }
+      },
+      "start" : {
+        "blueprint" : "vehicle.itp",
+        "firstDue" : "2026-12-01"
+      },
+      "undoRestores" : null
+    },
+    {
+      "action" : {
+        "do" : "rename",
+        "startedFrom" : "Chirie",
+        "title" : "Chirie"
+      },
+      "before" : [
+        {
+          "do" : "rename",
+          "title" : "Chiria lunii"
+        }
+      ],
+      "canUndo" : false,
+      "deadline" : {
+        "blueprintKey" : null,
+        "dueDay" : "2026-11-05",
+        "dueMetric" : null,
+        "estimatedCost" : null,
+        "kind" : "payment",
+        "recurrence" : {
+          "anchor" : "dueDate",
+          "every" : 1,
+          "type" : "interval",
+          "unit" : "month"
+        },
+        "reference" : null,
+        "reminderMinuteOfDay" : null,
+        "reminders" : {
+          "consequence" : "financial",
+          "followUpAfterLapse" : true,
+          "graceDays" : 0,
+          "leadDays" : [
+            2,
+            0
+          ]
+        },
+        "remindersCustomized" : false,
+        "snoozedUntil" : null,
+        "status" : "active",
+        "title" : "Chiria lunii"
+      },
+      "history" : [
+
+      ],
+      "name" : "a name left as it was keeps one set meanwhile",
+      "now" : 1795687200,
+      "readings" : [
+
+      ],
+      "receipt" : true,
+      "refused" : null,
+      "section" : null,
+      "start" : {
+        "dueDay" : "2026-11-05",
+        "kind" : "payment",
+        "recurrence" : {
+          "anchor" : "dueDate",
+          "every" : 1,
+          "type" : "interval",
+          "unit" : "month"
+        },
+        "reminders" : null,
+        "title" : "Chirie"
+      },
+      "undoRestores" : null
+    },
+    {
+      "action" : {
+        "do" : "setImportance",
+        "importance" : "money"
+      },
+      "before" : [
+
+      ],
+      "canUndo" : true,
+      "deadline" : {
+        "blueprintKey" : null,
+        "dueDay" : "2027-01-15",
+        "dueMetric" : null,
+        "estimatedCost" : null,
+        "kind" : "payment",
+        "recurrence" : {
+          "anchor" : "dueDate",
+          "every" : 1,
+          "type" : "interval",
+          "unit" : "year"
+        },
+        "reference" : null,
+        "reminderMinuteOfDay" : null,
+        "reminders" : {
+          "consequence" : "financial",
+          "followUpAfterLapse" : true,
+          "graceDays" : 0,
+          "leadDays" : [
+            2,
+            0
+          ]
+        },
+        "remindersCustomized" : false,
+        "snoozedUntil" : null,
+        "status" : "active",
+        "title" : "Analize"
+      },
+      "history" : [
+
+      ],
+      "name" : "importance moves the usual reminders",
+      "now" : 1795687200,
+      "readings" : [
+
+      ],
+      "receipt" : true,
+      "refused" : null,
+      "section" : null,
+      "start" : {
+        "dueDay" : "2027-01-15",
+        "kind" : "legal",
+        "recurrence" : {
+          "anchor" : "dueDate",
+          "every" : 1,
+          "type" : "interval",
+          "unit" : "year"
+        },
+        "reminders" : {
+          "consequence" : "legal",
+          "graceDays" : 0,
+          "leadDays" : [
+            30,
+            7,
+            0
+          ]
+        },
+        "title" : "Analize"
+      },
+      "undoRestores" : true
+    },
+    {
+      "action" : {
+        "do" : "setImportance",
+        "importance" : "health"
+      },
+      "before" : [
+
+      ],
+      "canUndo" : true,
+      "deadline" : {
+        "blueprintKey" : null,
+        "dueDay" : "2027-01-15",
+        "dueMetric" : null,
+        "estimatedCost" : null,
+        "kind" : "health",
+        "recurrence" : {
+          "type" : "none"
+        },
+        "reference" : null,
+        "reminderMinuteOfDay" : null,
+        "reminders" : {
+          "consequence" : "health",
+          "followUpAfterLapse" : true,
+          "graceDays" : 7,
+          "leadDays" : [
+            45
+          ]
+        },
+        "remindersCustomized" : false,
+        "snoozedUntil" : null,
+        "status" : "active",
+        "title" : "Analize"
+      },
+      "history" : [
+
+      ],
+      "name" : "importance keeps reminders of one's own",
+      "now" : 1795687200,
+      "readings" : [
+
+      ],
+      "receipt" : true,
+      "refused" : null,
+      "section" : null,
+      "start" : {
+        "dueDay" : "2027-01-15",
+        "kind" : "legal",
+        "recurrence" : {
+          "type" : "none"
+        },
+        "reminders" : {
+          "consequence" : "legal",
+          "graceDays" : 0,
+          "leadDays" : [
+            45
+          ]
+        },
+        "title" : "Analize"
+      },
+      "undoRestores" : true
+    },
+    {
+      "action" : {
+        "do" : "setImportance",
+        "importance" : "money"
+      },
+      "before" : [
+
+      ],
+      "canUndo" : false,
+      "deadline" : {
+        "blueprintKey" : "vehicle.itp",
+        "dueDay" : "2026-12-01",
+        "dueMetric" : null,
+        "estimatedCost" : {
+          "amount" : "180",
+          "currency" : "RON"
+        },
+        "kind" : "legal",
+        "recurrence" : {
+          "rule" : "vehicleITP",
+          "type" : "legal"
+        },
+        "reference" : null,
+        "reminderMinuteOfDay" : null,
+        "reminders" : {
+          "consequence" : "legal",
+          "followUpAfterLapse" : true,
+          "graceDays" : 0,
+          "leadDays" : [
+            30,
+            7
+          ]
+        },
+        "remindersCustomized" : false,
+        "snoozedUntil" : null,
+        "status" : "active",
+        "title" : "ITP"
+      },
+      "history" : [
+
+      ],
+      "name" : "a category's deadline keeps its importance",
+      "now" : 1795687200,
+      "readings" : [
+        {
+          "at" : 1780304400,
+          "unit" : "km",
+          "value" : 100000
+        },
+        {
+          "at" : 1788253200,
+          "unit" : "km",
+          "value" : 104500
+        }
+      ],
+      "receipt" : false,
+      "refused" : "notPersonsOwn",
+      "section" : {
+        "category" : "vehicle",
+        "name" : "VW Golf 2018",
+        "readings" : [
+          {
+            "at" : "2026-06-01T09:00:00Z",
+            "value" : 100000
+          },
+          {
+            "at" : "2026-09-01T09:00:00Z",
+            "value" : 104500
+          }
+        ],
+        "values" : {
+          "vehicle.plate" : {
+            "type" : "text",
+            "value" : "B-123-ABC"
+          },
+          "vehicle.year" : {
+            "type" : "number",
+            "value" : 2013
+          }
+        }
+      },
+      "start" : {
+        "blueprint" : "vehicle.itp",
+        "firstDue" : "2026-12-01"
+      },
+      "undoRestores" : null
+    },
+    {
+      "action" : {
+        "do" : "setDetails",
+        "estimatedCost" : {
+          "amount" : "1500",
+          "currency" : "RON"
+        },
+        "reference" : "CTR-0001"
+      },
+      "before" : [
+
+      ],
+      "canUndo" : false,
+      "deadline" : {
+        "blueprintKey" : null,
+        "dueDay" : "2026-11-05",
+        "dueMetric" : null,
+        "estimatedCost" : {
+          "amount" : "1500",
+          "currency" : "RON"
+        },
+        "kind" : "payment",
+        "recurrence" : {
+          "anchor" : "dueDate",
+          "every" : 1,
+          "type" : "interval",
+          "unit" : "month"
+        },
+        "reference" : "CTR-0001",
+        "reminderMinuteOfDay" : null,
+        "reminders" : {
+          "consequence" : "financial",
+          "followUpAfterLapse" : true,
+          "graceDays" : 0,
+          "leadDays" : [
+            2,
+            0
+          ]
+        },
+        "remindersCustomized" : false,
+        "snoozedUntil" : null,
+        "status" : "active",
+        "title" : "Chirie"
+      },
+      "history" : [
+
+      ],
+      "name" : "details",
+      "now" : 1795687200,
+      "readings" : [
+
+      ],
+      "receipt" : false,
+      "refused" : null,
+      "section" : null,
+      "start" : {
+        "dueDay" : "2026-11-05",
+        "kind" : "payment",
+        "recurrence" : {
+          "anchor" : "dueDate",
+          "every" : 1,
+          "type" : "interval",
+          "unit" : "month"
+        },
+        "reminders" : null,
+        "title" : "Chirie"
+      },
+      "undoRestores" : null
+    },
+    {
+      "action" : {
+        "do" : "edit",
+        "dueDay" : "2027-02-01",
+        "importance" : "health",
+        "leadDays" : [
+          14,
+          0
+        ],
+        "recurrence" : {
+          "anchor" : "dueDate",
+          "every" : 6,
+          "type" : "interval",
+          "unit" : "month"
+        },
+        "reminderMinuteOfDay" : 540,
+        "title" : "Analize anuale"
+      },
+      "before" : [
+
+      ],
+      "canUndo" : true,
+      "deadline" : {
+        "blueprintKey" : null,
+        "dueDay" : "2027-02-01",
+        "dueMetric" : null,
+        "estimatedCost" : null,
+        "kind" : "health",
+        "recurrence" : {
+          "anchor" : "dueDate",
+          "every" : 6,
+          "type" : "interval",
+          "unit" : "month"
+        },
+        "reference" : null,
+        "reminderMinuteOfDay" : 540,
+        "reminders" : {
+          "consequence" : "health",
+          "followUpAfterLapse" : false,
+          "graceDays" : 7,
+          "leadDays" : [
+            14,
+            0
+          ]
+        },
+        "remindersCustomized" : true,
+        "snoozedUntil" : null,
+        "status" : "active",
+        "title" : "Analize anuale"
+      },
+      "history" : [
+
+      ],
+      "name" : "an edit of every part",
+      "now" : 1795687200,
+      "readings" : [
+
+      ],
+      "receipt" : true,
+      "refused" : null,
+      "section" : null,
+      "start" : {
+        "dueDay" : "2027-01-15",
+        "kind" : "legal",
+        "recurrence" : {
+          "anchor" : "dueDate",
+          "every" : 1,
+          "type" : "interval",
+          "unit" : "year"
+        },
+        "reminders" : {
+          "consequence" : "legal",
+          "graceDays" : 0,
+          "leadDays" : [
+            30,
+            7,
+            0
+          ]
+        },
+        "title" : "Analize"
+      },
+      "undoRestores" : true
+    },
+    {
+      "action" : {
+        "do" : "edit"
+      },
+      "before" : [
+
+      ],
+      "canUndo" : false,
+      "deadline" : {
+        "blueprintKey" : null,
+        "dueDay" : "2027-01-15",
+        "dueMetric" : null,
+        "estimatedCost" : null,
+        "kind" : "legal",
+        "recurrence" : {
+          "anchor" : "dueDate",
+          "every" : 1,
+          "type" : "interval",
+          "unit" : "year"
+        },
+        "reference" : null,
+        "reminderMinuteOfDay" : null,
+        "reminders" : {
+          "consequence" : "legal",
+          "followUpAfterLapse" : true,
+          "graceDays" : 0,
+          "leadDays" : [
+            30,
+            7,
+            0
+          ]
+        },
+        "remindersCustomized" : false,
+        "snoozedUntil" : null,
+        "status" : "active",
+        "title" : "Analize"
+      },
+      "history" : [
+
+      ],
+      "name" : "an edit that changes nothing",
+      "now" : 1795687200,
+      "readings" : [
+
+      ],
+      "receipt" : false,
+      "refused" : null,
+      "section" : null,
+      "start" : {
+        "dueDay" : "2027-01-15",
+        "kind" : "legal",
+        "recurrence" : {
+          "anchor" : "dueDate",
+          "every" : 1,
+          "type" : "interval",
+          "unit" : "year"
+        },
+        "reminders" : {
+          "consequence" : "legal",
+          "graceDays" : 0,
+          "leadDays" : [
+            30,
+            7,
+            0
+          ]
+        },
+        "title" : "Analize"
+      },
+      "undoRestores" : null
+    },
+    {
+      "action" : {
+        "do" : "edit",
+        "title" : "Inspecție"
+      },
+      "before" : [
+
+      ],
+      "canUndo" : false,
+      "deadline" : {
+        "blueprintKey" : "vehicle.itp",
+        "dueDay" : "2026-12-01",
+        "dueMetric" : null,
+        "estimatedCost" : {
+          "amount" : "180",
+          "currency" : "RON"
+        },
+        "kind" : "legal",
+        "recurrence" : {
+          "rule" : "vehicleITP",
+          "type" : "legal"
+        },
+        "reference" : null,
+        "reminderMinuteOfDay" : null,
+        "reminders" : {
+          "consequence" : "legal",
+          "followUpAfterLapse" : true,
+          "graceDays" : 0,
+          "leadDays" : [
+            30,
+            7
+          ]
+        },
+        "remindersCustomized" : false,
+        "snoozedUntil" : null,
+        "status" : "active",
+        "title" : "ITP"
+      },
+      "history" : [
+
+      ],
+      "name" : "an edit of a category's deadline's name",
+      "now" : 1795687200,
+      "readings" : [
+        {
+          "at" : 1780304400,
+          "unit" : "km",
+          "value" : 100000
+        },
+        {
+          "at" : 1788253200,
+          "unit" : "km",
+          "value" : 104500
+        }
+      ],
+      "receipt" : false,
+      "refused" : "notPersonsOwn",
+      "section" : {
+        "category" : "vehicle",
+        "name" : "VW Golf 2018",
+        "readings" : [
+          {
+            "at" : "2026-06-01T09:00:00Z",
+            "value" : 100000
+          },
+          {
+            "at" : "2026-09-01T09:00:00Z",
+            "value" : 104500
+          }
+        ],
+        "values" : {
+          "vehicle.plate" : {
+            "type" : "text",
+            "value" : "B-123-ABC"
+          },
+          "vehicle.year" : {
+            "type" : "number",
+            "value" : 2013
+          }
+        }
+      },
+      "start" : {
+        "blueprint" : "vehicle.itp",
+        "firstDue" : "2026-12-01"
+      },
+      "undoRestores" : null
+    },
+    {
+      "action" : {
+        "do" : "edit",
+        "dueDay" : "2027-01-10"
+      },
+      "before" : [
+
+      ],
+      "canUndo" : true,
+      "deadline" : {
+        "blueprintKey" : "vehicle.itp",
+        "dueDay" : "2027-01-10",
+        "dueMetric" : null,
+        "estimatedCost" : {
+          "amount" : "180",
+          "currency" : "RON"
+        },
+        "kind" : "legal",
+        "recurrence" : {
+          "rule" : "vehicleITP",
+          "type" : "legal"
+        },
+        "reference" : null,
+        "reminderMinuteOfDay" : null,
+        "reminders" : {
+          "consequence" : "legal",
+          "followUpAfterLapse" : true,
+          "graceDays" : 0,
+          "leadDays" : [
+            30,
+            7
+          ]
+        },
+        "remindersCustomized" : false,
+        "snoozedUntil" : null,
+        "status" : "active",
+        "title" : "ITP"
+      },
+      "history" : [
+
+      ],
+      "name" : "an edit of a category's deadline's day",
+      "now" : 1795687200,
+      "readings" : [
+        {
+          "at" : 1780304400,
+          "unit" : "km",
+          "value" : 100000
+        },
+        {
+          "at" : 1788253200,
+          "unit" : "km",
+          "value" : 104500
+        }
+      ],
+      "receipt" : true,
+      "refused" : null,
+      "section" : {
+        "category" : "vehicle",
+        "name" : "VW Golf 2018",
+        "readings" : [
+          {
+            "at" : "2026-06-01T09:00:00Z",
+            "value" : 100000
+          },
+          {
+            "at" : "2026-09-01T09:00:00Z",
+            "value" : 104500
+          }
+        ],
+        "values" : {
+          "vehicle.plate" : {
+            "type" : "text",
+            "value" : "B-123-ABC"
+          },
+          "vehicle.year" : {
+            "type" : "number",
+            "value" : 2013
+          }
+        }
+      },
+      "start" : {
+        "blueprint" : "vehicle.itp",
+        "firstDue" : "2026-12-01"
+      },
+      "undoRestores" : true
+    }
+  ],
+  "rule" : "ObligationActions: complete (the cycle seen, a new day, closing a replaced document, the counter read), snooze, clearSnooze, reschedule, pause, resume, archive, delete, setRecurrence, setReminders, setFollowUpAfterLapse, restoreUsualReminders, setReminderTime, rename, setImportance, setDetails, edit; create(from:for:firstDue:) and create(title:kind:dueDay:for:recurrence:reminders:)",
+  "shape" : "section: the section the deadline is in (its category, name, values, and kilometre readings at UTC moments), or null for the household. start: the deadline made from a blueprint with its first due day, or one of the person's own (title, kind, due day, rule, reminders or null for its kind's). before: actions taken first. action: the action ('do' and its parts; 'on' a moment in seconds; days ISO; rules, profiles and money in the archive's form; 'edit' changes the parts it names over the deadline as it is). now: every action's clock (seconds), days counted in Bucharest. refused: the kind of refusal, or null. deadline: the deadline as stored after it, or null once deleted. history: every record of history after it, by the cycle closed, then when. readings: the section's readings after it. receipt: whether the action gives an undo receipt; canUndo: whether it has anything to take back (a step that changed nothing has not). undoRestores: for one that has, whether undo gives back the deadline and the history as they were before it; null otherwise.",
+  "source" : "ios/DosarCuSina/Services/Obligations/ObligationActions.swift, DeadlineEdit.swift, ios/DosarCuSina/Views/Add/DeadlineChoice.swift",
+  "writtenBy" : "ios/DosarCuSinaTests/DeadlineVectorsTests.swift"
+}

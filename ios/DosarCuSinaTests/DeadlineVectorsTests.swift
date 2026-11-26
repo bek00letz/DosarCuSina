@@ -579,8 +579,9 @@ struct DeadlineVectorsTests {
             let historyAfter = try history(in: context)
             let readingsAfter = try readings(in: context)
             var undone: JSONValue = .null
-            // A step that changed nothing gives a receipt with nothing to take back.
-            if let receipt, receipt.canUndo {
+            // A step that changed nothing gives a receipt with nothing to take back; read before undo.
+            let canUndo = receipt?.canUndo ?? false
+            if let receipt, canUndo {
                 try receipt.undo()
                 let back = try state(of: obligation.id, in: context)
                 let historyBack = try history(in: context)
@@ -590,7 +591,7 @@ struct DeadlineVectorsTests {
                 "name": .string(item.name), "section": try sectionJSON(item.section), "start": startJSON(item.start),
                 "before": .array(item.before.map { .object($0) }), "action": .object(item.action), "now": seconds(now),
                 "refused": text(refused), "deadline": after, "history": historyAfter, "readings": readingsAfter,
-                "receipt": .bool(receipt != nil), "canUndo": .bool(receipt?.canUndo ?? false), "undoRestores": undone,
+                "receipt": .bool(receipt != nil), "canUndo": .bool(canUndo), "undoRestores": undone,
             ]))
         }
         return Vectors(
