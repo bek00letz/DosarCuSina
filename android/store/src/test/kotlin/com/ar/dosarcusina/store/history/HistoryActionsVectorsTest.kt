@@ -199,7 +199,7 @@ class HistoryActionsVectorsTest {
         return made.history.file(draft.filing(made.asset, form, who), lower(action))
     }
 
-    private fun decimal(json: JsonObject, key: String): BigDecimal? = json.textOrNull(key)?.let(::BigDecimal)
+    private fun decimal(json: JsonObject, key: String): BigDecimal? = json.money(key)?.amount
 
     private fun refusal(error: Throwable): String = when (error) {
         is LowerReadingAsked -> "lowerReading"

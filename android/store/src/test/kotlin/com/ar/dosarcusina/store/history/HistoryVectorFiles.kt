@@ -54,7 +54,8 @@ internal fun JsonObject.texts(key: String): List<String> =
     this[key]?.takeUnless { it is JsonNull }?.jsonArray?.map { it.jsonPrimitive.content }.orEmpty()
 
 /** An amount written as text in lei, as a case writes it. */
-internal fun JsonObject.money(key: String): Money? = textOrNull(key)?.let { Money(BigDecimal(it)) }
+internal fun JsonObject.money(key: String): Money? =
+    textOrNull(key)?.let { requireNotNull(Money.of(it, Money.DEFAULT_CURRENCY)) { "Not an amount: $it" } }
 
 /** A stored money object, as the archive writes one. */
 internal fun money(json: JsonElement?): Money? = json?.takeUnless { it is JsonNull }?.let(Money::fromJson)

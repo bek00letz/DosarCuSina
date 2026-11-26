@@ -7,7 +7,6 @@ import com.ar.dosarcusina.core.deadlines.CompletionKind
 import com.ar.dosarcusina.core.deadlines.CompletionShape
 import com.ar.dosarcusina.core.deadlines.HistoryKind
 import com.ar.dosarcusina.core.values.CalendarDay
-import com.ar.dosarcusina.core.values.Money
 import com.ar.dosarcusina.store.Tables
 import com.ar.dosarcusina.store.TestBinderStore
 import com.ar.dosarcusina.store.schema.CategoryTemplate
@@ -18,7 +17,6 @@ import kotlinx.serialization.json.jsonPrimitive
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.DynamicTest
 import org.junit.jupiter.api.TestFactory
-import java.math.BigDecimal
 import java.util.Locale
 
 /**
@@ -117,7 +115,7 @@ class HistoryVectorsTest {
 
     private fun paper(json: JsonObject): PaperIdentity {
         val day = requireNotNull(CalendarDay.parse(json.text("day")))
-        val total = json.textOrNull("total")?.let { Money(BigDecimal(it)) }
+        val total = json.money("total")
         val issuer = json.textOrNull("issuer")
         return if (issuer == "section") {
             PaperIdentity.bill(json.textOrNull("number"), day, total)
