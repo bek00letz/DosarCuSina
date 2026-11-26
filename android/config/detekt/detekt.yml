@@ -14,8 +14,41 @@ naming:
     # Compose's functions are named like types.
     ignoreAnnotated: ['Composable']
 
+complexity:
+  LongParameterList:
+    # A composable takes its words, its state and its callbacks as parameters, most with defaults.
+    ignoreAnnotated: ['Composable']
+    ignoreDefaultParameters: true
+  CyclomaticComplexMethod:
+    # A `when` with one plain answer per route or kind (ShellRouting.plan, DeepLink) is a table, not branching.
+    ignoreSimpleWhenEntries: true
+
 style:
   ReturnCount:
     # Code that reads or refuses (the value rules, ported from Swift's guards) checks each
     # part first and leaves early; only returns after those checks count.
     excludeGuardClauses: true
+  MagicNumber:
+    # A named property is the number's name: the design system's tokens (DSSpace, DSRadius) are these.
+    ignorePropertyDeclaration: true
+
+# The app's own rules (android/detekt-rules), the counterpart of scripts/architecture-check.sh's
+# rules for screens. A rule's `excludes` names the one file that is the path it guards.
+dosar:
+  active: true
+  DosarHandWrittenPlural:
+    active: true
+  DosarTextInComposable:
+    active: true
+  DosarSheetOutsideRouter:
+    active: true
+    # The router's own sheets and dialogs (DSSheet, DSDialog and the shell's sheet).
+    excludes: ['**/ui/shell/ScreenSheets.kt']
+  DosarAnimationOutsideMotion:
+    active: true
+    # The design system's motion, the one place an animation's spec is made.
+    excludes: ['**/ui/ds/DSMotion.kt']
+  DosarBareProgress:
+    active: true
+    # The one progress indicator, which waits before it shows.
+    excludes: ['**/ui/ds/DSDelayedProgress.kt']

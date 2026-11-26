@@ -34,3 +34,5 @@ include(":store")
 include(":catalog")
 // The Android app.
 include(":app")
+// Pure Kotlin: the app's own detekt rules, which every module's detekt runs.
+include(":detekt-rules")
