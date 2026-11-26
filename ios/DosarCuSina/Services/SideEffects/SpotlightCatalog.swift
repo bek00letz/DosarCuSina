@@ -44,7 +44,8 @@ public struct SpotlightEntry: Hashable, Sendable {
 
 /// What the iPhone's search may show, decided once, by the rules of `SearchPrivacy`:
 /// - section names, deadlines ("RCA – VW Golf", "10 ianuarie 2027") and document titles;
-/// - nothing from a category behind Face ID, whether or not it is open now, titles included;
+/// - nothing from a category behind Face ID, whether or not it is open now, titles included
+///   (a document is behind every section it belongs to);
 /// - nothing from the examples (deadlines come from `ObligationSnapshot.fetchForOutside`,
 ///   the one list of what may leave the app);
 /// - no CNP-shaped number, sealed value, or value the category keeps out of search
@@ -99,7 +100,9 @@ public enum SpotlightCatalog {
         let attachments = try context.fetch(FetchDescriptor<Attachment>(predicate: #Predicate { !$0.isArchived && !$0.isExample }))
         for attachment in attachments {
             let section = SearchIndexBuilder.section(of: attachment)
-            guard SearchPrivacy.mayShowOutside(isLocked: section.map(inLockedCategory) == true, isExample: attachment.isExample || section?.isExample == true) else { continue }
+            // Locked by every section it belongs to, as its page is, never only the one it names.
+            let isLocked = attachment.isSensitive(among: templates) { BinderLocks.read(in: context) }
+            guard SearchPrivacy.mayShowOutside(isLocked: isLocked, isExample: attachment.isExample || section?.isExample == true) else { continue }
             let hidden = section.flatMap { withheld[$0.id] } ?? []
             let whole = section.flatMap { kept[$0.id] } ?? .nothing
             guard let title = SearchPrivacy.outsideText(attachment.displayTitle, withholding: hidden, keeping: whole) else { continue }
