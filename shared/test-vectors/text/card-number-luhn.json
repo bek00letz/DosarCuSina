@@ -1,0 +1,318 @@
+{
+  "built" : "A token in a case's text is a number that passes its check, built when the test runs so the repository never holds one. {luhn:DIGITS}: DIGITS as written with the Luhn check digit after them. {iban:CC:BBAN}: CC, the two ISO 13616 check digits (98 minus BBAN + CC + \"00\" mod 97, letters as A=10 … Z=35), then BBAN. {iban4:CC:BBAN}: the same, in groups of four with a space between. {fours:DIGITS}: DIGITS in groups of four with a space between. Answers name the same tokens.",
+  "cases" : [
+    {
+      "digits" : "4111111111111111",
+      "lengths" : [
+        16,
+        19
+      ],
+      "network" : "cardNetwork.visa",
+      "passesLuhn" : true
+    },
+    {
+      "digits" : "4111111111111112",
+      "lengths" : [
+        16,
+        19
+      ],
+      "network" : "cardNetwork.visa",
+      "passesLuhn" : false
+    },
+    {
+      "digits" : "5555555555554444",
+      "lengths" : [
+        16,
+        16
+      ],
+      "network" : "cardNetwork.mastercard",
+      "passesLuhn" : true
+    },
+    {
+      "digits" : "378282246310005",
+      "lengths" : [
+        15,
+        15
+      ],
+      "network" : "cardNetwork.amex",
+      "passesLuhn" : true
+    },
+    {
+      "digits" : "30569309025904",
+      "lengths" : [
+        14,
+        19
+      ],
+      "network" : "cardNetwork.other",
+      "passesLuhn" : true
+    },
+    {
+      "digits" : "{luhn:411111111111111111}",
+      "lengths" : [
+        16,
+        19
+      ],
+      "network" : "cardNetwork.visa",
+      "passesLuhn" : true
+    },
+    {
+      "digits" : "{luhn:64200000000123}",
+      "lengths" : [
+        14,
+        19
+      ],
+      "network" : "cardNetwork.maestro",
+      "passesLuhn" : true
+    },
+    {
+      "digits" : "79927398713",
+      "lengths" : null,
+      "network" : null,
+      "passesLuhn" : false
+    },
+    {
+      "digits" : "1234",
+      "lengths" : null,
+      "network" : null,
+      "passesLuhn" : false
+    },
+    {
+      "digits" : "",
+      "lengths" : null,
+      "network" : null,
+      "passesLuhn" : false
+    },
+    {
+      "digits" : "4111a11111111111",
+      "lengths" : [
+        16,
+        19
+      ],
+      "network" : "cardNetwork.visa",
+      "passesLuhn" : false
+    },
+    {
+      "digits" : "4",
+      "lengths" : [
+        16,
+        19
+      ],
+      "network" : "cardNetwork.visa",
+      "passesLuhn" : false
+    },
+    {
+      "digits" : "34",
+      "lengths" : [
+        15,
+        15
+      ],
+      "network" : "cardNetwork.amex",
+      "passesLuhn" : false
+    },
+    {
+      "digits" : "35",
+      "lengths" : null,
+      "network" : null,
+      "passesLuhn" : false
+    },
+    {
+      "digits" : "36",
+      "lengths" : [
+        14,
+        19
+      ],
+      "network" : "cardNetwork.other",
+      "passesLuhn" : false
+    },
+    {
+      "digits" : "37",
+      "lengths" : [
+        15,
+        15
+      ],
+      "network" : "cardNetwork.amex",
+      "passesLuhn" : false
+    },
+    {
+      "digits" : "300",
+      "lengths" : [
+        14,
+        19
+      ],
+      "network" : "cardNetwork.other",
+      "passesLuhn" : false
+    },
+    {
+      "digits" : "305",
+      "lengths" : [
+        14,
+        19
+      ],
+      "network" : "cardNetwork.other",
+      "passesLuhn" : false
+    },
+    {
+      "digits" : "306",
+      "lengths" : null,
+      "network" : null,
+      "passesLuhn" : false
+    },
+    {
+      "digits" : "3527",
+      "lengths" : null,
+      "network" : null,
+      "passesLuhn" : false
+    },
+    {
+      "digits" : "3528",
+      "lengths" : [
+        16,
+        19
+      ],
+      "network" : "cardNetwork.other",
+      "passesLuhn" : false
+    },
+    {
+      "digits" : "3589",
+      "lengths" : [
+        16,
+        19
+      ],
+      "network" : "cardNetwork.other",
+      "passesLuhn" : false
+    },
+    {
+      "digits" : "3590",
+      "lengths" : null,
+      "network" : null,
+      "passesLuhn" : false
+    },
+    {
+      "digits" : "38",
+      "lengths" : [
+        16,
+        19
+      ],
+      "network" : "cardNetwork.other",
+      "passesLuhn" : false
+    },
+    {
+      "digits" : "39",
+      "lengths" : [
+        16,
+        19
+      ],
+      "network" : "cardNetwork.other",
+      "passesLuhn" : false
+    },
+    {
+      "digits" : "50",
+      "lengths" : [
+        14,
+        19
+      ],
+      "network" : "cardNetwork.maestro",
+      "passesLuhn" : false
+    },
+    {
+      "digits" : "51",
+      "lengths" : [
+        16,
+        16
+      ],
+      "network" : "cardNetwork.mastercard",
+      "passesLuhn" : false
+    },
+    {
+      "digits" : "55",
+      "lengths" : [
+        16,
+        16
+      ],
+      "network" : "cardNetwork.mastercard",
+      "passesLuhn" : false
+    },
+    {
+      "digits" : "56",
+      "lengths" : [
+        14,
+        19
+      ],
+      "network" : "cardNetwork.maestro",
+      "passesLuhn" : false
+    },
+    {
+      "digits" : "69",
+      "lengths" : [
+        14,
+        19
+      ],
+      "network" : "cardNetwork.maestro",
+      "passesLuhn" : false
+    },
+    {
+      "digits" : "70",
+      "lengths" : null,
+      "network" : null,
+      "passesLuhn" : false
+    },
+    {
+      "digits" : "2220",
+      "lengths" : null,
+      "network" : null,
+      "passesLuhn" : false
+    },
+    {
+      "digits" : "2221",
+      "lengths" : [
+        16,
+        16
+      ],
+      "network" : "cardNetwork.mastercard",
+      "passesLuhn" : false
+    },
+    {
+      "digits" : "2720",
+      "lengths" : [
+        16,
+        16
+      ],
+      "network" : "cardNetwork.mastercard",
+      "passesLuhn" : false
+    },
+    {
+      "digits" : "2721",
+      "lengths" : null,
+      "network" : null,
+      "passesLuhn" : false
+    },
+    {
+      "digits" : "1",
+      "lengths" : null,
+      "network" : null,
+      "passesLuhn" : false
+    },
+    {
+      "digits" : "9",
+      "lengths" : null,
+      "network" : null,
+      "passesLuhn" : false
+    },
+    {
+      "digits" : "+4111",
+      "lengths" : null,
+      "network" : null,
+      "passesLuhn" : false
+    },
+    {
+      "digits" : " 4111",
+      "lengths" : null,
+      "network" : null,
+      "passesLuhn" : false
+    }
+  ],
+  "rule" : "PaymentCardNumbers.passesLuhn(_:), brand(of:) and network(ofNumber:): the check digit and the networks' issuer ranges",
+  "shape" : "digits: digits (with built tokens). passesLuhn: whether they pass the Luhn check (twelve digits or more). network: the network key their first digits name, else null. lengths: the lengths that network's numbers have, [shortest, longest], else null.",
+  "source" : "ios/Shared/CardNumberRule.swift",
+  "writtenBy" : "ios/DosarCuSinaTests/TextVectorsTests.swift"
+}

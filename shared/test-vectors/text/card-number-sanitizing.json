@@ -1,0 +1,190 @@
+{
+  "built" : "A token in a case's text is a number that passes its check, built when the test runs so the repository never holds one. {luhn:DIGITS}: DIGITS as written with the Luhn check digit after them. {iban:CC:BBAN}: CC, the two ISO 13616 check digits (98 minus BBAN + CC + \"00\" mod 97, letters as A=10 … Z=35), then BBAN. {iban4:CC:BBAN}: the same, in groups of four with a space between. {fours:DIGITS}: DIGITS in groups of four with a space between. Answers name the same tokens.",
+  "cases" : [
+    {
+      "sanitized" : {
+        "x.chip" : "{luhn:64200000000123}",
+        "x.iban" : "RO49 AAAA 1B31 0075 9384 0000",
+        "x.note" : "{luhn:64200000000123}"
+      },
+      "sealed" : [
+
+      ],
+      "values" : {
+        "x.chip" : {
+          "text" : "{luhn:64200000000123}",
+          "type" : "microchip"
+        },
+        "x.iban" : {
+          "text" : "RO49 AAAA 1B31 0075 9384 0000",
+          "type" : "iban"
+        },
+        "x.note" : {
+          "text" : "{luhn:64200000000123}",
+          "type" : "text"
+        }
+      }
+    },
+    {
+      "sanitized" : {
+        "x.chip" : "{luhn:64200000000123}",
+        "x.note" : "Cip {luhn:64200000000123}, card •••• 1111"
+      },
+      "sealed" : [
+
+      ],
+      "values" : {
+        "x.chip" : {
+          "text" : "{luhn:64200000000123}",
+          "type" : "microchip"
+        },
+        "x.note" : {
+          "text" : "Cip {luhn:64200000000123}, card 4111 1111 1111 1111",
+          "type" : "longText"
+        }
+      }
+    },
+    {
+      "sanitized" : {
+        "x.note" : "•••• 1234"
+      },
+      "sealed" : [
+
+      ],
+      "values" : {
+        "x.note" : {
+          "text" : "{luhn:64200000000123}",
+          "type" : "text"
+        }
+      }
+    },
+    {
+      "sanitized" : {
+        "x.note" : "•••• 1234"
+      },
+      "sealed" : [
+
+      ],
+      "values" : {
+        "x.note" : {
+          "text" : "{luhn:64200000000123}",
+          "type" : null
+        }
+      }
+    },
+    {
+      "sanitized" : {
+        "x.chip" : "•••• 1111",
+        "x.iban" : "•••• 4444"
+      },
+      "sealed" : [
+
+      ],
+      "values" : {
+        "x.chip" : {
+          "text" : "4111 1111 1111 1111",
+          "type" : "microchip"
+        },
+        "x.iban" : {
+          "text" : "5555 5555 5555 4444",
+          "type" : "iban"
+        }
+      }
+    },
+    {
+      "sanitized" : {
+        "document.cardLastFour" : "1111"
+      },
+      "sealed" : [
+
+      ],
+      "values" : {
+        "document.cardLastFour" : {
+          "text" : "4111 1111 1111 1111",
+          "type" : "text"
+        }
+      }
+    },
+    {
+      "sanitized" : {
+        "document.cardLastFour" : "4821"
+      },
+      "sealed" : [
+
+      ],
+      "values" : {
+        "document.cardLastFour" : {
+          "text" : "•••• 4821",
+          "type" : null
+        }
+      }
+    },
+    {
+      "sanitized" : {
+        "document.cardLastFour" : null
+      },
+      "sealed" : [
+
+      ],
+      "values" : {
+        "document.cardLastFour" : {
+          "text" : "12",
+          "type" : "text"
+        }
+      }
+    },
+    {
+      "sanitized" : {
+        "x.note" : "Plătit cu •••• 1111",
+        "x.pin" : "sealed:v1:AAAA4111111111111111"
+      },
+      "sealed" : [
+        "x.pin"
+      ],
+      "values" : {
+        "x.note" : {
+          "text" : "Plătit cu 4111-1111-1111-1111",
+          "type" : "text"
+        },
+        "x.pin" : {
+          "text" : "sealed:v1:AAAA4111111111111111",
+          "type" : "secret"
+        }
+      }
+    },
+    {
+      "sanitized" : {
+        "x.phone" : "•••• 1234",
+        "x.text" : "fără cifre"
+      },
+      "sealed" : [
+
+      ],
+      "values" : {
+        "x.phone" : {
+          "text" : "{luhn:64200000000123}",
+          "type" : "phone"
+        },
+        "x.text" : {
+          "text" : "fără cifre",
+          "type" : "text"
+        }
+      }
+    },
+    {
+      "sanitized" : {
+
+      },
+      "sealed" : [
+
+      ],
+      "values" : {
+
+      }
+    }
+  ],
+  "rule" : "PaymentCardNumbers.sanitizing(_:fields:): a section's text values masked, a bank card's last digits cut to four, a value its field's type keeps whole and its digits elsewhere kept",
+  "shape" : "values: a section's text values by field key, each with its field's type (null for no field; with built tokens). sealed: the keys whose value is a sealed secret, by its own form. sanitized: each key's value after, or null where the value goes.",
+  "source" : "ios/DosarCuSina/Services/Security/PaymentCardNumbers.swift",
+  "writtenBy" : "ios/DosarCuSinaTests/TextVectorsTests.swift"
+}
