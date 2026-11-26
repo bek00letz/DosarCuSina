@@ -338,8 +338,10 @@ struct SearchVectorsTests {
     /// A household that bites: a plate, a VIN and an IBAN; a CNP and a document number kept out; a
     /// PIN and a secret row; a card number in a note; a microchip kept whole as the section's own;
     /// a locked category and a section whose category hasn't arrived; parts done twice; a firm with
-    /// two trades; documents filed through a deadline, a visit and a part, archived, read off an
-    /// identity document, and one of the whole household's.
+    /// two trades that looks after an open section and a locked one; documents filed through a
+    /// deadline, a visit and a part, archived, read off an identity document, one of the whole
+    /// household's, one that names nothing and one filed in an open section through a locked
+    /// section's deadline; a section's line with a value search never keeps and a year.
     static func records() throws -> Vectors {
         let container = try makeInMemoryContainer()
         let context = PersistenceController.context(in: container)
@@ -370,6 +372,8 @@ struct SearchVectorsTests {
                 FieldDefinition(key: "pet.breed", label: "Rasă", type: .choice, role: .subtitle,
                                 options: [ChoiceOption(key: "breed.tabby", label: "Europeană tărcată")]),
                 FieldDefinition(key: "pet.vet", label: "Medic", type: .text, role: .issuer),
+                FieldDefinition(key: "pet.passport", label: "Pașaport animal", type: .text, role: .subtitle, isSensitive: true),
+                FieldDefinition(key: "pet.born", label: "Anul nașterii", type: .year, role: .subtitle),
             ])],
             behavior: CategoryBehavior(visit: .none, singular: nil)
         )
@@ -397,6 +401,7 @@ struct SearchVectorsTests {
         ]
         let rex = Asset(id: id(2), name: "Rex", templateKey: pets.key, values: FieldValues([
             "pet.chip": .text(chip), "pet.breed": .text("breed.tabby"), "pet.vet": .text("Cabinet Veterinar Exemplu"),
+            "pet.passport": .text("RO-000000"), "pet.born": .number(2020),
         ]), notes: "Microcip \(chip) citit la vaccin")
         let passport = Asset(id: id(3), name: "Pașaport Ana", templateKey: papers.key, values: FieldValues([
             "paper.number": .text("RX 123456"), "paper.holder": .text("Ana Exemplu"),
@@ -418,7 +423,8 @@ struct SearchVectorsTests {
         }
         service.address = "Str. Exemplu 1, București"
         service.notes = "Întreabă de Ștefan"
-        service.assets = [golf]
+        // An open section and a locked one: the firm's result names only the open one.
+        service.assets = [golf, passport]
 
         func deadline(_ n: Int, _ title: String, _ kind: ObligationKind, _ due: String, in section: Asset?) -> Obligation {
             let obligation = Obligation(id: id(n), title: title, kind: kind, dueDay: CalendarDay(due))
@@ -491,6 +497,10 @@ struct SearchVectorsTests {
         paper(57, title: "Copie buletin", file: "buletin.jpg", kind: .identity, text: "CNP 1800101990006 IDROU").asset = golf
         paper(58, title: "Contract chirie", file: "chirie.pdf", kind: .contract, text: "Chiria se plătește lunar").obligation = tax
         paper(59, title: nil, file: "scan.pdf", text: "Pagina 1")
+        // Filed in an open section, and a locked section's deadline's paper too: locked by both.
+        let receipt = paper(61, title: "Chitanță taxă pașaport", file: "chitanta.pdf", kind: .receipt, text: "Taxă pașaport achitată")
+        receipt.asset = golf
+        receipt.obligation = renewal
 
         let builder = SearchIndexBuilder(context: context, calendar: calendar)
         let documents = try builder.buildByRecord().values.flatMap { $0 }.sorted { $0.id < $1.id }
@@ -514,7 +524,7 @@ struct SearchVectorsTests {
         ])
         return Vectors(
             name: "search-records",
-            rule: "SearchIndexBuilder.buildByRecord(): what each record of a binder gives the index, secrets and what a category keeps out of search left out, CNP-shaped numbers, card numbers and sealed values taken out, a section's own typed values kept whole",
+            rule: "SearchIndexBuilder.buildByRecord(): what each record of a binder gives the index, secrets and what a category keeps out of search left out, CNP-shaped numbers, card numbers and sealed values taken out, a section's own typed values kept whole; a document locked by every section it belongs to (Attachment.isSensitive(among:binder:)), a firm naming only the open sections it looks after, a section's line as its page says it (HeroFacts.subtitle) with what search never keeps masked",
             source: "ios/DosarCuSina/Services/Search/SearchIndexBuilder.swift",
             shape: "One case: household (its categories with their fields and components, and whether each is locked here; its sections with each value as stored and as shown; deadlines, records of history with their parts, firms and documents, linked by id), words (the time zone days were counted in, each day and trade as the rows say it, and the word for an archived document) and documents: every document the index holds, by id, with its route.",
             cases: [.object(["household": household, "words": words, "documents": .array(expected)])]
