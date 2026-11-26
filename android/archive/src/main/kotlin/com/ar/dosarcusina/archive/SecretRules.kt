@@ -4,6 +4,7 @@ import com.ar.dosarcusina.archive.v3.CustomFact
 import com.ar.dosarcusina.archive.v3.FieldDefinition
 import com.ar.dosarcusina.archive.v3.FieldValue
 import com.ar.dosarcusina.archive.v3.FieldValues
+import com.ar.dosarcusina.core.text.SealedText
 import com.ar.dosarcusina.core.values.JsonTrees
 import com.ar.dosarcusina.core.values.KeptList
 import com.ar.dosarcusina.core.values.KeptObject
@@ -22,10 +23,10 @@ import kotlinx.serialization.json.JsonPrimitive
 // Each rule of the iOS app's SecretFields, side by side.
 @Suppress("TooManyFunctions")
 object SecretRules {
-    /** Marks sealed text, with the format's version. */
-    const val SEALED_PREFIX = "sealed:v1:"
+    /** Marks sealed text, with the format's version ([SealedText.PREFIX], the one place it is written). */
+    const val SEALED_PREFIX = SealedText.PREFIX
 
-    fun isSealed(text: String): Boolean = text.startsWith(SEALED_PREFIX)
+    fun isSealed(text: String): Boolean = SealedText.isSealed(text)
 
     /** Whether a value is a sealed secret, by its own form. */
     fun isSealed(value: FieldValue): Boolean = when (value) {
