@@ -72,10 +72,11 @@ class SearchIndexer(
 
     /** The index after [changes], or null when they can reach every record. */
     private suspend fun updated(current: SearchIndex, changes: SearchChanges): SearchIndex? {
-        if (changes.deleted.any { it.type == Tables.templates.type }) return null
         val search = read()
         val records = LinkedHashSet<RecordRef>()
         for (changed in changes.changed - changes.deleted) records += search.recordsShowing(changed) ?: return null
+        for (deleted in changes.deleted) records += search.recordsShowingDeleted(deleted) ?: return null
+        records -= changes.deleted
         val removing = HashSet<String>()
         for (deleted in changes.deleted) removing += documentIds.remove(deleted).orEmpty()
         val adding = records.flatMap { record ->

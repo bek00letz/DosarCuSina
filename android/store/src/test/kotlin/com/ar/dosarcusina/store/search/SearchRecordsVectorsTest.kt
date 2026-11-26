@@ -10,9 +10,12 @@ import com.ar.dosarcusina.core.search.SearchDetail
 import com.ar.dosarcusina.core.search.SearchDocument
 import com.ar.dosarcusina.core.search.SearchRoute
 import com.ar.dosarcusina.core.values.MachineText
+import com.ar.dosarcusina.store.BinderView
+import com.ar.dosarcusina.store.RecordRef
 import com.ar.dosarcusina.store.Step
 import com.ar.dosarcusina.store.Tables
 import com.ar.dosarcusina.store.TestBinderStore
+import com.ar.dosarcusina.store.locks.BinderLocks
 import com.ar.dosarcusina.store.schema.Asset
 import com.ar.dosarcusina.store.schema.Attachment
 import com.ar.dosarcusina.store.schema.CategoryTemplate
@@ -34,6 +37,7 @@ import org.junit.jupiter.api.Test
 import java.io.File
 import java.time.Instant
 import java.time.ZoneId
+import java.util.Locale
 import java.util.UUID
 
 /**
@@ -57,6 +61,50 @@ class SearchRecordsVectorsTest {
         assertEquals(expected.map { it.text("id") }.toSet(), actual.keys, "The same documents")
         for (document in expected) check(document, actual.getValue(document.text("id")))
     }
+
+    @Test
+    fun `what a change to a section reads again is what it reads on the iPhone`() {
+        val binder = TestBinderStore()
+        fill(binder)
+        val view = binder.snapshot()
+        val locks = BinderLocks.of(
+            view.all(Tables.templates),
+            view.all(Tables.assets).map { it.templateKey },
+            binder.locks,
+        )
+        val search = BinderSearch(view, locks, words, ZoneId.of(words.zone))
+        for (entry in case.list("rereads")) {
+            val section =
+                entry.textOrNull("section")?.let { id ->
+                    view.all(Tables.assets).single { it.id == UUID.fromString(id) }
+                }
+            val ref = section?.let { RecordRef.of(Tables.assets, it) }
+                ?: RecordRef.of(
+                    Tables.templates,
+                    view.all(Tables.templates).single { it.key == entry.text("category") },
+                )
+            val changed = search.recordsShowing(ref)?.let { named(it, view) }
+            val deleted = search.recordsShowingDeleted(ref)?.let { named(it, view) }
+            assertEquals(entry.names("changed"), changed, "$ref changed")
+            assertEquals(entry.names("deleted"), deleted, "$ref deleted")
+        }
+    }
+
+    /** Records as the iPhone names them: their kind as a route names it and their id ("document:…"), sorted. */
+    private fun named(records: Set<RecordRef>, view: BinderView): List<String> = records.mapNotNull { ref ->
+        val (kind, id) = when (ref.type) {
+            Tables.assets.type -> "asset" to view.row(Tables.assets, ref.row)?.id
+            Tables.obligations.type -> "obligation" to view.row(Tables.obligations, ref.row)?.id
+            Tables.history.type -> "historyEntry" to view.row(Tables.history, ref.row)?.id
+            Tables.providers.type -> "provider" to view.row(Tables.providers, ref.row)?.id
+            Tables.attachments.type -> "document" to view.row(Tables.attachments, ref.row)?.id
+            else -> return@mapNotNull null
+        }
+        id?.let { "$kind:${it.toString().uppercase(Locale.ROOT)}" }
+    }.sorted()
+
+    private fun JsonObject.names(key: String): List<String>? =
+        getValue(key).takeUnless { it is JsonNull }?.jsonArray?.map { it.jsonPrimitive.content }
 
     private fun check(expected: JsonObject, actual: SearchDocument) {
         val id = actual.id
