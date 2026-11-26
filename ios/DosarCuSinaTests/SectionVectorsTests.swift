@@ -116,11 +116,11 @@ struct SectionVectorsTests {
     static func day(_ iso: String) -> FieldValue { .date(ValueVectorsTests.day(iso)) }
 
     /// An optional value as a case writes it: null for none.
-    static func text(_ value: String?) -> JSONValue { value.map(JSONValue.string) ?? .null }
+    nonisolated static func text(_ value: String?) -> JSONValue { value.map(JSONValue.string) ?? .null }
 
-    static func int(_ value: Int?) -> JSONValue { value.map(JSONValue.int) ?? .null }
+    nonisolated static func int(_ value: Int?) -> JSONValue { value.map(JSONValue.int) ?? .null }
 
-    static func number(_ value: Double?) -> JSONValue { value.map(JSONValue.number) ?? .null }
+    nonisolated static func number(_ value: Double?) -> JSONValue { value.map(JSONValue.number) ?? .null }
 
     static func typed(_ pairs: [String: FieldValue]) -> FieldValues { FieldValues(pairs) }
 
