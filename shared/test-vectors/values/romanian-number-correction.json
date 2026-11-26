@@ -1,0 +1,610 @@
+{
+  "cases" : [
+    {
+      "count" : null,
+      "kilometres" : null,
+      "meterIndex" : "0.022",
+      "money" : null,
+      "stored" : "0.022000000000000002"
+    },
+    {
+      "count" : null,
+      "kilometres" : null,
+      "meterIndex" : null,
+      "money" : null,
+      "stored" : "0.022"
+    },
+    {
+      "count" : null,
+      "kilometres" : null,
+      "meterIndex" : "-0.022",
+      "money" : null,
+      "stored" : "-0.022000000000000002"
+    },
+    {
+      "count" : null,
+      "kilometres" : null,
+      "meterIndex" : "0.029",
+      "money" : null,
+      "stored" : "0.028999999999999998"
+    },
+    {
+      "count" : null,
+      "kilometres" : null,
+      "meterIndex" : null,
+      "money" : null,
+      "stored" : "0.029"
+    },
+    {
+      "count" : null,
+      "kilometres" : null,
+      "meterIndex" : "-0.029",
+      "money" : null,
+      "stored" : "-0.028999999999999998"
+    },
+    {
+      "count" : null,
+      "kilometres" : null,
+      "meterIndex" : "0.057",
+      "money" : null,
+      "stored" : "0.05700000000000001"
+    },
+    {
+      "count" : null,
+      "kilometres" : null,
+      "meterIndex" : null,
+      "money" : null,
+      "stored" : "0.057"
+    },
+    {
+      "count" : null,
+      "kilometres" : null,
+      "meterIndex" : "-0.057",
+      "money" : null,
+      "stored" : "-0.05700000000000001"
+    },
+    {
+      "count" : null,
+      "kilometres" : null,
+      "meterIndex" : "0.085",
+      "money" : null,
+      "stored" : "0.08499999999999999"
+    },
+    {
+      "count" : null,
+      "kilometres" : null,
+      "meterIndex" : null,
+      "money" : null,
+      "stored" : "0.085"
+    },
+    {
+      "count" : null,
+      "kilometres" : null,
+      "meterIndex" : "-0.085",
+      "money" : null,
+      "stored" : "-0.08499999999999999"
+    },
+    {
+      "count" : null,
+      "kilometres" : null,
+      "meterIndex" : "0.106",
+      "money" : null,
+      "stored" : "0.10600000000000001"
+    },
+    {
+      "count" : null,
+      "kilometres" : null,
+      "meterIndex" : null,
+      "money" : null,
+      "stored" : "0.106"
+    },
+    {
+      "count" : null,
+      "kilometres" : null,
+      "meterIndex" : "-0.106",
+      "money" : null,
+      "stored" : "-0.10600000000000001"
+    },
+    {
+      "count" : null,
+      "kilometres" : null,
+      "meterIndex" : "0.113",
+      "money" : null,
+      "stored" : "0.11300000000000002"
+    },
+    {
+      "count" : null,
+      "kilometres" : null,
+      "meterIndex" : null,
+      "money" : null,
+      "stored" : "0.113"
+    },
+    {
+      "count" : null,
+      "kilometres" : null,
+      "meterIndex" : "-0.113",
+      "money" : null,
+      "stored" : "-0.11300000000000002"
+    },
+    {
+      "count" : null,
+      "kilometres" : null,
+      "meterIndex" : null,
+      "money" : null,
+      "stored" : "0.162"
+    },
+    {
+      "count" : null,
+      "kilometres" : null,
+      "meterIndex" : "0.169",
+      "money" : null,
+      "stored" : "0.16899999999999998"
+    },
+    {
+      "count" : null,
+      "kilometres" : null,
+      "meterIndex" : null,
+      "money" : null,
+      "stored" : "0.169"
+    },
+    {
+      "count" : null,
+      "kilometres" : null,
+      "meterIndex" : "-0.169",
+      "money" : null,
+      "stored" : "-0.16899999999999998"
+    },
+    {
+      "count" : null,
+      "kilometres" : null,
+      "meterIndex" : "0.176",
+      "money" : null,
+      "stored" : "0.17600000000000002"
+    },
+    {
+      "count" : null,
+      "kilometres" : null,
+      "meterIndex" : null,
+      "money" : null,
+      "stored" : "0.176"
+    },
+    {
+      "count" : null,
+      "kilometres" : null,
+      "meterIndex" : "-0.176",
+      "money" : null,
+      "stored" : "-0.17600000000000002"
+    },
+    {
+      "count" : null,
+      "kilometres" : null,
+      "meterIndex" : "0.204",
+      "money" : null,
+      "stored" : "0.20400000000000001"
+    },
+    {
+      "count" : null,
+      "kilometres" : null,
+      "meterIndex" : null,
+      "money" : null,
+      "stored" : "0.204"
+    },
+    {
+      "count" : null,
+      "kilometres" : null,
+      "meterIndex" : "-0.204",
+      "money" : null,
+      "stored" : "-0.20400000000000001"
+    },
+    {
+      "count" : null,
+      "kilometres" : null,
+      "meterIndex" : "0.211",
+      "money" : null,
+      "stored" : "0.21100000000000002"
+    },
+    {
+      "count" : null,
+      "kilometres" : null,
+      "meterIndex" : null,
+      "money" : null,
+      "stored" : "0.211"
+    },
+    {
+      "count" : null,
+      "kilometres" : null,
+      "meterIndex" : "-0.211",
+      "money" : null,
+      "stored" : "-0.21100000000000002"
+    },
+    {
+      "count" : null,
+      "kilometres" : null,
+      "meterIndex" : "0.218",
+      "money" : null,
+      "stored" : "0.21800000000000003"
+    },
+    {
+      "count" : null,
+      "kilometres" : null,
+      "meterIndex" : null,
+      "money" : null,
+      "stored" : "0.218"
+    },
+    {
+      "count" : null,
+      "kilometres" : null,
+      "meterIndex" : "-0.218",
+      "money" : null,
+      "stored" : "-0.21800000000000003"
+    },
+    {
+      "count" : null,
+      "kilometres" : null,
+      "meterIndex" : "0.232",
+      "money" : null,
+      "stored" : "0.23199999999999998"
+    },
+    {
+      "count" : null,
+      "kilometres" : null,
+      "meterIndex" : null,
+      "money" : null,
+      "stored" : "0.232"
+    },
+    {
+      "count" : null,
+      "kilometres" : null,
+      "meterIndex" : "-0.232",
+      "money" : null,
+      "stored" : "-0.23199999999999998"
+    },
+    {
+      "count" : null,
+      "kilometres" : null,
+      "meterIndex" : "0.239",
+      "money" : null,
+      "stored" : "0.23899999999999996"
+    },
+    {
+      "count" : null,
+      "kilometres" : null,
+      "meterIndex" : null,
+      "money" : null,
+      "stored" : "0.239"
+    },
+    {
+      "count" : null,
+      "kilometres" : null,
+      "meterIndex" : "-0.239",
+      "money" : null,
+      "stored" : "-0.23899999999999996"
+    },
+    {
+      "count" : null,
+      "kilometres" : null,
+      "meterIndex" : "0.274",
+      "money" : null,
+      "stored" : "0.27399999999999997"
+    },
+    {
+      "count" : null,
+      "kilometres" : null,
+      "meterIndex" : null,
+      "money" : null,
+      "stored" : "0.274"
+    },
+    {
+      "count" : null,
+      "kilometres" : null,
+      "meterIndex" : "-0.274",
+      "money" : null,
+      "stored" : "-0.27399999999999997"
+    },
+    {
+      "count" : null,
+      "kilometres" : null,
+      "meterIndex" : null,
+      "money" : null,
+      "stored" : "0.295"
+    },
+    {
+      "count" : null,
+      "kilometres" : null,
+      "meterIndex" : "0.323",
+      "money" : null,
+      "stored" : "0.32299999999999995"
+    },
+    {
+      "count" : null,
+      "kilometres" : null,
+      "meterIndex" : null,
+      "money" : null,
+      "stored" : "0.323"
+    },
+    {
+      "count" : null,
+      "kilometres" : null,
+      "meterIndex" : "-0.323",
+      "money" : null,
+      "stored" : "-0.32299999999999995"
+    },
+    {
+      "count" : null,
+      "kilometres" : null,
+      "meterIndex" : "0.33",
+      "money" : "0.33",
+      "stored" : "0.32999999999999996"
+    },
+    {
+      "count" : null,
+      "kilometres" : null,
+      "meterIndex" : null,
+      "money" : null,
+      "stored" : "0.33"
+    },
+    {
+      "count" : null,
+      "kilometres" : null,
+      "meterIndex" : "-0.33",
+      "money" : "-0.33",
+      "stored" : "-0.32999999999999996"
+    },
+    {
+      "count" : null,
+      "kilometres" : null,
+      "meterIndex" : "0.351",
+      "money" : null,
+      "stored" : "0.35100000000000003"
+    },
+    {
+      "count" : null,
+      "kilometres" : null,
+      "meterIndex" : null,
+      "money" : null,
+      "stored" : "0.351"
+    },
+    {
+      "count" : null,
+      "kilometres" : null,
+      "meterIndex" : "-0.351",
+      "money" : null,
+      "stored" : "-0.35100000000000003"
+    },
+    {
+      "count" : null,
+      "kilometres" : null,
+      "meterIndex" : "0.393",
+      "money" : null,
+      "stored" : "0.39299999999999996"
+    },
+    {
+      "count" : null,
+      "kilometres" : null,
+      "meterIndex" : null,
+      "money" : null,
+      "stored" : "0.393"
+    },
+    {
+      "count" : null,
+      "kilometres" : null,
+      "meterIndex" : "-0.393",
+      "money" : null,
+      "stored" : "-0.39299999999999996"
+    },
+    {
+      "count" : null,
+      "kilometres" : null,
+      "meterIndex" : "0.407",
+      "money" : null,
+      "stored" : "0.40700000000000003"
+    },
+    {
+      "count" : null,
+      "kilometres" : null,
+      "meterIndex" : null,
+      "money" : null,
+      "stored" : "0.407"
+    },
+    {
+      "count" : null,
+      "kilometres" : null,
+      "meterIndex" : "-0.407",
+      "money" : null,
+      "stored" : "-0.40700000000000003"
+    },
+    {
+      "count" : null,
+      "kilometres" : null,
+      "meterIndex" : "0.428",
+      "money" : null,
+      "stored" : "0.42799999999999994"
+    },
+    {
+      "count" : null,
+      "kilometres" : null,
+      "meterIndex" : null,
+      "money" : null,
+      "stored" : "0.428"
+    },
+    {
+      "count" : null,
+      "kilometres" : null,
+      "meterIndex" : "-0.428",
+      "money" : null,
+      "stored" : "-0.42799999999999994"
+    },
+    {
+      "count" : null,
+      "kilometres" : null,
+      "meterIndex" : "0.435",
+      "money" : null,
+      "stored" : "0.43499999999999994"
+    },
+    {
+      "count" : null,
+      "kilometres" : null,
+      "meterIndex" : null,
+      "money" : null,
+      "stored" : "0.435"
+    },
+    {
+      "count" : null,
+      "kilometres" : null,
+      "meterIndex" : "-0.435",
+      "money" : null,
+      "stored" : "-0.43499999999999994"
+    },
+    {
+      "count" : null,
+      "kilometres" : null,
+      "meterIndex" : "0.456",
+      "money" : null,
+      "stored" : "0.45600000000000007"
+    },
+    {
+      "count" : null,
+      "kilometres" : null,
+      "meterIndex" : null,
+      "money" : null,
+      "stored" : "0.456"
+    },
+    {
+      "count" : null,
+      "kilometres" : null,
+      "meterIndex" : "-0.456",
+      "money" : null,
+      "stored" : "-0.45600000000000007"
+    },
+    {
+      "count" : null,
+      "kilometres" : null,
+      "meterIndex" : "98765.4321",
+      "money" : null,
+      "stored" : "98765.43209999999"
+    },
+    {
+      "count" : null,
+      "kilometres" : null,
+      "meterIndex" : null,
+      "money" : null,
+      "stored" : "98765.4321"
+    },
+    {
+      "count" : null,
+      "kilometres" : null,
+      "meterIndex" : "1250.55",
+      "money" : "1250.55",
+      "stored" : "1250.5500000000002"
+    },
+    {
+      "count" : null,
+      "kilometres" : null,
+      "meterIndex" : "1250.555",
+      "money" : null,
+      "stored" : "1250.5550000000003"
+    },
+    {
+      "count" : null,
+      "kilometres" : null,
+      "meterIndex" : null,
+      "money" : null,
+      "stored" : "45724.0"
+    },
+    {
+      "count" : "45724.0",
+      "kilometres" : "45724.0",
+      "meterIndex" : "45724.0",
+      "money" : "45724.0",
+      "stored" : "45724.00000000001"
+    },
+    {
+      "count" : "45724.0",
+      "kilometres" : "45724.0",
+      "meterIndex" : "45724.0",
+      "money" : "45724.0",
+      "stored" : "45723.99999999999"
+    },
+    {
+      "count" : null,
+      "kilometres" : null,
+      "meterIndex" : null,
+      "money" : null,
+      "stored" : "45724.5"
+    },
+    {
+      "count" : null,
+      "kilometres" : null,
+      "meterIndex" : null,
+      "money" : null,
+      "stored" : "0.0"
+    },
+    {
+      "count" : null,
+      "kilometres" : null,
+      "meterIndex" : null,
+      "money" : null,
+      "stored" : "-0.0"
+    },
+    {
+      "count" : null,
+      "kilometres" : null,
+      "meterIndex" : null,
+      "money" : null,
+      "stored" : "0.125"
+    },
+    {
+      "count" : null,
+      "kilometres" : null,
+      "meterIndex" : null,
+      "money" : null,
+      "stored" : "5e-324"
+    },
+    {
+      "count" : null,
+      "kilometres" : null,
+      "meterIndex" : null,
+      "money" : null,
+      "stored" : "4000000000000.1255"
+    },
+    {
+      "count" : null,
+      "kilometres" : null,
+      "meterIndex" : null,
+      "money" : null,
+      "stored" : "9007199254740992.0"
+    },
+    {
+      "count" : null,
+      "kilometres" : null,
+      "meterIndex" : null,
+      "money" : null,
+      "stored" : "1e+300"
+    },
+    {
+      "count" : null,
+      "kilometres" : null,
+      "meterIndex" : "0.001",
+      "money" : null,
+      "stored" : "0.0010000000000000002"
+    },
+    {
+      "count" : null,
+      "kilometres" : null,
+      "meterIndex" : null,
+      "money" : null,
+      "stored" : "0.0005"
+    },
+    {
+      "count" : null,
+      "kilometres" : null,
+      "meterIndex" : "0.0005",
+      "money" : null,
+      "stored" : "0.0005000000000000001"
+    }
+  ],
+  "rule" : "RomanianNumber.correction(of:as:), the rule DecimalDoublesStep puts a number kept a step off back by",
+  "shape" : "stored: a Double as stored, as Swift writes it (its shortest text). For each kind (money, count, meterIndex, kilometres, with 2, 0, 6 and 0 decimals): the Double it is put back on, as Swift writes it, or null when it stands.",
+  "source" : "ios/DosarCuSina/Models/Values/RomanianNumber.swift",
+  "writtenBy" : "ios/DosarCuSinaTests/ValueVectorsTests.swift"
+}
