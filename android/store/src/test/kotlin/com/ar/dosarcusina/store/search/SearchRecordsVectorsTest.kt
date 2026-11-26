@@ -67,14 +67,26 @@ class SearchRecordsVectorsTest {
         val binder = TestBinderStore()
         fill(binder)
         val view = binder.snapshot()
-        val locks = BinderLocks.of(view.all(Tables.templates), view.all(Tables.assets).map { it.templateKey }, binder.locks)
+        val locks = BinderLocks.of(
+            view.all(Tables.templates),
+            view.all(Tables.assets).map { it.templateKey },
+            binder.locks,
+        )
         val search = BinderSearch(view, locks, words, ZoneId.of(words.zone))
         for (entry in case.list("rereads")) {
-            val section = entry.textOrNull("section")?.let { id -> view.all(Tables.assets).single { it.id == UUID.fromString(id) } }
+            val section =
+                entry.textOrNull("section")?.let { id ->
+                    view.all(Tables.assets).single { it.id == UUID.fromString(id) }
+                }
             val ref = section?.let { RecordRef.of(Tables.assets, it) }
-                ?: RecordRef.of(Tables.templates, view.all(Tables.templates).single { it.key == entry.text("category") })
-            assertEquals(entry.names("changed"), search.recordsShowing(ref)?.let { named(it, view) }, "$ref changed")
-            assertEquals(entry.names("deleted"), search.recordsShowingDeleted(ref)?.let { named(it, view) }, "$ref deleted")
+                ?: RecordRef.of(
+                    Tables.templates,
+                    view.all(Tables.templates).single { it.key == entry.text("category") },
+                )
+            val changed = search.recordsShowing(ref)?.let { named(it, view) }
+            val deleted = search.recordsShowingDeleted(ref)?.let { named(it, view) }
+            assertEquals(entry.names("changed"), changed, "$ref changed")
+            assertEquals(entry.names("deleted"), deleted, "$ref deleted")
         }
     }
 
