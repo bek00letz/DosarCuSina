@@ -2,6 +2,7 @@ package com.ar.dosarcusina.store
 
 import androidx.room3.Room
 import androidx.sqlite.driver.bundled.BundledSQLiteDriver
+import com.ar.dosarcusina.store.locks.SectionLocks
 import com.ar.dosarcusina.store.schema.BinderDatabase
 import com.ar.dosarcusina.store.schema.BinderDatabase_Impl
 import kotlinx.coroutines.Dispatchers
@@ -9,8 +10,9 @@ import kotlinx.coroutines.sync.Mutex
 import java.io.File
 
 /**
- * The binder's store on this phone: the database ([database]) and the files it names beside it
- * ([files]), the one place either is opened (the iOS app's `PersistenceController.makeContainer`).
+ * The binder's store on this phone: the database ([database]), the files it names beside it
+ * ([files]) and this phone's lock choices beside it ([locks]), the one place any of them is opened
+ * (the iOS app's `PersistenceController.makeContainer` and `SectionLocks.of`).
  *
  * One step writes at a time ([writing]): what it writes to the files and the database, and what
  * it removes from the files once its transaction is kept, so a file one step copies in is never
@@ -20,6 +22,11 @@ import java.io.File
 class BinderStore private constructor(
     val database: BinderDatabase,
     val files: StoreFiles,
+    /**
+     * Which categories this phone keeps locked: beside the database, never in it, one for each store
+     * ([SectionLocks.of]); a store in memory has its own.
+     */
+    val locks: SectionLocks,
 ) : AutoCloseable {
     /** Held by whatever writes, for the whole of its step. */
     val writing: Mutex = Mutex()
@@ -36,13 +43,19 @@ class BinderStore private constructor(
         /** The store kept in [folder]: made there the first time, brought to the current version after. */
         fun open(folder: File): BinderStore {
             folder.mkdirs()
-            return BinderStore(database(File(folder, DATABASE_NAME).path), StoreFiles(File(folder, FILES_FOLDER)))
+            val database = File(folder, DATABASE_NAME)
+            val files = StoreFiles(File(folder, FILES_FOLDER))
+            return BinderStore(database(database.path), files, SectionLocks.of(database))
         }
 
-        /** A store whose database lives only in memory, its files in [filesFolder]: for tests and previews. */
-        fun inMemory(filesFolder: File): BinderStore = BinderStore(
+        /**
+         * A store whose database lives only in memory, its files in [filesFolder] and its locks in
+         * [locks] (their own, gone with it, unless a test hands it some): for tests and previews.
+         */
+        fun inMemory(filesFolder: File, locks: SectionLocks = SectionLocks(file = null)): BinderStore = BinderStore(
             Room.inMemoryDatabaseBuilder<BinderDatabase> { BinderDatabase_Impl() }.configured().build(),
             StoreFiles(filesFolder),
+            locks,
         )
 
         /** The database in the file at [path], as every open makes it. */

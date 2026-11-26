@@ -101,6 +101,10 @@ interface TemplateRows : Rows<CategoryTemplate> {
 interface AssetRows : Rows<Asset> {
     @Query("SELECT * FROM Asset ORDER BY pk")
     suspend fun all(): List<Asset>
+
+    /** The category every section names: what the binder's locks are asked for (`BinderLocks`). */
+    @Query("SELECT templateKey FROM Asset")
+    suspend fun templateKeys(): List<String>
 }
 
 @Dao
