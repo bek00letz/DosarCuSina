@@ -70,10 +70,15 @@ public enum RomanianNumber {
         case negative
         /// Decimals where the kind is whole (kilometres, counts).
         case notWhole
+        /// A money amount with more digits than the binder keeps exactly (`Money.keepsExactly`).
+        case tooManyDigits
 
         /// What to tell the person in the field, for this kind of number.
         public func message(for kind: NumberKind) -> String {
             switch (self, kind) {
+            case (.tooManyDigits, _):
+                return String(localized: "Scrie suma cu cel mult \(Money.mostDigits) cifre.", locale: .dosarDefault,
+                              comment: "Number field error: a money amount with more digits than are kept exactly. The argument is how many digits may be written.")
             case (.negative, .money):
                 return String(localized: "Suma nu poate fi negativă.", comment: "Number field error: a money amount below zero.")
             case (.negative, _):
@@ -115,6 +120,7 @@ public enum RomanianNumber {
         guard let parsed = digits(text, kind: kind) else { return .failure(.unreadable) }
         guard !negative || parsed.value == 0 else { return .failure(.negative) }
         if kind.isWhole, parsed.value != parsed.value.rounded(scale: 0) { return .failure(.notWhole) }
+        if kind == .money, !Money.keepsExactly(parsed.value) { return .failure(.tooManyDigits) }
         return .success(Reading(value: parsed.value, isAmbiguous: parsed.ambiguous, needsCheck: parsed.ambiguous && origin == .document))
     }
 

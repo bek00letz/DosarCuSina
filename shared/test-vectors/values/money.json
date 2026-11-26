@@ -120,11 +120,7 @@
     {
       "amountString" : "12345678901234567890123.456",
       "currency" : "RON",
-      "money" : {
-        "amount" : "12345678901234567890123.456",
-        "currency" : "RON",
-        "written" : "12345678901234567890123.46"
-      }
+      "money" : null
     },
     {
       "amountString" : "1.250,50",

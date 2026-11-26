@@ -749,7 +749,7 @@ public final class PersistenceController {
         let directory = url.deletingLastPathComponent()
         let baseName = url.lastPathComponent
         let locks = SectionLocks.file(forStoreAt: url).lastPathComponent
-        let siblings = (try? fileManager.contentsOfDirectory(atPath: directory.path())) ?? []
+        let siblings = (try? fileManager.contentsOfDirectory(atPath: directory.path(percentEncoded: false))) ?? []
         for name in siblings where name.hasPrefix(baseName) && !name.hasPrefix(locks) {
             let source = directory.appending(path: name)
             let target = directory.appending(path: "unreadable-\(stamp)-\(name)")
