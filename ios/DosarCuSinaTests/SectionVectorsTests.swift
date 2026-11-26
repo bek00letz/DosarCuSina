@@ -213,7 +213,7 @@ struct SectionVectorsTests {
         let firstDue: String?
 
         var json: JSONValue {
-            .object(["key": .string(key), "isSelected": .bool(isSelected), "firstDue": Self.text(firstDue)])
+            .object(["key": .string(key), "isSelected": .bool(isSelected), "firstDue": SectionVectorsTests.text(firstDue)])
         }
     }
 
@@ -378,7 +378,7 @@ struct SectionVectorsTests {
             ]))
         }
         // Moves, each from the household as it was made.
-        let moves: [(String, String, String?, String?, String?)] = [
+        let moves: [(String, String, String?, String?, String)] = [
             // (what moves, to which section, to a new person, renamed to, the case's name)
             ("Carte de identitate – Manole Corina", "Popescu Ion", nil, "Carte de identitate – Popescu Ion", "a document to another person, renamed"),
             ("Carte de identitate – Manole Corina", "", "Manole Ana", "Carte de identitate – Manole Ana", "a document to a new person"),
