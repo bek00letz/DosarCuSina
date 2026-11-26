@@ -114,13 +114,13 @@ public enum DocumentFileProtection {
         #if os(iOS)
         let folder = externalDataFolder(for: storeURL)
         let fileManager = FileManager.default
-        guard fileManager.fileExists(atPath: folder.path()) else { return 0 }
+        guard fileManager.fileExists(atPath: folder.path(percentEncoded: false)) else { return 0 }
         var changed = 0
         let items = [folder] + ((try? fileManager.contentsOfDirectory(at: folder, includingPropertiesForKeys: nil)) ?? [])
         for item in items {
-            let current = (try? fileManager.attributesOfItem(atPath: item.path())[.protectionKey]) as? FileProtectionType
+            let current = (try? fileManager.attributesOfItem(atPath: item.path(percentEncoded: false))[.protectionKey]) as? FileProtectionType
             guard current != .complete else { continue }
-            if (try? fileManager.setAttributes([.protectionKey: FileProtectionType.complete], ofItemAtPath: item.path())) != nil {
+            if (try? fileManager.setAttributes([.protectionKey: FileProtectionType.complete], ofItemAtPath: item.path(percentEncoded: false))) != nil {
                 changed += 1
             }
         }
