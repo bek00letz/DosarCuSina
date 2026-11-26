@@ -1330,8 +1330,8 @@
     {
       "check" : null,
       "decision" : {
-        "id" : "A0000000-B000-C000-D000-E00000000001",
-        "type" : "newUnder"
+        "id" : "A0000000-B000-C000-D000-E00000000011",
+        "type" : "existing"
       },
       "homes" : [
         {
@@ -1365,6 +1365,132 @@
           "parentID" : "A0000000-B000-C000-D000-E00000000001",
           "provider" : "Engie",
           "service" : "gaz"
+        }
+      ],
+      "within" : null
+    },
+    {
+      "check" : null,
+      "decision" : {
+        "id" : "A0000000-B000-C000-D000-E00000000011",
+        "type" : "existing"
+      },
+      "homes" : [
+        {
+          "address" : null,
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000001"
+        }
+      ],
+      "isTiedToHome" : true,
+      "keptCodes" : [
+        "clc"
+      ],
+      "name" : "Typed text and the key name the same service",
+      "reading" : {
+        "codes" : {
+          "clc" : "DEG0000000000001"
+        },
+        "isBill" : true,
+        "provider" : "ENGIE Romania S.A.",
+        "service" : "Gaze naturale",
+        "supplyAddress" : null
+      },
+      "subscriptions" : [
+        {
+          "fields" : {
+            "subscription.clc" : "DEG0000000000001"
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000011",
+          "parentID" : "A0000000-B000-C000-D000-E00000000001",
+          "provider" : "ENGIE Romania S.A.",
+          "service" : "service.gas"
+        }
+      ],
+      "within" : null
+    },
+    {
+      "check" : null,
+      "decision" : {
+        "id" : "A0000000-B000-C000-D000-E00000000001",
+        "type" : "newUnder"
+      },
+      "homes" : [
+        {
+          "address" : null,
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000001"
+        }
+      ],
+      "isTiedToHome" : true,
+      "keptCodes" : [
+
+      ],
+      "name" : "Typed text naming another service is never the one",
+      "reading" : {
+        "codes" : {
+
+        },
+        "isBill" : true,
+        "provider" : "ENGIE Romania S.A.",
+        "service" : "Energie electrică",
+        "supplyAddress" : null
+      },
+      "subscriptions" : [
+        {
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000011",
+          "parentID" : "A0000000-B000-C000-D000-E00000000001",
+          "provider" : "ENGIE Romania S.A.",
+          "service" : "service.gas"
+        }
+      ],
+      "within" : null
+    },
+    {
+      "check" : null,
+      "decision" : {
+        "id" : null,
+        "type" : "newStandalone"
+      },
+      "homes" : [
+        {
+          "address" : null,
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000001"
+        }
+      ],
+      "isTiedToHome" : false,
+      "keptCodes" : [
+
+      ],
+      "name" : "Typed text no service has tells nothing apart",
+      "reading" : {
+        "codes" : {
+
+        },
+        "isBill" : true,
+        "provider" : "ENGIE Romania S.A.",
+        "service" : "Ceva necunoscut",
+        "supplyAddress" : null
+      },
+      "subscriptions" : [
+        {
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000011",
+          "parentID" : "A0000000-B000-C000-D000-E00000000001",
+          "provider" : "ENGIE Romania S.A.",
+          "service" : "service.gas"
         }
       ],
       "within" : null
