@@ -1,0 +1,215 @@
+{
+  "built" : "A token in a case's text is a number that passes its check, built when the test runs so the repository never holds one. {luhn:DIGITS}: DIGITS as written with the Luhn check digit after them. {iban:CC:BBAN}: CC, the two ISO 13616 check digits (98 minus BBAN + CC + \"00\" mod 97, letters as A=10 … Z=35), then BBAN. {iban4:CC:BBAN}: the same, in groups of four with a space between. {fours:DIGITS}: DIGITS in groups of four with a space between. Answers name the same tokens.",
+  "cases" : [
+    {
+      "kept" : [
+
+      ],
+      "mayRemember" : false,
+      "redacted" : "CNP ",
+      "text" : "CNP 1800101990006"
+    },
+    {
+      "kept" : [
+
+      ],
+      "mayRemember" : false,
+      "redacted" : "",
+      "text" : "1800101990006"
+    },
+    {
+      "kept" : [
+
+      ],
+      "mayRemember" : false,
+      "redacted" : "CNP:, nascut",
+      "text" : "CNP:1800101990006, nascut"
+    },
+    {
+      "kept" : [
+
+      ],
+      "mayRemember" : true,
+      "redacted" : "18001019900061",
+      "text" : "18001019900061"
+    },
+    {
+      "kept" : [
+
+      ],
+      "mayRemember" : true,
+      "redacted" : "180010199000",
+      "text" : "180010199000"
+    },
+    {
+      "kept" : [
+
+      ],
+      "mayRemember" : false,
+      "redacted" : "Tel  și ",
+      "text" : "Tel 1800101990006 și 1800101990006"
+    },
+    {
+      "kept" : [
+
+      ],
+      "mayRemember" : false,
+      "redacted" : "xy",
+      "text" : "x1800101990006y"
+    },
+    {
+      "kept" : [
+
+      ],
+      "mayRemember" : false,
+      "redacted" : "Plătit cu  la service",
+      "text" : "Plătit cu 4111 1111 1111 1111 la service"
+    },
+    {
+      "kept" : [
+
+      ],
+      "mayRemember" : false,
+      "redacted" : "Card ",
+      "text" : "Card 5555-5555-5555-4444"
+    },
+    {
+      "kept" : [
+
+      ],
+      "mayRemember" : false,
+      "redacted" : "card ",
+      "text" : "card •••• 1111"
+    },
+    {
+      "kept" : [
+
+      ],
+      "mayRemember" : false,
+      "redacted" : " și restul",
+      "text" : "•••• •••• •••• 4444 și restul"
+    },
+    {
+      "kept" : [
+        {
+          "text" : "{luhn:64200000000123}",
+          "type" : "microchip"
+        }
+      ],
+      "mayRemember" : false,
+      "redacted" : "Microcip {luhn:64200000000123} citit",
+      "text" : "Microcip {luhn:64200000000123} citit"
+    },
+    {
+      "kept" : [
+
+      ],
+      "mayRemember" : false,
+      "redacted" : "Microcip  citit",
+      "text" : "Microcip {luhn:64200000000123} citit"
+    },
+    {
+      "kept" : [
+        {
+          "text" : "{luhn:64200000000123}",
+          "type" : "microchip"
+        }
+      ],
+      "mayRemember" : false,
+      "redacted" : "Cip {luhn:64200000000123}, card ",
+      "text" : "Cip {luhn:64200000000123}, card 4111 1111 1111 1111"
+    },
+    {
+      "kept" : [
+
+      ],
+      "mayRemember" : true,
+      "redacted" : "IBAN RO49 AAAA 1B31 0075 9384 0000",
+      "text" : "IBAN RO49 AAAA 1B31 0075 9384 0000"
+    },
+    {
+      "kept" : [
+
+      ],
+      "mayRemember" : true,
+      "redacted" : "RO49AAAA1B31007593840000",
+      "text" : "RO49AAAA1B31007593840000"
+    },
+    {
+      "kept" : [
+
+      ],
+      "mayRemember" : false,
+      "redacted" : "Cod de alarmă",
+      "text" : "Cod sealed:v1:AAAA de alarmă"
+    },
+    {
+      "kept" : [
+
+      ],
+      "mayRemember" : false,
+      "redacted" : "",
+      "text" : "sealed:v1:AAAA"
+    },
+    {
+      "kept" : [
+
+      ],
+      "mayRemember" : false,
+      "redacted" : "Coduri ",
+      "text" : "Coduri sealed:v1:AAAA  sealed:v1:AAAAx"
+    },
+    {
+      "kept" : [
+
+      ],
+      "mayRemember" : true,
+      "redacted" : "Telefon 0722 123 456",
+      "text" : "Telefon 0722 123 456"
+    },
+    {
+      "kept" : [
+
+      ],
+      "mayRemember" : true,
+      "redacted" : "VW Golf 2018",
+      "text" : "VW Golf 2018"
+    },
+    {
+      "kept" : [
+
+      ],
+      "mayRemember" : true,
+      "redacted" : "",
+      "text" : ""
+    },
+    {
+      "kept" : [
+
+      ],
+      "mayRemember" : true,
+      "redacted" : "fără cifre",
+      "text" : "fără cifre"
+    },
+    {
+      "kept" : [
+
+      ],
+      "mayRemember" : true,
+      "redacted" : "Șofer: Ștefan Țăran",
+      "text" : "Șofer: Ștefan Țăran"
+    },
+    {
+      "kept" : [
+
+      ],
+      "mayRemember" : false,
+      "redacted" : "Suma 1 250 lei, CNP , card ",
+      "text" : "Suma 1 250 lei, CNP 1800101990006, card 4111111111111111"
+    }
+  ],
+  "rule" : "SearchPrivacy.redacting(_:keeping:) and mayRemember(_:): what the index and the recent searches never keep (a CNP-shaped number, a card number, masked or not, a sealed value), a section's own typed values kept whole",
+  "shape" : "text: a text (with built tokens). kept: the section's typed values kept whole (text, field type). redacted: what search keeps of it. mayRemember: whether it may be remembered as typed (nothing kept whole).",
+  "source" : "ios/DosarCuSina/Services/Search/SearchPrivacy.swift",
+  "writtenBy" : "ios/DosarCuSinaTests/SearchVectorsTests.swift"
+}

@@ -1,0 +1,1410 @@
+{
+  "built" : "A token in a case's text is a number that passes its check, built when the test runs so the repository never holds one. {luhn:DIGITS}: DIGITS as written with the Luhn check digit after them. {iban:CC:BBAN}: CC, the two ISO 13616 check digits (98 minus BBAN + CC + \"00\" mod 97, letters as A=10 … Z=35), then BBAN. {iban4:CC:BBAN}: the same, in groups of four with a space between. {fours:DIGITS}: DIGITS in groups of four with a space between. Answers name the same tokens.",
+  "cases" : [
+    {
+      "documents" : [
+        {
+          "date" : null,
+          "fields" : [
+            {
+              "text" : "Poliță RCA 2026",
+              "weight" : 10
+            },
+            {
+              "text" : "Daune: 021 000 0000",
+              "weight" : 1
+            }
+          ],
+          "id" : "a",
+          "isSensitive" : false,
+          "kind" : "document",
+          "subtitle" : null,
+          "title" : "Poliță RCA 2026"
+        },
+        {
+          "date" : null,
+          "fields" : [
+            {
+              "text" : "Ștefan Instalații",
+              "weight" : 10
+            },
+            {
+              "text" : "Instalator",
+              "weight" : 6
+            }
+          ],
+          "id" : "b",
+          "isSensitive" : false,
+          "kind" : "provider",
+          "subtitle" : null,
+          "title" : "Ștefan Instalații"
+        },
+        {
+          "date" : null,
+          "fields" : [
+            {
+              "text" : "Revizie",
+              "weight" : 10
+            },
+            {
+              "text" : "polița veche e în torpedou",
+              "weight" : 3
+            }
+          ],
+          "id" : "c",
+          "isSensitive" : false,
+          "kind" : "historyEntry",
+          "subtitle" : null,
+          "title" : "Revizie"
+        }
+      ],
+      "name" : "diacritics, case and every word",
+      "queries" : [
+        {
+          "kinds" : null,
+          "limit" : null,
+          "query" : "polita",
+          "results" : [
+            {
+              "id" : "a",
+              "score" : 30,
+              "snippet" : null
+            },
+            {
+              "id" : "c",
+              "score" : 9,
+              "snippet" : "polița veche e în torpedou"
+            }
+          ],
+          "tokens" : [
+            "polita"
+          ]
+        },
+        {
+          "kinds" : null,
+          "limit" : null,
+          "query" : "POLIȚA",
+          "results" : [
+            {
+              "id" : "a",
+              "score" : 30,
+              "snippet" : null
+            },
+            {
+              "id" : "c",
+              "score" : 9,
+              "snippet" : "polița veche e în torpedou"
+            }
+          ],
+          "tokens" : [
+            "polita"
+          ]
+        },
+        {
+          "kinds" : null,
+          "limit" : null,
+          "query" : "STEFAN",
+          "results" : [
+            {
+              "id" : "b",
+              "score" : 30,
+              "snippet" : null
+            }
+          ],
+          "tokens" : [
+            "stefan"
+          ]
+        },
+        {
+          "kinds" : null,
+          "limit" : null,
+          "query" : "instalator",
+          "results" : [
+            {
+              "id" : "b",
+              "score" : 18,
+              "snippet" : "Instalator"
+            }
+          ],
+          "tokens" : [
+            "instalator"
+          ]
+        },
+        {
+          "kinds" : null,
+          "limit" : null,
+          "query" : "instal",
+          "results" : [
+            {
+              "id" : "b",
+              "score" : 20,
+              "snippet" : "Instalator"
+            }
+          ],
+          "tokens" : [
+            "instal"
+          ]
+        },
+        {
+          "kinds" : null,
+          "limit" : null,
+          "query" : "polita rca",
+          "results" : [
+            {
+              "id" : "a",
+              "score" : 60,
+              "snippet" : null
+            }
+          ],
+          "tokens" : [
+            "polita",
+            "rca"
+          ]
+        },
+        {
+          "kinds" : null,
+          "limit" : null,
+          "query" : "pol daune",
+          "results" : [
+            {
+              "id" : "a",
+              "score" : 23,
+              "snippet" : "Daune: 021 000 0000"
+            }
+          ],
+          "tokens" : [
+            "pol",
+            "daune"
+          ]
+        },
+        {
+          "kinds" : null,
+          "limit" : null,
+          "query" : "polita lipsa",
+          "results" : [
+
+          ],
+          "tokens" : [
+            "polita",
+            "lipsa"
+          ]
+        },
+        {
+          "kinds" : null,
+          "limit" : null,
+          "query" : "   ",
+          "results" : [
+
+          ],
+          "tokens" : [
+
+          ]
+        },
+        {
+          "kinds" : null,
+          "limit" : null,
+          "query" : "",
+          "results" : [
+
+          ],
+          "tokens" : [
+
+          ]
+        },
+        {
+          "kinds" : null,
+          "limit" : null,
+          "query" : "torpedou",
+          "results" : [
+            {
+              "id" : "c",
+              "score" : 9,
+              "snippet" : "polița veche e în torpedou"
+            }
+          ],
+          "tokens" : [
+            "torpedou"
+          ]
+        },
+        {
+          "kinds" : [
+            "historyEntry"
+          ],
+          "limit" : null,
+          "query" : "polita",
+          "results" : [
+            {
+              "id" : "c",
+              "score" : 9,
+              "snippet" : "polița veche e în torpedou"
+            }
+          ],
+          "tokens" : [
+            "polita"
+          ]
+        },
+        {
+          "kinds" : [
+            "provider"
+          ],
+          "limit" : null,
+          "query" : "polita",
+          "results" : [
+
+          ],
+          "tokens" : [
+            "polita"
+          ]
+        },
+        {
+          "kinds" : null,
+          "limit" : 1,
+          "query" : "polita",
+          "results" : [
+            {
+              "id" : "a",
+              "score" : 30,
+              "snippet" : null
+            }
+          ],
+          "tokens" : [
+            "polita"
+          ]
+        },
+        {
+          "kinds" : null,
+          "limit" : null,
+          "query" : "021",
+          "results" : [
+            {
+              "id" : "a",
+              "score" : 3,
+              "snippet" : "Daune: 021 000 0000"
+            }
+          ],
+          "tokens" : [
+            "021"
+          ]
+        },
+        {
+          "kinds" : null,
+          "limit" : null,
+          "query" : "rca, 2026!",
+          "results" : [
+            {
+              "id" : "a",
+              "score" : 60,
+              "snippet" : null
+            }
+          ],
+          "tokens" : [
+            "rca",
+            "2026"
+          ]
+        }
+      ]
+    },
+    {
+      "documents" : [
+        {
+          "date" : null,
+          "fields" : [
+            {
+              "text" : "Şcoala de şoferi",
+              "weight" : 10
+            },
+            {
+              "text" : "Ţara Bârsei, Mâine îţi scriu",
+              "weight" : 3
+            }
+          ],
+          "id" : "s",
+          "isSensitive" : false,
+          "kind" : "document",
+          "subtitle" : null,
+          "title" : "Şcoala de şoferi"
+        },
+        {
+          "date" : null,
+          "fields" : [
+            {
+              "text" : "Școala de șoferi",
+              "weight" : 10
+            },
+            {
+              "text" : "Țara Bârsei",
+              "weight" : 3
+            }
+          ],
+          "id" : "t",
+          "isSensitive" : false,
+          "kind" : "document",
+          "subtitle" : null,
+          "title" : "Școala de șoferi"
+        }
+      ],
+      "name" : "cedilla and comma below",
+      "queries" : [
+        {
+          "kinds" : null,
+          "limit" : null,
+          "query" : "școala",
+          "results" : [
+            {
+              "id" : "s",
+              "score" : 30,
+              "snippet" : null
+            },
+            {
+              "id" : "t",
+              "score" : 30,
+              "snippet" : null
+            }
+          ],
+          "tokens" : [
+            "scoala"
+          ]
+        },
+        {
+          "kinds" : null,
+          "limit" : null,
+          "query" : "şcoala",
+          "results" : [
+            {
+              "id" : "s",
+              "score" : 30,
+              "snippet" : null
+            },
+            {
+              "id" : "t",
+              "score" : 30,
+              "snippet" : null
+            }
+          ],
+          "tokens" : [
+            "scoala"
+          ]
+        },
+        {
+          "kinds" : null,
+          "limit" : null,
+          "query" : "scoala soferi",
+          "results" : [
+            {
+              "id" : "s",
+              "score" : 60,
+              "snippet" : null
+            },
+            {
+              "id" : "t",
+              "score" : 60,
+              "snippet" : null
+            }
+          ],
+          "tokens" : [
+            "scoala",
+            "soferi"
+          ]
+        },
+        {
+          "kinds" : null,
+          "limit" : null,
+          "query" : "țara",
+          "results" : [
+            {
+              "id" : "s",
+              "score" : 9,
+              "snippet" : "Ţara Bârsei, Mâine îţi scriu"
+            },
+            {
+              "id" : "t",
+              "score" : 9,
+              "snippet" : "Țara Bârsei"
+            }
+          ],
+          "tokens" : [
+            "tara"
+          ]
+        },
+        {
+          "kinds" : null,
+          "limit" : null,
+          "query" : "ţara",
+          "results" : [
+            {
+              "id" : "s",
+              "score" : 9,
+              "snippet" : "Ţara Bârsei, Mâine îţi scriu"
+            },
+            {
+              "id" : "t",
+              "score" : 9,
+              "snippet" : "Țara Bârsei"
+            }
+          ],
+          "tokens" : [
+            "tara"
+          ]
+        },
+        {
+          "kinds" : null,
+          "limit" : null,
+          "query" : "barsei",
+          "results" : [
+            {
+              "id" : "s",
+              "score" : 9,
+              "snippet" : "Ţara Bârsei, Mâine îţi scriu"
+            },
+            {
+              "id" : "t",
+              "score" : 9,
+              "snippet" : "Țara Bârsei"
+            }
+          ],
+          "tokens" : [
+            "barsei"
+          ]
+        },
+        {
+          "kinds" : null,
+          "limit" : null,
+          "query" : "mâine îți",
+          "results" : [
+            {
+              "id" : "s",
+              "score" : 18,
+              "snippet" : "Ţara Bârsei, Mâine îţi scriu"
+            }
+          ],
+          "tokens" : [
+            "maine",
+            "iti"
+          ]
+        },
+        {
+          "kinds" : null,
+          "limit" : null,
+          "query" : "ITI",
+          "results" : [
+            {
+              "id" : "s",
+              "score" : 9,
+              "snippet" : "Ţara Bârsei, Mâine îţi scriu"
+            }
+          ],
+          "tokens" : [
+            "iti"
+          ]
+        }
+      ]
+    },
+    {
+      "documents" : [
+        {
+          "date" : null,
+          "fields" : [
+            {
+              "text" : "Factură neachitată",
+              "weight" : 10
+            },
+            {
+              "text" : "Nota bene: rcaexemplu",
+              "weight" : 3
+            }
+          ],
+          "id" : "n",
+          "isSensitive" : false,
+          "kind" : "document",
+          "subtitle" : null,
+          "title" : "Factură neachitată"
+        },
+        {
+          "date" : null,
+          "fields" : [
+            {
+              "text" : "Factură achitată",
+              "weight" : 10
+            }
+          ],
+          "id" : "p",
+          "isSensitive" : false,
+          "kind" : "document",
+          "subtitle" : null,
+          "title" : "Factură achitată"
+        }
+      ],
+      "name" : "never the middle of a word",
+      "queries" : [
+        {
+          "kinds" : null,
+          "limit" : null,
+          "query" : "achitat",
+          "results" : [
+            {
+              "id" : "p",
+              "score" : 20,
+              "snippet" : null
+            }
+          ],
+          "tokens" : [
+            "achitat"
+          ]
+        },
+        {
+          "kinds" : null,
+          "limit" : null,
+          "query" : "achit",
+          "results" : [
+            {
+              "id" : "p",
+              "score" : 20,
+              "snippet" : null
+            }
+          ],
+          "tokens" : [
+            "achit"
+          ]
+        },
+        {
+          "kinds" : null,
+          "limit" : null,
+          "query" : "neach",
+          "results" : [
+            {
+              "id" : "n",
+              "score" : 20,
+              "snippet" : null
+            }
+          ],
+          "tokens" : [
+            "neach"
+          ]
+        },
+        {
+          "kinds" : null,
+          "limit" : null,
+          "query" : "chitata",
+          "results" : [
+
+          ],
+          "tokens" : [
+            "chitata"
+          ]
+        },
+        {
+          "kinds" : null,
+          "limit" : null,
+          "query" : "rca",
+          "results" : [
+            {
+              "id" : "n",
+              "score" : 6,
+              "snippet" : "Nota bene: rcaexemplu"
+            }
+          ],
+          "tokens" : [
+            "rca"
+          ]
+        },
+        {
+          "kinds" : null,
+          "limit" : null,
+          "query" : "exemplu",
+          "results" : [
+
+          ],
+          "tokens" : [
+            "exemplu"
+          ]
+        },
+        {
+          "kinds" : null,
+          "limit" : null,
+          "query" : "factura achitata",
+          "results" : [
+            {
+              "id" : "p",
+              "score" : 60,
+              "snippet" : null
+            }
+          ],
+          "tokens" : [
+            "factura",
+            "achitata"
+          ]
+        },
+        {
+          "kinds" : null,
+          "limit" : null,
+          "query" : "achitata factura",
+          "results" : [
+            {
+              "id" : "p",
+              "score" : 60,
+              "snippet" : null
+            }
+          ],
+          "tokens" : [
+            "achitata",
+            "factura"
+          ]
+        }
+      ]
+    },
+    {
+      "documents" : [
+        {
+          "date" : null,
+          "fields" : [
+            {
+              "text" : "VW Golf",
+              "weight" : 10
+            },
+            {
+              "text" : "Mașini",
+              "weight" : 6
+            },
+            {
+              "text" : "Număr B-123-ABC",
+              "weight" : 8
+            },
+            {
+              "text" : "b123abc",
+              "weight" : 8
+            },
+            {
+              "text" : "IBAN RO49 AAAA 1B31 0075 9384 0000",
+              "weight" : 4
+            },
+            {
+              "text" : "RO49AAAA1B31007593840000",
+              "weight" : 4
+            }
+          ],
+          "id" : "car",
+          "isSensitive" : false,
+          "kind" : "asset",
+          "subtitle" : "Volkswagen Golf",
+          "title" : "VW Golf"
+        }
+      ],
+      "name" : "codes compared without separators",
+      "queries" : [
+        {
+          "kinds" : null,
+          "limit" : null,
+          "query" : "B-123-ABC",
+          "results" : [
+            {
+              "id" : "car",
+              "score" : 72,
+              "snippet" : "Număr B-123-ABC"
+            }
+          ],
+          "tokens" : [
+            "b",
+            "123",
+            "abc"
+          ]
+        },
+        {
+          "kinds" : null,
+          "limit" : null,
+          "query" : "b123abc",
+          "results" : [
+            {
+              "id" : "car",
+              "score" : 24,
+              "snippet" : "b123abc"
+            }
+          ],
+          "tokens" : [
+            "b123abc"
+          ]
+        },
+        {
+          "kinds" : null,
+          "limit" : null,
+          "query" : "B 123 ABC",
+          "results" : [
+            {
+              "id" : "car",
+              "score" : 72,
+              "snippet" : "Număr B-123-ABC"
+            }
+          ],
+          "tokens" : [
+            "b",
+            "123",
+            "abc"
+          ]
+        },
+        {
+          "kinds" : null,
+          "limit" : null,
+          "query" : "b12",
+          "results" : [
+            {
+              "id" : "car",
+              "score" : 16,
+              "snippet" : "b123abc"
+            }
+          ],
+          "tokens" : [
+            "b12"
+          ]
+        },
+        {
+          "kinds" : null,
+          "limit" : null,
+          "query" : "123",
+          "results" : [
+            {
+              "id" : "car",
+              "score" : 24,
+              "snippet" : "Număr B-123-ABC"
+            }
+          ],
+          "tokens" : [
+            "123"
+          ]
+        },
+        {
+          "kinds" : null,
+          "limit" : null,
+          "query" : "ro49aaaa",
+          "results" : [
+            {
+              "id" : "car",
+              "score" : 8,
+              "snippet" : "RO49AAAA1B31007593840000"
+            }
+          ],
+          "tokens" : [
+            "ro49aaaa"
+          ]
+        },
+        {
+          "kinds" : null,
+          "limit" : null,
+          "query" : "RO49 AAAA",
+          "results" : [
+            {
+              "id" : "car",
+              "score" : 24,
+              "snippet" : "IBAN RO49 AAAA 1B31 0075 9384 0000"
+            }
+          ],
+          "tokens" : [
+            "ro49",
+            "aaaa"
+          ]
+        },
+        {
+          "kinds" : null,
+          "limit" : null,
+          "query" : "1b31",
+          "results" : [
+            {
+              "id" : "car",
+              "score" : 12,
+              "snippet" : "IBAN RO49 AAAA 1B31 0075 9384 0000"
+            }
+          ],
+          "tokens" : [
+            "1b31"
+          ]
+        },
+        {
+          "kinds" : null,
+          "limit" : null,
+          "query" : "masini",
+          "results" : [
+            {
+              "id" : "car",
+              "score" : 18,
+              "snippet" : "Mașini"
+            }
+          ],
+          "tokens" : [
+            "masini"
+          ]
+        }
+      ]
+    },
+    {
+      "documents" : [
+        {
+          "date" : null,
+          "fields" : [
+            {
+              "text" : "RCA",
+              "weight" : 10
+            },
+            {
+              "text" : "VW Golf",
+              "weight" : 6
+            },
+            {
+              "text" : "Golful din garaj",
+              "weight" : 3
+            }
+          ],
+          "id" : "d",
+          "isSensitive" : false,
+          "kind" : "obligation",
+          "subtitle" : "VW Golf · 3 martie",
+          "title" : "RCA"
+        },
+        {
+          "date" : null,
+          "fields" : [
+            {
+              "text" : "Plăcuțe frână față",
+              "weight" : 10
+            },
+            {
+              "text" : "Frâne placute",
+              "weight" : 6
+            },
+            {
+              "text" : "VW Golf",
+              "weight" : 6
+            }
+          ],
+          "id" : "e",
+          "isSensitive" : false,
+          "kind" : "component",
+          "subtitle" : "VW Golf · 3 martie",
+          "title" : "Plăcuțe frână față"
+        },
+        {
+          "date" : null,
+          "fields" : [
+            {
+              "text" : "Service Exemplu",
+              "weight" : 10
+            },
+            {
+              "text" : "Mecanic",
+              "weight" : 6
+            },
+            {
+              "text" : "0722 123 456",
+              "weight" : 8
+            },
+            {
+              "text" : "",
+              "weight" : 4
+            },
+            {
+              "text" : "Mecanic de încredere",
+              "weight" : 3
+            }
+          ],
+          "id" : "f",
+          "isSensitive" : false,
+          "kind" : "provider",
+          "subtitle" : "Mecanic",
+          "title" : "Service Exemplu"
+        }
+      ],
+      "name" : "the preview line adds something",
+      "queries" : [
+        {
+          "kinds" : null,
+          "limit" : null,
+          "query" : "golf",
+          "results" : [
+            {
+              "id" : "e",
+              "score" : 18,
+              "snippet" : null
+            },
+            {
+              "id" : "d",
+              "score" : 18,
+              "snippet" : "Golful din garaj"
+            }
+          ],
+          "tokens" : [
+            "golf"
+          ]
+        },
+        {
+          "kinds" : null,
+          "limit" : null,
+          "query" : "rca",
+          "results" : [
+            {
+              "id" : "d",
+              "score" : 30,
+              "snippet" : null
+            }
+          ],
+          "tokens" : [
+            "rca"
+          ]
+        },
+        {
+          "kinds" : null,
+          "limit" : null,
+          "query" : "garaj",
+          "results" : [
+            {
+              "id" : "d",
+              "score" : 9,
+              "snippet" : "Golful din garaj"
+            }
+          ],
+          "tokens" : [
+            "garaj"
+          ]
+        },
+        {
+          "kinds" : null,
+          "limit" : null,
+          "query" : "placute",
+          "results" : [
+            {
+              "id" : "e",
+              "score" : 30,
+              "snippet" : "Frâne placute"
+            }
+          ],
+          "tokens" : [
+            "placute"
+          ]
+        },
+        {
+          "kinds" : null,
+          "limit" : null,
+          "query" : "frana",
+          "results" : [
+            {
+              "id" : "e",
+              "score" : 30,
+              "snippet" : null
+            }
+          ],
+          "tokens" : [
+            "frana"
+          ]
+        },
+        {
+          "kinds" : null,
+          "limit" : null,
+          "query" : "mecanic",
+          "results" : [
+            {
+              "id" : "f",
+              "score" : 18,
+              "snippet" : "Mecanic de încredere"
+            }
+          ],
+          "tokens" : [
+            "mecanic"
+          ]
+        },
+        {
+          "kinds" : null,
+          "limit" : null,
+          "query" : "martie",
+          "results" : [
+
+          ],
+          "tokens" : [
+            "martie"
+          ]
+        },
+        {
+          "kinds" : null,
+          "limit" : null,
+          "query" : "0722",
+          "results" : [
+            {
+              "id" : "f",
+              "score" : 24,
+              "snippet" : "0722 123 456"
+            }
+          ],
+          "tokens" : [
+            "0722"
+          ]
+        },
+        {
+          "kinds" : null,
+          "limit" : null,
+          "query" : "incredere",
+          "results" : [
+            {
+              "id" : "f",
+              "score" : 9,
+              "snippet" : "Mecanic de încredere"
+            }
+          ],
+          "tokens" : [
+            "incredere"
+          ]
+        }
+      ]
+    },
+    {
+      "documents" : [
+        {
+          "date" : null,
+          "fields" : [
+            {
+              "text" : "Factura 10",
+              "weight" : 10
+            }
+          ],
+          "id" : "x10",
+          "isSensitive" : false,
+          "kind" : "document",
+          "subtitle" : null,
+          "title" : "Factura 10"
+        },
+        {
+          "date" : null,
+          "fields" : [
+            {
+              "text" : "Factura 2",
+              "weight" : 10
+            }
+          ],
+          "id" : "x2",
+          "isSensitive" : false,
+          "kind" : "document",
+          "subtitle" : null,
+          "title" : "Factura 2"
+        },
+        {
+          "date" : null,
+          "fields" : [
+            {
+              "text" : "factura 1b",
+              "weight" : 10
+            }
+          ],
+          "id" : "x1b",
+          "isSensitive" : false,
+          "kind" : "document",
+          "subtitle" : null,
+          "title" : "factura 1b"
+        },
+        {
+          "date" : null,
+          "fields" : [
+            {
+              "text" : "Factura alfa",
+              "weight" : 10
+            }
+          ],
+          "id" : "xa",
+          "isSensitive" : false,
+          "kind" : "document",
+          "subtitle" : null,
+          "title" : "Factura alfa"
+        },
+        {
+          "date" : null,
+          "fields" : [
+            {
+              "text" : "Factura Beta",
+              "weight" : 10
+            }
+          ],
+          "id" : "xB",
+          "isSensitive" : false,
+          "kind" : "document",
+          "subtitle" : null,
+          "title" : "Factura Beta"
+        },
+        {
+          "date" : "2026-05-01T10:00:00Z",
+          "fields" : [
+            {
+              "text" : "Factura veche",
+              "weight" : 10
+            }
+          ],
+          "id" : "new",
+          "isSensitive" : false,
+          "kind" : "document",
+          "subtitle" : null,
+          "title" : "Factura veche"
+        },
+        {
+          "date" : "2025-05-01T10:00:00Z",
+          "fields" : [
+            {
+              "text" : "Factura nouă",
+              "weight" : 10
+            }
+          ],
+          "id" : "old",
+          "isSensitive" : false,
+          "kind" : "document",
+          "subtitle" : null,
+          "title" : "Factura nouă"
+        },
+        {
+          "date" : null,
+          "fields" : [
+            {
+              "text" : "Facturare lunară",
+              "weight" : 10
+            }
+          ],
+          "id" : "prefix",
+          "isSensitive" : false,
+          "kind" : "document",
+          "subtitle" : null,
+          "title" : "Facturare lunară"
+        },
+        {
+          "date" : null,
+          "fields" : [
+            {
+              "text" : "Dosar",
+              "weight" : 10
+            },
+            {
+              "text" : "factura de gaz",
+              "weight" : 3
+            }
+          ],
+          "id" : "noted",
+          "isSensitive" : false,
+          "kind" : "document",
+          "subtitle" : null,
+          "title" : "Dosar"
+        },
+        {
+          "date" : null,
+          "fields" : [
+            {
+              "text" : "Factura",
+              "weight" : 10
+            },
+            {
+              "text" : "factura",
+              "weight" : 4
+            },
+            {
+              "text" : "facturi",
+              "weight" : 3
+            }
+          ],
+          "id" : "twice",
+          "isSensitive" : false,
+          "kind" : "document",
+          "subtitle" : null,
+          "title" : "Factura și factura"
+        }
+      ],
+      "name" : "ranking and ties",
+      "queries" : [
+        {
+          "kinds" : null,
+          "limit" : null,
+          "query" : "factura",
+          "results" : [
+            {
+              "id" : "new",
+              "score" : 30,
+              "snippet" : null
+            },
+            {
+              "id" : "old",
+              "score" : 30,
+              "snippet" : null
+            },
+            {
+              "id" : "x1b",
+              "score" : 30,
+              "snippet" : null
+            },
+            {
+              "id" : "x2",
+              "score" : 30,
+              "snippet" : null
+            },
+            {
+              "id" : "x10",
+              "score" : 30,
+              "snippet" : null
+            },
+            {
+              "id" : "xa",
+              "score" : 30,
+              "snippet" : null
+            },
+            {
+              "id" : "xB",
+              "score" : 30,
+              "snippet" : null
+            },
+            {
+              "id" : "twice",
+              "score" : 30,
+              "snippet" : null
+            },
+            {
+              "id" : "prefix",
+              "score" : 20,
+              "snippet" : null
+            },
+            {
+              "id" : "noted",
+              "score" : 9,
+              "snippet" : "factura de gaz"
+            }
+          ],
+          "tokens" : [
+            "factura"
+          ]
+        },
+        {
+          "kinds" : null,
+          "limit" : null,
+          "query" : "factur",
+          "results" : [
+            {
+              "id" : "new",
+              "score" : 20,
+              "snippet" : null
+            },
+            {
+              "id" : "old",
+              "score" : 20,
+              "snippet" : null
+            },
+            {
+              "id" : "x1b",
+              "score" : 20,
+              "snippet" : null
+            },
+            {
+              "id" : "x2",
+              "score" : 20,
+              "snippet" : null
+            },
+            {
+              "id" : "x10",
+              "score" : 20,
+              "snippet" : null
+            },
+            {
+              "id" : "xa",
+              "score" : 20,
+              "snippet" : null
+            },
+            {
+              "id" : "xB",
+              "score" : 20,
+              "snippet" : null
+            },
+            {
+              "id" : "twice",
+              "score" : 20,
+              "snippet" : "facturi"
+            },
+            {
+              "id" : "prefix",
+              "score" : 20,
+              "snippet" : null
+            },
+            {
+              "id" : "noted",
+              "score" : 6,
+              "snippet" : "factura de gaz"
+            }
+          ],
+          "tokens" : [
+            "factur"
+          ]
+        },
+        {
+          "kinds" : null,
+          "limit" : 3,
+          "query" : "factura",
+          "results" : [
+            {
+              "id" : "new",
+              "score" : 30,
+              "snippet" : null
+            },
+            {
+              "id" : "old",
+              "score" : 30,
+              "snippet" : null
+            },
+            {
+              "id" : "x1b",
+              "score" : 30,
+              "snippet" : null
+            }
+          ],
+          "tokens" : [
+            "factura"
+          ]
+        },
+        {
+          "kinds" : null,
+          "limit" : null,
+          "query" : "factura gaz",
+          "results" : [
+            {
+              "id" : "noted",
+              "score" : 18,
+              "snippet" : "factura de gaz"
+            }
+          ],
+          "tokens" : [
+            "factura",
+            "gaz"
+          ]
+        },
+        {
+          "kinds" : null,
+          "limit" : null,
+          "query" : "factura 2",
+          "results" : [
+            {
+              "id" : "x2",
+              "score" : 60,
+              "snippet" : null
+            }
+          ],
+          "tokens" : [
+            "factura",
+            "2"
+          ]
+        },
+        {
+          "kinds" : null,
+          "limit" : null,
+          "query" : "dosar factura",
+          "results" : [
+            {
+              "id" : "noted",
+              "score" : 39,
+              "snippet" : "factura de gaz"
+            }
+          ],
+          "tokens" : [
+            "dosar",
+            "factura"
+          ]
+        }
+      ]
+    }
+  ],
+  "rule" : "SearchIndex.search(_:limit:kinds:) and SearchText.tokens(_:): every query word the start of a folded word, scored by the field's weight, ranked by score, then newer, then title",
+  "shape" : "name: what the group bites on. documents: the index's documents (subtitle as the row shows it, date a moment or null). queries: each query with the kinds and limit it is asked with (null for none), its tokens, and the results in order: id, score and the preview line (null for none).",
+  "source" : "ios/DosarCuSina/Services/Search/SearchEngine.swift",
+  "writtenBy" : "ios/DosarCuSinaTests/SearchVectorsTests.swift"
+}

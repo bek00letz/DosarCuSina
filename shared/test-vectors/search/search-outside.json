@@ -1,0 +1,221 @@
+{
+  "built" : "A token in a case's text is a number that passes its check, built when the test runs so the repository never holds one. {luhn:DIGITS}: DIGITS as written with the Luhn check digit after them. {iban:CC:BBAN}: CC, the two ISO 13616 check digits (98 minus BBAN + CC + \"00\" mod 97, letters as A=10 … Z=35), then BBAN. {iban4:CC:BBAN}: the same, in groups of four with a space between. {fours:DIGITS}: DIGITS in groups of four with a space between. Answers name the same tokens.",
+  "cases" : [
+    {
+      "kept" : [
+
+      ],
+      "outside" : "Pașaport",
+      "text" : "Pașaport – RX 123456",
+      "withheld" : [
+        "RX 123456"
+      ]
+    },
+    {
+      "kept" : [
+
+      ],
+      "outside" : "Pașaport",
+      "text" : "Pașaport RX-123456",
+      "withheld" : [
+        "rx123456"
+      ]
+    },
+    {
+      "kept" : [
+
+      ],
+      "outside" : "Pașaport",
+      "text" : "Pașaport rx123456",
+      "withheld" : [
+        "RX 123456"
+      ]
+    },
+    {
+      "kept" : [
+
+      ],
+      "outside" : null,
+      "text" : "RX 123456",
+      "withheld" : [
+        "RX 123456"
+      ]
+    },
+    {
+      "kept" : [
+
+      ],
+      "outside" : "Buletin 34",
+      "text" : "Buletin AB 1234",
+      "withheld" : [
+        "AB12"
+      ]
+    },
+    {
+      "kept" : [
+
+      ],
+      "outside" : "Carte de identitate",
+      "text" : "Carte de identitate · 1800101990006",
+      "withheld" : [
+
+      ]
+    },
+    {
+      "kept" : [
+
+      ],
+      "outside" : "Card",
+      "text" : "Card 4111 1111 1111 1111",
+      "withheld" : [
+
+      ]
+    },
+    {
+      "kept" : [
+        {
+          "text" : "{luhn:64200000000123}",
+          "type" : "microchip"
+        }
+      ],
+      "outside" : "Rex · {luhn:64200000000123}",
+      "text" : "Rex · {luhn:64200000000123}",
+      "withheld" : [
+
+      ]
+    },
+    {
+      "kept" : [
+
+      ],
+      "outside" : "Rex",
+      "text" : "Rex · {luhn:64200000000123}",
+      "withheld" : [
+
+      ]
+    },
+    {
+      "kept" : [
+
+      ],
+      "outside" : "Cod",
+      "text" : "Cod sealed:v1:AAAA",
+      "withheld" : [
+
+      ]
+    },
+    {
+      "kept" : [
+
+      ],
+      "outside" : "VW Golf",
+      "text" : "  VW   Golf  ",
+      "withheld" : [
+
+      ]
+    },
+    {
+      "kept" : [
+
+      ],
+      "outside" : null,
+      "text" : "— : ·",
+      "withheld" : [
+
+      ]
+    },
+    {
+      "kept" : [
+
+      ],
+      "outside" : null,
+      "text" : null,
+      "withheld" : [
+
+      ]
+    },
+    {
+      "kept" : [
+
+      ],
+      "outside" : null,
+      "text" : "",
+      "withheld" : [
+
+      ]
+    },
+    {
+      "kept" : [
+
+      ],
+      "outside" : "Asigurare",
+      "text" : "Asigurare POL-000000",
+      "withheld" : [
+        "POL-000000",
+        "POL 000000"
+      ]
+    },
+    {
+      "kept" : [
+
+      ],
+      "outside" : "Țăran",
+      "text" : "Ștefan Țăran",
+      "withheld" : [
+        "ȘTEFAN"
+      ]
+    },
+    {
+      "kept" : [
+
+      ],
+      "outside" : "Contract",
+      "text" : "Contract #12345678",
+      "withheld" : [
+        "12345678"
+      ]
+    },
+    {
+      "kept" : [
+
+      ],
+      "outside" : "Cod ABCDEFGHIJABCDEFGHIJABCDEFGHIJABCDEFGHIJABCDEFGHIJABCDEFGHIJABCDE",
+      "text" : "Cod ABCDEFGHIJABCDEFGHIJABCDEFGHIJABCDEFGHIJABCDEFGHIJABCDEFGHIJABCDE",
+      "withheld" : [
+        "ABCDEFGHIJABCDEFGHIJABCDEFGHIJABCDEFGHIJABCDEFGHIJABCDEFGHIJABCDE"
+      ]
+    },
+    {
+      "isExample" : false,
+      "isLocked" : false,
+      "mayShowOutside" : true
+    },
+    {
+      "isExample" : false,
+      "isLocked" : true,
+      "mayShowOutside" : false
+    },
+    {
+      "isExample" : true,
+      "isLocked" : false,
+      "mayShowOutside" : false
+    },
+    {
+      "isExample" : true,
+      "isLocked" : true,
+      "mayShowOutside" : false
+    },
+    {
+      "appLockEnabled" : false,
+      "outsideListsAnything" : true
+    },
+    {
+      "appLockEnabled" : true,
+      "outsideListsAnything" : false
+    }
+  ],
+  "rule" : "SearchPrivacy.outsideText(_:withholding:keeping:), mayShowOutside(isLocked:isExample:) and outsideListsAnything(appLockEnabled:): what may be shown of the binder outside the app",
+  "shape" : "Each case is one of three: text (null for none), withheld (values the category keeps out of search) and kept (typed values kept whole) give outside, the text as it may be shown outside, or null; isLocked and isExample give mayShowOutside; appLockEnabled gives outsideListsAnything.",
+  "source" : "ios/DosarCuSina/Services/Search/SearchPrivacy.swift",
+  "writtenBy" : "ios/DosarCuSinaTests/SearchVectorsTests.swift"
+}
