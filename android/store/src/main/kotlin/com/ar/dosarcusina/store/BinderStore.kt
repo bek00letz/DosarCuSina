@@ -1,6 +1,7 @@
 package com.ar.dosarcusina.store
 
 import androidx.room3.Room
+import androidx.room3.RoomDatabase
 import androidx.sqlite.driver.bundled.BundledSQLiteDriver
 import com.ar.dosarcusina.store.locks.SectionLocks
 import com.ar.dosarcusina.store.schema.BinderDatabase
@@ -43,12 +44,16 @@ class BinderStore private constructor(
         /** The folder of the files it names, in a store's folder. */
         const val FILES_FOLDER = "files"
 
-        /** The store kept in [folder]: made there the first time, brought to the current version after. */
-        fun open(folder: File): BinderStore {
+        /**
+         * The store kept in [folder]: made there the first time, brought to the current version after.
+         * [builders] gives Room's builder for its database file: the JVM's here and in the tests, the
+         * phone's (with the app's context) in the app.
+         */
+        fun open(folder: File, builders: DatabaseBuilders = DatabaseBuilders.JVM): BinderStore {
             folder.mkdirs()
             val database = File(folder, DATABASE_NAME)
             val files = StoreFiles(File(folder, FILES_FOLDER))
-            return BinderStore(database(database.path), files, SectionLocks.of(database))
+            return BinderStore(database(database.path, builders), files, SectionLocks.of(database))
         }
 
         /**
@@ -62,13 +67,28 @@ class BinderStore private constructor(
         )
 
         /** The database in the file at [path], as every open makes it. */
-        internal fun database(path: String): BinderDatabase =
-            Room.databaseBuilder<BinderDatabase>(path) { BinderDatabase_Impl() }.configured().build()
+        internal fun database(path: String, builders: DatabaseBuilders = DatabaseBuilders.JVM): BinderDatabase =
+            builders.builder(path) { BinderDatabase_Impl() }.configured().build()
 
-        private fun androidx.room3.RoomDatabase.Builder<BinderDatabase>.configured() =
+        private fun RoomDatabase.Builder<BinderDatabase>.configured() =
             setDriver(BundledSQLiteDriver())
                 .setQueryCoroutineContext(Dispatchers.IO)
                 .addMigrations(*BinderMigrations.all)
+    }
+}
+
+/**
+ * Room's builder for the database in a file: where the JVM and the phone differ. Room's JVM builder
+ * takes the file alone and the phone's takes the app's context too, so the store asks for one here
+ * and configures it the same way for both (the bundled SQLite, the migrations): one database, opened
+ * one way. [factory] makes the database Room generated for the store.
+ */
+fun interface DatabaseBuilders {
+    fun builder(path: String, factory: () -> BinderDatabase): RoomDatabase.Builder<BinderDatabase>
+
+    companion object {
+        /** The JVM's: the store's tests and anything off the phone. */
+        val JVM = DatabaseBuilders { path, factory -> Room.databaseBuilder(path, factory) }
     }
 }
 
