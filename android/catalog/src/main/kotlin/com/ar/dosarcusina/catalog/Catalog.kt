@@ -52,6 +52,9 @@ class Catalog private constructor(
         KEYS("keys.json"),
         OWN_CATEGORIES("ownCategories.json"),
         HOUSEHOLD("household.json"),
+
+        /** The example household, read by [ExampleHousehold], not by the catalog. */
+        EXAMPLES("examples/household.json"),
     }
 
     companion object {
@@ -177,37 +180,38 @@ private class Defaults(val isOnHome: Boolean, val isSensitive: Boolean) {
     }
 }
 
-// Reading the catalog's JSON, where anything missing or of another shape is a CatalogError.
+// Reading the catalog's JSON, where anything missing or of another shape is a CatalogError: the catalog
+// and the example household (ExampleHousehold) read their files with these.
 
-private inline fun catalogCheck(condition: Boolean, message: () -> String) {
+internal inline fun catalogCheck(condition: Boolean, message: () -> String) {
     if (!condition) throw CatalogError(message())
 }
 
-private fun <T> JsonObject.parts(name: String, codec: JsonCodec<T>, key: String): List<T> =
+internal fun <T> JsonObject.parts(name: String, codec: JsonCodec<T>, key: String): List<T> =
     list(name).mapIndexed { index, part -> whole(part, codec, "$key.$name[$index]") }
 
-private fun <T> whole(json: JsonElement, codec: JsonCodec<T>, where: String): T =
+internal fun <T> whole(json: JsonElement, codec: JsonCodec<T>, where: String): T =
     codec.decode(json) ?: throw CatalogError("$where can't be read by this build")
 
-private fun JsonElement.obj(where: String): JsonObject =
+internal fun JsonElement.obj(where: String): JsonObject =
     this as? JsonObject ?: throw CatalogError("$where isn't an object")
 
-private fun JsonElement.text(where: String): String =
+internal fun JsonElement.text(where: String): String =
     (this as? JsonPrimitive)?.takeIf { it.isString }?.content ?: throw CatalogError("$where isn't text")
 
-private fun JsonObject.string(name: String): String = this[name]?.text(name) ?: throw CatalogError("$name is missing")
+internal fun JsonObject.string(name: String): String = this[name]?.text(name) ?: throw CatalogError("$name is missing")
 
-private fun JsonObject.bool(name: String): Boolean =
+internal fun JsonObject.bool(name: String): Boolean =
     (this[name] as? JsonPrimitive)?.takeIf { !it.isString }?.booleanOrNull
         ?: throw CatalogError("$name isn't true or false")
 
-private fun JsonObject.int(name: String): Int =
+internal fun JsonObject.int(name: String): Int =
     (this[name] as? JsonPrimitive)?.takeIf { !it.isString }?.intOrNull
         ?: throw CatalogError("$name isn't a whole number")
 
-private fun JsonObject.list(name: String): List<JsonElement> =
+internal fun JsonObject.list(name: String): List<JsonElement> =
     this[name] as? JsonArray ?: throw CatalogError("$name isn't a list")
 
-private fun JsonObject.strings(name: String): Map<String, String> =
+internal fun JsonObject.strings(name: String): Map<String, String> =
     (this[name]?.obj(name) ?: throw CatalogError("$name is missing"))
         .mapValues { (key, value) -> value.text("$name.$key") }

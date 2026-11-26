@@ -70,6 +70,17 @@ data class DeadlineSnapshot(
     /** The moment its snooze ends, the start of that day in [zone], while still after [now]. */
     fun snoozeEnds(now: Instant, zone: ZoneId): Instant? =
         snoozedUntil?.startOfDay(zone)?.takeIf { it.isAfter(now) }
+
+    companion object {
+        /**
+         * The deadlines that may be carried out of the app (reminders, the badge, widgets, Siri's
+         * lists), as the iOS app's `ObligationSnapshot.fetchForOutside`: every one but the examples,
+         * which show only inside the app. The one filter whatever builds the outside's snapshots
+         * reads them through (Phase 4 and 6's side effects); the planners take what it gives.
+         */
+        fun forOutside(deadlines: List<DeadlineSnapshot>): List<DeadlineSnapshot> =
+            deadlines.filterNot { it.isExample }
+    }
 }
 
 /**

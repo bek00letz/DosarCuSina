@@ -14,11 +14,12 @@ dependencies {
 
 val shared = rootDir.resolve("../shared")
 
-// The one copy: shared/catalog/*.json goes into the module's resources as it is built, so the
-// app carries the catalog the iOS app exported, never one of its own.
+// The one copy: shared/catalog/*.json and the example household (examples/) go into the
+// module's resources as it is built, so the app carries the catalog the iOS app exported,
+// never one of its own.
 val catalogResources = tasks.register<Sync>("catalogResources") {
     from(shared.resolve("catalog")) {
-        include("*.json")
+        include("*.json", "examples/*.json")
         into("com/ar/dosarcusina/catalog")
     }
     into(layout.buildDirectory.dir("catalog-resources"))

@@ -1,0 +1,4641 @@
+{
+  "cases" : [
+    {
+      "binder" : {
+        "data/assets.json" : [
+          {
+            "createdAt" : "<made>",
+            "id" : "id-1",
+            "isExample" : true,
+            "name" : "Apartament Floreasca",
+            "templateKey" : "home",
+            "updatedAt" : "2026-11-26T10:00:00Z",
+            "values" : {
+              "home.address" : {
+                "type" : "text",
+                "value" : "Str. Exemplului nr. 12, București"
+              },
+              "home.area" : {
+                "type" : "number",
+                "value" : 78.5
+              },
+              "home.meterReadFrom" : {
+                "type" : "number",
+                "value" : 20
+              },
+              "home.meterReadTo" : {
+                "type" : "number",
+                "value" : 25
+              }
+            }
+          },
+          {
+            "createdAt" : "<made>",
+            "id" : "id-2",
+            "isExample" : true,
+            "name" : "Aragaz",
+            "parentId" : "id-1",
+            "templateKey" : "purchase",
+            "updatedAt" : "2026-11-26T10:00:00Z",
+            "values" : {
+              "purchase.date" : {
+                "type" : "date",
+                "value" : "2026-05-10"
+              },
+              "purchase.price" : {
+                "amount" : "1350",
+                "currency" : "RON",
+                "type" : "money"
+              },
+              "purchase.retailer" : {
+                "type" : "text",
+                "value" : "Magazin exemplu"
+              },
+              "purchase.warrantyMonths" : {
+                "type" : "number",
+                "value" : 24
+              },
+              "purchase.warrantyUntil" : {
+                "type" : "date",
+                "value" : "2028-05-10"
+              }
+            }
+          },
+          {
+            "createdAt" : "<made>",
+            "id" : "id-3",
+            "isExample" : true,
+            "name" : "Carte de identitate",
+            "parentId" : "id-5",
+            "templateKey" : "documents",
+            "updatedAt" : "2026-11-26T10:00:00Z",
+            "values" : {
+              "document.expiry" : {
+                "type" : "date",
+                "value" : "2029-05-14"
+              },
+              "document.type" : {
+                "type" : "text",
+                "value" : "documentType.idCard"
+              }
+            }
+          },
+          {
+            "createdAt" : "<made>",
+            "id" : "id-4",
+            "isExample" : true,
+            "name" : "Chiriaș garsonieră",
+            "parentId" : "id-1",
+            "templateKey" : "tenancy",
+            "updatedAt" : "2026-11-26T10:00:00Z",
+            "values" : {
+              "tenancy.deposit" : {
+                "amount" : "450",
+                "currency" : "EUR",
+                "type" : "money"
+              },
+              "tenancy.end" : {
+                "type" : "date",
+                "value" : "2027-01-30"
+              },
+              "tenancy.paymentDay" : {
+                "type" : "number",
+                "value" : 5
+              },
+              "tenancy.rent" : {
+                "amount" : "450",
+                "currency" : "EUR",
+                "type" : "money"
+              },
+              "tenancy.start" : {
+                "type" : "date",
+                "value" : "2026-01-30"
+              }
+            }
+          },
+          {
+            "createdAt" : "<made>",
+            "id" : "id-5",
+            "isExample" : true,
+            "name" : "Eu",
+            "templateKey" : "member",
+            "updatedAt" : "2026-11-26T10:00:00Z",
+            "values" : {
+
+            }
+          },
+          {
+            "createdAt" : "<made>",
+            "id" : "id-6",
+            "isExample" : true,
+            "name" : "Frigider",
+            "parentId" : "id-1",
+            "templateKey" : "purchase",
+            "updatedAt" : "2026-11-26T10:00:00Z",
+            "values" : {
+              "purchase.brand" : {
+                "type" : "text",
+                "value" : "Frigider combinat"
+              },
+              "purchase.date" : {
+                "type" : "date",
+                "value" : "2025-04-05"
+              },
+              "purchase.price" : {
+                "amount" : "2499",
+                "currency" : "RON",
+                "type" : "money"
+              },
+              "purchase.retailer" : {
+                "type" : "text",
+                "value" : "Magazin exemplu"
+              },
+              "purchase.warrantyMonths" : {
+                "type" : "number",
+                "value" : 24
+              },
+              "purchase.warrantyUntil" : {
+                "type" : "date",
+                "value" : "2027-04-05"
+              }
+            }
+          },
+          {
+            "createdAt" : "<made>",
+            "id" : "id-7",
+            "isExample" : true,
+            "name" : "Internet fibră",
+            "templateKey" : "subscription",
+            "updatedAt" : "2026-11-26T10:00:00Z",
+            "values" : {
+              "subscription.contractEnd" : {
+                "type" : "date",
+                "value" : "2027-01-05"
+              },
+              "subscription.cycle" : {
+                "type" : "text",
+                "value" : "billing.monthly"
+              },
+              "subscription.group" : {
+                "type" : "text",
+                "value" : "subscriptionGroup.internetAndPhone"
+              },
+              "subscription.price" : {
+                "amount" : "45",
+                "currency" : "RON",
+                "type" : "money"
+              },
+              "subscription.provider" : {
+                "type" : "text",
+                "value" : "Digi"
+              },
+              "subscription.service" : {
+                "type" : "text",
+                "value" : "service.internetTV"
+              }
+            }
+          },
+          {
+            "createdAt" : "<made>",
+            "id" : "id-8",
+            "isExample" : true,
+            "name" : "Max",
+            "templateKey" : "pet",
+            "updatedAt" : "2026-11-26T10:00:00Z",
+            "values" : {
+              "pet.birthDate" : {
+                "type" : "date",
+                "value" : "2021-05-10"
+              },
+              "pet.breed" : {
+                "type" : "text",
+                "value" : "Golden Retriever"
+              },
+              "pet.microchip" : {
+                "type" : "text",
+                "value" : "642000000000001"
+              },
+              "pet.species" : {
+                "type" : "text",
+                "value" : "species.dog"
+              },
+              "pet.weight" : {
+                "type" : "number",
+                "value" : 31.5
+              }
+            }
+          },
+          {
+            "createdAt" : "<made>",
+            "id" : "id-9",
+            "isExample" : true,
+            "name" : "Pașaport",
+            "parentId" : "id-5",
+            "templateKey" : "documents",
+            "updatedAt" : "2026-11-26T10:00:00Z",
+            "values" : {
+              "document.expiry" : {
+                "type" : "date",
+                "value" : "2027-04-25"
+              },
+              "document.number" : {
+                "type" : "text",
+                "value" : "050000000"
+              },
+              "document.type" : {
+                "type" : "text",
+                "value" : "documentType.passport"
+              }
+            }
+          },
+          {
+            "createdAt" : "<made>",
+            "id" : "id-10",
+            "isExample" : true,
+            "name" : "Profil medical",
+            "templateKey" : "health",
+            "updatedAt" : "2026-11-26T10:00:00Z",
+            "values" : {
+              "health.allergies" : {
+                "type" : "text",
+                "value" : "Fără alergii cunoscute"
+              },
+              "health.bloodType" : {
+                "type" : "text",
+                "value" : "bloodType.aPositive"
+              }
+            }
+          },
+          {
+            "createdAt" : "<made>",
+            "id" : "id-11",
+            "isExample" : true,
+            "name" : "Stocare online",
+            "templateKey" : "subscription",
+            "updatedAt" : "2026-11-26T10:00:00Z",
+            "values" : {
+              "subscription.cycle" : {
+                "type" : "text",
+                "value" : "billing.yearly"
+              },
+              "subscription.group" : {
+                "type" : "text",
+                "value" : "subscriptionGroup.appsAndStreaming"
+              },
+              "subscription.price" : {
+                "amount" : "29.99",
+                "currency" : "EUR",
+                "type" : "money"
+              },
+              "subscription.provider" : {
+                "type" : "text",
+                "value" : "Serviciu exemplu"
+              },
+              "subscription.renewalDate" : {
+                "type" : "date",
+                "value" : "2026-12-14"
+              },
+              "subscription.service" : {
+                "type" : "text",
+                "value" : "service.streaming"
+              }
+            }
+          },
+          {
+            "createdAt" : "<made>",
+            "id" : "id-12",
+            "isExample" : true,
+            "name" : "VW Golf",
+            "templateKey" : "vehicle",
+            "updatedAt" : "2026-11-26T10:00:00Z",
+            "values" : {
+              "vehicle.fuel" : {
+                "type" : "text",
+                "value" : "fuel.petrol"
+              },
+              "vehicle.make" : {
+                "type" : "text",
+                "value" : "Volkswagen"
+              },
+              "vehicle.model" : {
+                "type" : "text",
+                "value" : "Golf"
+              },
+              "vehicle.odometer" : {
+                "type" : "number",
+                "value" : 142500
+              },
+              "vehicle.plate" : {
+                "type" : "text",
+                "value" : "B-123-ABC"
+              },
+              "vehicle.usage" : {
+                "type" : "text",
+                "value" : "vehicleUse.personal"
+              },
+              "vehicle.year" : {
+                "type" : "number",
+                "value" : 2018
+              }
+            }
+          }
+        ],
+        "data/attachments.json" : [
+
+        ],
+        "data/history.json" : [
+          {
+            "assetId" : "id-12",
+            "cycleDueDate" : "2024-12-05",
+            "id" : "id-36",
+            "isExample" : true,
+            "kind" : "inspection",
+            "nextDueDate" : "2026-12-05",
+            "obligationId" : "id-30",
+            "occurredAt" : "2024-12-05T10:00:00Z",
+            "previousStatus" : "active",
+            "providerIds" : [
+
+            ],
+            "title" : "ITP",
+            "totalCost" : {
+              "amount" : "170",
+              "currency" : "RON"
+            },
+            "updatedAt" : "2026-11-26T10:00:00Z"
+          },
+          {
+            "assetId" : "id-12",
+            "id" : "id-37",
+            "isExample" : true,
+            "kind" : "maintenance",
+            "metricReading" : 121300,
+            "occurredAt" : "2025-10-22T09:00:00Z",
+            "providerIds" : [
+              "id-49"
+            ],
+            "rating" : 5,
+            "title" : "Revizie anuală",
+            "totalCost" : {
+              "amount" : "1150",
+              "currency" : "RON"
+            },
+            "updatedAt" : "2026-11-26T10:00:00Z"
+          },
+          {
+            "assetId" : "id-12",
+            "id" : "id-38",
+            "isExample" : true,
+            "kind" : "maintenance",
+            "metricReading" : 136200,
+            "occurredAt" : "2026-07-29T09:00:00Z",
+            "providerIds" : [
+              "id-49"
+            ],
+            "rating" : 4,
+            "title" : "Revizie",
+            "totalCost" : {
+              "amount" : "690",
+              "currency" : "RON"
+            },
+            "updatedAt" : "2026-11-26T10:00:00Z"
+          },
+          {
+            "assetId" : "id-1",
+            "id" : "id-39",
+            "isExample" : true,
+            "kind" : "purchase",
+            "occurredAt" : "2025-07-14T09:00:00Z",
+            "providerIds" : [
+
+            ],
+            "title" : "Hotă nouă",
+            "totalCost" : {
+              "amount" : "899",
+              "currency" : "RON"
+            },
+            "updatedAt" : "2026-11-26T10:00:00Z"
+          },
+          {
+            "assetId" : "id-1",
+            "id" : "id-40",
+            "isExample" : true,
+            "kind" : "repair",
+            "occurredAt" : "2026-04-30T09:00:00Z",
+            "providerIds" : [
+              "id-48"
+            ],
+            "rating" : 5,
+            "title" : "Robinet nou la bucătărie",
+            "totalCost" : {
+              "amount" : "340",
+              "currency" : "RON"
+            },
+            "updatedAt" : "2026-11-26T10:00:00Z"
+          }
+        ],
+        "data/issuer_lessons.json" : [
+
+        ],
+        "data/measurements.json" : [
+          {
+            "assetId" : "id-8",
+            "basis" : "read",
+            "id" : "id-50",
+            "isExample" : true,
+            "isSelfRead" : true,
+            "kind" : "bodyWeight",
+            "name" : "",
+            "recordedAt" : "2026-07-29T09:00:00Z",
+            "unit" : "kg",
+            "updatedAt" : "2026-11-26T10:00:00Z",
+            "value" : 30.2
+          },
+          {
+            "assetId" : "id-8",
+            "basis" : "read",
+            "id" : "id-51",
+            "isExample" : true,
+            "isSelfRead" : true,
+            "kind" : "bodyWeight",
+            "name" : "",
+            "recordedAt" : "2026-09-27T09:00:00Z",
+            "unit" : "kg",
+            "updatedAt" : "2026-11-26T10:00:00Z",
+            "value" : 31
+          },
+          {
+            "assetId" : "id-8",
+            "basis" : "read",
+            "id" : "id-52",
+            "isExample" : true,
+            "isSelfRead" : true,
+            "kind" : "bodyWeight",
+            "name" : "",
+            "recordedAt" : "2026-11-26T10:00:00Z",
+            "unit" : "kg",
+            "updatedAt" : "2026-11-26T10:00:00Z",
+            "value" : 31.5
+          },
+          {
+            "assetId" : "id-4",
+            "basis" : "read",
+            "id" : "id-53",
+            "isExample" : true,
+            "isSelfRead" : true,
+            "kind" : "coldWater",
+            "name" : "Apă rece la mutare",
+            "recordedAt" : "2026-01-30T10:00:00Z",
+            "unit" : "m3",
+            "updatedAt" : "2026-11-26T10:00:00Z",
+            "value" : 312
+          },
+          {
+            "assetId" : "id-12",
+            "basis" : "read",
+            "id" : "id-54",
+            "isExample" : true,
+            "isSelfRead" : true,
+            "kind" : "odometer",
+            "name" : "",
+            "recordedAt" : "2025-10-22T09:00:00Z",
+            "unit" : "km",
+            "updatedAt" : "2026-11-26T10:00:00Z",
+            "value" : 121300
+          },
+          {
+            "assetId" : "id-12",
+            "basis" : "read",
+            "id" : "id-55",
+            "isExample" : true,
+            "isSelfRead" : true,
+            "kind" : "odometer",
+            "name" : "",
+            "recordedAt" : "2026-07-29T09:00:00Z",
+            "unit" : "km",
+            "updatedAt" : "2026-11-26T10:00:00Z",
+            "value" : 136200
+          },
+          {
+            "assetId" : "id-12",
+            "basis" : "read",
+            "id" : "id-56",
+            "isExample" : true,
+            "isSelfRead" : true,
+            "kind" : "odometer",
+            "name" : "",
+            "recordedAt" : "2026-11-26T10:00:00Z",
+            "unit" : "km",
+            "updatedAt" : "2026-11-26T10:00:00Z",
+            "value" : 142500
+          }
+        ],
+        "data/obligations.json" : [
+          {
+            "assetId" : "id-9",
+            "blueprintKey" : "document.renew",
+            "createdAt" : "<made>",
+            "dueDate" : "2027-04-25",
+            "id" : "id-13",
+            "isExample" : true,
+            "kind" : "renewal",
+            "notes" : "Programările durează. Pentru pașaport, multe țări cer 6 luni de valabilitate.",
+            "recurrence" : {
+              "type" : "none"
+            },
+            "reminders" : {
+              "consequence" : "legal",
+              "followUpAfterLapse" : true,
+              "graceDays" : 0,
+              "leadDays" : [
+                90,
+                0
+              ],
+              "travelMarginDays" : 180
+            },
+            "status" : "active",
+            "title" : "Reînnoire",
+            "updatedAt" : "2026-11-26T10:00:00Z"
+          },
+          {
+            "assetId" : "id-3",
+            "blueprintKey" : "document.renew",
+            "createdAt" : "<made>",
+            "dueDate" : "2029-05-14",
+            "id" : "id-14",
+            "isExample" : true,
+            "kind" : "renewal",
+            "notes" : "Programările durează. Pentru pașaport, multe țări cer 6 luni de valabilitate.",
+            "recurrence" : {
+              "type" : "none"
+            },
+            "reminders" : {
+              "consequence" : "legal",
+              "followUpAfterLapse" : true,
+              "graceDays" : 0,
+              "leadDays" : [
+                90,
+                30
+              ]
+            },
+            "status" : "active",
+            "title" : "Reînnoire",
+            "updatedAt" : "2026-11-26T10:00:00Z"
+          },
+          {
+            "assetId" : "id-10",
+            "blueprintKey" : "health.checkup",
+            "createdAt" : "<made>",
+            "dueDate" : "2027-01-10",
+            "id" : "id-15",
+            "isExample" : true,
+            "kind" : "health",
+            "recurrence" : {
+              "anchor" : "completion",
+              "every" : 1,
+              "type" : "interval",
+              "unit" : "year"
+            },
+            "reminders" : {
+              "consequence" : "health",
+              "followUpAfterLapse" : false,
+              "graceDays" : 30,
+              "leadDays" : [
+                14,
+                0
+              ]
+            },
+            "status" : "active",
+            "title" : "Analize anuale",
+            "updatedAt" : "2026-11-26T10:00:00Z"
+          },
+          {
+            "assetId" : "id-10",
+            "blueprintKey" : "health.dentist",
+            "createdAt" : "<made>",
+            "dueDate" : "2026-11-25",
+            "id" : "id-16",
+            "isExample" : true,
+            "kind" : "health",
+            "recurrence" : {
+              "anchor" : "completion",
+              "every" : 6,
+              "type" : "interval",
+              "unit" : "month"
+            },
+            "reminders" : {
+              "consequence" : "health",
+              "followUpAfterLapse" : false,
+              "graceDays" : 30,
+              "leadDays" : [
+                7,
+                0
+              ]
+            },
+            "status" : "active",
+            "title" : "Control stomatologic",
+            "updatedAt" : "2026-11-26T10:00:00Z"
+          },
+          {
+            "assetId" : "id-1",
+            "blueprintKey" : "home.boilerCheck",
+            "createdAt" : "<made>",
+            "dueDate" : "2027-06-14",
+            "id" : "id-17",
+            "isExample" : true,
+            "kind" : "legal",
+            "notes" : "Obligatorie la cel mult 2 ani, făcută de o firmă autorizată ISCIR.",
+            "recurrence" : {
+              "anchor" : "completion",
+              "every" : 2,
+              "type" : "interval",
+              "unit" : "year"
+            },
+            "reminders" : {
+              "consequence" : "legal",
+              "followUpAfterLapse" : true,
+              "graceDays" : 0,
+              "leadDays" : [
+                30,
+                7
+              ]
+            },
+            "status" : "active",
+            "title" : "Verificare centrală (VTP)",
+            "updatedAt" : "2026-11-26T10:00:00Z"
+          },
+          {
+            "assetId" : "id-1",
+            "blueprintKey" : "home.buildingTax",
+            "createdAt" : "<made>",
+            "dueDate" : "2027-03-31",
+            "id" : "id-18",
+            "isExample" : true,
+            "kind" : "tax",
+            "notes" : "Plata integrală până la 31 martie poate aduce o reducere.",
+            "recurrence" : {
+              "dates" : [
+                "03-31",
+                "09-30"
+              ],
+              "type" : "fixedDates"
+            },
+            "reminders" : {
+              "consequence" : "financial",
+              "followUpAfterLapse" : true,
+              "graceDays" : 0,
+              "leadDays" : [
+                14,
+                1
+              ]
+            },
+            "status" : "active",
+            "title" : "Impozit pe clădire",
+            "updatedAt" : "2026-11-26T10:00:00Z"
+          },
+          {
+            "assetId" : "id-1",
+            "blueprintKey" : "home.gasCheck",
+            "createdAt" : "<made>",
+            "dueDate" : "2027-10-02",
+            "id" : "id-19",
+            "isExample" : true,
+            "kind" : "legal",
+            "recurrence" : {
+              "anchor" : "completion",
+              "every" : 2,
+              "type" : "interval",
+              "unit" : "year"
+            },
+            "reminders" : {
+              "consequence" : "legal",
+              "followUpAfterLapse" : true,
+              "graceDays" : 0,
+              "leadDays" : [
+                30,
+                7
+              ]
+            },
+            "status" : "active",
+            "title" : "Verificare instalație de gaze",
+            "updatedAt" : "2026-11-26T10:00:00Z"
+          },
+          {
+            "assetId" : "id-1",
+            "blueprintKey" : "home.pad",
+            "createdAt" : "<made>",
+            "dueDate" : "2026-12-21",
+            "estimatedCost" : {
+              "amount" : "130",
+              "currency" : "RON"
+            },
+            "id" : "id-20",
+            "isExample" : true,
+            "kind" : "insurance",
+            "recurrence" : {
+              "anchor" : "dueDate",
+              "every" : 1,
+              "type" : "interval",
+              "unit" : "year"
+            },
+            "reminders" : {
+              "consequence" : "legal",
+              "followUpAfterLapse" : true,
+              "graceDays" : 0,
+              "leadDays" : [
+                30,
+                7,
+                0
+              ]
+            },
+            "status" : "active",
+            "title" : "Asigurare obligatorie (PAD)",
+            "updatedAt" : "2026-11-26T10:00:00Z"
+          },
+          {
+            "assetId" : "id-8",
+            "blueprintKey" : "pet.dewormExternal",
+            "createdAt" : "<made>",
+            "dueDate" : "2026-12-08",
+            "id" : "id-21",
+            "isExample" : true,
+            "kind" : "health",
+            "recurrence" : {
+              "anchor" : "completion",
+              "every" : 1,
+              "type" : "interval",
+              "unit" : "month"
+            },
+            "reminders" : {
+              "consequence" : "health",
+              "followUpAfterLapse" : false,
+              "graceDays" : 7,
+              "leadDays" : [
+                1,
+                0
+              ]
+            },
+            "status" : "active",
+            "title" : "Deparazitare externă",
+            "updatedAt" : "2026-11-26T10:00:00Z"
+          },
+          {
+            "assetId" : "id-8",
+            "blueprintKey" : "pet.dewormInternal",
+            "createdAt" : "<made>",
+            "dueDate" : "2026-11-29",
+            "id" : "id-22",
+            "isExample" : true,
+            "kind" : "health",
+            "recurrence" : {
+              "anchor" : "completion",
+              "every" : 3,
+              "type" : "interval",
+              "unit" : "month"
+            },
+            "reminders" : {
+              "consequence" : "health",
+              "followUpAfterLapse" : false,
+              "graceDays" : 7,
+              "leadDays" : [
+                1,
+                0
+              ]
+            },
+            "status" : "active",
+            "title" : "Deparazitare internă",
+            "updatedAt" : "2026-11-26T10:00:00Z"
+          },
+          {
+            "assetId" : "id-8",
+            "blueprintKey" : "pet.rabies",
+            "createdAt" : "<made>",
+            "dueDate" : "2027-01-25",
+            "id" : "id-23",
+            "isExample" : true,
+            "kind" : "legal",
+            "notes" : "Obligatoriu și cerut la trecerea graniței.",
+            "recurrence" : {
+              "anchor" : "completion",
+              "every" : 1,
+              "type" : "interval",
+              "unit" : "year"
+            },
+            "reminders" : {
+              "consequence" : "legal",
+              "followUpAfterLapse" : true,
+              "graceDays" : 0,
+              "leadDays" : [
+                10,
+                4
+              ]
+            },
+            "status" : "active",
+            "title" : "Vaccin antirabic",
+            "updatedAt" : "2026-11-26T10:00:00Z"
+          },
+          {
+            "assetId" : "id-8",
+            "blueprintKey" : "pet.vaccine",
+            "createdAt" : "<made>",
+            "dueDate" : "2027-01-25",
+            "id" : "id-24",
+            "isExample" : true,
+            "kind" : "health",
+            "recurrence" : {
+              "anchor" : "completion",
+              "every" : 1,
+              "type" : "interval",
+              "unit" : "year"
+            },
+            "reminders" : {
+              "consequence" : "health",
+              "followUpAfterLapse" : false,
+              "graceDays" : 7,
+              "leadDays" : [
+                1
+              ]
+            },
+            "status" : "active",
+            "title" : "Vaccin anual",
+            "updatedAt" : "2026-11-26T10:00:00Z"
+          },
+          {
+            "assetId" : "id-6",
+            "blueprintKey" : "purchase.warrantyEnds",
+            "createdAt" : "<made>",
+            "dueDate" : "2027-04-05",
+            "id" : "id-25",
+            "isExample" : true,
+            "kind" : "renewal",
+            "notes" : "Funcționează totul bine? Acum mai poți reclama gratuit un defect.",
+            "recurrence" : {
+              "type" : "none"
+            },
+            "reminders" : {
+              "consequence" : "financial",
+              "followUpAfterLapse" : false,
+              "graceDays" : 0,
+              "leadDays" : [
+                30
+              ]
+            },
+            "status" : "active",
+            "title" : "Garanția se termină",
+            "updatedAt" : "2026-11-26T10:00:00Z"
+          },
+          {
+            "assetId" : "id-2",
+            "blueprintKey" : "purchase.warrantyEnds",
+            "createdAt" : "<made>",
+            "dueDate" : "2028-05-10",
+            "id" : "id-26",
+            "isExample" : true,
+            "kind" : "renewal",
+            "notes" : "Funcționează totul bine? Acum mai poți reclama gratuit un defect.",
+            "recurrence" : {
+              "type" : "none"
+            },
+            "reminders" : {
+              "consequence" : "financial",
+              "followUpAfterLapse" : false,
+              "graceDays" : 0,
+              "leadDays" : [
+                30
+              ]
+            },
+            "status" : "active",
+            "title" : "Garanția se termină",
+            "updatedAt" : "2026-11-26T10:00:00Z"
+          },
+          {
+            "assetId" : "id-7",
+            "blueprintKey" : "subscription.contractEnd",
+            "createdAt" : "<made>",
+            "dueDate" : "2027-01-05",
+            "id" : "id-27",
+            "isExample" : true,
+            "kind" : "renewal",
+            "notes" : "De obicei prețul crește după. E momentul să ceri o ofertă mai bună.",
+            "recurrence" : {
+              "type" : "none"
+            },
+            "reminders" : {
+              "consequence" : "financial",
+              "followUpAfterLapse" : false,
+              "graceDays" : 0,
+              "leadDays" : [
+                30
+              ]
+            },
+            "status" : "active",
+            "title" : "Se termină contractul",
+            "updatedAt" : "2026-11-26T10:00:00Z"
+          },
+          {
+            "assetId" : "id-11",
+            "blueprintKey" : "subscription.renewal",
+            "createdAt" : "<made>",
+            "dueDate" : "2026-12-14",
+            "id" : "id-28",
+            "isExample" : true,
+            "kind" : "payment",
+            "notes" : "Decide dacă îl mai vrei înainte să se plătească singur.",
+            "recurrence" : {
+              "anchor" : "dueDate",
+              "every" : 1,
+              "type" : "interval",
+              "unit" : "year"
+            },
+            "reminders" : {
+              "consequence" : "financial",
+              "followUpAfterLapse" : false,
+              "graceDays" : 0,
+              "leadDays" : [
+                14
+              ]
+            },
+            "status" : "active",
+            "title" : "Reînnoire anuală",
+            "updatedAt" : "2026-11-26T10:00:00Z"
+          },
+          {
+            "assetId" : "id-4",
+            "blueprintKey" : "tenancy.end",
+            "createdAt" : "<made>",
+            "dueDate" : "2027-01-30",
+            "id" : "id-29",
+            "isExample" : true,
+            "kind" : "renewal",
+            "notes" : "Timp să vorbiți despre prelungire sau să cauți alt chiriaș.",
+            "recurrence" : {
+              "type" : "none"
+            },
+            "reminders" : {
+              "consequence" : "financial",
+              "followUpAfterLapse" : false,
+              "graceDays" : 0,
+              "leadDays" : [
+                60
+              ]
+            },
+            "status" : "active",
+            "title" : "Se termină contractul de închiriere",
+            "updatedAt" : "2026-11-26T10:00:00Z"
+          },
+          {
+            "assetId" : "id-12",
+            "blueprintKey" : "vehicle.itp",
+            "createdAt" : "<made>",
+            "dueDate" : "2026-12-05",
+            "estimatedCost" : {
+              "amount" : "180",
+              "currency" : "RON"
+            },
+            "id" : "id-30",
+            "isExample" : true,
+            "kind" : "legal",
+            "notes" : "Fără ITP valabil, înmatricularea se suspendă.",
+            "recurrence" : {
+              "rule" : "vehicleITP",
+              "type" : "legal"
+            },
+            "reminders" : {
+              "consequence" : "legal",
+              "followUpAfterLapse" : true,
+              "graceDays" : 0,
+              "leadDays" : [
+                30,
+                7
+              ]
+            },
+            "status" : "active",
+            "title" : "ITP",
+            "updatedAt" : "2026-11-26T10:00:00Z"
+          },
+          {
+            "assetId" : "id-12",
+            "blueprintKey" : "vehicle.rca",
+            "createdAt" : "<made>",
+            "dueDate" : "2027-01-06",
+            "id" : "id-31",
+            "isExample" : true,
+            "kind" : "insurance",
+            "notes" : "Cere oferte cu o lună înainte, prețurile diferă mult.",
+            "recurrence" : {
+              "anchor" : "dueDate",
+              "every" : 1,
+              "type" : "interval",
+              "unit" : "year"
+            },
+            "reminders" : {
+              "consequence" : "legal",
+              "followUpAfterLapse" : true,
+              "graceDays" : 0,
+              "leadDays" : [
+                30,
+                7,
+                0
+              ]
+            },
+            "status" : "active",
+            "title" : "RCA",
+            "updatedAt" : "2026-11-26T10:00:00Z"
+          },
+          {
+            "assetId" : "id-12",
+            "blueprintKey" : "vehicle.service",
+            "createdAt" : "<made>",
+            "dueDate" : "2027-03-26",
+            "dueMetric" : 157500,
+            "id" : "id-32",
+            "isExample" : true,
+            "kind" : "maintenance",
+            "recurrence" : {
+              "every" : 15000,
+              "fallbackEvery" : 1,
+              "fallbackUnit" : "year",
+              "type" : "metric",
+              "unit" : "km"
+            },
+            "reminders" : {
+              "consequence" : "comfort",
+              "followUpAfterLapse" : false,
+              "graceDays" : 30,
+              "leadDays" : [
+                14,
+                1
+              ]
+            },
+            "status" : "active",
+            "title" : "Revizie periodică",
+            "updatedAt" : "2026-11-26T10:00:00Z"
+          },
+          {
+            "assetId" : "id-12",
+            "blueprintKey" : "vehicle.tyres",
+            "createdAt" : "<made>",
+            "dueDate" : "2027-04-15",
+            "id" : "id-33",
+            "isExample" : true,
+            "kind" : "maintenance",
+            "recurrence" : {
+              "dates" : [
+                "04-15",
+                "11-01"
+              ],
+              "type" : "fixedDates"
+            },
+            "reminders" : {
+              "consequence" : "comfort",
+              "followUpAfterLapse" : false,
+              "graceDays" : 14,
+              "leadDays" : [
+                14
+              ]
+            },
+            "status" : "active",
+            "title" : "Schimb de anvelope",
+            "updatedAt" : "2026-11-26T10:00:00Z"
+          },
+          {
+            "assetId" : "id-12",
+            "blueprintKey" : "vehicle.vignette",
+            "createdAt" : "<made>",
+            "dueDate" : "2026-11-24",
+            "id" : "id-34",
+            "isExample" : true,
+            "kind" : "legal",
+            "recurrence" : {
+              "anchor" : "completion",
+              "every" : 12,
+              "type" : "interval",
+              "unit" : "month"
+            },
+            "reminders" : {
+              "consequence" : "legal",
+              "followUpAfterLapse" : true,
+              "graceDays" : 0,
+              "leadDays" : [
+                7,
+                0
+              ]
+            },
+            "status" : "active",
+            "title" : "Rovinietă",
+            "updatedAt" : "2026-11-26T10:00:00Z"
+          },
+          {
+            "blueprintKey" : "household.rentalDeclaration",
+            "createdAt" : "<made>",
+            "dueDate" : "2027-05-25",
+            "id" : "id-35",
+            "isExample" : true,
+            "kind" : "tax",
+            "notes" : "Venitul din chirii se declară la ANAF până pe 25 mai.",
+            "recurrence" : {
+              "dates" : [
+                "05-25"
+              ],
+              "type" : "fixedDates"
+            },
+            "reminders" : {
+              "consequence" : "legal",
+              "followUpAfterLapse" : true,
+              "graceDays" : 0,
+              "leadDays" : [
+                30,
+                7
+              ]
+            },
+            "status" : "active",
+            "title" : "Declarația unică pentru chirii",
+            "updatedAt" : "2026-11-26T10:00:00Z"
+          }
+        ],
+        "data/providers.json" : [
+          {
+            "assetIds" : [
+              "id-8"
+            ],
+            "createdAt" : "<made>",
+            "id" : "id-46",
+            "isExample" : true,
+            "manualRating" : 5,
+            "name" : "Cabinet veterinar exemplu",
+            "phone" : "0700000003",
+            "trades" : [
+              "vet"
+            ],
+            "updatedAt" : "2026-11-26T10:00:00Z"
+          },
+          {
+            "assetIds" : [
+              "id-4"
+            ],
+            "createdAt" : "<made>",
+            "id" : "id-47",
+            "isExample" : true,
+            "name" : "Chiriaș exemplu",
+            "phone" : "0700000004",
+            "trades" : [
+              "tenant"
+            ],
+            "updatedAt" : "2026-11-26T10:00:00Z"
+          },
+          {
+            "assetIds" : [
+              "id-1"
+            ],
+            "createdAt" : "<made>",
+            "id" : "id-48",
+            "isExample" : true,
+            "name" : "Instalator exemplu",
+            "phone" : "0700000002",
+            "trades" : [
+              "plumber"
+            ],
+            "updatedAt" : "2026-11-26T10:00:00Z"
+          },
+          {
+            "assetIds" : [
+              "id-12"
+            ],
+            "createdAt" : "<made>",
+            "id" : "id-49",
+            "isExample" : true,
+            "name" : "Service auto exemplu",
+            "phone" : "0700000001",
+            "trades" : [
+              "mechanic",
+              "tyreShop"
+            ],
+            "updatedAt" : "2026-11-26T10:00:00Z",
+            "wouldCallAgain" : true
+          }
+        ],
+        "data/service_items.json" : [
+          {
+            "componentKey" : "brakes.padsFront",
+            "cost" : {
+              "amount" : "380",
+              "currency" : "RON"
+            },
+            "entryId" : "id-37",
+            "group" : "Frâne",
+            "id" : "id-41",
+            "isExample" : true,
+            "name" : "Plăcuțe frână față",
+            "partBrandOrCode" : "Exemplu",
+            "updatedAt" : "2026-11-26T10:00:00Z"
+          },
+          {
+            "componentKey" : "engine.oil",
+            "cost" : {
+              "amount" : "420",
+              "currency" : "RON"
+            },
+            "entryId" : "id-37",
+            "group" : "Motor",
+            "id" : "id-42",
+            "isExample" : true,
+            "name" : "Schimb ulei și filtru",
+            "partBrandOrCode" : "5W-30",
+            "updatedAt" : "2026-11-26T10:00:00Z"
+          },
+          {
+            "componentKey" : "engine.oil",
+            "cost" : {
+              "amount" : "450",
+              "currency" : "RON"
+            },
+            "entryId" : "id-38",
+            "group" : "Motor",
+            "id" : "id-43",
+            "isExample" : true,
+            "name" : "Schimb ulei și filtru",
+            "partBrandOrCode" : "5W-30",
+            "updatedAt" : "2026-11-26T10:00:00Z"
+          },
+          {
+            "componentKey" : "kitchen.hood",
+            "cost" : {
+              "amount" : "899",
+              "currency" : "RON"
+            },
+            "entryId" : "id-39",
+            "group" : "Bucătărie",
+            "id" : "id-44",
+            "isExample" : true,
+            "name" : "Hotă",
+            "partBrandOrCode" : "Exemplu 60 cm",
+            "updatedAt" : "2026-11-26T10:00:00Z"
+          },
+          {
+            "componentKey" : "plumbing.taps",
+            "cost" : {
+              "amount" : "240",
+              "currency" : "RON"
+            },
+            "entryId" : "id-40",
+            "group" : "Instalații sanitare",
+            "id" : "id-45",
+            "isExample" : true,
+            "name" : "Baterie bucătărie",
+            "partBrandOrCode" : "Exemplu",
+            "updatedAt" : "2026-11-26T10:00:00Z"
+          }
+        ]
+      },
+      "kept" : null,
+      "name" : "loading the examples into an empty binder",
+      "steps" : [
+        {
+          "do" : "load"
+        }
+      ]
+    },
+    {
+      "binder" : {
+        "data/assets.json" : [
+          {
+            "createdAt" : "<made>",
+            "id" : "id-1",
+            "isExample" : true,
+            "name" : "Apartament Floreasca",
+            "templateKey" : "home",
+            "updatedAt" : "2026-11-26T10:00:00Z",
+            "values" : {
+              "home.address" : {
+                "type" : "text",
+                "value" : "Str. Exemplului nr. 12, București"
+              },
+              "home.area" : {
+                "type" : "number",
+                "value" : 78.5
+              },
+              "home.meterReadFrom" : {
+                "type" : "number",
+                "value" : 20
+              },
+              "home.meterReadTo" : {
+                "type" : "number",
+                "value" : 25
+              }
+            }
+          },
+          {
+            "createdAt" : "<made>",
+            "id" : "id-2",
+            "isExample" : true,
+            "name" : "Aragaz",
+            "parentId" : "id-1",
+            "templateKey" : "purchase",
+            "updatedAt" : "2026-11-26T10:00:00Z",
+            "values" : {
+              "purchase.date" : {
+                "type" : "date",
+                "value" : "2026-05-10"
+              },
+              "purchase.price" : {
+                "amount" : "1350",
+                "currency" : "RON",
+                "type" : "money"
+              },
+              "purchase.retailer" : {
+                "type" : "text",
+                "value" : "Magazin exemplu"
+              },
+              "purchase.warrantyMonths" : {
+                "type" : "number",
+                "value" : 24
+              },
+              "purchase.warrantyUntil" : {
+                "type" : "date",
+                "value" : "2028-05-10"
+              }
+            }
+          },
+          {
+            "createdAt" : "<made>",
+            "id" : "id-3",
+            "isExample" : true,
+            "name" : "Carte de identitate",
+            "parentId" : "id-5",
+            "templateKey" : "documents",
+            "updatedAt" : "2026-11-26T10:00:00Z",
+            "values" : {
+              "document.expiry" : {
+                "type" : "date",
+                "value" : "2029-05-14"
+              },
+              "document.type" : {
+                "type" : "text",
+                "value" : "documentType.idCard"
+              }
+            }
+          },
+          {
+            "createdAt" : "<made>",
+            "id" : "id-4",
+            "isExample" : true,
+            "name" : "Chiriaș garsonieră",
+            "parentId" : "id-1",
+            "templateKey" : "tenancy",
+            "updatedAt" : "2026-11-26T10:00:00Z",
+            "values" : {
+              "tenancy.deposit" : {
+                "amount" : "450",
+                "currency" : "EUR",
+                "type" : "money"
+              },
+              "tenancy.end" : {
+                "type" : "date",
+                "value" : "2027-01-30"
+              },
+              "tenancy.paymentDay" : {
+                "type" : "number",
+                "value" : 5
+              },
+              "tenancy.rent" : {
+                "amount" : "450",
+                "currency" : "EUR",
+                "type" : "money"
+              },
+              "tenancy.start" : {
+                "type" : "date",
+                "value" : "2026-01-30"
+              }
+            }
+          },
+          {
+            "createdAt" : "<made>",
+            "id" : "id-5",
+            "isExample" : true,
+            "name" : "Eu",
+            "templateKey" : "member",
+            "updatedAt" : "2026-11-26T10:00:00Z",
+            "values" : {
+
+            }
+          },
+          {
+            "createdAt" : "<made>",
+            "id" : "id-6",
+            "isExample" : true,
+            "name" : "Frigider",
+            "parentId" : "id-1",
+            "templateKey" : "purchase",
+            "updatedAt" : "2026-11-26T10:00:00Z",
+            "values" : {
+              "purchase.brand" : {
+                "type" : "text",
+                "value" : "Frigider combinat"
+              },
+              "purchase.date" : {
+                "type" : "date",
+                "value" : "2025-04-05"
+              },
+              "purchase.price" : {
+                "amount" : "2499",
+                "currency" : "RON",
+                "type" : "money"
+              },
+              "purchase.retailer" : {
+                "type" : "text",
+                "value" : "Magazin exemplu"
+              },
+              "purchase.warrantyMonths" : {
+                "type" : "number",
+                "value" : 24
+              },
+              "purchase.warrantyUntil" : {
+                "type" : "date",
+                "value" : "2027-04-05"
+              }
+            }
+          },
+          {
+            "createdAt" : "<made>",
+            "id" : "id-7",
+            "isExample" : true,
+            "name" : "Internet fibră",
+            "templateKey" : "subscription",
+            "updatedAt" : "2026-11-26T10:00:00Z",
+            "values" : {
+              "subscription.contractEnd" : {
+                "type" : "date",
+                "value" : "2027-01-05"
+              },
+              "subscription.cycle" : {
+                "type" : "text",
+                "value" : "billing.monthly"
+              },
+              "subscription.group" : {
+                "type" : "text",
+                "value" : "subscriptionGroup.internetAndPhone"
+              },
+              "subscription.price" : {
+                "amount" : "45",
+                "currency" : "RON",
+                "type" : "money"
+              },
+              "subscription.provider" : {
+                "type" : "text",
+                "value" : "Digi"
+              },
+              "subscription.service" : {
+                "type" : "text",
+                "value" : "service.internetTV"
+              }
+            }
+          },
+          {
+            "createdAt" : "<made>",
+            "id" : "id-8",
+            "isExample" : true,
+            "name" : "Max",
+            "templateKey" : "pet",
+            "updatedAt" : "2026-11-26T10:00:00Z",
+            "values" : {
+              "pet.birthDate" : {
+                "type" : "date",
+                "value" : "2021-05-10"
+              },
+              "pet.breed" : {
+                "type" : "text",
+                "value" : "Golden Retriever"
+              },
+              "pet.microchip" : {
+                "type" : "text",
+                "value" : "642000000000001"
+              },
+              "pet.species" : {
+                "type" : "text",
+                "value" : "species.dog"
+              },
+              "pet.weight" : {
+                "type" : "number",
+                "value" : 31.5
+              }
+            }
+          },
+          {
+            "createdAt" : "<made>",
+            "id" : "id-9",
+            "isExample" : true,
+            "name" : "Pașaport",
+            "parentId" : "id-5",
+            "templateKey" : "documents",
+            "updatedAt" : "2026-11-26T10:00:00Z",
+            "values" : {
+              "document.expiry" : {
+                "type" : "date",
+                "value" : "2027-04-25"
+              },
+              "document.number" : {
+                "type" : "text",
+                "value" : "050000000"
+              },
+              "document.type" : {
+                "type" : "text",
+                "value" : "documentType.passport"
+              }
+            }
+          },
+          {
+            "createdAt" : "<made>",
+            "id" : "id-10",
+            "isExample" : true,
+            "name" : "Profil medical",
+            "templateKey" : "health",
+            "updatedAt" : "2026-11-26T10:00:00Z",
+            "values" : {
+              "health.allergies" : {
+                "type" : "text",
+                "value" : "Fără alergii cunoscute"
+              },
+              "health.bloodType" : {
+                "type" : "text",
+                "value" : "bloodType.aPositive"
+              }
+            }
+          },
+          {
+            "createdAt" : "<made>",
+            "id" : "id-11",
+            "isExample" : true,
+            "name" : "Stocare online",
+            "templateKey" : "subscription",
+            "updatedAt" : "2026-11-26T10:00:00Z",
+            "values" : {
+              "subscription.cycle" : {
+                "type" : "text",
+                "value" : "billing.yearly"
+              },
+              "subscription.group" : {
+                "type" : "text",
+                "value" : "subscriptionGroup.appsAndStreaming"
+              },
+              "subscription.price" : {
+                "amount" : "29.99",
+                "currency" : "EUR",
+                "type" : "money"
+              },
+              "subscription.provider" : {
+                "type" : "text",
+                "value" : "Serviciu exemplu"
+              },
+              "subscription.renewalDate" : {
+                "type" : "date",
+                "value" : "2026-12-14"
+              },
+              "subscription.service" : {
+                "type" : "text",
+                "value" : "service.streaming"
+              }
+            }
+          },
+          {
+            "createdAt" : "<made>",
+            "id" : "id-12",
+            "isExample" : true,
+            "name" : "VW Golf",
+            "templateKey" : "vehicle",
+            "updatedAt" : "2026-11-26T10:00:00Z",
+            "values" : {
+              "vehicle.fuel" : {
+                "type" : "text",
+                "value" : "fuel.petrol"
+              },
+              "vehicle.make" : {
+                "type" : "text",
+                "value" : "Volkswagen"
+              },
+              "vehicle.model" : {
+                "type" : "text",
+                "value" : "Golf"
+              },
+              "vehicle.odometer" : {
+                "type" : "number",
+                "value" : 142500
+              },
+              "vehicle.plate" : {
+                "type" : "text",
+                "value" : "B-123-ABC"
+              },
+              "vehicle.usage" : {
+                "type" : "text",
+                "value" : "vehicleUse.personal"
+              },
+              "vehicle.year" : {
+                "type" : "number",
+                "value" : 2018
+              }
+            }
+          }
+        ],
+        "data/attachments.json" : [
+
+        ],
+        "data/history.json" : [
+          {
+            "assetId" : "id-12",
+            "cycleDueDate" : "2024-12-05",
+            "id" : "id-36",
+            "isExample" : true,
+            "kind" : "inspection",
+            "nextDueDate" : "2026-12-05",
+            "obligationId" : "id-30",
+            "occurredAt" : "2024-12-05T10:00:00Z",
+            "previousStatus" : "active",
+            "providerIds" : [
+
+            ],
+            "title" : "ITP",
+            "totalCost" : {
+              "amount" : "170",
+              "currency" : "RON"
+            },
+            "updatedAt" : "2026-11-26T10:00:00Z"
+          },
+          {
+            "assetId" : "id-12",
+            "id" : "id-37",
+            "isExample" : true,
+            "kind" : "maintenance",
+            "metricReading" : 121300,
+            "occurredAt" : "2025-10-22T09:00:00Z",
+            "providerIds" : [
+              "id-49"
+            ],
+            "rating" : 5,
+            "title" : "Revizie anuală",
+            "totalCost" : {
+              "amount" : "1150",
+              "currency" : "RON"
+            },
+            "updatedAt" : "2026-11-26T10:00:00Z"
+          },
+          {
+            "assetId" : "id-12",
+            "id" : "id-38",
+            "isExample" : true,
+            "kind" : "maintenance",
+            "metricReading" : 136200,
+            "occurredAt" : "2026-07-29T09:00:00Z",
+            "providerIds" : [
+              "id-49"
+            ],
+            "rating" : 4,
+            "title" : "Revizie",
+            "totalCost" : {
+              "amount" : "690",
+              "currency" : "RON"
+            },
+            "updatedAt" : "2026-11-26T10:00:00Z"
+          },
+          {
+            "assetId" : "id-1",
+            "id" : "id-39",
+            "isExample" : true,
+            "kind" : "purchase",
+            "occurredAt" : "2025-07-14T09:00:00Z",
+            "providerIds" : [
+
+            ],
+            "title" : "Hotă nouă",
+            "totalCost" : {
+              "amount" : "899",
+              "currency" : "RON"
+            },
+            "updatedAt" : "2026-11-26T10:00:00Z"
+          },
+          {
+            "assetId" : "id-1",
+            "id" : "id-40",
+            "isExample" : true,
+            "kind" : "repair",
+            "occurredAt" : "2026-04-30T09:00:00Z",
+            "providerIds" : [
+              "id-48"
+            ],
+            "rating" : 5,
+            "title" : "Robinet nou la bucătărie",
+            "totalCost" : {
+              "amount" : "340",
+              "currency" : "RON"
+            },
+            "updatedAt" : "2026-11-26T10:00:00Z"
+          }
+        ],
+        "data/issuer_lessons.json" : [
+
+        ],
+        "data/measurements.json" : [
+          {
+            "assetId" : "id-8",
+            "basis" : "read",
+            "id" : "id-50",
+            "isExample" : true,
+            "isSelfRead" : true,
+            "kind" : "bodyWeight",
+            "name" : "",
+            "recordedAt" : "2026-07-29T09:00:00Z",
+            "unit" : "kg",
+            "updatedAt" : "2026-11-26T10:00:00Z",
+            "value" : 30.2
+          },
+          {
+            "assetId" : "id-8",
+            "basis" : "read",
+            "id" : "id-51",
+            "isExample" : true,
+            "isSelfRead" : true,
+            "kind" : "bodyWeight",
+            "name" : "",
+            "recordedAt" : "2026-09-27T09:00:00Z",
+            "unit" : "kg",
+            "updatedAt" : "2026-11-26T10:00:00Z",
+            "value" : 31
+          },
+          {
+            "assetId" : "id-8",
+            "basis" : "read",
+            "id" : "id-52",
+            "isExample" : true,
+            "isSelfRead" : true,
+            "kind" : "bodyWeight",
+            "name" : "",
+            "recordedAt" : "2026-11-26T10:00:00Z",
+            "unit" : "kg",
+            "updatedAt" : "2026-11-26T10:00:00Z",
+            "value" : 31.5
+          },
+          {
+            "assetId" : "id-4",
+            "basis" : "read",
+            "id" : "id-53",
+            "isExample" : true,
+            "isSelfRead" : true,
+            "kind" : "coldWater",
+            "name" : "Apă rece la mutare",
+            "recordedAt" : "2026-01-30T10:00:00Z",
+            "unit" : "m3",
+            "updatedAt" : "2026-11-26T10:00:00Z",
+            "value" : 312
+          },
+          {
+            "assetId" : "id-12",
+            "basis" : "read",
+            "id" : "id-54",
+            "isExample" : true,
+            "isSelfRead" : true,
+            "kind" : "odometer",
+            "name" : "",
+            "recordedAt" : "2025-10-22T09:00:00Z",
+            "unit" : "km",
+            "updatedAt" : "2026-11-26T10:00:00Z",
+            "value" : 121300
+          },
+          {
+            "assetId" : "id-12",
+            "basis" : "read",
+            "id" : "id-55",
+            "isExample" : true,
+            "isSelfRead" : true,
+            "kind" : "odometer",
+            "name" : "",
+            "recordedAt" : "2026-07-29T09:00:00Z",
+            "unit" : "km",
+            "updatedAt" : "2026-11-26T10:00:00Z",
+            "value" : 136200
+          },
+          {
+            "assetId" : "id-12",
+            "basis" : "read",
+            "id" : "id-56",
+            "isExample" : true,
+            "isSelfRead" : true,
+            "kind" : "odometer",
+            "name" : "",
+            "recordedAt" : "2026-11-26T10:00:00Z",
+            "unit" : "km",
+            "updatedAt" : "2026-11-26T10:00:00Z",
+            "value" : 142500
+          }
+        ],
+        "data/obligations.json" : [
+          {
+            "assetId" : "id-9",
+            "blueprintKey" : "document.renew",
+            "createdAt" : "<made>",
+            "dueDate" : "2027-04-25",
+            "id" : "id-13",
+            "isExample" : true,
+            "kind" : "renewal",
+            "notes" : "Programările durează. Pentru pașaport, multe țări cer 6 luni de valabilitate.",
+            "recurrence" : {
+              "type" : "none"
+            },
+            "reminders" : {
+              "consequence" : "legal",
+              "followUpAfterLapse" : true,
+              "graceDays" : 0,
+              "leadDays" : [
+                90,
+                0
+              ],
+              "travelMarginDays" : 180
+            },
+            "status" : "active",
+            "title" : "Reînnoire",
+            "updatedAt" : "2026-11-26T10:00:00Z"
+          },
+          {
+            "assetId" : "id-3",
+            "blueprintKey" : "document.renew",
+            "createdAt" : "<made>",
+            "dueDate" : "2029-05-14",
+            "id" : "id-14",
+            "isExample" : true,
+            "kind" : "renewal",
+            "notes" : "Programările durează. Pentru pașaport, multe țări cer 6 luni de valabilitate.",
+            "recurrence" : {
+              "type" : "none"
+            },
+            "reminders" : {
+              "consequence" : "legal",
+              "followUpAfterLapse" : true,
+              "graceDays" : 0,
+              "leadDays" : [
+                90,
+                30
+              ]
+            },
+            "status" : "active",
+            "title" : "Reînnoire",
+            "updatedAt" : "2026-11-26T10:00:00Z"
+          },
+          {
+            "assetId" : "id-10",
+            "blueprintKey" : "health.checkup",
+            "createdAt" : "<made>",
+            "dueDate" : "2027-01-10",
+            "id" : "id-15",
+            "isExample" : true,
+            "kind" : "health",
+            "recurrence" : {
+              "anchor" : "completion",
+              "every" : 1,
+              "type" : "interval",
+              "unit" : "year"
+            },
+            "reminders" : {
+              "consequence" : "health",
+              "followUpAfterLapse" : false,
+              "graceDays" : 30,
+              "leadDays" : [
+                14,
+                0
+              ]
+            },
+            "status" : "active",
+            "title" : "Analize anuale",
+            "updatedAt" : "2026-11-26T10:00:00Z"
+          },
+          {
+            "assetId" : "id-10",
+            "blueprintKey" : "health.dentist",
+            "createdAt" : "<made>",
+            "dueDate" : "2026-11-25",
+            "id" : "id-16",
+            "isExample" : true,
+            "kind" : "health",
+            "recurrence" : {
+              "anchor" : "completion",
+              "every" : 6,
+              "type" : "interval",
+              "unit" : "month"
+            },
+            "reminders" : {
+              "consequence" : "health",
+              "followUpAfterLapse" : false,
+              "graceDays" : 30,
+              "leadDays" : [
+                7,
+                0
+              ]
+            },
+            "status" : "active",
+            "title" : "Control stomatologic",
+            "updatedAt" : "2026-11-26T10:00:00Z"
+          },
+          {
+            "assetId" : "id-1",
+            "blueprintKey" : "home.boilerCheck",
+            "createdAt" : "<made>",
+            "dueDate" : "2027-06-14",
+            "id" : "id-17",
+            "isExample" : true,
+            "kind" : "legal",
+            "notes" : "Obligatorie la cel mult 2 ani, făcută de o firmă autorizată ISCIR.",
+            "recurrence" : {
+              "anchor" : "completion",
+              "every" : 2,
+              "type" : "interval",
+              "unit" : "year"
+            },
+            "reminders" : {
+              "consequence" : "legal",
+              "followUpAfterLapse" : true,
+              "graceDays" : 0,
+              "leadDays" : [
+                30,
+                7
+              ]
+            },
+            "status" : "active",
+            "title" : "Verificare centrală (VTP)",
+            "updatedAt" : "2026-11-26T10:00:00Z"
+          },
+          {
+            "assetId" : "id-1",
+            "blueprintKey" : "home.buildingTax",
+            "createdAt" : "<made>",
+            "dueDate" : "2027-03-31",
+            "id" : "id-18",
+            "isExample" : true,
+            "kind" : "tax",
+            "notes" : "Plata integrală până la 31 martie poate aduce o reducere.",
+            "recurrence" : {
+              "dates" : [
+                "03-31",
+                "09-30"
+              ],
+              "type" : "fixedDates"
+            },
+            "reminders" : {
+              "consequence" : "financial",
+              "followUpAfterLapse" : true,
+              "graceDays" : 0,
+              "leadDays" : [
+                14,
+                1
+              ]
+            },
+            "status" : "active",
+            "title" : "Impozit pe clădire",
+            "updatedAt" : "2026-11-26T10:00:00Z"
+          },
+          {
+            "assetId" : "id-1",
+            "blueprintKey" : "home.gasCheck",
+            "createdAt" : "<made>",
+            "dueDate" : "2027-10-02",
+            "id" : "id-19",
+            "isExample" : true,
+            "kind" : "legal",
+            "recurrence" : {
+              "anchor" : "completion",
+              "every" : 2,
+              "type" : "interval",
+              "unit" : "year"
+            },
+            "reminders" : {
+              "consequence" : "legal",
+              "followUpAfterLapse" : true,
+              "graceDays" : 0,
+              "leadDays" : [
+                30,
+                7
+              ]
+            },
+            "status" : "active",
+            "title" : "Verificare instalație de gaze",
+            "updatedAt" : "2026-11-26T10:00:00Z"
+          },
+          {
+            "assetId" : "id-1",
+            "blueprintKey" : "home.pad",
+            "createdAt" : "<made>",
+            "dueDate" : "2026-12-21",
+            "estimatedCost" : {
+              "amount" : "130",
+              "currency" : "RON"
+            },
+            "id" : "id-20",
+            "isExample" : true,
+            "kind" : "insurance",
+            "recurrence" : {
+              "anchor" : "dueDate",
+              "every" : 1,
+              "type" : "interval",
+              "unit" : "year"
+            },
+            "reminders" : {
+              "consequence" : "legal",
+              "followUpAfterLapse" : true,
+              "graceDays" : 0,
+              "leadDays" : [
+                30,
+                7,
+                0
+              ]
+            },
+            "status" : "active",
+            "title" : "Asigurare obligatorie (PAD)",
+            "updatedAt" : "2026-11-26T10:00:00Z"
+          },
+          {
+            "assetId" : "id-8",
+            "blueprintKey" : "pet.dewormExternal",
+            "createdAt" : "<made>",
+            "dueDate" : "2026-12-08",
+            "id" : "id-21",
+            "isExample" : true,
+            "kind" : "health",
+            "recurrence" : {
+              "anchor" : "completion",
+              "every" : 1,
+              "type" : "interval",
+              "unit" : "month"
+            },
+            "reminders" : {
+              "consequence" : "health",
+              "followUpAfterLapse" : false,
+              "graceDays" : 7,
+              "leadDays" : [
+                1,
+                0
+              ]
+            },
+            "status" : "active",
+            "title" : "Deparazitare externă",
+            "updatedAt" : "2026-11-26T10:00:00Z"
+          },
+          {
+            "assetId" : "id-8",
+            "blueprintKey" : "pet.dewormInternal",
+            "createdAt" : "<made>",
+            "dueDate" : "2026-11-29",
+            "id" : "id-22",
+            "isExample" : true,
+            "kind" : "health",
+            "recurrence" : {
+              "anchor" : "completion",
+              "every" : 3,
+              "type" : "interval",
+              "unit" : "month"
+            },
+            "reminders" : {
+              "consequence" : "health",
+              "followUpAfterLapse" : false,
+              "graceDays" : 7,
+              "leadDays" : [
+                1,
+                0
+              ]
+            },
+            "status" : "active",
+            "title" : "Deparazitare internă",
+            "updatedAt" : "2026-11-26T10:00:00Z"
+          },
+          {
+            "assetId" : "id-8",
+            "blueprintKey" : "pet.rabies",
+            "createdAt" : "<made>",
+            "dueDate" : "2027-01-25",
+            "id" : "id-23",
+            "isExample" : true,
+            "kind" : "legal",
+            "notes" : "Obligatoriu și cerut la trecerea graniței.",
+            "recurrence" : {
+              "anchor" : "completion",
+              "every" : 1,
+              "type" : "interval",
+              "unit" : "year"
+            },
+            "reminders" : {
+              "consequence" : "legal",
+              "followUpAfterLapse" : true,
+              "graceDays" : 0,
+              "leadDays" : [
+                10,
+                4
+              ]
+            },
+            "status" : "active",
+            "title" : "Vaccin antirabic",
+            "updatedAt" : "2026-11-26T10:00:00Z"
+          },
+          {
+            "assetId" : "id-8",
+            "blueprintKey" : "pet.vaccine",
+            "createdAt" : "<made>",
+            "dueDate" : "2027-01-25",
+            "id" : "id-24",
+            "isExample" : true,
+            "kind" : "health",
+            "recurrence" : {
+              "anchor" : "completion",
+              "every" : 1,
+              "type" : "interval",
+              "unit" : "year"
+            },
+            "reminders" : {
+              "consequence" : "health",
+              "followUpAfterLapse" : false,
+              "graceDays" : 7,
+              "leadDays" : [
+                1
+              ]
+            },
+            "status" : "active",
+            "title" : "Vaccin anual",
+            "updatedAt" : "2026-11-26T10:00:00Z"
+          },
+          {
+            "assetId" : "id-6",
+            "blueprintKey" : "purchase.warrantyEnds",
+            "createdAt" : "<made>",
+            "dueDate" : "2027-04-05",
+            "id" : "id-25",
+            "isExample" : true,
+            "kind" : "renewal",
+            "notes" : "Funcționează totul bine? Acum mai poți reclama gratuit un defect.",
+            "recurrence" : {
+              "type" : "none"
+            },
+            "reminders" : {
+              "consequence" : "financial",
+              "followUpAfterLapse" : false,
+              "graceDays" : 0,
+              "leadDays" : [
+                30
+              ]
+            },
+            "status" : "active",
+            "title" : "Garanția se termină",
+            "updatedAt" : "2026-11-26T10:00:00Z"
+          },
+          {
+            "assetId" : "id-2",
+            "blueprintKey" : "purchase.warrantyEnds",
+            "createdAt" : "<made>",
+            "dueDate" : "2028-05-10",
+            "id" : "id-26",
+            "isExample" : true,
+            "kind" : "renewal",
+            "notes" : "Funcționează totul bine? Acum mai poți reclama gratuit un defect.",
+            "recurrence" : {
+              "type" : "none"
+            },
+            "reminders" : {
+              "consequence" : "financial",
+              "followUpAfterLapse" : false,
+              "graceDays" : 0,
+              "leadDays" : [
+                30
+              ]
+            },
+            "status" : "active",
+            "title" : "Garanția se termină",
+            "updatedAt" : "2026-11-26T10:00:00Z"
+          },
+          {
+            "assetId" : "id-7",
+            "blueprintKey" : "subscription.contractEnd",
+            "createdAt" : "<made>",
+            "dueDate" : "2027-01-05",
+            "id" : "id-27",
+            "isExample" : true,
+            "kind" : "renewal",
+            "notes" : "De obicei prețul crește după. E momentul să ceri o ofertă mai bună.",
+            "recurrence" : {
+              "type" : "none"
+            },
+            "reminders" : {
+              "consequence" : "financial",
+              "followUpAfterLapse" : false,
+              "graceDays" : 0,
+              "leadDays" : [
+                30
+              ]
+            },
+            "status" : "active",
+            "title" : "Se termină contractul",
+            "updatedAt" : "2026-11-26T10:00:00Z"
+          },
+          {
+            "assetId" : "id-11",
+            "blueprintKey" : "subscription.renewal",
+            "createdAt" : "<made>",
+            "dueDate" : "2026-12-14",
+            "id" : "id-28",
+            "isExample" : true,
+            "kind" : "payment",
+            "notes" : "Decide dacă îl mai vrei înainte să se plătească singur.",
+            "recurrence" : {
+              "anchor" : "dueDate",
+              "every" : 1,
+              "type" : "interval",
+              "unit" : "year"
+            },
+            "reminders" : {
+              "consequence" : "financial",
+              "followUpAfterLapse" : false,
+              "graceDays" : 0,
+              "leadDays" : [
+                14
+              ]
+            },
+            "status" : "active",
+            "title" : "Reînnoire anuală",
+            "updatedAt" : "2026-11-26T10:00:00Z"
+          },
+          {
+            "assetId" : "id-4",
+            "blueprintKey" : "tenancy.end",
+            "createdAt" : "<made>",
+            "dueDate" : "2027-01-30",
+            "id" : "id-29",
+            "isExample" : true,
+            "kind" : "renewal",
+            "notes" : "Timp să vorbiți despre prelungire sau să cauți alt chiriaș.",
+            "recurrence" : {
+              "type" : "none"
+            },
+            "reminders" : {
+              "consequence" : "financial",
+              "followUpAfterLapse" : false,
+              "graceDays" : 0,
+              "leadDays" : [
+                60
+              ]
+            },
+            "status" : "active",
+            "title" : "Se termină contractul de închiriere",
+            "updatedAt" : "2026-11-26T10:00:00Z"
+          },
+          {
+            "assetId" : "id-12",
+            "blueprintKey" : "vehicle.itp",
+            "createdAt" : "<made>",
+            "dueDate" : "2026-12-05",
+            "estimatedCost" : {
+              "amount" : "180",
+              "currency" : "RON"
+            },
+            "id" : "id-30",
+            "isExample" : true,
+            "kind" : "legal",
+            "notes" : "Fără ITP valabil, înmatricularea se suspendă.",
+            "recurrence" : {
+              "rule" : "vehicleITP",
+              "type" : "legal"
+            },
+            "reminders" : {
+              "consequence" : "legal",
+              "followUpAfterLapse" : true,
+              "graceDays" : 0,
+              "leadDays" : [
+                30,
+                7
+              ]
+            },
+            "status" : "active",
+            "title" : "ITP",
+            "updatedAt" : "2026-11-26T10:00:00Z"
+          },
+          {
+            "assetId" : "id-12",
+            "blueprintKey" : "vehicle.rca",
+            "createdAt" : "<made>",
+            "dueDate" : "2027-01-06",
+            "id" : "id-31",
+            "isExample" : true,
+            "kind" : "insurance",
+            "notes" : "Cere oferte cu o lună înainte, prețurile diferă mult.",
+            "recurrence" : {
+              "anchor" : "dueDate",
+              "every" : 1,
+              "type" : "interval",
+              "unit" : "year"
+            },
+            "reminders" : {
+              "consequence" : "legal",
+              "followUpAfterLapse" : true,
+              "graceDays" : 0,
+              "leadDays" : [
+                30,
+                7,
+                0
+              ]
+            },
+            "status" : "active",
+            "title" : "RCA",
+            "updatedAt" : "2026-11-26T10:00:00Z"
+          },
+          {
+            "assetId" : "id-12",
+            "blueprintKey" : "vehicle.service",
+            "createdAt" : "<made>",
+            "dueDate" : "2027-03-26",
+            "dueMetric" : 157500,
+            "id" : "id-32",
+            "isExample" : true,
+            "kind" : "maintenance",
+            "recurrence" : {
+              "every" : 15000,
+              "fallbackEvery" : 1,
+              "fallbackUnit" : "year",
+              "type" : "metric",
+              "unit" : "km"
+            },
+            "reminders" : {
+              "consequence" : "comfort",
+              "followUpAfterLapse" : false,
+              "graceDays" : 30,
+              "leadDays" : [
+                14,
+                1
+              ]
+            },
+            "status" : "active",
+            "title" : "Revizie periodică",
+            "updatedAt" : "2026-11-26T10:00:00Z"
+          },
+          {
+            "assetId" : "id-12",
+            "blueprintKey" : "vehicle.tyres",
+            "createdAt" : "<made>",
+            "dueDate" : "2027-04-15",
+            "id" : "id-33",
+            "isExample" : true,
+            "kind" : "maintenance",
+            "recurrence" : {
+              "dates" : [
+                "04-15",
+                "11-01"
+              ],
+              "type" : "fixedDates"
+            },
+            "reminders" : {
+              "consequence" : "comfort",
+              "followUpAfterLapse" : false,
+              "graceDays" : 14,
+              "leadDays" : [
+                14
+              ]
+            },
+            "status" : "active",
+            "title" : "Schimb de anvelope",
+            "updatedAt" : "2026-11-26T10:00:00Z"
+          },
+          {
+            "assetId" : "id-12",
+            "blueprintKey" : "vehicle.vignette",
+            "createdAt" : "<made>",
+            "dueDate" : "2026-11-24",
+            "id" : "id-34",
+            "isExample" : true,
+            "kind" : "legal",
+            "recurrence" : {
+              "anchor" : "completion",
+              "every" : 12,
+              "type" : "interval",
+              "unit" : "month"
+            },
+            "reminders" : {
+              "consequence" : "legal",
+              "followUpAfterLapse" : true,
+              "graceDays" : 0,
+              "leadDays" : [
+                7,
+                0
+              ]
+            },
+            "status" : "active",
+            "title" : "Rovinietă",
+            "updatedAt" : "2026-11-26T10:00:00Z"
+          },
+          {
+            "blueprintKey" : "household.rentalDeclaration",
+            "createdAt" : "<made>",
+            "dueDate" : "2027-05-25",
+            "id" : "id-35",
+            "isExample" : true,
+            "kind" : "tax",
+            "notes" : "Venitul din chirii se declară la ANAF până pe 25 mai.",
+            "recurrence" : {
+              "dates" : [
+                "05-25"
+              ],
+              "type" : "fixedDates"
+            },
+            "reminders" : {
+              "consequence" : "legal",
+              "followUpAfterLapse" : true,
+              "graceDays" : 0,
+              "leadDays" : [
+                30,
+                7
+              ]
+            },
+            "status" : "active",
+            "title" : "Declarația unică pentru chirii",
+            "updatedAt" : "2026-11-26T10:00:00Z"
+          }
+        ],
+        "data/providers.json" : [
+          {
+            "assetIds" : [
+              "id-8"
+            ],
+            "createdAt" : "<made>",
+            "id" : "id-46",
+            "isExample" : true,
+            "manualRating" : 5,
+            "name" : "Cabinet veterinar exemplu",
+            "phone" : "0700000003",
+            "trades" : [
+              "vet"
+            ],
+            "updatedAt" : "2026-11-26T10:00:00Z"
+          },
+          {
+            "assetIds" : [
+              "id-4"
+            ],
+            "createdAt" : "<made>",
+            "id" : "id-47",
+            "isExample" : true,
+            "name" : "Chiriaș exemplu",
+            "phone" : "0700000004",
+            "trades" : [
+              "tenant"
+            ],
+            "updatedAt" : "2026-11-26T10:00:00Z"
+          },
+          {
+            "assetIds" : [
+              "id-1"
+            ],
+            "createdAt" : "<made>",
+            "id" : "id-48",
+            "isExample" : true,
+            "name" : "Instalator exemplu",
+            "phone" : "0700000002",
+            "trades" : [
+              "plumber"
+            ],
+            "updatedAt" : "2026-11-26T10:00:00Z"
+          },
+          {
+            "assetIds" : [
+              "id-12"
+            ],
+            "createdAt" : "<made>",
+            "id" : "id-49",
+            "isExample" : true,
+            "name" : "Service auto exemplu",
+            "phone" : "0700000001",
+            "trades" : [
+              "mechanic",
+              "tyreShop"
+            ],
+            "updatedAt" : "2026-11-26T10:00:00Z",
+            "wouldCallAgain" : true
+          }
+        ],
+        "data/service_items.json" : [
+          {
+            "componentKey" : "brakes.padsFront",
+            "cost" : {
+              "amount" : "380",
+              "currency" : "RON"
+            },
+            "entryId" : "id-37",
+            "group" : "Frâne",
+            "id" : "id-41",
+            "isExample" : true,
+            "name" : "Plăcuțe frână față",
+            "partBrandOrCode" : "Exemplu",
+            "updatedAt" : "2026-11-26T10:00:00Z"
+          },
+          {
+            "componentKey" : "engine.oil",
+            "cost" : {
+              "amount" : "420",
+              "currency" : "RON"
+            },
+            "entryId" : "id-37",
+            "group" : "Motor",
+            "id" : "id-42",
+            "isExample" : true,
+            "name" : "Schimb ulei și filtru",
+            "partBrandOrCode" : "5W-30",
+            "updatedAt" : "2026-11-26T10:00:00Z"
+          },
+          {
+            "componentKey" : "engine.oil",
+            "cost" : {
+              "amount" : "450",
+              "currency" : "RON"
+            },
+            "entryId" : "id-38",
+            "group" : "Motor",
+            "id" : "id-43",
+            "isExample" : true,
+            "name" : "Schimb ulei și filtru",
+            "partBrandOrCode" : "5W-30",
+            "updatedAt" : "2026-11-26T10:00:00Z"
+          },
+          {
+            "componentKey" : "kitchen.hood",
+            "cost" : {
+              "amount" : "899",
+              "currency" : "RON"
+            },
+            "entryId" : "id-39",
+            "group" : "Bucătărie",
+            "id" : "id-44",
+            "isExample" : true,
+            "name" : "Hotă",
+            "partBrandOrCode" : "Exemplu 60 cm",
+            "updatedAt" : "2026-11-26T10:00:00Z"
+          },
+          {
+            "componentKey" : "plumbing.taps",
+            "cost" : {
+              "amount" : "240",
+              "currency" : "RON"
+            },
+            "entryId" : "id-40",
+            "group" : "Instalații sanitare",
+            "id" : "id-45",
+            "isExample" : true,
+            "name" : "Baterie bucătărie",
+            "partBrandOrCode" : "Exemplu",
+            "updatedAt" : "2026-11-26T10:00:00Z"
+          }
+        ]
+      },
+      "kept" : null,
+      "name" : "loading them twice leaves one household",
+      "steps" : [
+        {
+          "do" : "load"
+        },
+        {
+          "do" : "load"
+        }
+      ]
+    },
+    {
+      "binder" : {
+        "data/assets.json" : [
+
+        ],
+        "data/attachments.json" : [
+
+        ],
+        "data/history.json" : [
+
+        ],
+        "data/issuer_lessons.json" : [
+
+        ],
+        "data/measurements.json" : [
+
+        ],
+        "data/obligations.json" : [
+
+        ],
+        "data/providers.json" : [
+
+        ],
+        "data/service_items.json" : [
+
+        ]
+      },
+      "kept" : [
+
+      ],
+      "name" : "removing them leaves nothing",
+      "steps" : [
+        {
+          "do" : "load"
+        },
+        {
+          "do" : "remove"
+        }
+      ]
+    },
+    {
+      "binder" : {
+        "data/assets.json" : [
+          {
+            "createdAt" : "<made>",
+            "id" : "id-1",
+            "isExample" : false,
+            "name" : "Mașina mea",
+            "templateKey" : "vehicle",
+            "updatedAt" : "2026-11-26T10:00:00Z",
+            "values" : {
+
+            }
+          }
+        ],
+        "data/attachments.json" : [
+
+        ],
+        "data/history.json" : [
+
+        ],
+        "data/issuer_lessons.json" : [
+
+        ],
+        "data/measurements.json" : [
+
+        ],
+        "data/obligations.json" : [
+
+        ],
+        "data/providers.json" : [
+
+        ],
+        "data/service_items.json" : [
+
+        ]
+      },
+      "kept" : [
+
+      ],
+      "name" : "removing them leaves the person's own section beside them",
+      "steps" : [
+        {
+          "category" : "vehicle",
+          "do" : "ownSection",
+          "name" : "Mașina mea"
+        },
+        {
+          "do" : "load"
+        },
+        {
+          "do" : "remove"
+        }
+      ]
+    },
+    {
+      "binder" : {
+        "data/assets.json" : [
+          {
+            "createdAt" : "<made>",
+            "id" : "id-1",
+            "isExample" : true,
+            "name" : "Apartament Floreasca",
+            "templateKey" : "home",
+            "updatedAt" : "2026-11-26T10:00:00Z",
+            "values" : {
+              "home.address" : {
+                "type" : "text",
+                "value" : "Str. Exemplului nr. 12, București"
+              },
+              "home.area" : {
+                "type" : "number",
+                "value" : 78.5
+              },
+              "home.meterReadFrom" : {
+                "type" : "number",
+                "value" : 20
+              },
+              "home.meterReadTo" : {
+                "type" : "number",
+                "value" : 25
+              }
+            }
+          },
+          {
+            "createdAt" : "<made>",
+            "id" : "id-2",
+            "isExample" : true,
+            "name" : "Aragaz",
+            "parentId" : "id-1",
+            "templateKey" : "purchase",
+            "updatedAt" : "2026-11-26T10:00:00Z",
+            "values" : {
+              "purchase.date" : {
+                "type" : "date",
+                "value" : "2026-05-10"
+              },
+              "purchase.price" : {
+                "amount" : "1350",
+                "currency" : "RON",
+                "type" : "money"
+              },
+              "purchase.retailer" : {
+                "type" : "text",
+                "value" : "Magazin exemplu"
+              },
+              "purchase.warrantyMonths" : {
+                "type" : "number",
+                "value" : 24
+              },
+              "purchase.warrantyUntil" : {
+                "type" : "date",
+                "value" : "2028-05-10"
+              }
+            }
+          },
+          {
+            "createdAt" : "<made>",
+            "id" : "id-3",
+            "isExample" : true,
+            "name" : "Carte de identitate",
+            "parentId" : "id-5",
+            "templateKey" : "documents",
+            "updatedAt" : "2026-11-26T10:00:00Z",
+            "values" : {
+              "document.expiry" : {
+                "type" : "date",
+                "value" : "2029-05-14"
+              },
+              "document.type" : {
+                "type" : "text",
+                "value" : "documentType.idCard"
+              }
+            }
+          },
+          {
+            "createdAt" : "<made>",
+            "id" : "id-4",
+            "isExample" : true,
+            "name" : "Chiriaș garsonieră",
+            "parentId" : "id-1",
+            "templateKey" : "tenancy",
+            "updatedAt" : "2026-11-26T10:00:00Z",
+            "values" : {
+              "tenancy.deposit" : {
+                "amount" : "450",
+                "currency" : "EUR",
+                "type" : "money"
+              },
+              "tenancy.end" : {
+                "type" : "date",
+                "value" : "2027-01-30"
+              },
+              "tenancy.paymentDay" : {
+                "type" : "number",
+                "value" : 5
+              },
+              "tenancy.rent" : {
+                "amount" : "450",
+                "currency" : "EUR",
+                "type" : "money"
+              },
+              "tenancy.start" : {
+                "type" : "date",
+                "value" : "2026-01-30"
+              }
+            }
+          },
+          {
+            "createdAt" : "<made>",
+            "id" : "id-5",
+            "isExample" : true,
+            "name" : "Eu",
+            "templateKey" : "member",
+            "updatedAt" : "2026-11-26T10:00:00Z",
+            "values" : {
+
+            }
+          },
+          {
+            "createdAt" : "<made>",
+            "id" : "id-6",
+            "isExample" : true,
+            "name" : "Frigider",
+            "parentId" : "id-1",
+            "templateKey" : "purchase",
+            "updatedAt" : "2026-11-26T10:00:00Z",
+            "values" : {
+              "purchase.brand" : {
+                "type" : "text",
+                "value" : "Frigider combinat"
+              },
+              "purchase.date" : {
+                "type" : "date",
+                "value" : "2025-04-05"
+              },
+              "purchase.price" : {
+                "amount" : "2499",
+                "currency" : "RON",
+                "type" : "money"
+              },
+              "purchase.retailer" : {
+                "type" : "text",
+                "value" : "Magazin exemplu"
+              },
+              "purchase.warrantyMonths" : {
+                "type" : "number",
+                "value" : 24
+              },
+              "purchase.warrantyUntil" : {
+                "type" : "date",
+                "value" : "2027-04-05"
+              }
+            }
+          },
+          {
+            "createdAt" : "<made>",
+            "id" : "id-7",
+            "isExample" : true,
+            "name" : "Internet fibră",
+            "templateKey" : "subscription",
+            "updatedAt" : "2026-11-26T10:00:00Z",
+            "values" : {
+              "subscription.contractEnd" : {
+                "type" : "date",
+                "value" : "2027-01-05"
+              },
+              "subscription.cycle" : {
+                "type" : "text",
+                "value" : "billing.monthly"
+              },
+              "subscription.group" : {
+                "type" : "text",
+                "value" : "subscriptionGroup.internetAndPhone"
+              },
+              "subscription.price" : {
+                "amount" : "45",
+                "currency" : "RON",
+                "type" : "money"
+              },
+              "subscription.provider" : {
+                "type" : "text",
+                "value" : "Digi"
+              },
+              "subscription.service" : {
+                "type" : "text",
+                "value" : "service.internetTV"
+              }
+            }
+          },
+          {
+            "createdAt" : "<made>",
+            "id" : "id-8",
+            "isExample" : true,
+            "name" : "Max",
+            "templateKey" : "pet",
+            "updatedAt" : "2026-11-26T10:00:00Z",
+            "values" : {
+              "pet.birthDate" : {
+                "type" : "date",
+                "value" : "2021-05-10"
+              },
+              "pet.breed" : {
+                "type" : "text",
+                "value" : "Golden Retriever"
+              },
+              "pet.microchip" : {
+                "type" : "text",
+                "value" : "642000000000001"
+              },
+              "pet.species" : {
+                "type" : "text",
+                "value" : "species.dog"
+              },
+              "pet.weight" : {
+                "type" : "number",
+                "value" : 31.5
+              }
+            }
+          },
+          {
+            "createdAt" : "<made>",
+            "id" : "id-9",
+            "isExample" : true,
+            "name" : "Pașaport",
+            "parentId" : "id-5",
+            "templateKey" : "documents",
+            "updatedAt" : "2026-11-26T10:00:00Z",
+            "values" : {
+              "document.expiry" : {
+                "type" : "date",
+                "value" : "2027-04-25"
+              },
+              "document.number" : {
+                "type" : "text",
+                "value" : "050000000"
+              },
+              "document.type" : {
+                "type" : "text",
+                "value" : "documentType.passport"
+              }
+            }
+          },
+          {
+            "createdAt" : "<made>",
+            "id" : "id-10",
+            "isExample" : true,
+            "name" : "Profil medical",
+            "templateKey" : "health",
+            "updatedAt" : "2026-11-26T10:00:00Z",
+            "values" : {
+              "health.allergies" : {
+                "type" : "text",
+                "value" : "Fără alergii cunoscute"
+              },
+              "health.bloodType" : {
+                "type" : "text",
+                "value" : "bloodType.aPositive"
+              }
+            }
+          },
+          {
+            "createdAt" : "<made>",
+            "id" : "id-11",
+            "isExample" : true,
+            "name" : "Stocare online",
+            "templateKey" : "subscription",
+            "updatedAt" : "2026-11-26T10:00:00Z",
+            "values" : {
+              "subscription.cycle" : {
+                "type" : "text",
+                "value" : "billing.yearly"
+              },
+              "subscription.group" : {
+                "type" : "text",
+                "value" : "subscriptionGroup.appsAndStreaming"
+              },
+              "subscription.price" : {
+                "amount" : "29.99",
+                "currency" : "EUR",
+                "type" : "money"
+              },
+              "subscription.provider" : {
+                "type" : "text",
+                "value" : "Serviciu exemplu"
+              },
+              "subscription.renewalDate" : {
+                "type" : "date",
+                "value" : "2026-12-14"
+              },
+              "subscription.service" : {
+                "type" : "text",
+                "value" : "service.streaming"
+              }
+            }
+          },
+          {
+            "createdAt" : "<made>",
+            "id" : "id-12",
+            "isExample" : true,
+            "name" : "VW Golf",
+            "templateKey" : "vehicle",
+            "updatedAt" : "2026-11-26T10:00:00Z",
+            "values" : {
+              "vehicle.fuel" : {
+                "type" : "text",
+                "value" : "fuel.petrol"
+              },
+              "vehicle.make" : {
+                "type" : "text",
+                "value" : "Volkswagen"
+              },
+              "vehicle.model" : {
+                "type" : "text",
+                "value" : "Golf"
+              },
+              "vehicle.odometer" : {
+                "type" : "number",
+                "value" : 142500
+              },
+              "vehicle.plate" : {
+                "type" : "text",
+                "value" : "B-123-ABC"
+              },
+              "vehicle.usage" : {
+                "type" : "text",
+                "value" : "vehicleUse.personal"
+              },
+              "vehicle.year" : {
+                "type" : "number",
+                "value" : 2018
+              }
+            }
+          }
+        ],
+        "data/attachments.json" : [
+
+        ],
+        "data/history.json" : [
+          {
+            "assetId" : "id-12",
+            "cycleDueDate" : "2024-12-05",
+            "id" : "id-36",
+            "isExample" : true,
+            "kind" : "inspection",
+            "nextDueDate" : "2026-12-05",
+            "obligationId" : "id-30",
+            "occurredAt" : "2024-12-05T10:00:00Z",
+            "previousStatus" : "active",
+            "providerIds" : [
+
+            ],
+            "title" : "ITP",
+            "totalCost" : {
+              "amount" : "170",
+              "currency" : "RON"
+            },
+            "updatedAt" : "2026-11-26T10:00:00Z"
+          },
+          {
+            "assetId" : "id-12",
+            "id" : "id-37",
+            "isExample" : true,
+            "kind" : "maintenance",
+            "metricReading" : 121300,
+            "occurredAt" : "2025-10-22T09:00:00Z",
+            "providerIds" : [
+              "id-49"
+            ],
+            "rating" : 5,
+            "title" : "Revizie anuală",
+            "totalCost" : {
+              "amount" : "1150",
+              "currency" : "RON"
+            },
+            "updatedAt" : "2026-11-26T10:00:00Z"
+          },
+          {
+            "assetId" : "id-12",
+            "id" : "id-38",
+            "isExample" : true,
+            "kind" : "maintenance",
+            "metricReading" : 136200,
+            "occurredAt" : "2026-07-29T09:00:00Z",
+            "providerIds" : [
+              "id-49"
+            ],
+            "rating" : 4,
+            "title" : "Revizie",
+            "totalCost" : {
+              "amount" : "690",
+              "currency" : "RON"
+            },
+            "updatedAt" : "2026-11-26T10:00:00Z"
+          },
+          {
+            "assetId" : "id-1",
+            "id" : "id-39",
+            "isExample" : true,
+            "kind" : "purchase",
+            "occurredAt" : "2025-07-14T09:00:00Z",
+            "providerIds" : [
+
+            ],
+            "title" : "Hotă nouă",
+            "totalCost" : {
+              "amount" : "899",
+              "currency" : "RON"
+            },
+            "updatedAt" : "2026-11-26T10:00:00Z"
+          },
+          {
+            "assetId" : "id-1",
+            "id" : "id-40",
+            "isExample" : true,
+            "kind" : "repair",
+            "occurredAt" : "2026-04-30T09:00:00Z",
+            "providerIds" : [
+              "id-48"
+            ],
+            "rating" : 5,
+            "title" : "Robinet nou la bucătărie",
+            "totalCost" : {
+              "amount" : "340",
+              "currency" : "RON"
+            },
+            "updatedAt" : "2026-11-26T10:00:00Z"
+          }
+        ],
+        "data/issuer_lessons.json" : [
+
+        ],
+        "data/measurements.json" : [
+          {
+            "assetId" : "id-8",
+            "basis" : "read",
+            "id" : "id-50",
+            "isExample" : true,
+            "isSelfRead" : true,
+            "kind" : "bodyWeight",
+            "name" : "",
+            "recordedAt" : "2026-07-29T09:00:00Z",
+            "unit" : "kg",
+            "updatedAt" : "2026-11-26T10:00:00Z",
+            "value" : 30.2
+          },
+          {
+            "assetId" : "id-8",
+            "basis" : "read",
+            "id" : "id-51",
+            "isExample" : true,
+            "isSelfRead" : true,
+            "kind" : "bodyWeight",
+            "name" : "",
+            "recordedAt" : "2026-09-27T09:00:00Z",
+            "unit" : "kg",
+            "updatedAt" : "2026-11-26T10:00:00Z",
+            "value" : 31
+          },
+          {
+            "assetId" : "id-8",
+            "basis" : "read",
+            "id" : "id-52",
+            "isExample" : true,
+            "isSelfRead" : true,
+            "kind" : "bodyWeight",
+            "name" : "",
+            "recordedAt" : "2026-11-26T10:00:00Z",
+            "unit" : "kg",
+            "updatedAt" : "2026-11-26T10:00:00Z",
+            "value" : 31.5
+          },
+          {
+            "assetId" : "id-4",
+            "basis" : "read",
+            "id" : "id-53",
+            "isExample" : true,
+            "isSelfRead" : true,
+            "kind" : "coldWater",
+            "name" : "Apă rece la mutare",
+            "recordedAt" : "2026-01-30T10:00:00Z",
+            "unit" : "m3",
+            "updatedAt" : "2026-11-26T10:00:00Z",
+            "value" : 312
+          },
+          {
+            "assetId" : "id-12",
+            "basis" : "read",
+            "id" : "id-54",
+            "isExample" : true,
+            "isSelfRead" : true,
+            "kind" : "odometer",
+            "name" : "",
+            "recordedAt" : "2025-10-22T09:00:00Z",
+            "unit" : "km",
+            "updatedAt" : "2026-11-26T10:00:00Z",
+            "value" : 121300
+          },
+          {
+            "assetId" : "id-12",
+            "basis" : "read",
+            "id" : "id-55",
+            "isExample" : true,
+            "isSelfRead" : true,
+            "kind" : "odometer",
+            "name" : "",
+            "recordedAt" : "2026-07-29T09:00:00Z",
+            "unit" : "km",
+            "updatedAt" : "2026-11-26T10:00:00Z",
+            "value" : 136200
+          },
+          {
+            "assetId" : "id-12",
+            "basis" : "read",
+            "id" : "id-56",
+            "isExample" : true,
+            "isSelfRead" : true,
+            "kind" : "odometer",
+            "name" : "",
+            "recordedAt" : "2026-11-26T10:00:00Z",
+            "unit" : "km",
+            "updatedAt" : "2026-11-26T10:00:00Z",
+            "value" : 142500
+          }
+        ],
+        "data/obligations.json" : [
+          {
+            "assetId" : "id-9",
+            "blueprintKey" : "document.renew",
+            "createdAt" : "<made>",
+            "dueDate" : "2027-04-25",
+            "id" : "id-13",
+            "isExample" : true,
+            "kind" : "renewal",
+            "notes" : "Programările durează. Pentru pașaport, multe țări cer 6 luni de valabilitate.",
+            "recurrence" : {
+              "type" : "none"
+            },
+            "reminders" : {
+              "consequence" : "legal",
+              "followUpAfterLapse" : true,
+              "graceDays" : 0,
+              "leadDays" : [
+                90,
+                0
+              ],
+              "travelMarginDays" : 180
+            },
+            "status" : "active",
+            "title" : "Reînnoire",
+            "updatedAt" : "2026-11-26T10:00:00Z"
+          },
+          {
+            "assetId" : "id-3",
+            "blueprintKey" : "document.renew",
+            "createdAt" : "<made>",
+            "dueDate" : "2029-05-14",
+            "id" : "id-14",
+            "isExample" : true,
+            "kind" : "renewal",
+            "notes" : "Programările durează. Pentru pașaport, multe țări cer 6 luni de valabilitate.",
+            "recurrence" : {
+              "type" : "none"
+            },
+            "reminders" : {
+              "consequence" : "legal",
+              "followUpAfterLapse" : true,
+              "graceDays" : 0,
+              "leadDays" : [
+                90,
+                30
+              ]
+            },
+            "status" : "active",
+            "title" : "Reînnoire",
+            "updatedAt" : "2026-11-26T10:00:00Z"
+          },
+          {
+            "assetId" : "id-10",
+            "blueprintKey" : "health.checkup",
+            "createdAt" : "<made>",
+            "dueDate" : "2027-01-10",
+            "id" : "id-15",
+            "isExample" : true,
+            "kind" : "health",
+            "recurrence" : {
+              "anchor" : "completion",
+              "every" : 1,
+              "type" : "interval",
+              "unit" : "year"
+            },
+            "reminders" : {
+              "consequence" : "health",
+              "followUpAfterLapse" : false,
+              "graceDays" : 30,
+              "leadDays" : [
+                14,
+                0
+              ]
+            },
+            "status" : "active",
+            "title" : "Analize anuale",
+            "updatedAt" : "2026-11-26T10:00:00Z"
+          },
+          {
+            "assetId" : "id-10",
+            "blueprintKey" : "health.dentist",
+            "createdAt" : "<made>",
+            "dueDate" : "2026-11-25",
+            "id" : "id-16",
+            "isExample" : true,
+            "kind" : "health",
+            "recurrence" : {
+              "anchor" : "completion",
+              "every" : 6,
+              "type" : "interval",
+              "unit" : "month"
+            },
+            "reminders" : {
+              "consequence" : "health",
+              "followUpAfterLapse" : false,
+              "graceDays" : 30,
+              "leadDays" : [
+                7,
+                0
+              ]
+            },
+            "status" : "active",
+            "title" : "Control stomatologic",
+            "updatedAt" : "2026-11-26T10:00:00Z"
+          },
+          {
+            "assetId" : "id-1",
+            "blueprintKey" : "home.boilerCheck",
+            "createdAt" : "<made>",
+            "dueDate" : "2027-06-14",
+            "id" : "id-17",
+            "isExample" : true,
+            "kind" : "legal",
+            "notes" : "Obligatorie la cel mult 2 ani, făcută de o firmă autorizată ISCIR.",
+            "recurrence" : {
+              "anchor" : "completion",
+              "every" : 2,
+              "type" : "interval",
+              "unit" : "year"
+            },
+            "reminders" : {
+              "consequence" : "legal",
+              "followUpAfterLapse" : true,
+              "graceDays" : 0,
+              "leadDays" : [
+                30,
+                7
+              ]
+            },
+            "status" : "active",
+            "title" : "Verificare centrală (VTP)",
+            "updatedAt" : "2026-11-26T10:00:00Z"
+          },
+          {
+            "assetId" : "id-1",
+            "blueprintKey" : "home.buildingTax",
+            "createdAt" : "<made>",
+            "dueDate" : "2027-03-31",
+            "id" : "id-18",
+            "isExample" : true,
+            "kind" : "tax",
+            "notes" : "Plata integrală până la 31 martie poate aduce o reducere.",
+            "recurrence" : {
+              "dates" : [
+                "03-31",
+                "09-30"
+              ],
+              "type" : "fixedDates"
+            },
+            "reminders" : {
+              "consequence" : "financial",
+              "followUpAfterLapse" : true,
+              "graceDays" : 0,
+              "leadDays" : [
+                14,
+                1
+              ]
+            },
+            "status" : "active",
+            "title" : "Impozit pe clădire",
+            "updatedAt" : "2026-11-26T10:00:00Z"
+          },
+          {
+            "assetId" : "id-1",
+            "blueprintKey" : "home.gasCheck",
+            "createdAt" : "<made>",
+            "dueDate" : "2027-10-02",
+            "id" : "id-19",
+            "isExample" : true,
+            "kind" : "legal",
+            "recurrence" : {
+              "anchor" : "completion",
+              "every" : 2,
+              "type" : "interval",
+              "unit" : "year"
+            },
+            "reminders" : {
+              "consequence" : "legal",
+              "followUpAfterLapse" : true,
+              "graceDays" : 0,
+              "leadDays" : [
+                30,
+                7
+              ]
+            },
+            "status" : "active",
+            "title" : "Verificare instalație de gaze",
+            "updatedAt" : "2026-11-26T10:00:00Z"
+          },
+          {
+            "assetId" : "id-1",
+            "blueprintKey" : "home.pad",
+            "createdAt" : "<made>",
+            "dueDate" : "2026-12-21",
+            "estimatedCost" : {
+              "amount" : "130",
+              "currency" : "RON"
+            },
+            "id" : "id-20",
+            "isExample" : true,
+            "kind" : "insurance",
+            "recurrence" : {
+              "anchor" : "dueDate",
+              "every" : 1,
+              "type" : "interval",
+              "unit" : "year"
+            },
+            "reminders" : {
+              "consequence" : "legal",
+              "followUpAfterLapse" : true,
+              "graceDays" : 0,
+              "leadDays" : [
+                30,
+                7,
+                0
+              ]
+            },
+            "status" : "active",
+            "title" : "Asigurare obligatorie (PAD)",
+            "updatedAt" : "2026-11-26T10:00:00Z"
+          },
+          {
+            "assetId" : "id-8",
+            "blueprintKey" : "pet.dewormExternal",
+            "createdAt" : "<made>",
+            "dueDate" : "2026-12-08",
+            "id" : "id-21",
+            "isExample" : true,
+            "kind" : "health",
+            "recurrence" : {
+              "anchor" : "completion",
+              "every" : 1,
+              "type" : "interval",
+              "unit" : "month"
+            },
+            "reminders" : {
+              "consequence" : "health",
+              "followUpAfterLapse" : false,
+              "graceDays" : 7,
+              "leadDays" : [
+                1,
+                0
+              ]
+            },
+            "status" : "active",
+            "title" : "Deparazitare externă",
+            "updatedAt" : "2026-11-26T10:00:00Z"
+          },
+          {
+            "assetId" : "id-8",
+            "blueprintKey" : "pet.dewormInternal",
+            "createdAt" : "<made>",
+            "dueDate" : "2026-11-29",
+            "id" : "id-22",
+            "isExample" : true,
+            "kind" : "health",
+            "recurrence" : {
+              "anchor" : "completion",
+              "every" : 3,
+              "type" : "interval",
+              "unit" : "month"
+            },
+            "reminders" : {
+              "consequence" : "health",
+              "followUpAfterLapse" : false,
+              "graceDays" : 7,
+              "leadDays" : [
+                1,
+                0
+              ]
+            },
+            "status" : "active",
+            "title" : "Deparazitare internă",
+            "updatedAt" : "2026-11-26T10:00:00Z"
+          },
+          {
+            "assetId" : "id-8",
+            "blueprintKey" : "pet.rabies",
+            "createdAt" : "<made>",
+            "dueDate" : "2027-01-25",
+            "id" : "id-23",
+            "isExample" : true,
+            "kind" : "legal",
+            "notes" : "Obligatoriu și cerut la trecerea graniței.",
+            "recurrence" : {
+              "anchor" : "completion",
+              "every" : 1,
+              "type" : "interval",
+              "unit" : "year"
+            },
+            "reminders" : {
+              "consequence" : "legal",
+              "followUpAfterLapse" : true,
+              "graceDays" : 0,
+              "leadDays" : [
+                10,
+                4
+              ]
+            },
+            "status" : "active",
+            "title" : "Vaccin antirabic",
+            "updatedAt" : "2026-11-26T10:00:00Z"
+          },
+          {
+            "assetId" : "id-8",
+            "blueprintKey" : "pet.vaccine",
+            "createdAt" : "<made>",
+            "dueDate" : "2027-01-25",
+            "id" : "id-24",
+            "isExample" : true,
+            "kind" : "health",
+            "recurrence" : {
+              "anchor" : "completion",
+              "every" : 1,
+              "type" : "interval",
+              "unit" : "year"
+            },
+            "reminders" : {
+              "consequence" : "health",
+              "followUpAfterLapse" : false,
+              "graceDays" : 7,
+              "leadDays" : [
+                1
+              ]
+            },
+            "status" : "active",
+            "title" : "Vaccin anual",
+            "updatedAt" : "2026-11-26T10:00:00Z"
+          },
+          {
+            "assetId" : "id-6",
+            "blueprintKey" : "purchase.warrantyEnds",
+            "createdAt" : "<made>",
+            "dueDate" : "2027-04-05",
+            "id" : "id-25",
+            "isExample" : true,
+            "kind" : "renewal",
+            "notes" : "Funcționează totul bine? Acum mai poți reclama gratuit un defect.",
+            "recurrence" : {
+              "type" : "none"
+            },
+            "reminders" : {
+              "consequence" : "financial",
+              "followUpAfterLapse" : false,
+              "graceDays" : 0,
+              "leadDays" : [
+                30
+              ]
+            },
+            "status" : "active",
+            "title" : "Garanția se termină",
+            "updatedAt" : "2026-11-26T10:00:00Z"
+          },
+          {
+            "assetId" : "id-2",
+            "blueprintKey" : "purchase.warrantyEnds",
+            "createdAt" : "<made>",
+            "dueDate" : "2028-05-10",
+            "id" : "id-26",
+            "isExample" : true,
+            "kind" : "renewal",
+            "notes" : "Funcționează totul bine? Acum mai poți reclama gratuit un defect.",
+            "recurrence" : {
+              "type" : "none"
+            },
+            "reminders" : {
+              "consequence" : "financial",
+              "followUpAfterLapse" : false,
+              "graceDays" : 0,
+              "leadDays" : [
+                30
+              ]
+            },
+            "status" : "active",
+            "title" : "Garanția se termină",
+            "updatedAt" : "2026-11-26T10:00:00Z"
+          },
+          {
+            "assetId" : "id-7",
+            "blueprintKey" : "subscription.contractEnd",
+            "createdAt" : "<made>",
+            "dueDate" : "2027-01-05",
+            "id" : "id-27",
+            "isExample" : true,
+            "kind" : "renewal",
+            "notes" : "De obicei prețul crește după. E momentul să ceri o ofertă mai bună.",
+            "recurrence" : {
+              "type" : "none"
+            },
+            "reminders" : {
+              "consequence" : "financial",
+              "followUpAfterLapse" : false,
+              "graceDays" : 0,
+              "leadDays" : [
+                30
+              ]
+            },
+            "status" : "active",
+            "title" : "Se termină contractul",
+            "updatedAt" : "2026-11-26T10:00:00Z"
+          },
+          {
+            "assetId" : "id-11",
+            "blueprintKey" : "subscription.renewal",
+            "createdAt" : "<made>",
+            "dueDate" : "2026-12-14",
+            "id" : "id-28",
+            "isExample" : true,
+            "kind" : "payment",
+            "notes" : "Decide dacă îl mai vrei înainte să se plătească singur.",
+            "recurrence" : {
+              "anchor" : "dueDate",
+              "every" : 1,
+              "type" : "interval",
+              "unit" : "year"
+            },
+            "reminders" : {
+              "consequence" : "financial",
+              "followUpAfterLapse" : false,
+              "graceDays" : 0,
+              "leadDays" : [
+                14
+              ]
+            },
+            "status" : "active",
+            "title" : "Reînnoire anuală",
+            "updatedAt" : "2026-11-26T10:00:00Z"
+          },
+          {
+            "assetId" : "id-4",
+            "blueprintKey" : "tenancy.end",
+            "createdAt" : "<made>",
+            "dueDate" : "2027-01-30",
+            "id" : "id-29",
+            "isExample" : true,
+            "kind" : "renewal",
+            "notes" : "Timp să vorbiți despre prelungire sau să cauți alt chiriaș.",
+            "recurrence" : {
+              "type" : "none"
+            },
+            "reminders" : {
+              "consequence" : "financial",
+              "followUpAfterLapse" : false,
+              "graceDays" : 0,
+              "leadDays" : [
+                60
+              ]
+            },
+            "status" : "active",
+            "title" : "Se termină contractul de închiriere",
+            "updatedAt" : "2026-11-26T10:00:00Z"
+          },
+          {
+            "assetId" : "id-12",
+            "blueprintKey" : "vehicle.itp",
+            "createdAt" : "<made>",
+            "dueDate" : "2026-12-05",
+            "estimatedCost" : {
+              "amount" : "180",
+              "currency" : "RON"
+            },
+            "id" : "id-30",
+            "isExample" : true,
+            "kind" : "legal",
+            "notes" : "Fără ITP valabil, înmatricularea se suspendă.",
+            "recurrence" : {
+              "rule" : "vehicleITP",
+              "type" : "legal"
+            },
+            "reminders" : {
+              "consequence" : "legal",
+              "followUpAfterLapse" : true,
+              "graceDays" : 0,
+              "leadDays" : [
+                30,
+                7
+              ]
+            },
+            "status" : "active",
+            "title" : "ITP",
+            "updatedAt" : "2026-11-26T10:00:00Z"
+          },
+          {
+            "assetId" : "id-12",
+            "blueprintKey" : "vehicle.rca",
+            "createdAt" : "<made>",
+            "dueDate" : "2027-01-06",
+            "id" : "id-31",
+            "isExample" : true,
+            "kind" : "insurance",
+            "notes" : "Cere oferte cu o lună înainte, prețurile diferă mult.",
+            "recurrence" : {
+              "anchor" : "dueDate",
+              "every" : 1,
+              "type" : "interval",
+              "unit" : "year"
+            },
+            "reminders" : {
+              "consequence" : "legal",
+              "followUpAfterLapse" : true,
+              "graceDays" : 0,
+              "leadDays" : [
+                30,
+                7,
+                0
+              ]
+            },
+            "status" : "active",
+            "title" : "RCA",
+            "updatedAt" : "2026-11-26T10:00:00Z"
+          },
+          {
+            "assetId" : "id-12",
+            "blueprintKey" : "vehicle.service",
+            "createdAt" : "<made>",
+            "dueDate" : "2027-03-26",
+            "dueMetric" : 157500,
+            "id" : "id-32",
+            "isExample" : true,
+            "kind" : "maintenance",
+            "recurrence" : {
+              "every" : 15000,
+              "fallbackEvery" : 1,
+              "fallbackUnit" : "year",
+              "type" : "metric",
+              "unit" : "km"
+            },
+            "reminders" : {
+              "consequence" : "comfort",
+              "followUpAfterLapse" : false,
+              "graceDays" : 30,
+              "leadDays" : [
+                14,
+                1
+              ]
+            },
+            "status" : "active",
+            "title" : "Revizie periodică",
+            "updatedAt" : "2026-11-26T10:00:00Z"
+          },
+          {
+            "assetId" : "id-12",
+            "blueprintKey" : "vehicle.tyres",
+            "createdAt" : "<made>",
+            "dueDate" : "2027-04-15",
+            "id" : "id-33",
+            "isExample" : true,
+            "kind" : "maintenance",
+            "recurrence" : {
+              "dates" : [
+                "04-15",
+                "11-01"
+              ],
+              "type" : "fixedDates"
+            },
+            "reminders" : {
+              "consequence" : "comfort",
+              "followUpAfterLapse" : false,
+              "graceDays" : 14,
+              "leadDays" : [
+                14
+              ]
+            },
+            "status" : "active",
+            "title" : "Schimb de anvelope",
+            "updatedAt" : "2026-11-26T10:00:00Z"
+          },
+          {
+            "assetId" : "id-12",
+            "blueprintKey" : "vehicle.vignette",
+            "createdAt" : "<made>",
+            "dueDate" : "2026-11-24",
+            "id" : "id-34",
+            "isExample" : true,
+            "kind" : "legal",
+            "recurrence" : {
+              "anchor" : "completion",
+              "every" : 12,
+              "type" : "interval",
+              "unit" : "month"
+            },
+            "reminders" : {
+              "consequence" : "legal",
+              "followUpAfterLapse" : true,
+              "graceDays" : 0,
+              "leadDays" : [
+                7,
+                0
+              ]
+            },
+            "status" : "active",
+            "title" : "Rovinietă",
+            "updatedAt" : "2026-11-26T10:00:00Z"
+          },
+          {
+            "blueprintKey" : "household.rentalDeclaration",
+            "createdAt" : "<made>",
+            "dueDate" : "2027-05-25",
+            "id" : "id-35",
+            "isExample" : true,
+            "kind" : "tax",
+            "notes" : "Venitul din chirii se declară la ANAF până pe 25 mai.",
+            "recurrence" : {
+              "dates" : [
+                "05-25"
+              ],
+              "type" : "fixedDates"
+            },
+            "reminders" : {
+              "consequence" : "legal",
+              "followUpAfterLapse" : true,
+              "graceDays" : 0,
+              "leadDays" : [
+                30,
+                7
+              ]
+            },
+            "status" : "active",
+            "title" : "Declarația unică pentru chirii",
+            "updatedAt" : "2026-11-26T10:00:00Z"
+          }
+        ],
+        "data/providers.json" : [
+          {
+            "assetIds" : [
+              "id-8"
+            ],
+            "createdAt" : "<made>",
+            "id" : "id-46",
+            "isExample" : true,
+            "manualRating" : 5,
+            "name" : "Cabinet veterinar exemplu",
+            "phone" : "0700000003",
+            "trades" : [
+              "vet"
+            ],
+            "updatedAt" : "2026-11-26T10:00:00Z"
+          },
+          {
+            "assetIds" : [
+              "id-4"
+            ],
+            "createdAt" : "<made>",
+            "id" : "id-47",
+            "isExample" : true,
+            "name" : "Chiriaș exemplu",
+            "phone" : "0700000004",
+            "trades" : [
+              "tenant"
+            ],
+            "updatedAt" : "2026-11-26T10:00:00Z"
+          },
+          {
+            "assetIds" : [
+              "id-1"
+            ],
+            "createdAt" : "<made>",
+            "id" : "id-48",
+            "isExample" : true,
+            "name" : "Instalator exemplu",
+            "phone" : "0700000002",
+            "trades" : [
+              "plumber"
+            ],
+            "updatedAt" : "2026-11-26T10:00:00Z"
+          },
+          {
+            "assetIds" : [
+              "id-12"
+            ],
+            "createdAt" : "<made>",
+            "id" : "id-49",
+            "isExample" : true,
+            "name" : "Service auto exemplu",
+            "phone" : "0700000001",
+            "trades" : [
+              "mechanic",
+              "tyreShop"
+            ],
+            "updatedAt" : "2026-11-26T10:00:00Z",
+            "wouldCallAgain" : true
+          }
+        ],
+        "data/service_items.json" : [
+          {
+            "componentKey" : "brakes.padsFront",
+            "cost" : {
+              "amount" : "380",
+              "currency" : "RON"
+            },
+            "entryId" : "id-37",
+            "group" : "Frâne",
+            "id" : "id-41",
+            "isExample" : true,
+            "name" : "Plăcuțe frână față",
+            "partBrandOrCode" : "Exemplu",
+            "updatedAt" : "2026-11-26T10:00:00Z"
+          },
+          {
+            "componentKey" : "engine.oil",
+            "cost" : {
+              "amount" : "420",
+              "currency" : "RON"
+            },
+            "entryId" : "id-37",
+            "group" : "Motor",
+            "id" : "id-42",
+            "isExample" : true,
+            "name" : "Schimb ulei și filtru",
+            "partBrandOrCode" : "5W-30",
+            "updatedAt" : "2026-11-26T10:00:00Z"
+          },
+          {
+            "componentKey" : "engine.oil",
+            "cost" : {
+              "amount" : "450",
+              "currency" : "RON"
+            },
+            "entryId" : "id-38",
+            "group" : "Motor",
+            "id" : "id-43",
+            "isExample" : true,
+            "name" : "Schimb ulei și filtru",
+            "partBrandOrCode" : "5W-30",
+            "updatedAt" : "2026-11-26T10:00:00Z"
+          },
+          {
+            "componentKey" : "kitchen.hood",
+            "cost" : {
+              "amount" : "899",
+              "currency" : "RON"
+            },
+            "entryId" : "id-39",
+            "group" : "Bucătărie",
+            "id" : "id-44",
+            "isExample" : true,
+            "name" : "Hotă",
+            "partBrandOrCode" : "Exemplu 60 cm",
+            "updatedAt" : "2026-11-26T10:00:00Z"
+          },
+          {
+            "componentKey" : "plumbing.taps",
+            "cost" : {
+              "amount" : "240",
+              "currency" : "RON"
+            },
+            "entryId" : "id-40",
+            "group" : "Instalații sanitare",
+            "id" : "id-45",
+            "isExample" : true,
+            "name" : "Baterie bucătărie",
+            "partBrandOrCode" : "Exemplu",
+            "updatedAt" : "2026-11-26T10:00:00Z"
+          }
+        ]
+      },
+      "kept" : [
+
+      ],
+      "name" : "Anulează brings every example back",
+      "steps" : [
+        {
+          "do" : "load"
+        },
+        {
+          "do" : "remove"
+        },
+        {
+          "do" : "undo"
+        }
+      ]
+    },
+    {
+      "binder" : {
+        "data/assets.json" : [
+          {
+            "createdAt" : "<made>",
+            "id" : "id-1",
+            "isExample" : false,
+            "name" : "Apartament Floreasca",
+            "templateKey" : "home",
+            "updatedAt" : "2026-11-26T10:00:00Z",
+            "values" : {
+              "home.address" : {
+                "type" : "text",
+                "value" : "Str. Exemplului nr. 12, București"
+              },
+              "home.area" : {
+                "type" : "number",
+                "value" : 78.5
+              },
+              "home.meterReadFrom" : {
+                "type" : "number",
+                "value" : 20
+              },
+              "home.meterReadTo" : {
+                "type" : "number",
+                "value" : 25
+              }
+            }
+          },
+          {
+            "createdAt" : "<made>",
+            "id" : "id-2",
+            "isExample" : false,
+            "name" : "Aragaz",
+            "parentId" : "id-1",
+            "templateKey" : "purchase",
+            "updatedAt" : "2026-11-26T10:00:00Z",
+            "values" : {
+              "purchase.date" : {
+                "type" : "date",
+                "value" : "2026-05-10"
+              },
+              "purchase.price" : {
+                "amount" : "1350",
+                "currency" : "RON",
+                "type" : "money"
+              },
+              "purchase.retailer" : {
+                "type" : "text",
+                "value" : "Magazin exemplu"
+              },
+              "purchase.warrantyMonths" : {
+                "type" : "number",
+                "value" : 24
+              },
+              "purchase.warrantyUntil" : {
+                "type" : "date",
+                "value" : "2028-05-10"
+              }
+            }
+          },
+          {
+            "createdAt" : "<made>",
+            "id" : "id-3",
+            "isExample" : false,
+            "name" : "Boxa",
+            "parentId" : "id-1",
+            "templateKey" : "other",
+            "updatedAt" : "2026-11-26T10:00:00Z",
+            "values" : {
+
+            }
+          },
+          {
+            "createdAt" : "<made>",
+            "id" : "id-4",
+            "isExample" : false,
+            "name" : "Chiriaș garsonieră",
+            "parentId" : "id-1",
+            "templateKey" : "tenancy",
+            "updatedAt" : "2026-11-26T10:00:00Z",
+            "values" : {
+              "tenancy.deposit" : {
+                "amount" : "450",
+                "currency" : "EUR",
+                "type" : "money"
+              },
+              "tenancy.end" : {
+                "type" : "date",
+                "value" : "2027-01-30"
+              },
+              "tenancy.paymentDay" : {
+                "type" : "number",
+                "value" : 5
+              },
+              "tenancy.rent" : {
+                "amount" : "450",
+                "currency" : "EUR",
+                "type" : "money"
+              },
+              "tenancy.start" : {
+                "type" : "date",
+                "value" : "2026-01-30"
+              }
+            }
+          },
+          {
+            "createdAt" : "<made>",
+            "id" : "id-5",
+            "isExample" : false,
+            "name" : "Frigider",
+            "parentId" : "id-1",
+            "templateKey" : "purchase",
+            "updatedAt" : "2026-11-26T10:00:00Z",
+            "values" : {
+              "purchase.brand" : {
+                "type" : "text",
+                "value" : "Frigider combinat"
+              },
+              "purchase.date" : {
+                "type" : "date",
+                "value" : "2025-04-05"
+              },
+              "purchase.price" : {
+                "amount" : "2499",
+                "currency" : "RON",
+                "type" : "money"
+              },
+              "purchase.retailer" : {
+                "type" : "text",
+                "value" : "Magazin exemplu"
+              },
+              "purchase.warrantyMonths" : {
+                "type" : "number",
+                "value" : 24
+              },
+              "purchase.warrantyUntil" : {
+                "type" : "date",
+                "value" : "2027-04-05"
+              }
+            }
+          }
+        ],
+        "data/attachments.json" : [
+
+        ],
+        "data/history.json" : [
+          {
+            "assetId" : "id-1",
+            "id" : "id-14",
+            "isExample" : false,
+            "kind" : "purchase",
+            "occurredAt" : "2025-07-14T09:00:00Z",
+            "providerIds" : [
+
+            ],
+            "title" : "Hotă nouă",
+            "totalCost" : {
+              "amount" : "899",
+              "currency" : "RON"
+            },
+            "updatedAt" : "2026-11-26T10:00:00Z"
+          },
+          {
+            "assetId" : "id-1",
+            "id" : "id-15",
+            "isExample" : false,
+            "kind" : "repair",
+            "occurredAt" : "2026-04-30T09:00:00Z",
+            "providerIds" : [
+              "id-19"
+            ],
+            "rating" : 5,
+            "title" : "Robinet nou la bucătărie",
+            "totalCost" : {
+              "amount" : "340",
+              "currency" : "RON"
+            },
+            "updatedAt" : "2026-11-26T10:00:00Z"
+          }
+        ],
+        "data/issuer_lessons.json" : [
+
+        ],
+        "data/measurements.json" : [
+          {
+            "assetId" : "id-4",
+            "basis" : "read",
+            "id" : "id-20",
+            "isExample" : false,
+            "isSelfRead" : true,
+            "kind" : "coldWater",
+            "name" : "Apă rece la mutare",
+            "recordedAt" : "2026-01-30T10:00:00Z",
+            "unit" : "m3",
+            "updatedAt" : "2026-11-26T10:00:00Z",
+            "value" : 312
+          }
+        ],
+        "data/obligations.json" : [
+          {
+            "assetId" : "id-1",
+            "blueprintKey" : "home.boilerCheck",
+            "createdAt" : "<made>",
+            "dueDate" : "2027-06-14",
+            "id" : "id-6",
+            "isExample" : false,
+            "kind" : "legal",
+            "notes" : "Obligatorie la cel mult 2 ani, făcută de o firmă autorizată ISCIR.",
+            "recurrence" : {
+              "anchor" : "completion",
+              "every" : 2,
+              "type" : "interval",
+              "unit" : "year"
+            },
+            "reminders" : {
+              "consequence" : "legal",
+              "followUpAfterLapse" : true,
+              "graceDays" : 0,
+              "leadDays" : [
+                30,
+                7
+              ]
+            },
+            "status" : "active",
+            "title" : "Verificare centrală (VTP)",
+            "updatedAt" : "2026-11-26T10:00:00Z"
+          },
+          {
+            "assetId" : "id-1",
+            "blueprintKey" : "home.buildingTax",
+            "createdAt" : "<made>",
+            "dueDate" : "2027-03-31",
+            "id" : "id-7",
+            "isExample" : false,
+            "kind" : "tax",
+            "notes" : "Plata integrală până la 31 martie poate aduce o reducere.",
+            "recurrence" : {
+              "dates" : [
+                "03-31",
+                "09-30"
+              ],
+              "type" : "fixedDates"
+            },
+            "reminders" : {
+              "consequence" : "financial",
+              "followUpAfterLapse" : true,
+              "graceDays" : 0,
+              "leadDays" : [
+                14,
+                1
+              ]
+            },
+            "status" : "active",
+            "title" : "Impozit pe clădire",
+            "updatedAt" : "2026-11-26T10:00:00Z"
+          },
+          {
+            "assetId" : "id-1",
+            "blueprintKey" : "home.gasCheck",
+            "createdAt" : "<made>",
+            "dueDate" : "2027-10-02",
+            "id" : "id-8",
+            "isExample" : false,
+            "kind" : "legal",
+            "recurrence" : {
+              "anchor" : "completion",
+              "every" : 2,
+              "type" : "interval",
+              "unit" : "year"
+            },
+            "reminders" : {
+              "consequence" : "legal",
+              "followUpAfterLapse" : true,
+              "graceDays" : 0,
+              "leadDays" : [
+                30,
+                7
+              ]
+            },
+            "status" : "active",
+            "title" : "Verificare instalație de gaze",
+            "updatedAt" : "2026-11-26T10:00:00Z"
+          },
+          {
+            "assetId" : "id-1",
+            "blueprintKey" : "home.pad",
+            "createdAt" : "<made>",
+            "dueDate" : "2026-12-21",
+            "estimatedCost" : {
+              "amount" : "130",
+              "currency" : "RON"
+            },
+            "id" : "id-9",
+            "isExample" : false,
+            "kind" : "insurance",
+            "recurrence" : {
+              "anchor" : "dueDate",
+              "every" : 1,
+              "type" : "interval",
+              "unit" : "year"
+            },
+            "reminders" : {
+              "consequence" : "legal",
+              "followUpAfterLapse" : true,
+              "graceDays" : 0,
+              "leadDays" : [
+                30,
+                7,
+                0
+              ]
+            },
+            "status" : "active",
+            "title" : "Asigurare obligatorie (PAD)",
+            "updatedAt" : "2026-11-26T10:00:00Z"
+          },
+          {
+            "assetId" : "id-5",
+            "blueprintKey" : "purchase.warrantyEnds",
+            "createdAt" : "<made>",
+            "dueDate" : "2027-04-05",
+            "id" : "id-10",
+            "isExample" : false,
+            "kind" : "renewal",
+            "notes" : "Funcționează totul bine? Acum mai poți reclama gratuit un defect.",
+            "recurrence" : {
+              "type" : "none"
+            },
+            "reminders" : {
+              "consequence" : "financial",
+              "followUpAfterLapse" : false,
+              "graceDays" : 0,
+              "leadDays" : [
+                30
+              ]
+            },
+            "status" : "active",
+            "title" : "Garanția se termină",
+            "updatedAt" : "2026-11-26T10:00:00Z"
+          },
+          {
+            "assetId" : "id-2",
+            "blueprintKey" : "purchase.warrantyEnds",
+            "createdAt" : "<made>",
+            "dueDate" : "2028-05-10",
+            "id" : "id-11",
+            "isExample" : false,
+            "kind" : "renewal",
+            "notes" : "Funcționează totul bine? Acum mai poți reclama gratuit un defect.",
+            "recurrence" : {
+              "type" : "none"
+            },
+            "reminders" : {
+              "consequence" : "financial",
+              "followUpAfterLapse" : false,
+              "graceDays" : 0,
+              "leadDays" : [
+                30
+              ]
+            },
+            "status" : "active",
+            "title" : "Garanția se termină",
+            "updatedAt" : "2026-11-26T10:00:00Z"
+          },
+          {
+            "assetId" : "id-4",
+            "blueprintKey" : "tenancy.end",
+            "createdAt" : "<made>",
+            "dueDate" : "2027-01-30",
+            "id" : "id-12",
+            "isExample" : false,
+            "kind" : "renewal",
+            "notes" : "Timp să vorbiți despre prelungire sau să cauți alt chiriaș.",
+            "recurrence" : {
+              "type" : "none"
+            },
+            "reminders" : {
+              "consequence" : "financial",
+              "followUpAfterLapse" : false,
+              "graceDays" : 0,
+              "leadDays" : [
+                60
+              ]
+            },
+            "status" : "active",
+            "title" : "Se termină contractul de închiriere",
+            "updatedAt" : "2026-11-26T10:00:00Z"
+          },
+          {
+            "blueprintKey" : "household.rentalDeclaration",
+            "createdAt" : "<made>",
+            "dueDate" : "2027-05-25",
+            "id" : "id-13",
+            "isExample" : false,
+            "kind" : "tax",
+            "notes" : "Venitul din chirii se declară la ANAF până pe 25 mai.",
+            "recurrence" : {
+              "dates" : [
+                "05-25"
+              ],
+              "type" : "fixedDates"
+            },
+            "reminders" : {
+              "consequence" : "legal",
+              "followUpAfterLapse" : true,
+              "graceDays" : 0,
+              "leadDays" : [
+                30,
+                7
+              ]
+            },
+            "status" : "active",
+            "title" : "Declarația unică pentru chirii",
+            "updatedAt" : "2026-11-26T10:00:00Z"
+          }
+        ],
+        "data/providers.json" : [
+          {
+            "assetIds" : [
+              "id-4"
+            ],
+            "createdAt" : "<made>",
+            "id" : "id-18",
+            "isExample" : false,
+            "name" : "Chiriaș exemplu",
+            "phone" : "0700000004",
+            "trades" : [
+              "tenant"
+            ],
+            "updatedAt" : "2026-11-26T10:00:00Z"
+          },
+          {
+            "assetIds" : [
+              "id-1"
+            ],
+            "createdAt" : "<made>",
+            "id" : "id-19",
+            "isExample" : false,
+            "name" : "Instalator exemplu",
+            "phone" : "0700000002",
+            "trades" : [
+              "plumber"
+            ],
+            "updatedAt" : "2026-11-26T10:00:00Z"
+          }
+        ],
+        "data/service_items.json" : [
+          {
+            "componentKey" : "kitchen.hood",
+            "cost" : {
+              "amount" : "899",
+              "currency" : "RON"
+            },
+            "entryId" : "id-14",
+            "group" : "Bucătărie",
+            "id" : "id-16",
+            "isExample" : false,
+            "name" : "Hotă",
+            "partBrandOrCode" : "Exemplu 60 cm",
+            "updatedAt" : "2026-11-26T10:00:00Z"
+          },
+          {
+            "componentKey" : "plumbing.taps",
+            "cost" : {
+              "amount" : "240",
+              "currency" : "RON"
+            },
+            "entryId" : "id-15",
+            "group" : "Instalații sanitare",
+            "id" : "id-17",
+            "isExample" : false,
+            "name" : "Baterie bucătărie",
+            "partBrandOrCode" : "Exemplu",
+            "updatedAt" : "2026-11-26T10:00:00Z"
+          }
+        ]
+      },
+      "kept" : [
+        "Apartament Floreasca"
+      ],
+      "name" : "an example holding a section of the person's stays, as theirs",
+      "steps" : [
+        {
+          "do" : "load"
+        },
+        {
+          "category" : "other",
+          "do" : "ownSectionInside",
+          "name" : "Boxa",
+          "parent" : "Apartament Floreasca"
+        },
+        {
+          "do" : "remove"
+        }
+      ]
+    },
+    {
+      "binder" : {
+        "data/assets.json" : [
+          {
+            "createdAt" : "<made>",
+            "id" : "id-1",
+            "isExample" : false,
+            "name" : "Carte de identitate",
+            "parentId" : "id-2",
+            "templateKey" : "documents",
+            "updatedAt" : "2026-11-26T10:00:00Z",
+            "values" : {
+              "document.expiry" : {
+                "type" : "date",
+                "value" : "2029-05-14"
+              },
+              "document.type" : {
+                "type" : "text",
+                "value" : "documentType.idCard"
+              }
+            }
+          },
+          {
+            "createdAt" : "<made>",
+            "id" : "id-2",
+            "isExample" : false,
+            "name" : "Eu",
+            "templateKey" : "member",
+            "updatedAt" : "2026-11-26T10:00:00Z",
+            "values" : {
+
+            }
+          },
+          {
+            "createdAt" : "<made>",
+            "id" : "id-3",
+            "isExample" : false,
+            "name" : "Pașaport",
+            "parentId" : "id-2",
+            "templateKey" : "documents",
+            "updatedAt" : "2026-11-26T10:00:00Z",
+            "values" : {
+              "document.expiry" : {
+                "type" : "date",
+                "value" : "2027-04-25"
+              },
+              "document.number" : {
+                "type" : "text",
+                "value" : "050000000"
+              },
+              "document.type" : {
+                "type" : "text",
+                "value" : "documentType.passport"
+              }
+            }
+          }
+        ],
+        "data/attachments.json" : [
+
+        ],
+        "data/history.json" : [
+
+        ],
+        "data/issuer_lessons.json" : [
+
+        ],
+        "data/measurements.json" : [
+
+        ],
+        "data/obligations.json" : [
+          {
+            "assetId" : "id-3",
+            "blueprintKey" : "document.renew",
+            "createdAt" : "<made>",
+            "dueDate" : "2027-04-25",
+            "id" : "id-4",
+            "isExample" : false,
+            "kind" : "renewal",
+            "notes" : "Programările durează. Pentru pașaport, multe țări cer 6 luni de valabilitate.",
+            "recurrence" : {
+              "type" : "none"
+            },
+            "reminders" : {
+              "consequence" : "legal",
+              "followUpAfterLapse" : true,
+              "graceDays" : 0,
+              "leadDays" : [
+                90,
+                0
+              ],
+              "travelMarginDays" : 180
+            },
+            "status" : "active",
+            "title" : "Reînnoire",
+            "updatedAt" : "2026-11-26T10:00:00Z"
+          },
+          {
+            "assetId" : "id-1",
+            "blueprintKey" : "document.renew",
+            "createdAt" : "<made>",
+            "dueDate" : "2029-05-14",
+            "id" : "id-5",
+            "isExample" : false,
+            "kind" : "renewal",
+            "notes" : "Programările durează. Pentru pașaport, multe țări cer 6 luni de valabilitate.",
+            "recurrence" : {
+              "type" : "none"
+            },
+            "reminders" : {
+              "consequence" : "legal",
+              "followUpAfterLapse" : true,
+              "graceDays" : 0,
+              "leadDays" : [
+                90,
+                30
+              ]
+            },
+            "status" : "active",
+            "title" : "Reînnoire",
+            "updatedAt" : "2026-11-26T10:00:00Z"
+          }
+        ],
+        "data/providers.json" : [
+
+        ],
+        "data/service_items.json" : [
+
+        ]
+      },
+      "kept" : [
+
+      ],
+      "name" : "a document kept as one's own keeps its holder and the other document, and removing leaves them",
+      "steps" : [
+        {
+          "do" : "load"
+        },
+        {
+          "do" : "adopt",
+          "section" : "Pașaport"
+        },
+        {
+          "do" : "remove"
+        }
+      ]
+    }
+  ],
+  "rule" : "ExampleDataService.loadExamples(), removeExamples() with its receipt, and adopt(sectionID:), over ExampleHousehold.standard",
+  "shape" : "name; steps, each {do: ownSection (name, category: a section of the person's, through AssetActions.create) | load | ownSectionInside (name, category, parent: the name of the example it is filed in, written straight into the binder as an earlier version let it be) | adopt (section: its name) | remove | undo (the last removal's receipt)}, run in order on an empty binder with the built-in categories, today 2026-11-26 at noon in Europe/Bucharest; kept: the names the last removal kept as the person's, in order, or null with no removal; binder: what the steps leave, by data file as a backup writes it (the categories left out), each file's records in an order of their own contents, every id written as the place it takes (id-1, id-2…, the records' own ids first, file by file, then the others as they come), a list of ids in the order of their places, createdAt as <made>",
+  "source" : "ios/DosarCuSina/Services/Examples/ExampleDataService.swift, ExampleHousehold.swift",
+  "writtenBy" : "ios/DosarCuSinaTests/ExampleVectorsTests.swift"
+}

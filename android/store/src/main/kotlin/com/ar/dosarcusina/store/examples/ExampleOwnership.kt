@@ -1,6 +1,7 @@
 package com.ar.dosarcusina.store.examples
 
 import com.ar.dosarcusina.archive.binder.BuiltIns
+import com.ar.dosarcusina.core.wording.Word
 import com.ar.dosarcusina.store.BinderView
 import com.ar.dosarcusina.store.StepQuestion
 import com.ar.dosarcusina.store.Tables
@@ -29,7 +30,34 @@ class ExampleSectionQuestion(
     val sectionId: UUID,
     val name: String,
     val gender: GrammaticalGender,
-) : Exception("Something of the person's would go into an example"), StepQuestion
+) : Exception("Something of the person's would go into an example"), StepQuestion {
+    /** „Păstrezi „VW Golf” ca a ta?”: yes keeps it ([ExampleDataService.adopt]). */
+    val question: Word
+        get() = when (gender) {
+            GrammaticalGender.FEMININE -> Word.app("Păstrezi „%@” ca a ta?", Word.text(name))
+            GrammaticalGender.MASCULINE_OR_NEUTER -> Word.app("Păstrezi „%@” ca al tău?", Word.text(name))
+        }
+
+    /** What yes means, in plain words. */
+    val explanation: Word
+        get() = when (gender) {
+            GrammaticalGender.FEMININE -> Word.app(
+                "E un exemplu. Dacă o păstrezi, rămâne la tine cu tot ce e în ea " +
+                    "și nu se mai șterge cu exemplele.",
+            )
+            GrammaticalGender.MASCULINE_OR_NEUTER -> Word.app(
+                "E un exemplu. Dacă îl păstrezi, rămâne la tine cu tot ce e în el " +
+                    "și nu se mai șterge cu exemplele.",
+            )
+        }
+
+    /** For a screen that doesn't ask: what to do instead. */
+    val instead: Word
+        get() = Word.app(
+            "„%@” e un exemplu. Adaugă în altă secțiune sau păstrează exemplul ca al tău.",
+            Word.text(name),
+        )
+}
 
 /**
  * Only the example loader makes examples. Anything the person adds is theirs, and it never lands inside
