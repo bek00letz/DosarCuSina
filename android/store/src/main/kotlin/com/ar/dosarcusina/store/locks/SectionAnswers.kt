@@ -83,6 +83,22 @@ class DocumentSections(
     /** Whether [document] is a paper of the whole household's: a household deadline's or record's. */
     fun belongsToTheHousehold(document: Attachment): Boolean =
         document.obligation?.let(obligations::get) != null || document.historyEntry?.let(entries::get) != null
+
+    /**
+     * The lock [document]'s page is drawn behind, each section answered by [isLocked]: a section
+     * that is locked if it has one, else its first section; a paper of the whole household's is
+     * open, one that names nothing that can be found is [DocumentLock.UnknownSection]. The one rule
+     * behind [CategoryLocks.lock] and [BinderLocks.lock].
+     */
+    internal fun lock(document: Attachment, isLocked: (Asset) -> Boolean): DocumentLock {
+        val belongs = of(document)
+        val section = belongs.firstOrNull(isLocked) ?: belongs.firstOrNull()
+        return when {
+            section != null -> DocumentLock.Section(section.id)
+            belongsToTheHousehold(document) -> DocumentLock.Open
+            else -> DocumentLock.UnknownSection
+        }
+    }
 }
 
 /**
@@ -95,12 +111,22 @@ fun CategoryLocks.lock(
     document: Attachment,
     sections: DocumentSections,
     among: Map<String, CategoryTemplate>,
-): DocumentLock {
-    val belongs = sections.of(document)
-    val section = belongs.firstOrNull { isSensitive(it, among) } ?: belongs.firstOrNull()
-    return when {
-        section != null -> DocumentLock.Section(section.id)
-        sections.belongsToTheHousehold(document) -> DocumentLock.Open
-        else -> DocumentLock.UnknownSection
+): DocumentLock = sections.lock(document) { isSensitive(it, among) }
+
+/** The same lock, each section answered by the whole binder's locks (what search reads, [BinderLocks.isLocked]). */
+fun BinderLocks.lock(document: Attachment, sections: DocumentSections): DocumentLock =
+    sections.lock(document) { isLocked(it.templateKey) }
+
+/**
+ * Whether [document] is locked on this phone where it is named away from its page (search), by the
+ * lock its page is drawn behind ([lock]): locked when any section it belongs to is; a paper of the
+ * whole household's is open; one that names nothing that can be found is locked while anything of
+ * the binder is (locks fail closed). The iOS app's `Attachment.isSensitive(among:binder:)`.
+ */
+fun BinderLocks.isLocked(document: Attachment, sections: DocumentSections): Boolean =
+    when (val lock = lock(document, sections)) {
+        DocumentLock.Open -> false
+        is DocumentLock.Section ->
+            sections.of(document).firstOrNull { it.id == lock.id }?.let { isLocked(it.templateKey) } ?: true
+        DocumentLock.UnknownSection -> anySectionLocked
     }
-}

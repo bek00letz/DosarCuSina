@@ -44,6 +44,8 @@ data class SearchValue(
     val text: String?,
     /** The value as the app shows it: a choice's label, a plate written "B-123-ABC", a sealed one masked. */
     val shown: String,
+    /** The value is a number (a year), which a section's line says after its words ("Volkswagen Golf · 2018"). */
+    val isNumber: Boolean = false,
 ) {
     /** A code kept sealed on the phone (a PIN). */
     val isSecret: Boolean get() = type == FieldTypes.SECRET
@@ -133,7 +135,10 @@ data class SearchFirm(
     /** Its trades, by key (`ProviderTrade`). */
     val trades: List<String>,
     val phone: String?,
-    /** The names of the sections it looks after, in order. */
+    /**
+     * The names of the open sections it looks after, in order: a locked one is never named in a
+     * firm's result (its page draws it as locked).
+     */
     val sectionNames: List<String>,
     val address: String?,
     val notes: String?,
@@ -153,7 +158,10 @@ data class SearchPaper(
     val isIdentity: Boolean,
     val documentDay: CalendarDay?,
     val createdAt: Instant?,
-    /** Whether the section it is filed in is locked on this phone. */
+    /**
+     * Whether it is locked on this phone by the lock its page is drawn behind: when any section it
+     * belongs to is, or, naming none that can be found, while anything of the binder is.
+     */
     val isLocked: Boolean,
     val keptWhole: KeptWhole,
 )
