@@ -1,0 +1,952 @@
+{
+  "cases" : [
+    {
+      "blueprint" : "vehicle.itp",
+      "category" : "vehicle",
+      "completion" : "itp",
+      "drivingField" : null,
+      "facts" : {
+
+      },
+      "isFieldDriven" : false,
+      "reminders" : {
+        "consequence" : "legal",
+        "followUpAfterLapse" : true,
+        "graceDays" : 0,
+        "leadDays" : [
+          30,
+          7
+        ]
+      },
+      "worthToday" : true,
+      "worthYesterday" : false
+    },
+    {
+      "blueprint" : "vehicle.rca",
+      "category" : "vehicle",
+      "completion" : "policy",
+      "drivingField" : null,
+      "facts" : {
+        "claimsPhone" : "vehicle.claimsPhone",
+        "insurer" : "vehicle.insurer",
+        "policyNumber" : "vehicle.policyNumber",
+        "policyholder" : "vehicle.policyholder"
+      },
+      "isFieldDriven" : false,
+      "reminders" : {
+        "consequence" : "legal",
+        "followUpAfterLapse" : true,
+        "graceDays" : 0,
+        "leadDays" : [
+          30,
+          7,
+          0
+        ]
+      },
+      "worthToday" : true,
+      "worthYesterday" : false
+    },
+    {
+      "blueprint" : "vehicle.vignette",
+      "category" : "vehicle",
+      "completion" : "vignette",
+      "drivingField" : null,
+      "facts" : {
+
+      },
+      "isFieldDriven" : false,
+      "reminders" : {
+        "consequence" : "legal",
+        "followUpAfterLapse" : true,
+        "graceDays" : 0,
+        "leadDays" : [
+          7,
+          0
+        ]
+      },
+      "worthToday" : true,
+      "worthYesterday" : false
+    },
+    {
+      "blueprint" : "vehicle.service",
+      "category" : "vehicle",
+      "completion" : "vehicleService",
+      "drivingField" : null,
+      "facts" : {
+
+      },
+      "isFieldDriven" : false,
+      "reminders" : {
+        "consequence" : "comfort",
+        "followUpAfterLapse" : false,
+        "graceDays" : 30,
+        "leadDays" : [
+          14,
+          1
+        ]
+      },
+      "worthToday" : true,
+      "worthYesterday" : false
+    },
+    {
+      "blueprint" : "vehicle.tyres",
+      "category" : "vehicle",
+      "completion" : "tyreChange",
+      "drivingField" : null,
+      "facts" : {
+
+      },
+      "isFieldDriven" : false,
+      "reminders" : {
+        "consequence" : "comfort",
+        "followUpAfterLapse" : false,
+        "graceDays" : 14,
+        "leadDays" : [
+          14
+        ]
+      },
+      "worthToday" : true,
+      "worthYesterday" : false
+    },
+    {
+      "blueprint" : "vehicle.casco",
+      "category" : "vehicle",
+      "completion" : "policy",
+      "drivingField" : null,
+      "facts" : {
+        "claimsPhone" : "vehicle.cascoClaimsPhone",
+        "insuredSum" : "vehicle.cascoInsuredSum",
+        "insurer" : "vehicle.cascoInsurer",
+        "policyNumber" : "vehicle.cascoPolicyNumber"
+      },
+      "isFieldDriven" : false,
+      "reminders" : {
+        "consequence" : "financial",
+        "followUpAfterLapse" : true,
+        "graceDays" : 0,
+        "leadDays" : [
+          30,
+          7,
+          0
+        ]
+      },
+      "worthToday" : true,
+      "worthYesterday" : false
+    },
+    {
+      "blueprint" : "vehicle.kit",
+      "category" : "vehicle",
+      "completion" : "safetyKit",
+      "drivingField" : null,
+      "facts" : {
+
+      },
+      "isFieldDriven" : false,
+      "reminders" : {
+        "consequence" : "legal",
+        "followUpAfterLapse" : true,
+        "graceDays" : 0,
+        "leadDays" : [
+          14,
+          0
+        ]
+      },
+      "worthToday" : true,
+      "worthYesterday" : false
+    },
+    {
+      "blueprint" : "home.boilerCheck",
+      "category" : "home",
+      "completion" : "boilerCheck",
+      "drivingField" : null,
+      "facts" : {
+
+      },
+      "isFieldDriven" : false,
+      "reminders" : {
+        "consequence" : "legal",
+        "followUpAfterLapse" : true,
+        "graceDays" : 0,
+        "leadDays" : [
+          30,
+          7
+        ]
+      },
+      "worthToday" : true,
+      "worthYesterday" : false
+    },
+    {
+      "blueprint" : "home.gasCheck",
+      "category" : "home",
+      "completion" : "gasCheck",
+      "drivingField" : null,
+      "facts" : {
+
+      },
+      "isFieldDriven" : false,
+      "reminders" : {
+        "consequence" : "legal",
+        "followUpAfterLapse" : true,
+        "graceDays" : 0,
+        "leadDays" : [
+          30,
+          7
+        ]
+      },
+      "worthToday" : true,
+      "worthYesterday" : false
+    },
+    {
+      "blueprint" : "home.gasRevision",
+      "category" : "home",
+      "completion" : "gasCheck",
+      "drivingField" : null,
+      "facts" : {
+
+      },
+      "isFieldDriven" : false,
+      "reminders" : {
+        "consequence" : "legal",
+        "followUpAfterLapse" : true,
+        "graceDays" : 0,
+        "leadDays" : [
+          60,
+          30
+        ]
+      },
+      "worthToday" : true,
+      "worthYesterday" : false
+    },
+    {
+      "blueprint" : "home.pad",
+      "category" : "home",
+      "completion" : "policy",
+      "drivingField" : null,
+      "facts" : {
+        "claimsPhone" : "home.claimsPhone",
+        "insuredSum" : "home.insuredSum",
+        "insurer" : "home.insurer",
+        "policyNumber" : "home.policyNumber"
+      },
+      "isFieldDriven" : false,
+      "reminders" : {
+        "consequence" : "legal",
+        "followUpAfterLapse" : true,
+        "graceDays" : 0,
+        "leadDays" : [
+          30,
+          7,
+          0
+        ]
+      },
+      "worthToday" : true,
+      "worthYesterday" : false
+    },
+    {
+      "blueprint" : "home.insurance",
+      "category" : "home",
+      "completion" : "policy",
+      "drivingField" : null,
+      "facts" : {
+        "claimsPhone" : "home.optionalClaimsPhone",
+        "insuredSum" : "home.optionalInsuredSum",
+        "insurer" : "home.optionalInsurer",
+        "policyNumber" : "home.optionalPolicyNumber"
+      },
+      "isFieldDriven" : false,
+      "reminders" : {
+        "consequence" : "financial",
+        "followUpAfterLapse" : true,
+        "graceDays" : 0,
+        "leadDays" : [
+          30,
+          7,
+          0
+        ]
+      },
+      "worthToday" : true,
+      "worthYesterday" : false
+    },
+    {
+      "blueprint" : "home.buildingTax",
+      "category" : "home",
+      "completion" : "buildingTax",
+      "drivingField" : null,
+      "facts" : {
+
+      },
+      "isFieldDriven" : false,
+      "reminders" : {
+        "consequence" : "financial",
+        "followUpAfterLapse" : true,
+        "graceDays" : 0,
+        "leadDays" : [
+          14,
+          1
+        ]
+      },
+      "worthToday" : true,
+      "worthYesterday" : false
+    },
+    {
+      "blueprint" : "home.chimney",
+      "category" : "home",
+      "completion" : "chimneySweep",
+      "drivingField" : null,
+      "facts" : {
+
+      },
+      "isFieldDriven" : false,
+      "reminders" : {
+        "consequence" : "comfort",
+        "followUpAfterLapse" : false,
+        "graceDays" : 30,
+        "leadDays" : [
+          14,
+          0
+        ]
+      },
+      "worthToday" : true,
+      "worthYesterday" : false
+    },
+    {
+      "blueprint" : "document.renew",
+      "category" : "documents",
+      "completion" : "documentReplaced",
+      "drivingField" : "document.expiry",
+      "facts" : {
+
+      },
+      "isFieldDriven" : true,
+      "reminders" : {
+        "consequence" : "legal",
+        "followUpAfterLapse" : true,
+        "graceDays" : 0,
+        "leadDays" : [
+          90,
+          30
+        ]
+      },
+      "worthToday" : true,
+      "worthYesterday" : true
+    },
+    {
+      "blueprint" : "pet.rabies",
+      "category" : "pet",
+      "completion" : "petVaccine",
+      "drivingField" : null,
+      "facts" : {
+
+      },
+      "isFieldDriven" : false,
+      "reminders" : {
+        "consequence" : "health",
+        "followUpAfterLapse" : false,
+        "graceDays" : 7,
+        "leadDays" : [
+          1
+        ]
+      },
+      "worthToday" : true,
+      "worthYesterday" : false
+    },
+    {
+      "blueprint" : "pet.vaccine",
+      "category" : "pet",
+      "completion" : "petVaccine",
+      "drivingField" : null,
+      "facts" : {
+
+      },
+      "isFieldDriven" : false,
+      "reminders" : {
+        "consequence" : "health",
+        "followUpAfterLapse" : false,
+        "graceDays" : 7,
+        "leadDays" : [
+          1
+        ]
+      },
+      "worthToday" : true,
+      "worthYesterday" : false
+    },
+    {
+      "blueprint" : "pet.dewormInternal",
+      "category" : "pet",
+      "completion" : "doneAtHome",
+      "drivingField" : null,
+      "facts" : {
+
+      },
+      "isFieldDriven" : false,
+      "reminders" : {
+        "consequence" : "health",
+        "followUpAfterLapse" : false,
+        "graceDays" : 7,
+        "leadDays" : [
+          1,
+          0
+        ]
+      },
+      "worthToday" : true,
+      "worthYesterday" : false
+    },
+    {
+      "blueprint" : "pet.dewormExternal",
+      "category" : "pet",
+      "completion" : "doneAtHome",
+      "drivingField" : null,
+      "facts" : {
+
+      },
+      "isFieldDriven" : false,
+      "reminders" : {
+        "consequence" : "health",
+        "followUpAfterLapse" : false,
+        "graceDays" : 7,
+        "leadDays" : [
+          1,
+          0
+        ]
+      },
+      "worthToday" : true,
+      "worthYesterday" : false
+    },
+    {
+      "blueprint" : "pet.grooming",
+      "category" : "pet",
+      "completion" : "chore",
+      "drivingField" : null,
+      "facts" : {
+
+      },
+      "isFieldDriven" : false,
+      "reminders" : {
+        "consequence" : "comfort",
+        "followUpAfterLapse" : false,
+        "graceDays" : 14,
+        "leadDays" : [
+          2
+        ]
+      },
+      "worthToday" : true,
+      "worthYesterday" : false
+    },
+    {
+      "blueprint" : "health.checkup",
+      "category" : "health",
+      "completion" : "checkup",
+      "drivingField" : null,
+      "facts" : {
+
+      },
+      "isFieldDriven" : false,
+      "reminders" : {
+        "consequence" : "health",
+        "followUpAfterLapse" : false,
+        "graceDays" : 30,
+        "leadDays" : [
+          14,
+          0
+        ]
+      },
+      "worthToday" : true,
+      "worthYesterday" : false
+    },
+    {
+      "blueprint" : "health.dentist",
+      "category" : "health",
+      "completion" : "dentist",
+      "drivingField" : null,
+      "facts" : {
+
+      },
+      "isFieldDriven" : false,
+      "reminders" : {
+        "consequence" : "health",
+        "followUpAfterLapse" : false,
+        "graceDays" : 30,
+        "leadDays" : [
+          7,
+          0
+        ]
+      },
+      "worthToday" : true,
+      "worthYesterday" : false
+    },
+    {
+      "blueprint" : "health.tetanus",
+      "category" : "health",
+      "completion" : "vaccine",
+      "drivingField" : null,
+      "facts" : {
+
+      },
+      "isFieldDriven" : false,
+      "reminders" : {
+        "consequence" : "health",
+        "followUpAfterLapse" : false,
+        "graceDays" : 30,
+        "leadDays" : [
+          30,
+          0
+        ]
+      },
+      "worthToday" : true,
+      "worthYesterday" : false
+    },
+    {
+      "blueprint" : "health.flu",
+      "category" : "health",
+      "completion" : "vaccine",
+      "drivingField" : null,
+      "facts" : {
+
+      },
+      "isFieldDriven" : false,
+      "reminders" : {
+        "consequence" : "health",
+        "followUpAfterLapse" : false,
+        "graceDays" : 30,
+        "leadDays" : [
+          7,
+          0
+        ]
+      },
+      "worthToday" : true,
+      "worthYesterday" : false
+    },
+    {
+      "blueprint" : "health.euCard",
+      "category" : "health",
+      "completion" : "newHealthCard",
+      "drivingField" : null,
+      "facts" : {
+
+      },
+      "isFieldDriven" : false,
+      "reminders" : {
+        "consequence" : "financial",
+        "followUpAfterLapse" : true,
+        "graceDays" : 0,
+        "leadDays" : [
+          30,
+          7
+        ]
+      },
+      "worthToday" : true,
+      "worthYesterday" : false
+    },
+    {
+      "blueprint" : "purchase.warrantyEnds",
+      "category" : "purchase",
+      "completion" : "acknowledged",
+      "drivingField" : "purchase.warrantyUntil",
+      "facts" : {
+
+      },
+      "isFieldDriven" : true,
+      "reminders" : {
+        "consequence" : "financial",
+        "followUpAfterLapse" : false,
+        "graceDays" : 0,
+        "leadDays" : [
+          30
+        ]
+      },
+      "worthToday" : true,
+      "worthYesterday" : false
+    },
+    {
+      "blueprint" : "subscription.renewal",
+      "category" : "subscription",
+      "completion" : "bill",
+      "drivingField" : "subscription.renewalDate",
+      "facts" : {
+
+      },
+      "isFieldDriven" : true,
+      "reminders" : {
+        "consequence" : "financial",
+        "followUpAfterLapse" : false,
+        "graceDays" : 0,
+        "leadDays" : [
+          14
+        ]
+      },
+      "worthToday" : true,
+      "worthYesterday" : false
+    },
+    {
+      "blueprint" : "subscription.contractEnd",
+      "category" : "subscription",
+      "completion" : "newContract",
+      "drivingField" : "subscription.contractEnd",
+      "facts" : {
+
+      },
+      "isFieldDriven" : true,
+      "reminders" : {
+        "consequence" : "financial",
+        "followUpAfterLapse" : false,
+        "graceDays" : 0,
+        "leadDays" : [
+          30
+        ]
+      },
+      "worthToday" : true,
+      "worthYesterday" : false
+    },
+    {
+      "blueprint" : "subscription.minimumEnds",
+      "category" : "subscription",
+      "completion" : "acknowledged",
+      "drivingField" : "subscription.minimumUntil",
+      "facts" : {
+
+      },
+      "isFieldDriven" : true,
+      "reminders" : {
+        "consequence" : "financial",
+        "followUpAfterLapse" : false,
+        "graceDays" : 0,
+        "leadDays" : [
+          30,
+          0
+        ]
+      },
+      "worthToday" : true,
+      "worthYesterday" : false
+    },
+    {
+      "blueprint" : "subscription.bill",
+      "category" : "subscription",
+      "completion" : "bill",
+      "drivingField" : null,
+      "facts" : {
+
+      },
+      "isFieldDriven" : false,
+      "reminders" : {
+        "consequence" : "financial",
+        "followUpAfterLapse" : true,
+        "graceDays" : 0,
+        "leadDays" : [
+          2,
+          0
+        ]
+      },
+      "worthToday" : true,
+      "worthYesterday" : false
+    },
+    {
+      "blueprint" : "bike.chainLube",
+      "category" : "bike",
+      "completion" : "chore",
+      "drivingField" : null,
+      "facts" : {
+
+      },
+      "isFieldDriven" : false,
+      "reminders" : {
+        "consequence" : "comfort",
+        "followUpAfterLapse" : false,
+        "graceDays" : 7,
+        "leadDays" : [
+          0
+        ]
+      },
+      "worthToday" : true,
+      "worthYesterday" : false
+    },
+    {
+      "blueprint" : "bike.brakes",
+      "category" : "bike",
+      "completion" : "bikeService",
+      "drivingField" : null,
+      "facts" : {
+
+      },
+      "isFieldDriven" : false,
+      "reminders" : {
+        "consequence" : "comfort",
+        "followUpAfterLapse" : false,
+        "graceDays" : 14,
+        "leadDays" : [
+          3,
+          0
+        ]
+      },
+      "worthToday" : true,
+      "worthYesterday" : false
+    },
+    {
+      "blueprint" : "bike.chain",
+      "category" : "bike",
+      "completion" : "bikeService",
+      "drivingField" : null,
+      "facts" : {
+
+      },
+      "isFieldDriven" : false,
+      "reminders" : {
+        "consequence" : "comfort",
+        "followUpAfterLapse" : false,
+        "graceDays" : 30,
+        "leadDays" : [
+          7,
+          0
+        ]
+      },
+      "worthToday" : true,
+      "worthYesterday" : false
+    },
+    {
+      "blueprint" : "bike.fork",
+      "category" : "bike",
+      "completion" : "bikeService",
+      "drivingField" : null,
+      "facts" : {
+
+      },
+      "isFieldDriven" : false,
+      "reminders" : {
+        "consequence" : "comfort",
+        "followUpAfterLapse" : false,
+        "graceDays" : 30,
+        "leadDays" : [
+          7
+        ]
+      },
+      "worthToday" : true,
+      "worthYesterday" : false
+    },
+    {
+      "blueprint" : "plants.water",
+      "category" : "plants",
+      "completion" : "chore",
+      "drivingField" : null,
+      "facts" : {
+
+      },
+      "isFieldDriven" : false,
+      "reminders" : {
+        "consequence" : "comfort",
+        "followUpAfterLapse" : false,
+        "graceDays" : 2,
+        "leadDays" : [
+          0
+        ]
+      },
+      "worthToday" : true,
+      "worthYesterday" : false
+    },
+    {
+      "blueprint" : "plants.feed",
+      "category" : "plants",
+      "completion" : "chore",
+      "drivingField" : null,
+      "facts" : {
+
+      },
+      "isFieldDriven" : false,
+      "reminders" : {
+        "consequence" : "comfort",
+        "followUpAfterLapse" : false,
+        "graceDays" : 7,
+        "leadDays" : [
+          0
+        ]
+      },
+      "worthToday" : true,
+      "worthYesterday" : false
+    },
+    {
+      "blueprint" : "plants.repot",
+      "category" : "plants",
+      "completion" : "chore",
+      "drivingField" : null,
+      "facts" : {
+
+      },
+      "isFieldDriven" : false,
+      "reminders" : {
+        "consequence" : "comfort",
+        "followUpAfterLapse" : false,
+        "graceDays" : 30,
+        "leadDays" : [
+          7
+        ]
+      },
+      "worthToday" : true,
+      "worthYesterday" : false
+    },
+    {
+      "blueprint" : "tenancy.end",
+      "category" : "tenancy",
+      "completion" : "newLease",
+      "drivingField" : "tenancy.end",
+      "facts" : {
+
+      },
+      "isFieldDriven" : true,
+      "reminders" : {
+        "consequence" : "financial",
+        "followUpAfterLapse" : false,
+        "graceDays" : 0,
+        "leadDays" : [
+          60
+        ]
+      },
+      "worthToday" : true,
+      "worthYesterday" : false
+    },
+    {
+      "blueprint" : "espresso.backflush",
+      "category" : "espresso",
+      "completion" : "chore",
+      "drivingField" : null,
+      "facts" : {
+
+      },
+      "isFieldDriven" : false,
+      "reminders" : {
+        "consequence" : "comfort",
+        "followUpAfterLapse" : false,
+        "graceDays" : 3,
+        "leadDays" : [
+          0
+        ]
+      },
+      "worthToday" : true,
+      "worthYesterday" : false
+    },
+    {
+      "blueprint" : "espresso.descale",
+      "category" : "espresso",
+      "completion" : "doneAtHome",
+      "drivingField" : null,
+      "facts" : {
+
+      },
+      "isFieldDriven" : false,
+      "reminders" : {
+        "consequence" : "comfort",
+        "followUpAfterLapse" : false,
+        "graceDays" : 14,
+        "leadDays" : [
+          3,
+          0
+        ]
+      },
+      "worthToday" : true,
+      "worthYesterday" : false
+    },
+    {
+      "blueprint" : "espresso.filter",
+      "category" : "espresso",
+      "completion" : "doneAtHome",
+      "drivingField" : null,
+      "facts" : {
+
+      },
+      "isFieldDriven" : false,
+      "reminders" : {
+        "consequence" : "comfort",
+        "followUpAfterLapse" : false,
+        "graceDays" : 14,
+        "leadDays" : [
+          3,
+          0
+        ]
+      },
+      "worthToday" : true,
+      "worthYesterday" : false
+    },
+    {
+      "blueprint" : "document.renew",
+      "category" : "documents",
+      "remindersFor" : {
+        "consequence" : "legal",
+        "followUpAfterLapse" : true,
+        "graceDays" : 0,
+        "leadDays" : [
+          90,
+          0
+        ],
+        "travelMarginDays" : 180
+      },
+      "values" : {
+        "document.type" : {
+          "type" : "text",
+          "value" : "documentType.passport"
+        }
+      },
+      "worthYesterdayFor" : true
+    },
+    {
+      "blueprint" : "document.renew",
+      "category" : "documents",
+      "remindersFor" : {
+        "consequence" : "legal",
+        "followUpAfterLapse" : true,
+        "graceDays" : 0,
+        "leadDays" : [
+          90,
+          30
+        ]
+      },
+      "values" : {
+        "document.type" : {
+          "type" : "text",
+          "value" : "documentType.idCard"
+        }
+      },
+      "worthYesterdayFor" : true
+    },
+    {
+      "blueprint" : "document.renew",
+      "category" : "documents",
+      "remindersFor" : {
+        "consequence" : "legal",
+        "followUpAfterLapse" : true,
+        "graceDays" : 0,
+        "leadDays" : [
+          90,
+          30
+        ]
+      },
+      "values" : {
+        "document.type" : {
+          "type" : "text",
+          "value" : "documentType.newer"
+        }
+      },
+      "worthYesterdayFor" : true
+    },
+    {
+      "blueprint" : "document.renew",
+      "category" : "documents",
+      "remindersFor" : {
+        "consequence" : "legal",
+        "followUpAfterLapse" : true,
+        "graceDays" : 0,
+        "leadDays" : [
+          90,
+          30
+        ]
+      },
+      "values" : {
+        "document.type" : {
+          "type" : "text",
+          "value" : "Pașaport"
+        }
+      },
+      "worthYesterdayFor" : true
+    }
+  ],
+  "rule" : "ObligationBlueprint's completion, isFieldDriven, drivingField, facts, isWorthScheduling(on:today:values:) and reminders(for:), over every built-in category's usual deadlines",
+  "shape" : "category and blueprint: a built-in's usual deadline by key. completion: what closing it asks. isFieldDriven and drivingField: whether its day comes from a section's field, and which. facts: the field each fact role reads. worthYesterday and worthToday: whether a deadline due yesterday or today, made today, is worth making (no values). reminders: how it reminds with no values. values with remindersFor and worthYesterdayFor: the same for a section's values.",
+  "source" : "ios/DosarCuSina/Models/Obligations/ObligationTypes.swift, DueDayValidity.swift, ios/DosarCuSina/Services/Templates/BuiltInTemplates.swift",
+  "writtenBy" : "ios/DosarCuSinaTests/DeadlineVectorsTests.swift"
+}

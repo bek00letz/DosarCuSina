@@ -1,0 +1,1380 @@
+{
+  "cases" : [
+    {
+      "completedOn" : "2026-01-25",
+      "currentMetric" : null,
+      "due" : "2026-01-31",
+      "missedCyclesStayOwed" : false,
+      "name" : "a month from the 31st, done on time",
+      "next" : {
+        "day" : "2026-02-28",
+        "metric" : null
+      },
+      "readings" : [
+
+      ],
+      "rule" : {
+        "anchor" : "dueDate",
+        "every" : 1,
+        "type" : "interval",
+        "unit" : "month"
+      },
+      "seriesDayOfMonth" : null,
+      "values" : {
+
+      },
+      "zone" : "Europe/Bucharest"
+    },
+    {
+      "completedOn" : "2026-02-28",
+      "currentMetric" : null,
+      "due" : "2026-02-28",
+      "missedCyclesStayOwed" : false,
+      "name" : "a series keeps the 31st after February",
+      "next" : {
+        "day" : "2026-03-31",
+        "metric" : null
+      },
+      "readings" : [
+
+      ],
+      "rule" : {
+        "anchor" : "dueDate",
+        "every" : 1,
+        "type" : "interval",
+        "unit" : "month"
+      },
+      "seriesDayOfMonth" : 31,
+      "values" : {
+
+      },
+      "zone" : "Europe/Bucharest"
+    },
+    {
+      "completedOn" : "2026-02-10",
+      "currentMetric" : null,
+      "due" : "2026-01-31",
+      "missedCyclesStayOwed" : false,
+      "name" : "a month from the 31st, done ten days late",
+      "next" : {
+        "day" : "2026-02-28",
+        "metric" : null
+      },
+      "readings" : [
+
+      ],
+      "rule" : {
+        "anchor" : "dueDate",
+        "every" : 1,
+        "type" : "interval",
+        "unit" : "month"
+      },
+      "seriesDayOfMonth" : null,
+      "values" : {
+
+      },
+      "zone" : "Europe/Bucharest"
+    },
+    {
+      "completedOn" : "2026-04-20",
+      "currentMetric" : null,
+      "due" : "2026-01-15",
+      "missedCyclesStayOwed" : false,
+      "name" : "a month done three months late moves past the day it was done",
+      "next" : {
+        "day" : "2026-05-15",
+        "metric" : null
+      },
+      "readings" : [
+
+      ],
+      "rule" : {
+        "anchor" : "dueDate",
+        "every" : 1,
+        "type" : "interval",
+        "unit" : "month"
+      },
+      "seriesDayOfMonth" : null,
+      "values" : {
+
+      },
+      "zone" : "Europe/Bucharest"
+    },
+    {
+      "completedOn" : "2026-04-20",
+      "currentMetric" : null,
+      "due" : "2026-01-15",
+      "missedCyclesStayOwed" : true,
+      "name" : "rent done three months late closes one month",
+      "next" : {
+        "day" : "2026-02-15",
+        "metric" : null
+      },
+      "readings" : [
+
+      ],
+      "rule" : {
+        "anchor" : "dueDate",
+        "every" : 1,
+        "type" : "interval",
+        "unit" : "month"
+      },
+      "seriesDayOfMonth" : null,
+      "values" : {
+
+      },
+      "zone" : "Europe/Bucharest"
+    },
+    {
+      "completedOn" : "2026-02-15",
+      "currentMetric" : null,
+      "due" : "2026-01-15",
+      "missedCyclesStayOwed" : false,
+      "name" : "a month done on the next cycle's own day",
+      "next" : {
+        "day" : "2026-03-15",
+        "metric" : null
+      },
+      "readings" : [
+
+      ],
+      "rule" : {
+        "anchor" : "dueDate",
+        "every" : 1,
+        "type" : "interval",
+        "unit" : "month"
+      },
+      "seriesDayOfMonth" : null,
+      "values" : {
+
+      },
+      "zone" : "Europe/Bucharest"
+    },
+    {
+      "completedOn" : "2028-02-29",
+      "currentMetric" : null,
+      "due" : "2028-02-29",
+      "missedCyclesStayOwed" : false,
+      "name" : "29 February a year on",
+      "next" : {
+        "day" : "2029-02-28",
+        "metric" : null
+      },
+      "readings" : [
+
+      ],
+      "rule" : {
+        "anchor" : "dueDate",
+        "every" : 1,
+        "type" : "interval",
+        "unit" : "year"
+      },
+      "seriesDayOfMonth" : null,
+      "values" : {
+
+      },
+      "zone" : "Europe/Bucharest"
+    },
+    {
+      "completedOn" : "2027-02-20",
+      "currentMetric" : null,
+      "due" : "2027-02-28",
+      "missedCyclesStayOwed" : false,
+      "name" : "a year on from 28 February kept as the 29th",
+      "next" : {
+        "day" : "2028-02-29",
+        "metric" : null
+      },
+      "readings" : [
+
+      ],
+      "rule" : {
+        "anchor" : "dueDate",
+        "every" : 1,
+        "type" : "interval",
+        "unit" : "year"
+      },
+      "seriesDayOfMonth" : 29,
+      "values" : {
+
+      },
+      "zone" : "Europe/Bucharest"
+    },
+    {
+      "completedOn" : "2026-03-20",
+      "currentMetric" : null,
+      "due" : "2026-03-02",
+      "missedCyclesStayOwed" : false,
+      "name" : "a week done eighteen days late",
+      "next" : {
+        "day" : "2026-03-23",
+        "metric" : null
+      },
+      "readings" : [
+
+      ],
+      "rule" : {
+        "anchor" : "dueDate",
+        "every" : 1,
+        "type" : "interval",
+        "unit" : "week"
+      },
+      "seriesDayOfMonth" : null,
+      "values" : {
+
+      },
+      "zone" : "Europe/Bucharest"
+    },
+    {
+      "completedOn" : "2026-03-10",
+      "currentMetric" : null,
+      "due" : "2026-03-01",
+      "missedCyclesStayOwed" : false,
+      "name" : "every three days done nine days late",
+      "next" : {
+        "day" : "2026-03-13",
+        "metric" : null
+      },
+      "readings" : [
+
+      ],
+      "rule" : {
+        "anchor" : "dueDate",
+        "every" : 3,
+        "type" : "interval",
+        "unit" : "day"
+      },
+      "seriesDayOfMonth" : null,
+      "values" : {
+
+      },
+      "zone" : "Europe/Bucharest"
+    },
+    {
+      "completedOn" : "2026-06-01",
+      "currentMetric" : null,
+      "due" : "2026-06-30",
+      "missedCyclesStayOwed" : false,
+      "name" : "every two years by the due day, done early",
+      "next" : {
+        "day" : "2028-06-30",
+        "metric" : null
+      },
+      "readings" : [
+
+      ],
+      "rule" : {
+        "anchor" : "dueDate",
+        "every" : 2,
+        "type" : "interval",
+        "unit" : "year"
+      },
+      "seriesDayOfMonth" : null,
+      "values" : {
+
+      },
+      "zone" : "Europe/Bucharest"
+    },
+    {
+      "completedOn" : "2026-05-20",
+      "currentMetric" : null,
+      "due" : "2026-06-01",
+      "missedCyclesStayOwed" : false,
+      "name" : "every two years from the day it was done",
+      "next" : {
+        "day" : "2028-05-20",
+        "metric" : null
+      },
+      "readings" : [
+
+      ],
+      "rule" : {
+        "anchor" : "completion",
+        "every" : 2,
+        "type" : "interval",
+        "unit" : "year"
+      },
+      "seriesDayOfMonth" : null,
+      "values" : {
+
+      },
+      "zone" : "Europe/Bucharest"
+    },
+    {
+      "completedOn" : "2026-01-31",
+      "currentMetric" : null,
+      "due" : "2026-02-10",
+      "missedCyclesStayOwed" : false,
+      "name" : "a month from the day it was done, on the 31st",
+      "next" : {
+        "day" : "2026-02-28",
+        "metric" : null
+      },
+      "readings" : [
+
+      ],
+      "rule" : {
+        "anchor" : "completion",
+        "every" : 1,
+        "type" : "interval",
+        "unit" : "month"
+      },
+      "seriesDayOfMonth" : null,
+      "values" : {
+
+      },
+      "zone" : "Europe/Bucharest"
+    },
+    {
+      "completedOn" : "2026-03-31",
+      "currentMetric" : null,
+      "due" : "2026-03-31",
+      "missedCyclesStayOwed" : false,
+      "name" : "every 0 months is every month",
+      "next" : {
+        "day" : "2026-04-30",
+        "metric" : null
+      },
+      "readings" : [
+
+      ],
+      "rule" : {
+        "anchor" : "dueDate",
+        "every" : 0,
+        "type" : "interval",
+        "unit" : "month"
+      },
+      "seriesDayOfMonth" : null,
+      "values" : {
+
+      },
+      "zone" : "Europe/Bucharest"
+    },
+    {
+      "completedOn" : "2026-03-31",
+      "currentMetric" : null,
+      "due" : "2026-03-31",
+      "missedCyclesStayOwed" : false,
+      "name" : "every 200 years is a hundred",
+      "next" : {
+        "day" : "2126-03-31",
+        "metric" : null
+      },
+      "readings" : [
+
+      ],
+      "rule" : {
+        "anchor" : "dueDate",
+        "every" : 200,
+        "type" : "interval",
+        "unit" : "year"
+      },
+      "seriesDayOfMonth" : null,
+      "values" : {
+
+      },
+      "zone" : "Europe/Bucharest"
+    },
+    {
+      "completedOn" : "2026-03-05",
+      "currentMetric" : null,
+      "due" : "2026-01-31",
+      "missedCyclesStayOwed" : false,
+      "name" : "an interval without its anchor counts from the due day",
+      "next" : {
+        "day" : "2026-03-31",
+        "metric" : null
+      },
+      "readings" : [
+
+      ],
+      "rule" : {
+        "every" : 1,
+        "type" : "interval",
+        "unit" : "month"
+      },
+      "seriesDayOfMonth" : null,
+      "values" : {
+
+      },
+      "zone" : "Europe/Bucharest"
+    },
+    {
+      "completedOn" : "2026-03-20",
+      "currentMetric" : null,
+      "due" : "2026-03-31",
+      "missedCyclesStayOwed" : false,
+      "name" : "fixed dates, done early",
+      "next" : {
+        "day" : "2026-09-30",
+        "metric" : null
+      },
+      "readings" : [
+
+      ],
+      "rule" : {
+        "dates" : [
+          "03-31",
+          "09-30"
+        ],
+        "type" : "fixedDates"
+      },
+      "seriesDayOfMonth" : null,
+      "values" : {
+
+      },
+      "zone" : "Europe/Bucharest"
+    },
+    {
+      "completedOn" : "2026-09-30",
+      "currentMetric" : null,
+      "due" : "2026-09-30",
+      "missedCyclesStayOwed" : false,
+      "name" : "fixed dates, done on the day",
+      "next" : {
+        "day" : "2027-03-31",
+        "metric" : null
+      },
+      "readings" : [
+
+      ],
+      "rule" : {
+        "dates" : [
+          "03-31",
+          "09-30"
+        ],
+        "type" : "fixedDates"
+      },
+      "seriesDayOfMonth" : null,
+      "values" : {
+
+      },
+      "zone" : "Europe/Bucharest"
+    },
+    {
+      "completedOn" : "2026-11-01",
+      "currentMetric" : null,
+      "due" : "2026-03-31",
+      "missedCyclesStayOwed" : true,
+      "name" : "a tax installment paid very late is still owed",
+      "next" : {
+        "day" : "2026-09-30",
+        "metric" : null
+      },
+      "readings" : [
+
+      ],
+      "rule" : {
+        "dates" : [
+          "03-31",
+          "09-30"
+        ],
+        "type" : "fixedDates"
+      },
+      "seriesDayOfMonth" : null,
+      "values" : {
+
+      },
+      "zone" : "Europe/Bucharest"
+    },
+    {
+      "completedOn" : "2026-11-01",
+      "currentMetric" : null,
+      "due" : "2026-03-31",
+      "missedCyclesStayOwed" : false,
+      "name" : "fixed dates done very late move past the day",
+      "next" : {
+        "day" : "2027-03-31",
+        "metric" : null
+      },
+      "readings" : [
+
+      ],
+      "rule" : {
+        "dates" : [
+          "03-31",
+          "09-30"
+        ],
+        "type" : "fixedDates"
+      },
+      "seriesDayOfMonth" : null,
+      "values" : {
+
+      },
+      "zone" : "Europe/Bucharest"
+    },
+    {
+      "completedOn" : "2026-09-30",
+      "currentMetric" : null,
+      "due" : "2026-03-31",
+      "missedCyclesStayOwed" : false,
+      "name" : "fixed dates done on the next date's own day",
+      "next" : {
+        "day" : "2027-03-31",
+        "metric" : null
+      },
+      "readings" : [
+
+      ],
+      "rule" : {
+        "dates" : [
+          "03-31",
+          "09-30"
+        ],
+        "type" : "fixedDates"
+      },
+      "seriesDayOfMonth" : null,
+      "values" : {
+
+      },
+      "zone" : "Europe/Bucharest"
+    },
+    {
+      "completedOn" : "2028-02-29",
+      "currentMetric" : null,
+      "due" : "2028-02-29",
+      "missedCyclesStayOwed" : false,
+      "name" : "a fixed 29 February in a common year",
+      "next" : {
+        "day" : "2029-02-28",
+        "metric" : null
+      },
+      "readings" : [
+
+      ],
+      "rule" : {
+        "dates" : [
+          "02-29"
+        ],
+        "type" : "fixedDates"
+      },
+      "seriesDayOfMonth" : null,
+      "values" : {
+
+      },
+      "zone" : "Europe/Bucharest"
+    },
+    {
+      "completedOn" : "2026-03-31",
+      "currentMetric" : null,
+      "due" : "2026-03-31",
+      "missedCyclesStayOwed" : false,
+      "name" : "no fixed dates",
+      "next" : null,
+      "readings" : [
+
+      ],
+      "rule" : {
+        "dates" : [
+
+        ],
+        "type" : "fixedDates"
+      },
+      "seriesDayOfMonth" : null,
+      "values" : {
+
+      },
+      "zone" : "Europe/Bucharest"
+    },
+    {
+      "completedOn" : "2026-01-01",
+      "currentMetric" : null,
+      "due" : "2026-01-01",
+      "missedCyclesStayOwed" : false,
+      "name" : "one-off",
+      "next" : null,
+      "readings" : [
+
+      ],
+      "rule" : {
+        "type" : "none"
+      },
+      "seriesDayOfMonth" : null,
+      "values" : {
+
+      },
+      "zone" : "Europe/Bucharest"
+    },
+    {
+      "completedOn" : "2026-01-01",
+      "currentMetric" : null,
+      "due" : "2026-01-01",
+      "missedCyclesStayOwed" : false,
+      "name" : "a rule a newer build wrote",
+      "next" : null,
+      "readings" : [
+
+      ],
+      "rule" : {
+        "on" : "monday",
+        "type" : "weekly"
+      },
+      "seriesDayOfMonth" : null,
+      "values" : {
+
+      },
+      "zone" : "Europe/Bucharest"
+    },
+    {
+      "completedOn" : "2026-01-01",
+      "currentMetric" : null,
+      "due" : "2026-01-01",
+      "missedCyclesStayOwed" : false,
+      "name" : "a legal rule a newer build wrote",
+      "next" : null,
+      "readings" : [
+
+      ],
+      "rule" : {
+        "rule" : "vehicleRCA",
+        "type" : "legal"
+      },
+      "seriesDayOfMonth" : null,
+      "values" : {
+
+      },
+      "zone" : "Europe/Bucharest"
+    },
+    {
+      "completedOn" : "2026-01-01",
+      "currentMetric" : null,
+      "due" : "2026-01-01",
+      "missedCyclesStayOwed" : false,
+      "name" : "an anchor a newer build wrote",
+      "next" : null,
+      "readings" : [
+
+      ],
+      "rule" : {
+        "anchor" : "firstMonday",
+        "every" : 1,
+        "type" : "interval",
+        "unit" : "month"
+      },
+      "seriesDayOfMonth" : null,
+      "values" : {
+
+      },
+      "zone" : "Europe/Bucharest"
+    },
+    {
+      "completedOn" : "2026-05-20",
+      "currentMetric" : null,
+      "due" : "2026-05-20",
+      "missedCyclesStayOwed" : false,
+      "name" : "ITP of a car eight years old",
+      "next" : {
+        "day" : "2028-05-20",
+        "metric" : null
+      },
+      "readings" : [
+
+      ],
+      "rule" : {
+        "rule" : "vehicleITP",
+        "type" : "legal"
+      },
+      "seriesDayOfMonth" : null,
+      "values" : {
+        "vehicle.usage" : {
+          "type" : "text",
+          "value" : "vehicleUse.personal"
+        },
+        "vehicle.year" : {
+          "type" : "number",
+          "value" : 2018
+        }
+      },
+      "zone" : "Europe/Bucharest"
+    },
+    {
+      "completedOn" : "2026-05-20",
+      "currentMetric" : null,
+      "due" : "2026-05-20",
+      "missedCyclesStayOwed" : false,
+      "name" : "ITP of a car twelve years old",
+      "next" : {
+        "day" : "2028-05-20",
+        "metric" : null
+      },
+      "readings" : [
+
+      ],
+      "rule" : {
+        "rule" : "vehicleITP",
+        "type" : "legal"
+      },
+      "seriesDayOfMonth" : null,
+      "values" : {
+        "vehicle.year" : {
+          "type" : "number",
+          "value" : 2014
+        }
+      },
+      "zone" : "Europe/Bucharest"
+    },
+    {
+      "completedOn" : "2026-05-20",
+      "currentMetric" : null,
+      "due" : "2026-05-20",
+      "missedCyclesStayOwed" : false,
+      "name" : "ITP of a car thirteen years old",
+      "next" : {
+        "day" : "2027-05-20",
+        "metric" : null
+      },
+      "readings" : [
+
+      ],
+      "rule" : {
+        "rule" : "vehicleITP",
+        "type" : "legal"
+      },
+      "seriesDayOfMonth" : null,
+      "values" : {
+        "vehicle.usage" : {
+          "type" : "text",
+          "value" : "Personală"
+        },
+        "vehicle.year" : {
+          "type" : "number",
+          "value" : 2013
+        }
+      },
+      "zone" : "Europe/Bucharest"
+    },
+    {
+      "completedOn" : "2026-05-20",
+      "currentMetric" : null,
+      "due" : "2026-05-20",
+      "missedCyclesStayOwed" : false,
+      "name" : "ITP of a taxi",
+      "next" : {
+        "day" : "2026-11-20",
+        "metric" : null
+      },
+      "readings" : [
+
+      ],
+      "rule" : {
+        "rule" : "vehicleITP",
+        "type" : "legal"
+      },
+      "seriesDayOfMonth" : null,
+      "values" : {
+        "vehicle.usage" : {
+          "type" : "text",
+          "value" : "vehicleUse.commercial"
+        },
+        "vehicle.year" : {
+          "type" : "number",
+          "value" : 2022
+        }
+      },
+      "zone" : "Europe/Bucharest"
+    },
+    {
+      "completedOn" : "2026-05-20",
+      "currentMetric" : null,
+      "due" : "2026-05-20",
+      "missedCyclesStayOwed" : false,
+      "name" : "ITP of a ridesharing car named by its label",
+      "next" : {
+        "day" : "2026-11-20",
+        "metric" : null
+      },
+      "readings" : [
+
+      ],
+      "rule" : {
+        "rule" : "vehicleITP",
+        "type" : "legal"
+      },
+      "seriesDayOfMonth" : null,
+      "values" : {
+        "vehicle.usage" : {
+          "type" : "text",
+          "value" : "Ridesharing sau taxi"
+        },
+        "vehicle.year" : {
+          "type" : "number",
+          "value" : 2022
+        }
+      },
+      "zone" : "Europe/Bucharest"
+    },
+    {
+      "completedOn" : "2026-08-31",
+      "currentMetric" : null,
+      "due" : "2026-08-31",
+      "missedCyclesStayOwed" : false,
+      "name" : "ITP of a car named by an alias",
+      "next" : {
+        "day" : "2027-02-28",
+        "metric" : null
+      },
+      "readings" : [
+
+      ],
+      "rule" : {
+        "rule" : "vehicleITP",
+        "type" : "legal"
+      },
+      "seriesDayOfMonth" : null,
+      "values" : {
+        "vehicle.usage" : {
+          "type" : "text",
+          "value" : "uber"
+        },
+        "vehicle.year" : {
+          "type" : "number",
+          "value" : 2022
+        }
+      },
+      "zone" : "Europe/Bucharest"
+    },
+    {
+      "completedOn" : "2026-05-20",
+      "currentMetric" : null,
+      "due" : "2026-05-20",
+      "missedCyclesStayOwed" : false,
+      "name" : "ITP of a car of unknown age",
+      "next" : {
+        "day" : "2027-05-20",
+        "metric" : null
+      },
+      "readings" : [
+
+      ],
+      "rule" : {
+        "rule" : "vehicleITP",
+        "type" : "legal"
+      },
+      "seriesDayOfMonth" : null,
+      "values" : {
+
+      },
+      "zone" : "Europe/Bucharest"
+    },
+    {
+      "completedOn" : "2026-05-20",
+      "currentMetric" : null,
+      "due" : "2026-05-20",
+      "missedCyclesStayOwed" : false,
+      "name" : "ITP of a car whose year no whole number holds",
+      "next" : {
+        "day" : "2027-05-20",
+        "metric" : null
+      },
+      "readings" : [
+
+      ],
+      "rule" : {
+        "rule" : "vehicleITP",
+        "type" : "legal"
+      },
+      "seriesDayOfMonth" : null,
+      "values" : {
+        "vehicle.year" : {
+          "type" : "number",
+          "value" : 1e+19
+        }
+      },
+      "zone" : "Europe/Bucharest"
+    },
+    {
+      "completedOn" : "2026-05-20",
+      "currentMetric" : null,
+      "due" : "2026-05-20",
+      "missedCyclesStayOwed" : false,
+      "name" : "ITP of a car made next year",
+      "next" : {
+        "day" : "2028-05-20",
+        "metric" : null
+      },
+      "readings" : [
+
+      ],
+      "rule" : {
+        "rule" : "vehicleITP",
+        "type" : "legal"
+      },
+      "seriesDayOfMonth" : null,
+      "values" : {
+        "vehicle.year" : {
+          "type" : "number",
+          "value" : 2030
+        }
+      },
+      "zone" : "Europe/Bucharest"
+    },
+    {
+      "completedOn" : "2026-05-20",
+      "currentMetric" : null,
+      "due" : "2026-05-20",
+      "missedCyclesStayOwed" : false,
+      "name" : "ITP of a car whose year is a fraction",
+      "next" : {
+        "day" : "2028-05-20",
+        "metric" : null
+      },
+      "readings" : [
+
+      ],
+      "rule" : {
+        "rule" : "vehicleITP",
+        "type" : "legal"
+      },
+      "seriesDayOfMonth" : null,
+      "values" : {
+        "vehicle.year" : {
+          "type" : "number",
+          "value" : 2013.5
+        }
+      },
+      "zone" : "Europe/Bucharest"
+    },
+    {
+      "completedOn" : "2026-02-10",
+      "currentMetric" : 102000,
+      "due" : "2026-02-10",
+      "missedCyclesStayOwed" : false,
+      "name" : "a service at 50 km a day comes before its year",
+      "next" : {
+        "day" : "2026-12-07",
+        "metric" : 117000
+      },
+      "readings" : [
+        {
+          "at" : "2026-01-01T10:00:00Z",
+          "isEstimate" : false,
+          "metric" : 100000,
+          "startsCounter" : false
+        },
+        {
+          "at" : "2026-02-10T10:00:00Z",
+          "isEstimate" : false,
+          "metric" : 102000,
+          "startsCounter" : false
+        }
+      ],
+      "rule" : {
+        "every" : 15000,
+        "fallbackEvery" : 1,
+        "fallbackUnit" : "year",
+        "type" : "metric",
+        "unit" : "km"
+      },
+      "seriesDayOfMonth" : null,
+      "values" : {
+
+      },
+      "zone" : "Europe/Bucharest"
+    },
+    {
+      "completedOn" : "2026-02-10",
+      "currentMetric" : 100100,
+      "due" : "2026-02-10",
+      "missedCyclesStayOwed" : false,
+      "name" : "a service barely driven comes at its year",
+      "next" : {
+        "day" : "2027-02-10",
+        "metric" : 115100
+      },
+      "readings" : [
+        {
+          "at" : "2026-01-01T10:00:00Z",
+          "isEstimate" : false,
+          "metric" : 100000,
+          "startsCounter" : false
+        },
+        {
+          "at" : "2026-02-10T10:00:00Z",
+          "isEstimate" : false,
+          "metric" : 100100,
+          "startsCounter" : false
+        }
+      ],
+      "rule" : {
+        "every" : 15000,
+        "fallbackEvery" : 1,
+        "fallbackUnit" : "year",
+        "type" : "metric",
+        "unit" : "km"
+      },
+      "seriesDayOfMonth" : null,
+      "values" : {
+
+      },
+      "zone" : "Europe/Bucharest"
+    },
+    {
+      "completedOn" : "2026-02-10",
+      "currentMetric" : null,
+      "due" : "2026-02-10",
+      "missedCyclesStayOwed" : false,
+      "name" : "a service with no readings comes at its fallback",
+      "next" : {
+        "day" : "2026-03-10",
+        "metric" : null
+      },
+      "readings" : [
+
+      ],
+      "rule" : {
+        "every" : 150,
+        "fallbackEvery" : 1,
+        "fallbackUnit" : "month",
+        "type" : "metric",
+        "unit" : "km"
+      },
+      "seriesDayOfMonth" : null,
+      "values" : {
+
+      },
+      "zone" : "Europe/Bucharest"
+    },
+    {
+      "completedOn" : "2026-02-10",
+      "currentMetric" : null,
+      "due" : "2026-02-10",
+      "missedCyclesStayOwed" : false,
+      "name" : "a service with no fallback comes in six months",
+      "next" : {
+        "day" : "2026-08-10",
+        "metric" : null
+      },
+      "readings" : [
+
+      ],
+      "rule" : {
+        "every" : 150,
+        "type" : "metric",
+        "unit" : "km"
+      },
+      "seriesDayOfMonth" : null,
+      "values" : {
+
+      },
+      "zone" : "Europe/Bucharest"
+    },
+    {
+      "completedOn" : "2026-02-10",
+      "currentMetric" : null,
+      "due" : "2026-02-10",
+      "missedCyclesStayOwed" : false,
+      "name" : "the counter now is the last reading",
+      "next" : {
+        "day" : "2026-12-07",
+        "metric" : 117000
+      },
+      "readings" : [
+        {
+          "at" : "2026-01-01T10:00:00Z",
+          "isEstimate" : false,
+          "metric" : 100000,
+          "startsCounter" : false
+        },
+        {
+          "at" : "2026-02-10T10:00:00Z",
+          "isEstimate" : false,
+          "metric" : 102000,
+          "startsCounter" : false
+        }
+      ],
+      "rule" : {
+        "every" : 15000,
+        "fallbackEvery" : 1,
+        "fallbackUnit" : "year",
+        "type" : "metric",
+        "unit" : "km"
+      },
+      "seriesDayOfMonth" : null,
+      "values" : {
+
+      },
+      "zone" : "Europe/Bucharest"
+    },
+    {
+      "completedOn" : "2026-02-10",
+      "currentMetric" : 102000,
+      "due" : "2026-02-10",
+      "missedCyclesStayOwed" : false,
+      "name" : "a counter step of 0 is due the next day",
+      "next" : {
+        "day" : "2026-02-11",
+        "metric" : 102000
+      },
+      "readings" : [
+        {
+          "at" : "2026-01-01T10:00:00Z",
+          "isEstimate" : false,
+          "metric" : 100000,
+          "startsCounter" : false
+        },
+        {
+          "at" : "2026-02-10T10:00:00Z",
+          "isEstimate" : false,
+          "metric" : 102000,
+          "startsCounter" : false
+        }
+      ],
+      "rule" : {
+        "every" : 0,
+        "fallbackEvery" : 1,
+        "fallbackUnit" : "year",
+        "type" : "metric",
+        "unit" : "km"
+      },
+      "seriesDayOfMonth" : null,
+      "values" : {
+
+      },
+      "zone" : "Europe/Bucharest"
+    },
+    {
+      "completedOn" : "2026-03-01",
+      "currentMetric" : 2400,
+      "due" : "2026-03-01",
+      "missedCyclesStayOwed" : false,
+      "name" : "a new counter counts on its own",
+      "next" : {
+        "day" : "2026-06-09",
+        "metric" : 7400
+      },
+      "readings" : [
+        {
+          "at" : "2026-01-01T10:00:00Z",
+          "isEstimate" : false,
+          "metric" : 145000,
+          "startsCounter" : false
+        },
+        {
+          "at" : "2026-01-21T10:00:00Z",
+          "isEstimate" : false,
+          "metric" : 146000,
+          "startsCounter" : false
+        },
+        {
+          "at" : "2026-02-01T10:00:00Z",
+          "isEstimate" : false,
+          "metric" : 1000,
+          "startsCounter" : true
+        },
+        {
+          "at" : "2026-03-01T10:00:00Z",
+          "isEstimate" : false,
+          "metric" : 2400,
+          "startsCounter" : false
+        }
+      ],
+      "rule" : {
+        "every" : 5000,
+        "fallbackEvery" : 1,
+        "fallbackUnit" : "year",
+        "type" : "metric",
+        "unit" : "km"
+      },
+      "seriesDayOfMonth" : null,
+      "values" : {
+
+      },
+      "zone" : "Europe/Bucharest"
+    },
+    {
+      "completedOn" : "2026-03-01",
+      "currentMetric" : 10100,
+      "due" : "2026-03-01",
+      "missedCyclesStayOwed" : false,
+      "name" : "readings hours apart on one day",
+      "next" : {
+        "day" : "2026-03-06",
+        "metric" : 11100
+      },
+      "readings" : [
+        {
+          "at" : "2026-03-01T06:00:00Z",
+          "isEstimate" : false,
+          "metric" : 10000,
+          "startsCounter" : false
+        },
+        {
+          "at" : "2026-03-01T18:00:00Z",
+          "isEstimate" : false,
+          "metric" : 10100,
+          "startsCounter" : false
+        }
+      ],
+      "rule" : {
+        "every" : 1000,
+        "fallbackEvery" : 1,
+        "fallbackUnit" : "year",
+        "type" : "metric",
+        "unit" : "km"
+      },
+      "seriesDayOfMonth" : null,
+      "values" : {
+
+      },
+      "zone" : "Europe/Bucharest"
+    },
+    {
+      "completedOn" : "2026-04-01",
+      "currentMetric" : 20300,
+      "due" : "2026-04-01",
+      "missedCyclesStayOwed" : false,
+      "name" : "readings across the clocks going forward",
+      "next" : {
+        "day" : "2026-05-01",
+        "metric" : 23300
+      },
+      "readings" : [
+        {
+          "at" : "2026-03-28T22:30:00Z",
+          "isEstimate" : false,
+          "metric" : 20000,
+          "startsCounter" : false
+        },
+        {
+          "at" : "2026-03-31T21:30:00Z",
+          "isEstimate" : false,
+          "metric" : 20300,
+          "startsCounter" : false
+        }
+      ],
+      "rule" : {
+        "every" : 3000,
+        "fallbackEvery" : 1,
+        "fallbackUnit" : "year",
+        "type" : "metric",
+        "unit" : "km"
+      },
+      "seriesDayOfMonth" : null,
+      "values" : {
+
+      },
+      "zone" : "Europe/Bucharest"
+    },
+    {
+      "completedOn" : "2026-04-01",
+      "currentMetric" : 20300,
+      "due" : "2026-04-01",
+      "missedCyclesStayOwed" : false,
+      "name" : "readings near midnight far east",
+      "next" : {
+        "day" : "2026-05-02",
+        "metric" : 23300
+      },
+      "readings" : [
+        {
+          "at" : "2026-03-28T10:30:00Z",
+          "isEstimate" : false,
+          "metric" : 20000,
+          "startsCounter" : false
+        },
+        {
+          "at" : "2026-03-31T11:30:00Z",
+          "isEstimate" : false,
+          "metric" : 20300,
+          "startsCounter" : false
+        }
+      ],
+      "rule" : {
+        "every" : 3000,
+        "fallbackEvery" : 1,
+        "fallbackUnit" : "year",
+        "type" : "metric",
+        "unit" : "km"
+      },
+      "seriesDayOfMonth" : null,
+      "values" : {
+
+      },
+      "zone" : "Pacific/Auckland"
+    },
+    {
+      "completedOn" : "2026-03-01",
+      "currentMetric" : 101000,
+      "due" : "2026-03-01",
+      "missedCyclesStayOwed" : false,
+      "name" : "readings set aside count for nothing",
+      "next" : {
+        "day" : "2026-09-17",
+        "metric" : 111000
+      },
+      "readings" : [
+        {
+          "at" : "2026-01-01T10:00:00Z",
+          "isEstimate" : false,
+          "metric" : 100000,
+          "startsCounter" : false
+        },
+        {
+          "at" : "2026-01-11T10:00:00Z",
+          "isEstimate" : false,
+          "metric" : 10050,
+          "startsCounter" : false
+        },
+        {
+          "at" : "2026-01-21T10:00:00Z",
+          "isEstimate" : false,
+          "metric" : 101000,
+          "startsCounter" : false
+        }
+      ],
+      "rule" : {
+        "every" : 10000,
+        "fallbackEvery" : 1,
+        "fallbackUnit" : "year",
+        "type" : "metric",
+        "unit" : "km"
+      },
+      "seriesDayOfMonth" : null,
+      "values" : {
+
+      },
+      "zone" : "Europe/Bucharest"
+    },
+    {
+      "completedOn" : "2026-03-01",
+      "currentMetric" : 100001,
+      "due" : "2026-03-01",
+      "missedCyclesStayOwed" : false,
+      "name" : "a counter that barely moves is due in a hundred years at most",
+      "next" : {
+        "day" : "2126-02-05",
+        "metric" : 10100001
+      },
+      "readings" : [
+        {
+          "at" : "2026-01-01T10:00:00Z",
+          "isEstimate" : false,
+          "metric" : 100000,
+          "startsCounter" : false
+        },
+        {
+          "at" : "2026-03-01T10:00:00Z",
+          "isEstimate" : false,
+          "metric" : 100001,
+          "startsCounter" : false
+        }
+      ],
+      "rule" : {
+        "every" : 10000000,
+        "fallbackEvery" : 100,
+        "fallbackUnit" : "year",
+        "type" : "metric",
+        "unit" : "km"
+      },
+      "seriesDayOfMonth" : null,
+      "values" : {
+
+      },
+      "zone" : "Europe/Bucharest"
+    }
+  ],
+  "rule" : "RecurrenceEngine.nextDue(after:completedOn:rule:context:calendar:), with itpInterval and the counter's projection (CadenceCalculator.projectTelemetryDueDate)",
+  "shape" : "rule: how it repeats, as the archive writes it (a rule a newer build wrote is kept and repeats as one-off). due: the cycle closed. completedOn: the day it was done. values: the section's values in the archive's form. readings: the section's counter readings, oldest first (at, metric, startsCounter, isEstimate). currentMetric: the counter now, when known. seriesDayOfMonth: the day of the month the series keeps. missedCyclesStayOwed: each cycle is money still owed. zone: the time zone days are counted in. next: the next cycle's day and the counter it is due at, or null for none.",
+  "source" : "ios/DosarCuSina/Services/Obligations/RecurrenceEngine.swift, ios/DosarCuSina/Services/Cadence/CadenceCalculator.swift",
+  "writtenBy" : "ios/DosarCuSinaTests/RecurrenceVectorsTests.swift"
+}

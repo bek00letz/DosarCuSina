@@ -1,0 +1,158 @@
+{
+  "cases" : [
+    {
+      "due" : "2026-03-31",
+      "name" : "a month before the 31st",
+      "rule" : {
+        "anchor" : "dueDate",
+        "every" : 1,
+        "type" : "interval",
+        "unit" : "month"
+      },
+      "start" : "2026-02-28"
+    },
+    {
+      "due" : "2026-05-31",
+      "name" : "a month before 31 May",
+      "rule" : {
+        "anchor" : "completion",
+        "every" : 1,
+        "type" : "interval",
+        "unit" : "month"
+      },
+      "start" : "2026-04-30"
+    },
+    {
+      "due" : "2028-02-29",
+      "name" : "a year before 29 February",
+      "rule" : {
+        "anchor" : "dueDate",
+        "every" : 1,
+        "type" : "interval",
+        "unit" : "year"
+      },
+      "start" : "2027-02-28"
+    },
+    {
+      "due" : "2026-03-15",
+      "name" : "two weeks",
+      "rule" : {
+        "anchor" : "dueDate",
+        "every" : 2,
+        "type" : "interval",
+        "unit" : "week"
+      },
+      "start" : "2026-03-01"
+    },
+    {
+      "due" : "2026-03-02",
+      "name" : "three days",
+      "rule" : {
+        "anchor" : "dueDate",
+        "every" : 3,
+        "type" : "interval",
+        "unit" : "day"
+      },
+      "start" : "2026-02-27"
+    },
+    {
+      "due" : "2026-03-02",
+      "name" : "every 0 days is every day",
+      "rule" : {
+        "anchor" : "dueDate",
+        "every" : 0,
+        "type" : "interval",
+        "unit" : "day"
+      },
+      "start" : "2026-03-01"
+    },
+    {
+      "due" : "2026-09-30",
+      "name" : "the fixed date before, in the same year",
+      "rule" : {
+        "dates" : [
+          "03-31",
+          "09-30"
+        ],
+        "type" : "fixedDates"
+      },
+      "start" : "2026-03-31"
+    },
+    {
+      "due" : "2026-03-31",
+      "name" : "the fixed date before, last year",
+      "rule" : {
+        "dates" : [
+          "03-31",
+          "09-30"
+        ],
+        "type" : "fixedDates"
+      },
+      "start" : "2025-09-30"
+    },
+    {
+      "due" : "2026-06-15",
+      "name" : "a due day between the fixed dates",
+      "rule" : {
+        "dates" : [
+          "03-31",
+          "09-30"
+        ],
+        "type" : "fixedDates"
+      },
+      "start" : "2026-03-31"
+    },
+    {
+      "due" : "2026-06-15",
+      "name" : "no fixed dates",
+      "rule" : {
+        "dates" : [
+
+        ],
+        "type" : "fixedDates"
+      },
+      "start" : null
+    },
+    {
+      "due" : "2026-06-15",
+      "name" : "one-off",
+      "rule" : {
+        "type" : "none"
+      },
+      "start" : null
+    },
+    {
+      "due" : "2026-06-15",
+      "name" : "a counter",
+      "rule" : {
+        "every" : 15000,
+        "fallbackEvery" : 1,
+        "fallbackUnit" : "year",
+        "type" : "metric",
+        "unit" : "km"
+      },
+      "start" : null
+    },
+    {
+      "due" : "2026-06-15",
+      "name" : "the ITP",
+      "rule" : {
+        "rule" : "vehicleITP",
+        "type" : "legal"
+      },
+      "start" : null
+    },
+    {
+      "due" : "2026-06-15",
+      "name" : "a rule a newer build wrote",
+      "rule" : {
+        "type" : "weekly"
+      },
+      "start" : null
+    }
+  ],
+  "rule" : "RecurrenceEngine.cycleStart(endingOn:rule:calendar:)",
+  "shape" : "due: the cycle's due day. rule: how it repeats, as the archive writes it. start: the day the cycle began, or null for a rule whose cycle has no set length.",
+  "source" : "ios/DosarCuSina/Services/Obligations/RecurrenceEngine.swift",
+  "writtenBy" : "ios/DosarCuSinaTests/RecurrenceVectorsTests.swift"
+}

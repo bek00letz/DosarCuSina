@@ -1,0 +1,209 @@
+{
+  "cases" : [
+    {
+      "completions" : [
+        {
+          "cycle" : "2026-03-31",
+          "next" : "2026-04-30"
+        },
+        {
+          "cycle" : "2026-02-28",
+          "next" : "2026-03-31"
+        },
+        {
+          "cycle" : "2026-01-31",
+          "next" : "2026-02-28"
+        }
+      ],
+      "current" : "2026-04-30",
+      "interval" : {
+        "every" : 1,
+        "unit" : "month"
+      },
+      "name" : "an unbroken month from the 31st",
+      "seriesDayOfMonth" : 31,
+      "start" : "2026-01-31"
+    },
+    {
+      "completions" : [
+        {
+          "cycle" : "2026-03-31",
+          "next" : "2026-04-30"
+        },
+        {
+          "cycle" : "2026-02-28",
+          "next" : "2026-03-31"
+        }
+      ],
+      "current" : "2026-05-15",
+      "interval" : {
+        "every" : 1,
+        "unit" : "month"
+      },
+      "name" : "a day set by hand starts a new series",
+      "seriesDayOfMonth" : 15,
+      "start" : "2026-05-15"
+    },
+    {
+      "completions" : [
+        {
+          "cycle" : "2026-04-30",
+          "next" : "2026-05-31"
+        },
+        {
+          "cycle" : "2026-04-23",
+          "next" : "2026-04-30"
+        }
+      ],
+      "current" : "2026-05-31",
+      "interval" : {
+        "every" : 1,
+        "unit" : "month"
+      },
+      "name" : "a step another rule took starts a new series",
+      "seriesDayOfMonth" : 30,
+      "start" : "2026-04-30"
+    },
+    {
+      "completions" : [
+        {
+          "cycle" : "2026-01-31",
+          "next" : "2026-04-30"
+        },
+        {
+          "cycle" : "2025-12-31",
+          "next" : "2026-01-31"
+        }
+      ],
+      "current" : "2026-04-30",
+      "interval" : {
+        "every" : 1,
+        "unit" : "month"
+      },
+      "name" : "a completion done late by two cycles",
+      "seriesDayOfMonth" : 31,
+      "start" : "2025-12-31"
+    },
+    {
+      "completions" : [
+        {
+          "cycle" : null,
+          "next" : "2026-03-31"
+        },
+        {
+          "cycle" : "2026-01-31",
+          "next" : null
+        }
+      ],
+      "current" : "2026-03-31",
+      "interval" : {
+        "every" : 1,
+        "unit" : "month"
+      },
+      "name" : "a completion with no next day ends the walk",
+      "seriesDayOfMonth" : 31,
+      "start" : "2026-03-31"
+    },
+    {
+      "completions" : [
+
+      ],
+      "current" : "2026-03-31",
+      "interval" : {
+        "every" : 1,
+        "unit" : "month"
+      },
+      "name" : "no completions",
+      "seriesDayOfMonth" : 31,
+      "start" : "2026-03-31"
+    },
+    {
+      "completions" : [
+        {
+          "cycle" : "2026-03-16",
+          "next" : "2026-03-23"
+        },
+        {
+          "cycle" : "2026-03-02",
+          "next" : "2026-03-16"
+        }
+      ],
+      "current" : "2026-03-23",
+      "interval" : {
+        "every" : 1,
+        "unit" : "week"
+      },
+      "name" : "weeks",
+      "seriesDayOfMonth" : 2,
+      "start" : "2026-03-02"
+    },
+    {
+      "completions" : [
+        {
+          "cycle" : "2026-03-07",
+          "next" : "2026-03-11"
+        }
+      ],
+      "current" : "2026-03-11",
+      "interval" : {
+        "every" : 3,
+        "unit" : "day"
+      },
+      "name" : "every three days, one off",
+      "seriesDayOfMonth" : 11,
+      "start" : "2026-03-11"
+    },
+    {
+      "completions" : [
+        {
+          "cycle" : "2028-02-29",
+          "next" : "2029-02-28"
+        }
+      ],
+      "current" : "2029-02-28",
+      "interval" : {
+        "every" : 1,
+        "unit" : "year"
+      },
+      "name" : "years from 29 February",
+      "seriesDayOfMonth" : 29,
+      "start" : "2028-02-29"
+    },
+    {
+      "completions" : [
+        {
+          "cycle" : "2027-06-30",
+          "next" : "2028-06-30"
+        }
+      ],
+      "current" : "2028-06-30",
+      "interval" : {
+        "every" : 2,
+        "unit" : "year"
+      },
+      "name" : "every two years, a year apart",
+      "seriesDayOfMonth" : 30,
+      "start" : "2028-06-30"
+    },
+    {
+      "completions" : [
+        {
+          "cycle" : "2026-03-05",
+          "next" : "2026-03-01"
+        }
+      ],
+      "current" : "2026-03-01",
+      "interval" : {
+        "every" : 1,
+        "unit" : "month"
+      },
+      "name" : "a day earlier than the step",
+      "seriesDayOfMonth" : 1,
+      "start" : "2026-03-01"
+    }
+  ],
+  "rule" : "RecurrenceEngine.seriesStart(current:completions:interval:calendar:) and isStep(of:from:to:)",
+  "shape" : "current: the due day now. interval: the rule's step. completions: newest first, each the cycle it closed and the day it moved to (null when none). start: the first due day of the unbroken series, and its day of the month, the one the series keeps.",
+  "source" : "ios/DosarCuSina/Services/Obligations/RecurrenceEngine.swift",
+  "writtenBy" : "ios/DosarCuSinaTests/RecurrenceVectorsTests.swift"
+}

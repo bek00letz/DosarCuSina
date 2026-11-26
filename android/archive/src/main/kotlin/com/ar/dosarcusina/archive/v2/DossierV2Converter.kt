@@ -1,5 +1,7 @@
 package com.ar.dosarcusina.archive.v2
 
+import com.ar.dosarcusina.core.deadlines.defaultProfile
+import com.ar.dosarcusina.core.values.ObligationKind
 import com.ar.dosarcusina.archive.ArchiveError
 import com.ar.dosarcusina.archive.DossierArchiveReader
 import com.ar.dosarcusina.archive.binder.BuiltIns
@@ -22,6 +24,8 @@ import com.ar.dosarcusina.archive.v3.RecurrenceRule
 import com.ar.dosarcusina.archive.v3.ReminderProfile
 import com.ar.dosarcusina.archive.v3.ServiceItemRecord
 import com.ar.dosarcusina.archive.v3.UnreadableRecord
+import com.ar.dosarcusina.core.deadlines.CompletionKind
+import com.ar.dosarcusina.core.deadlines.HistoryKind
 import com.ar.dosarcusina.core.values.CalendarDay
 import com.ar.dosarcusina.core.values.DosarCalendar
 import com.ar.dosarcusina.core.values.KeptObject
@@ -230,29 +234,18 @@ object DossierV2Converter {
         "payment" to listOf("plata", "factura", "abonament", "chirie"),
     )
 
+    /** A kind the converter inferred; anything else is a chore. */
+    private fun obligationKind(kind: String): ObligationKind =
+        ObligationKind.entries.firstOrNull { it.raw == kind } ?: ObligationKind.ROUTINE
+
     /** The reminders a deadline of a kind starts from (`ObligationKind.defaultProfile`). */
-    @Suppress("MagicNumber") // The profiles themselves.
-    fun defaultProfile(kind: String): ReminderProfile = when (kind) {
-        "legal", "insurance" -> ReminderProfile(listOf(30, 7, 0), "legal")
-        "tax" -> ReminderProfile(listOf(14, 1), "financial")
-        "health" -> ReminderProfile(listOf(7, 1), "health", graceDays = 7)
-        "renewal" -> ReminderProfile(listOf(60, 30), "legal")
-        "payment" -> ReminderProfile(listOf(2, 0), "financial")
-        "maintenance" -> ReminderProfile(listOf(14, 1), "comfort", graceDays = 14)
-        else -> ReminderProfile(listOf(0), "comfort", graceDays = 3)
-    }
+    fun defaultProfile(kind: String): ReminderProfile = ReminderProfile.of(obligationKind(kind).defaultProfile)
 
     /**
      * The history kind a completed event of one's own of [kind] is kept as (`HistoryKind.forCompleting(.own(kind),
      * …)`).
      */
-    fun historyKind(kind: String): String = when (kind) {
-        "legal" -> "inspection"
-        "payment", "tax", "insurance" -> "payment"
-        "health" -> "treatment"
-        "renewal" -> "note"
-        else -> "maintenance"
-    }
+    fun historyKind(kind: String): String = HistoryKind.forCompleting(CompletionKind.own(obligationKind(kind))).raw
 
     internal fun convert(dto: V2Measurement) = MeasurementRecord(
         id = Ids.text(dto.id), assetId = Ids.text(dto.assetId), kind = measurementKind(dto.domain, dto.unit),

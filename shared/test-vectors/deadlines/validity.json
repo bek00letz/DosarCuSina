@@ -1,0 +1,32 @@
+{
+  "cases" : [
+    {
+      "covers" : true,
+      "due" : "2027-08-12",
+      "isValid" : true,
+      "on" : "2027-08-11"
+    },
+    {
+      "covers" : true,
+      "due" : "2027-08-12",
+      "isValid" : true,
+      "on" : "2027-08-12"
+    },
+    {
+      "covers" : false,
+      "due" : "2027-08-12",
+      "isValid" : false,
+      "on" : "2027-08-13"
+    },
+    {
+      "covers" : false,
+      "due" : "2028-02-29",
+      "isValid" : false,
+      "on" : "2028-03-01"
+    }
+  ],
+  "rule" : "DueDayValidity.isValid(due:on:) and covers(through:due:)",
+  "shape" : "due: a due day. on: a day. isValid: whether what is due then is still valid that day (the due day is its last valid day). covers: whether it stays valid every day through it.",
+  "source" : "ios/DosarCuSina/Models/Obligations/DueDayValidity.swift",
+  "writtenBy" : "ios/DosarCuSinaTests/DeadlineVectorsTests.swift"
+}

@@ -19,7 +19,7 @@ class WaitingStep internal constructor(
 /** The steps that wait, each as the iOS app declares it. */
 object WaitingSteps {
     private const val CAPTURE_REPAIRS = "CaptureRepairs and the document and visit actions (Phase 3)"
-    private const val POLICIES = "the policy facts (BlueprintFacts, DeadlineFacts) and ObligationActions (Phase 3)"
+    private const val POLICIES = "capture's reading of a policy's cover (InsuranceCover.read, capture, Phase 5)"
     private const val PAPERS = "PaperIdentity and the history actions (Phase 3)"
 
     val staleDocumentLinks = WaitingStep(
@@ -28,17 +28,10 @@ object WaitingSteps {
     val visitsWithoutInvoice = WaitingStep(
         DataRepairStepId.VISITS_WITHOUT_INVOICE, DataRepairGroup.VISITS_WITHOUT_INVOICE, CAPTURE_REPAIRS,
     )
-    val doubleCompletions = WaitingStep(
-        DataRepairStepId.DOUBLE_COMPLETIONS, DataRepairGroup.DEADLINES_CLOSED_TWICE,
-        "LikelyDoubleCompletions, RecurrenceEngine and ObligationActions (Phase 3)",
-    )
     val cascoInRcaFields = WaitingStep(DataRepairStepId.CASCO_IN_RCA_FIELDS, DataRepairGroup.CASCO_IN_RCA, POLICIES)
     val homePolicyWithoutDeadline = WaitingStep(
-        DataRepairStepId.HOME_POLICY_WITHOUT_DEADLINE, DataRepairGroup.POLICIES_WITHOUT_DEADLINE, POLICIES,
-    )
-    val travelCutoff = WaitingStep(
-        DataRepairStepId.TRAVEL_CUTOFF, DataRepairGroup.PASSPORTS_AND_TRAVEL,
-        "DeadlineReminders, ReminderProfile's urgency rule and DocumentType.travelMargins (Phase 3)",
+        DataRepairStepId.HOME_POLICY_WITHOUT_DEADLINE, DataRepairGroup.POLICIES_WITHOUT_DEADLINE,
+        "capture's reading of a policy's cover and its end (InsuranceCover.read and CaptureAnalyzer, Phase 5)",
     )
     val homePolicySets = WaitingStep(DataRepairStepId.HOME_POLICY_SETS, DataRepairGroup.HOME_POLICIES, POLICIES)
     val policyNumberParts = WaitingStep(
@@ -55,10 +48,6 @@ object WaitingSteps {
         DataRepairStepId.ESTIMATED_BILL_READINGS, DataRepairGroup.ESTIMATED_INDEXES,
         "capture's bill reader (BillReader: the bill's layout, its meter index and how it says the index " +
             "was taken) and SubscriptionMeter.number (capture, Phase 5)",
-    )
-    val renewalRepeats = WaitingStep(
-        DataRepairStepId.RENEWAL_REPEATS, DataRepairGroup.RENEWED_DOCUMENTS,
-        "CompletionKind and CompletionShape.replacesDocument (Phase 3)",
     )
     val subscriptionCodes = WaitingStep(
         DataRepairStepId.SUBSCRIPTION_CODES, DataRepairGroup.SUBSCRIPTION_CODES,

@@ -1,0 +1,366 @@
+{
+  "cases" : [
+    {
+      "blueprint" : "vehicle.rca",
+      "category" : "vehicle",
+      "facts" : {
+        "claimsPhone" : "0700 000 000",
+        "insuredSum" : null,
+        "insurer" : "Asigurator Exemplu S.A.",
+        "policyNumber" : "RO/25/AA/0001",
+        "policyholder" : "Ana Exemplu"
+      },
+      "reference" : null,
+      "values" : {
+        "vehicle.cascoInsuredSum" : {
+          "amount" : "85000",
+          "currency" : "RON",
+          "type" : "money"
+        },
+        "vehicle.cascoInsurer" : {
+          "type" : "text",
+          "value" : "Alt Asigurator S.A."
+        },
+        "vehicle.cascoPolicyNumber" : {
+          "type" : "text",
+          "value" : "CASCO-0002"
+        },
+        "vehicle.claimsPhone" : {
+          "type" : "text",
+          "value" : "0700 000 000"
+        },
+        "vehicle.insurer" : {
+          "type" : "text",
+          "value" : "Asigurator Exemplu S.A."
+        },
+        "vehicle.policyNumber" : {
+          "type" : "text",
+          "value" : "RO/25/AA/0001"
+        },
+        "vehicle.policyholder" : {
+          "type" : "text",
+          "value" : "Ana Exemplu"
+        }
+      }
+    },
+    {
+      "blueprint" : "vehicle.casco",
+      "category" : "vehicle",
+      "facts" : {
+        "claimsPhone" : null,
+        "insuredSum" : {
+          "amount" : "85000",
+          "currency" : "RON"
+        },
+        "insurer" : "Alt Asigurator S.A.",
+        "policyNumber" : "CASCO-0002",
+        "policyholder" : null
+      },
+      "reference" : null,
+      "values" : {
+        "vehicle.cascoInsuredSum" : {
+          "amount" : "85000",
+          "currency" : "RON",
+          "type" : "money"
+        },
+        "vehicle.cascoInsurer" : {
+          "type" : "text",
+          "value" : "Alt Asigurator S.A."
+        },
+        "vehicle.cascoPolicyNumber" : {
+          "type" : "text",
+          "value" : "CASCO-0002"
+        },
+        "vehicle.claimsPhone" : {
+          "type" : "text",
+          "value" : "0700 000 000"
+        },
+        "vehicle.insurer" : {
+          "type" : "text",
+          "value" : "Asigurator Exemplu S.A."
+        },
+        "vehicle.policyNumber" : {
+          "type" : "text",
+          "value" : "RO/25/AA/0001"
+        },
+        "vehicle.policyholder" : {
+          "type" : "text",
+          "value" : "Ana Exemplu"
+        }
+      }
+    },
+    {
+      "blueprint" : "vehicle.rca",
+      "category" : "vehicle",
+      "facts" : {
+        "claimsPhone" : "0700 000 000",
+        "insuredSum" : null,
+        "insurer" : "Asigurator Exemplu S.A.",
+        "policyNumber" : "RO/26/BB/0009",
+        "policyholder" : "Ana Exemplu"
+      },
+      "reference" : "RO/26/BB/0009",
+      "values" : {
+        "vehicle.cascoInsuredSum" : {
+          "amount" : "85000",
+          "currency" : "RON",
+          "type" : "money"
+        },
+        "vehicle.cascoInsurer" : {
+          "type" : "text",
+          "value" : "Alt Asigurator S.A."
+        },
+        "vehicle.cascoPolicyNumber" : {
+          "type" : "text",
+          "value" : "CASCO-0002"
+        },
+        "vehicle.claimsPhone" : {
+          "type" : "text",
+          "value" : "0700 000 000"
+        },
+        "vehicle.insurer" : {
+          "type" : "text",
+          "value" : "Asigurator Exemplu S.A."
+        },
+        "vehicle.policyNumber" : {
+          "type" : "text",
+          "value" : "RO/25/AA/0001"
+        },
+        "vehicle.policyholder" : {
+          "type" : "text",
+          "value" : "Ana Exemplu"
+        }
+      }
+    },
+    {
+      "blueprint" : "vehicle.rca",
+      "category" : "vehicle",
+      "facts" : {
+        "claimsPhone" : "0700 000 000",
+        "insuredSum" : null,
+        "insurer" : "Asigurator Exemplu S.A.",
+        "policyNumber" : "RO/25/AA/0001",
+        "policyholder" : "Ana Exemplu"
+      },
+      "reference" : "   ",
+      "values" : {
+        "vehicle.cascoInsuredSum" : {
+          "amount" : "85000",
+          "currency" : "RON",
+          "type" : "money"
+        },
+        "vehicle.cascoInsurer" : {
+          "type" : "text",
+          "value" : "Alt Asigurator S.A."
+        },
+        "vehicle.cascoPolicyNumber" : {
+          "type" : "text",
+          "value" : "CASCO-0002"
+        },
+        "vehicle.claimsPhone" : {
+          "type" : "text",
+          "value" : "0700 000 000"
+        },
+        "vehicle.insurer" : {
+          "type" : "text",
+          "value" : "Asigurator Exemplu S.A."
+        },
+        "vehicle.policyNumber" : {
+          "type" : "text",
+          "value" : "RO/25/AA/0001"
+        },
+        "vehicle.policyholder" : {
+          "type" : "text",
+          "value" : "Ana Exemplu"
+        }
+      }
+    },
+    {
+      "blueprint" : "vehicle.itp",
+      "category" : "vehicle",
+      "facts" : {
+        "claimsPhone" : null,
+        "insuredSum" : null,
+        "insurer" : null,
+        "policyNumber" : "ITP-0001",
+        "policyholder" : null
+      },
+      "reference" : "ITP-0001",
+      "values" : {
+        "vehicle.cascoInsuredSum" : {
+          "amount" : "85000",
+          "currency" : "RON",
+          "type" : "money"
+        },
+        "vehicle.cascoInsurer" : {
+          "type" : "text",
+          "value" : "Alt Asigurator S.A."
+        },
+        "vehicle.cascoPolicyNumber" : {
+          "type" : "text",
+          "value" : "CASCO-0002"
+        },
+        "vehicle.claimsPhone" : {
+          "type" : "text",
+          "value" : "0700 000 000"
+        },
+        "vehicle.insurer" : {
+          "type" : "text",
+          "value" : "Asigurator Exemplu S.A."
+        },
+        "vehicle.policyNumber" : {
+          "type" : "text",
+          "value" : "RO/25/AA/0001"
+        },
+        "vehicle.policyholder" : {
+          "type" : "text",
+          "value" : "Ana Exemplu"
+        }
+      }
+    },
+    {
+      "blueprint" : null,
+      "category" : "vehicle",
+      "facts" : {
+        "claimsPhone" : null,
+        "insuredSum" : null,
+        "insurer" : null,
+        "policyNumber" : null,
+        "policyholder" : null
+      },
+      "reference" : null,
+      "values" : {
+        "vehicle.cascoInsuredSum" : {
+          "amount" : "85000",
+          "currency" : "RON",
+          "type" : "money"
+        },
+        "vehicle.cascoInsurer" : {
+          "type" : "text",
+          "value" : "Alt Asigurator S.A."
+        },
+        "vehicle.cascoPolicyNumber" : {
+          "type" : "text",
+          "value" : "CASCO-0002"
+        },
+        "vehicle.claimsPhone" : {
+          "type" : "text",
+          "value" : "0700 000 000"
+        },
+        "vehicle.insurer" : {
+          "type" : "text",
+          "value" : "Asigurator Exemplu S.A."
+        },
+        "vehicle.policyNumber" : {
+          "type" : "text",
+          "value" : "RO/25/AA/0001"
+        },
+        "vehicle.policyholder" : {
+          "type" : "text",
+          "value" : "Ana Exemplu"
+        }
+      }
+    },
+    {
+      "blueprint" : "vehicle.newer",
+      "category" : "vehicle",
+      "facts" : {
+        "claimsPhone" : null,
+        "insuredSum" : null,
+        "insurer" : null,
+        "policyNumber" : null,
+        "policyholder" : null
+      },
+      "reference" : null,
+      "values" : {
+        "vehicle.cascoInsuredSum" : {
+          "amount" : "85000",
+          "currency" : "RON",
+          "type" : "money"
+        },
+        "vehicle.cascoInsurer" : {
+          "type" : "text",
+          "value" : "Alt Asigurator S.A."
+        },
+        "vehicle.cascoPolicyNumber" : {
+          "type" : "text",
+          "value" : "CASCO-0002"
+        },
+        "vehicle.claimsPhone" : {
+          "type" : "text",
+          "value" : "0700 000 000"
+        },
+        "vehicle.insurer" : {
+          "type" : "text",
+          "value" : "Asigurator Exemplu S.A."
+        },
+        "vehicle.policyNumber" : {
+          "type" : "text",
+          "value" : "RO/25/AA/0001"
+        },
+        "vehicle.policyholder" : {
+          "type" : "text",
+          "value" : "Ana Exemplu"
+        }
+      }
+    },
+    {
+      "blueprint" : "home.pad",
+      "category" : "home",
+      "facts" : {
+        "claimsPhone" : null,
+        "insuredSum" : null,
+        "insurer" : "PAID",
+        "policyNumber" : "PAD-0003",
+        "policyholder" : null
+      },
+      "reference" : null,
+      "values" : {
+        "home.insuredSum" : {
+          "amount" : "0",
+          "currency" : "RON",
+          "type" : "money"
+        },
+        "home.insurer" : {
+          "type" : "text",
+          "value" : "PAID"
+        },
+        "home.policyNumber" : {
+          "type" : "text",
+          "value" : "PAD-0003"
+        }
+      }
+    },
+    {
+      "blueprint" : "home.insurance",
+      "category" : "home",
+      "facts" : {
+        "claimsPhone" : null,
+        "insuredSum" : null,
+        "insurer" : null,
+        "policyNumber" : null,
+        "policyholder" : null
+      },
+      "reference" : null,
+      "values" : {
+        "home.insuredSum" : {
+          "amount" : "0",
+          "currency" : "RON",
+          "type" : "money"
+        },
+        "home.insurer" : {
+          "type" : "text",
+          "value" : "PAID"
+        },
+        "home.policyNumber" : {
+          "type" : "text",
+          "value" : "PAD-0003"
+        }
+      }
+    }
+  ],
+  "rule" : "DeadlineFacts.of(blueprintKey:in:values:reference:)",
+  "shape" : "category: a built-in. blueprint: the deadline's blueprint key, or null for one of the person's own. values: the section's values. reference: the number typed on the deadline. facts: what its page puts at hand, each null when it isn't there (empty text and a sum of nothing are none).",
+  "source" : "ios/DosarCuSina/Services/Obligations/DeadlineFacts.swift",
+  "writtenBy" : "ios/DosarCuSinaTests/DeadlineVectorsTests.swift"
+}
