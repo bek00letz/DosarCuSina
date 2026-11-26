@@ -6,7 +6,9 @@ import com.ar.dosarcusina.archive.binder.Removed
 import com.ar.dosarcusina.catalog.BuiltInInstall
 import com.ar.dosarcusina.catalog.Catalog
 import com.ar.dosarcusina.core.values.DosarCalendar
+import com.ar.dosarcusina.core.values.CalendarDay
 import com.ar.dosarcusina.store.locks.LockPublishing
+import com.ar.dosarcusina.store.templates.HouseholdDeadlines
 import java.time.Instant
 import java.time.ZoneId
 import java.util.UUID
@@ -21,8 +23,8 @@ import java.util.UUID
  * here is the person's to answer, so nothing is shown; a failure goes to the persistence log, by
  * its kind and without any of the household's values, and the next step still runs.
  *
- * The steps the iOS app runs between these (copies that meet, what capture learned, the repair
- * list, the household's own deadlines) come with what they keep.
+ * Last, the household's own deadlines ([HouseholdDeadlines]). The steps the iOS app runs between
+ * these (copies that meet, what capture learned, the repair list) come with what they keep.
  */
 class LaunchData(
     private val unit: UnitOfWork,
@@ -35,6 +37,7 @@ class LaunchData(
         PARENT_LINKS("Putting back what a deletion let go"),
         BUILT_IN_CATEGORIES("Installing the built-in categories"),
         LOCK_PUBLISHING("Sending this device's locks to the others"),
+        HOUSEHOLD_DEADLINES("Working out the household's own deadlines"),
     }
 
     /** Runs every step; gives the ones that failed, which the log names. */
@@ -44,6 +47,7 @@ class LaunchData(
                 LaunchStep.PARENT_LINKS -> rehome()
                 LaunchStep.BUILT_IN_CATEGORIES -> installBuiltIns(now)
                 LaunchStep.LOCK_PUBLISHING -> publishLocks(now)
+                LaunchStep.HOUSEHOLD_DEADLINES -> reconcileHouseholdRules(now)
             }
         }
     }
@@ -95,6 +99,14 @@ class LaunchData(
         val rows = LockPublishing.toSend(step.all(Tables.templates), unit.store.locks, now)
         rows.forEach(step::update)
         rows.isNotEmpty()
+    }
+
+    /**
+     * The household's own deadlines worked out again from its sections ([HouseholdDeadlines]), as the
+     * app's own step: nothing it changes gets a new change time. Whether anything changed.
+     */
+    fun reconcileHouseholdRules(now: Instant): Boolean = unit.perform(ChangeOrigin.APP, now) { step ->
+        HouseholdDeadlines(catalog.household, zone()).reconcile(step, CalendarDay.of(now, zone()), now)
     }
 
     private fun <R> rowOfId(rows: List<R>, pair: (R) -> Pair<UUID, Long>): ParentLinks.RowOfId {

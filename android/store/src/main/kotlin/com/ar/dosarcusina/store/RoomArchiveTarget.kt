@@ -4,8 +4,12 @@ import com.ar.dosarcusina.archive.binder.ArchiveTarget
 import com.ar.dosarcusina.archive.binder.Binder
 import com.ar.dosarcusina.archive.binder.BinderChanges
 import com.ar.dosarcusina.archive.v3.StoredFile
+import com.ar.dosarcusina.catalog.Catalog
+import com.ar.dosarcusina.catalog.HouseholdRules
+import com.ar.dosarcusina.core.values.CalendarDay
 import com.ar.dosarcusina.core.values.DosarCalendar
 import com.ar.dosarcusina.store.schema.StoredMoment
+import com.ar.dosarcusina.store.templates.HouseholdDeadlines
 import kotlinx.coroutines.runBlocking
 import java.time.ZoneId
 
@@ -16,8 +20,10 @@ import java.time.ZoneId
  * writes an import as one step of the unit of work, a backup's own writer
  * ([UnitOfWork.performPrivate]): everything or nothing, its words masked like any save's, the
  * times the backup carries kept and none given of its own. The files first, each copied in a
- * piece at a time ([Step.keep]); then every row ([BinderWriting]); then the locks it raises (so a
- * lock kept for an import that then fails is only ever a lock raised). Whatever happens, the files
+ * piece at a time ([Step.keep]); then every row ([BinderWriting]), and the household's own
+ * deadlines worked out again from what it brought ([HouseholdDeadlines], as the iOS importer
+ * does); then the locks it raises (so a lock kept for an import that then fails is only ever a
+ * lock raised). Whatever happens, the files
  * no row names any more go, the copies of a failed import with them.
  *
  * An import only raises locks (the iOS app's `DossierImporter`): each category the import leaves
@@ -33,6 +39,8 @@ class RoomArchiveTarget(
      * the day its deadline was made there.
      */
     private val zone: () -> ZoneId = DosarCalendar::zone,
+    /** The household's own deadlines, worked out again inside every import's step. */
+    private val household: HouseholdRules = Catalog.builtIn.household,
 ) : ArchiveTarget {
     /** Runs inside the import's step once every row is written, before the locks: how a test fails half way. */
     internal var beforeLocks: () -> Unit = {}
@@ -47,6 +55,10 @@ class RoomArchiveTarget(
         unit.performPrivate { step ->
             filesOf(changes).forEach(step::keep)
             BinderWriting(step, changes).write()
+            // The app's own work inside the import's step, which gives no change times: what it
+            // changes keeps the time it had, and a deadline it makes the time it was made.
+            val now = StoredMoment.kept(unit.clock())
+            HouseholdDeadlines(household, zone()).reconcile(step, CalendarDay.of(now, zone()), now)
             beforeLocks()
             raise(step, changes.locks.filterValues { it }.keys)
         }
