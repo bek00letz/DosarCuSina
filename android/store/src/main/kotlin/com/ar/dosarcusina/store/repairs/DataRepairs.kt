@@ -90,8 +90,8 @@ class DataRepairs(
         val steps: List<DataRepairStep> = listOf(
             ChoiceKeysStep,
             FirstVersionDeadlinesStep,
-            WaitingSteps.staleDocumentLinks,
-            WaitingSteps.visitsWithoutInvoice,
+            StaleDocumentLinksStep,
+            VisitsWithoutInvoiceStep,
             DuplicateProvidersStep,
             DoubleCompletionsStep,
             CounterOutliersStep,
@@ -106,7 +106,7 @@ class DataRepairs(
             WaitingSteps.billNumbers,
             WaitingSteps.sameBillTwice,
             CardNumbersStep,
-            WaitingSteps.sameVisitTwice,
+            SameVisitTwiceStep,
             DayYearsStep,
             WaitingSteps.estimatedBillReadings,
             SectionsIntoTheirHomeStep,
@@ -117,7 +117,7 @@ class DataRepairs(
             WaitingSteps.subscriptionCodes,
             WaitingSteps.citizenships,
             PersonalLessonLabelsStep,
-            WaitingSteps.labourParts,
+            LabourPartsStep,
             LostRecordsStep,
             DecimalDoublesStep,
         )

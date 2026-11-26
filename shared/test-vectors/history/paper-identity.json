@@ -1,0 +1,291 @@
+{
+  "cases" : [
+    {
+      "match" : "number",
+      "name" : "the same number from the same firm on the same day",
+      "other" : {
+        "day" : "2026-05-30",
+        "issuer" : "SERVICE EXEMPLU S.R.L.",
+        "number" : "srv-0000001",
+        "total" : "480"
+      },
+      "paper" : {
+        "day" : "2026-05-30",
+        "issuer" : "Service Exemplu SRL",
+        "number" : "SRV 0000001",
+        "total" : "480"
+      }
+    },
+    {
+      "match" : "numberOnly",
+      "name" : "the same number from the same firm on another day",
+      "other" : {
+        "day" : "2025-05-30",
+        "issuer" : "Service Exemplu SRL",
+        "number" : "SRV 0000001",
+        "total" : "300"
+      },
+      "paper" : {
+        "day" : "2026-05-30",
+        "issuer" : "Service Exemplu SRL",
+        "number" : "SRV 0000001",
+        "total" : "480"
+      }
+    },
+    {
+      "match" : null,
+      "name" : "the same number from another firm",
+      "other" : {
+        "day" : "2026-05-30",
+        "issuer" : "Vulcanizare Exemplu SRL",
+        "number" : "0001",
+        "total" : "480"
+      },
+      "paper" : {
+        "day" : "2026-05-30",
+        "issuer" : "Service Exemplu SRL",
+        "number" : "0001",
+        "total" : "480"
+      }
+    },
+    {
+      "match" : "numberOnly",
+      "name" : "the same number, a firm on one only",
+      "other" : {
+        "day" : "2026-05-30",
+        "issuer" : null,
+        "number" : "0001",
+        "total" : "480"
+      },
+      "paper" : {
+        "day" : "2026-05-30",
+        "issuer" : "Service Exemplu SRL",
+        "number" : "0001",
+        "total" : "480"
+      }
+    },
+    {
+      "match" : null,
+      "name" : "another number on the same day for the same total",
+      "other" : {
+        "day" : "2026-05-30",
+        "issuer" : "Service Exemplu SRL",
+        "number" : "0002",
+        "total" : "480"
+      },
+      "paper" : {
+        "day" : "2026-05-30",
+        "issuer" : "Service Exemplu SRL",
+        "number" : "0001",
+        "total" : "480"
+      }
+    },
+    {
+      "match" : "dayAndTotal",
+      "name" : "no number, the same day and total and firm",
+      "other" : {
+        "day" : "2026-05-30",
+        "issuer" : "Service Exemplu SRL",
+        "number" : "0001",
+        "total" : "480"
+      },
+      "paper" : {
+        "day" : "2026-05-30",
+        "issuer" : "Service Exemplu SRL",
+        "number" : null,
+        "total" : "480"
+      }
+    },
+    {
+      "match" : null,
+      "name" : "no number, the same day and total, another firm",
+      "other" : {
+        "day" : "2026-05-30",
+        "issuer" : "Vulcanizare Exemplu SRL",
+        "number" : null,
+        "total" : "480"
+      },
+      "paper" : {
+        "day" : "2026-05-30",
+        "issuer" : "Service Exemplu SRL",
+        "number" : null,
+        "total" : "480"
+      }
+    },
+    {
+      "match" : "dayAndTotal",
+      "name" : "no number, the same day and total, a firm on one only",
+      "other" : {
+        "day" : "2026-05-30",
+        "issuer" : null,
+        "number" : null,
+        "total" : "480"
+      },
+      "paper" : {
+        "day" : "2026-05-30",
+        "issuer" : "Service Exemplu SRL",
+        "number" : null,
+        "total" : "480"
+      }
+    },
+    {
+      "match" : null,
+      "name" : "no number, another day",
+      "other" : {
+        "day" : "2026-05-31",
+        "issuer" : "Service Exemplu SRL",
+        "number" : null,
+        "total" : "480"
+      },
+      "paper" : {
+        "day" : "2026-05-30",
+        "issuer" : "Service Exemplu SRL",
+        "number" : null,
+        "total" : "480"
+      }
+    },
+    {
+      "match" : null,
+      "name" : "neither a number nor a total",
+      "other" : {
+        "day" : "2026-05-30",
+        "issuer" : "Service Exemplu SRL",
+        "number" : null,
+        "total" : null
+      },
+      "paper" : {
+        "day" : "2026-05-30",
+        "issuer" : "Service Exemplu SRL",
+        "number" : null,
+        "total" : null
+      }
+    },
+    {
+      "match" : "dayAndTotal",
+      "name" : "a blank number is no number",
+      "other" : {
+        "day" : "2026-05-30",
+        "issuer" : "Service Exemplu SRL",
+        "number" : null,
+        "total" : "480"
+      },
+      "paper" : {
+        "day" : "2026-05-30",
+        "issuer" : "Service Exemplu SRL",
+        "number" : " - ",
+        "total" : "480"
+      }
+    },
+    {
+      "match" : "number",
+      "name" : "two bills of one subscription with the same number",
+      "other" : {
+        "day" : "2026-06-30",
+        "issuer" : "section",
+        "number" : "EXM 0000001",
+        "total" : "125"
+      },
+      "paper" : {
+        "day" : "2026-05-30",
+        "issuer" : "section",
+        "number" : "EXM 0000001",
+        "total" : "120"
+      }
+    },
+    {
+      "match" : "numberOnly",
+      "name" : "a bill and a visit's invoice with the same number",
+      "other" : {
+        "day" : "2026-05-30",
+        "issuer" : "Service Exemplu SRL",
+        "number" : "EXM 0000001",
+        "total" : "120"
+      },
+      "paper" : {
+        "day" : "2026-05-30",
+        "issuer" : "section",
+        "number" : "EXM 0000001",
+        "total" : "120"
+      }
+    },
+    {
+      "among" : [
+        {
+          "day" : "2026-05-30",
+          "issuer" : "Service Exemplu SRL",
+          "number" : null,
+          "total" : "480"
+        }
+      ],
+      "found" : 0,
+      "foundMatch" : "dayAndTotal",
+      "name" : "the most certain of 1",
+      "paper" : {
+        "day" : "2026-05-30",
+        "issuer" : "Service Exemplu SRL",
+        "number" : "SRV 0000001",
+        "total" : "480"
+      }
+    },
+    {
+      "among" : [
+        {
+          "day" : "2026-05-30",
+          "issuer" : "Service Exemplu SRL",
+          "number" : null,
+          "total" : "480"
+        },
+        {
+          "day" : "2026-04-30",
+          "issuer" : "Service Exemplu SRL",
+          "number" : "SRV 0000001",
+          "total" : "300"
+        }
+      ],
+      "found" : 1,
+      "foundMatch" : "numberOnly",
+      "name" : "the most certain of 2",
+      "paper" : {
+        "day" : "2026-05-30",
+        "issuer" : "Service Exemplu SRL",
+        "number" : "SRV 0000001",
+        "total" : "480"
+      }
+    },
+    {
+      "among" : [
+        {
+          "day" : "2026-05-30",
+          "issuer" : "Service Exemplu SRL",
+          "number" : null,
+          "total" : "480"
+        },
+        {
+          "day" : "2026-04-30",
+          "issuer" : "Service Exemplu SRL",
+          "number" : "SRV 0000001",
+          "total" : "300"
+        },
+        {
+          "day" : "2026-05-30",
+          "issuer" : "Service Exemplu SRL",
+          "number" : "SRV 0000001",
+          "total" : "480"
+        }
+      ],
+      "found" : 2,
+      "foundMatch" : "number",
+      "name" : "the most certain of 3",
+      "paper" : {
+        "day" : "2026-05-30",
+        "issuer" : "Service Exemplu SRL",
+        "number" : "SRV 0000001",
+        "total" : "480"
+      }
+    }
+  ],
+  "rule" : "PaperIdentity.match(_:), filed(among:identity:) and comparable(_:)",
+  "shape" : "paper and other: two papers, each its number as printed (null: none), its day, its total in lei (null: none) and who issued it (a name, null for nobody named, \"section\" for a bill, whose subscription is its issuer). match: how they are the same paper (number, numberOnly, dayAndTotal), null for another paper. among with found and foundMatch: the paper filed before that this one is, by index, null for none, and how.",
+  "source" : "ios/DosarCuSina/Services/History/PaperIdentity.swift",
+  "writtenBy" : "ios/DosarCuSinaTests/HistoryVectorsTests.swift"
+}

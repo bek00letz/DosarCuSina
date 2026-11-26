@@ -1,0 +1,3208 @@
+{
+  "cases" : [
+    {
+      "action" : {
+        "checklist" : [
+          {
+            "componentKey" : "engine.oil",
+            "cost" : "420"
+          },
+          {
+            "componentKey" : "filters.cabin"
+          },
+          {
+            "brand" : "Bosch",
+            "componentKey" : "brakes.padsFront",
+            "cost" : "380"
+          }
+        ],
+        "do" : "recordVisit",
+        "items" : [
+          {
+            "cost" : "20",
+            "name" : "Odorizant"
+          },
+          {
+            "cost" : "200",
+            "name" : "Manoperă 1,5 ore"
+          }
+        ],
+        "note" : "  Revizia anuală ",
+        "odometer" : 108000,
+        "on" : 1795168800,
+        "provider" : 0,
+        "rating" : 9,
+        "reference" : "SRV 0000001",
+        "total" : "1100"
+      },
+      "after" : {
+        "deadline" : null,
+        "firms" : [
+          {
+            "name" : "Service Exemplu SRL",
+            "sections" : 1,
+            "taxID" : null,
+            "trades" : [
+              "mechanic"
+            ]
+          }
+        ],
+        "history" : [
+          {
+            "cost" : {
+              "amount" : "1100",
+              "currency" : "RON"
+            },
+            "cycleDueDay" : null,
+            "isExample" : false,
+            "items" : [
+              {
+                "brand" : null,
+                "componentKey" : "filters.cabin",
+                "cost" : null,
+                "currency" : "RON",
+                "group" : "Filtre",
+                "laborCost" : null,
+                "name" : "Filtru de habitaclu",
+                "partsCost" : null
+              },
+              {
+                "brand" : null,
+                "componentKey" : null,
+                "cost" : null,
+                "currency" : "RON",
+                "group" : null,
+                "laborCost" : "200",
+                "name" : "Manoperă 1,5 ore",
+                "partsCost" : null
+              },
+              {
+                "brand" : null,
+                "componentKey" : "custom.odorizant",
+                "cost" : "20",
+                "currency" : "RON",
+                "group" : null,
+                "laborCost" : null,
+                "name" : "Odorizant",
+                "partsCost" : null
+              },
+              {
+                "brand" : "Bosch",
+                "componentKey" : "brakes.padsFront",
+                "cost" : "380",
+                "currency" : "RON",
+                "group" : "Frâne",
+                "laborCost" : null,
+                "name" : "Plăcuțe frână față",
+                "partsCost" : null
+              },
+              {
+                "brand" : null,
+                "componentKey" : "engine.oil",
+                "cost" : "420",
+                "currency" : "RON",
+                "group" : "Motor",
+                "laborCost" : null,
+                "name" : "Ulei și filtru de ulei",
+                "partsCost" : null
+              }
+            ],
+            "kind" : "maintenance",
+            "metricReading" : 108000,
+            "note" : "  Revizia anuală ",
+            "occurredAt" : 1795168800,
+            "providers" : [
+              "Service Exemplu SRL"
+            ],
+            "rating" : 5,
+            "reference" : "SRV 0000001",
+            "title" : "Revizie: 4 lucrări"
+          }
+        ],
+        "readings" : [
+          {
+            "at" : 1780304400,
+            "startsCounter" : false,
+            "value" : 100000
+          },
+          {
+            "at" : 1788253200,
+            "startsCounter" : false,
+            "value" : 104500
+          },
+          {
+            "at" : 1795168800,
+            "startsCounter" : false,
+            "value" : 108000
+          }
+        ],
+        "section" : {
+          "hero" : 108000,
+          "tracked" : [
+            {
+              "date" : 1795168800,
+              "key" : "brakes.padsFront",
+              "metricAtTime" : 108000,
+              "name" : "Plăcuțe frână față"
+            },
+            {
+              "date" : 1795168800,
+              "key" : "custom.odorizant",
+              "metricAtTime" : 108000,
+              "name" : "Odorizant"
+            },
+            {
+              "date" : 1795168800,
+              "key" : "engine.oil",
+              "metricAtTime" : 108000,
+              "name" : "Ulei și filtru de ulei"
+            },
+            {
+              "date" : 1795168800,
+              "key" : "filters.cabin",
+              "metricAtTime" : 108000,
+              "name" : "Filtru de habitaclu"
+            }
+          ]
+        }
+      },
+      "before" : [
+
+      ],
+      "canUndo" : true,
+      "deadline" : null,
+      "firms" : [
+        "Service Exemplu SRL"
+      ],
+      "name" : "a car's service: parts with a price and a brand, a row of one's own and its labour",
+      "now" : 1795687200,
+      "receipt" : true,
+      "refused" : null,
+      "section" : {
+        "category" : "vehicle",
+        "name" : "VW Golf 2018",
+        "readings" : [
+          {
+            "at" : "2026-06-01T09:00:00Z",
+            "value" : 100000
+          },
+          {
+            "at" : "2026-09-01T09:00:00Z",
+            "value" : 104500
+          }
+        ],
+        "values" : {
+          "vehicle.plate" : {
+            "type" : "text",
+            "value" : "B-123-ABC"
+          },
+          "vehicle.year" : {
+            "type" : "number",
+            "value" : 2018
+          }
+        }
+      },
+      "undoRestores" : true
+    },
+    {
+      "action" : {
+        "checklist" : [
+          {
+            "componentKey" : "engine.oil"
+          }
+        ],
+        "do" : "recordVisit",
+        "items" : [
+          {
+            "cost" : "150",
+            "name" : "Manoperă"
+          }
+        ],
+        "on" : 1795168800
+      },
+      "after" : {
+        "deadline" : null,
+        "firms" : [
+
+        ],
+        "history" : [
+          {
+            "cost" : null,
+            "cycleDueDay" : null,
+            "isExample" : false,
+            "items" : [
+              {
+                "brand" : null,
+                "componentKey" : null,
+                "cost" : null,
+                "currency" : "RON",
+                "group" : null,
+                "laborCost" : "150",
+                "name" : "Manoperă",
+                "partsCost" : null
+              },
+              {
+                "brand" : null,
+                "componentKey" : "engine.oil",
+                "cost" : null,
+                "currency" : "RON",
+                "group" : "Motor",
+                "laborCost" : null,
+                "name" : "Ulei și filtru de ulei",
+                "partsCost" : null
+              }
+            ],
+            "kind" : "maintenance",
+            "metricReading" : null,
+            "note" : null,
+            "occurredAt" : 1795168800,
+            "providers" : [
+
+            ],
+            "rating" : null,
+            "reference" : null,
+            "title" : "Ulei și filtru de ulei"
+          }
+        ],
+        "readings" : [
+          {
+            "at" : 1780304400,
+            "startsCounter" : false,
+            "value" : 100000
+          },
+          {
+            "at" : 1788253200,
+            "startsCounter" : false,
+            "value" : 104500
+          }
+        ],
+        "section" : {
+          "hero" : null,
+          "tracked" : [
+            {
+              "date" : 1795168800,
+              "key" : "engine.oil",
+              "metricAtTime" : null,
+              "name" : "Ulei și filtru de ulei"
+            }
+          ]
+        }
+      },
+      "before" : [
+
+      ],
+      "canUndo" : true,
+      "deadline" : null,
+      "firms" : [
+
+      ],
+      "name" : "a visit named by what was done",
+      "now" : 1795687200,
+      "receipt" : true,
+      "refused" : null,
+      "section" : {
+        "category" : "vehicle",
+        "name" : "VW Golf 2018",
+        "readings" : [
+          {
+            "at" : "2026-06-01T09:00:00Z",
+            "value" : 100000
+          },
+          {
+            "at" : "2026-09-01T09:00:00Z",
+            "value" : 104500
+          }
+        ],
+        "values" : {
+          "vehicle.plate" : {
+            "type" : "text",
+            "value" : "B-123-ABC"
+          },
+          "vehicle.year" : {
+            "type" : "number",
+            "value" : 2018
+          }
+        }
+      },
+      "undoRestores" : true
+    },
+    {
+      "action" : {
+        "do" : "recordVisit",
+        "items" : [
+          {
+            "cost" : "150",
+            "name" : "Manoperă"
+          }
+        ],
+        "on" : 1795168800
+      },
+      "after" : {
+        "deadline" : null,
+        "firms" : [
+
+        ],
+        "history" : [
+          {
+            "cost" : null,
+            "cycleDueDay" : null,
+            "isExample" : false,
+            "items" : [
+              {
+                "brand" : null,
+                "componentKey" : null,
+                "cost" : null,
+                "currency" : "RON",
+                "group" : null,
+                "laborCost" : "150",
+                "name" : "Manoperă",
+                "partsCost" : null
+              }
+            ],
+            "kind" : "maintenance",
+            "metricReading" : null,
+            "note" : null,
+            "occurredAt" : 1795168800,
+            "providers" : [
+
+            ],
+            "rating" : null,
+            "reference" : null,
+            "title" : "Manoperă"
+          }
+        ],
+        "readings" : [
+          {
+            "at" : 1780304400,
+            "startsCounter" : false,
+            "value" : 100000
+          },
+          {
+            "at" : 1788253200,
+            "startsCounter" : false,
+            "value" : 104500
+          }
+        ],
+        "section" : {
+          "hero" : null,
+          "tracked" : [
+
+          ]
+        }
+      },
+      "before" : [
+
+      ],
+      "canUndo" : true,
+      "deadline" : null,
+      "firms" : [
+
+      ],
+      "name" : "a visit of labour alone keeps its name",
+      "now" : 1795687200,
+      "receipt" : true,
+      "refused" : null,
+      "section" : {
+        "category" : "vehicle",
+        "name" : "VW Golf 2018",
+        "readings" : [
+          {
+            "at" : "2026-06-01T09:00:00Z",
+            "value" : 100000
+          },
+          {
+            "at" : "2026-09-01T09:00:00Z",
+            "value" : 104500
+          }
+        ],
+        "values" : {
+          "vehicle.plate" : {
+            "type" : "text",
+            "value" : "B-123-ABC"
+          },
+          "vehicle.year" : {
+            "type" : "number",
+            "value" : 2018
+          }
+        }
+      },
+      "undoRestores" : true
+    },
+    {
+      "action" : {
+        "do" : "recordVisit",
+        "on" : 1795168800
+      },
+      "after" : {
+        "deadline" : null,
+        "firms" : [
+
+        ],
+        "history" : [
+          {
+            "cost" : null,
+            "cycleDueDay" : null,
+            "isExample" : false,
+            "items" : [
+
+            ],
+            "kind" : "maintenance",
+            "metricReading" : null,
+            "note" : null,
+            "occurredAt" : 1795168800,
+            "providers" : [
+
+            ],
+            "rating" : null,
+            "reference" : null,
+            "title" : "Vizită"
+          }
+        ],
+        "readings" : [
+          {
+            "at" : 1780304400,
+            "startsCounter" : false,
+            "value" : 100000
+          },
+          {
+            "at" : 1788253200,
+            "startsCounter" : false,
+            "value" : 104500
+          }
+        ],
+        "section" : {
+          "hero" : null,
+          "tracked" : [
+
+          ]
+        }
+      },
+      "before" : [
+
+      ],
+      "canUndo" : true,
+      "deadline" : null,
+      "firms" : [
+
+      ],
+      "name" : "a visit with nothing listed",
+      "now" : 1795687200,
+      "receipt" : true,
+      "refused" : null,
+      "section" : {
+        "category" : "vehicle",
+        "name" : "VW Golf 2018",
+        "readings" : [
+          {
+            "at" : "2026-06-01T09:00:00Z",
+            "value" : 100000
+          },
+          {
+            "at" : "2026-09-01T09:00:00Z",
+            "value" : 104500
+          }
+        ],
+        "values" : {
+          "vehicle.plate" : {
+            "type" : "text",
+            "value" : "B-123-ABC"
+          },
+          "vehicle.year" : {
+            "type" : "number",
+            "value" : 2018
+          }
+        }
+      },
+      "undoRestores" : true
+    },
+    {
+      "action" : {
+        "do" : "recordVisit",
+        "odometer" : 90000,
+        "on" : 1795168800
+      },
+      "after" : {
+        "deadline" : null,
+        "firms" : [
+
+        ],
+        "history" : [
+
+        ],
+        "readings" : [
+          {
+            "at" : 1780304400,
+            "startsCounter" : false,
+            "value" : 100000
+          },
+          {
+            "at" : 1788253200,
+            "startsCounter" : false,
+            "value" : 104500
+          }
+        ],
+        "section" : {
+          "hero" : null,
+          "tracked" : [
+
+          ]
+        }
+      },
+      "before" : [
+
+      ],
+      "canUndo" : false,
+      "deadline" : null,
+      "firms" : [
+
+      ],
+      "name" : "a visit with a lower kilometres asks first",
+      "now" : 1795687200,
+      "receipt" : false,
+      "refused" : "lowerReading",
+      "section" : {
+        "category" : "vehicle",
+        "name" : "VW Golf 2018",
+        "readings" : [
+          {
+            "at" : "2026-06-01T09:00:00Z",
+            "value" : 100000
+          },
+          {
+            "at" : "2026-09-01T09:00:00Z",
+            "value" : 104500
+          }
+        ],
+        "values" : {
+          "vehicle.plate" : {
+            "type" : "text",
+            "value" : "B-123-ABC"
+          },
+          "vehicle.year" : {
+            "type" : "number",
+            "value" : 2018
+          }
+        }
+      },
+      "undoRestores" : null
+    },
+    {
+      "action" : {
+        "do" : "recordVisit",
+        "lowerReading" : "newCounter",
+        "odometer" : 2000,
+        "on" : 1795168800
+      },
+      "after" : {
+        "deadline" : null,
+        "firms" : [
+
+        ],
+        "history" : [
+          {
+            "cost" : null,
+            "cycleDueDay" : null,
+            "isExample" : false,
+            "items" : [
+
+            ],
+            "kind" : "maintenance",
+            "metricReading" : 2000,
+            "note" : null,
+            "occurredAt" : 1795168800,
+            "providers" : [
+
+            ],
+            "rating" : null,
+            "reference" : null,
+            "title" : "Vizită"
+          }
+        ],
+        "readings" : [
+          {
+            "at" : 1780304400,
+            "startsCounter" : false,
+            "value" : 100000
+          },
+          {
+            "at" : 1788253200,
+            "startsCounter" : false,
+            "value" : 104500
+          },
+          {
+            "at" : 1795168800,
+            "startsCounter" : true,
+            "value" : 2000
+          }
+        ],
+        "section" : {
+          "hero" : 2000,
+          "tracked" : [
+
+          ]
+        }
+      },
+      "before" : [
+
+      ],
+      "canUndo" : true,
+      "deadline" : null,
+      "firms" : [
+
+      ],
+      "name" : "a lower kilometres kept as a new counter",
+      "now" : 1795687200,
+      "receipt" : true,
+      "refused" : null,
+      "section" : {
+        "category" : "vehicle",
+        "name" : "VW Golf 2018",
+        "readings" : [
+          {
+            "at" : "2026-06-01T09:00:00Z",
+            "value" : 100000
+          },
+          {
+            "at" : "2026-09-01T09:00:00Z",
+            "value" : 104500
+          }
+        ],
+        "values" : {
+          "vehicle.plate" : {
+            "type" : "text",
+            "value" : "B-123-ABC"
+          },
+          "vehicle.year" : {
+            "type" : "number",
+            "value" : 2018
+          }
+        }
+      },
+      "undoRestores" : true
+    },
+    {
+      "action" : {
+        "do" : "record",
+        "items" : [
+          {
+            "cost" : "300",
+            "name" : "Compresor"
+          },
+          {
+            "cost" : "50",
+            "name" : "Mână de lucru"
+          }
+        ],
+        "kind" : "repair",
+        "note" : "În garanție",
+        "on" : 1794304800,
+        "title" : "Compresor înlocuit",
+        "total" : "350"
+      },
+      "after" : {
+        "deadline" : null,
+        "firms" : [
+
+        ],
+        "history" : [
+          {
+            "cost" : {
+              "amount" : "350",
+              "currency" : "RON"
+            },
+            "cycleDueDay" : null,
+            "isExample" : false,
+            "items" : [
+              {
+                "brand" : null,
+                "componentKey" : "custom.compresor",
+                "cost" : "300",
+                "currency" : "RON",
+                "group" : null,
+                "laborCost" : null,
+                "name" : "Compresor",
+                "partsCost" : null
+              },
+              {
+                "brand" : null,
+                "componentKey" : null,
+                "cost" : null,
+                "currency" : "RON",
+                "group" : null,
+                "laborCost" : "50",
+                "name" : "Mână de lucru",
+                "partsCost" : null
+              }
+            ],
+            "kind" : "repair",
+            "metricReading" : null,
+            "note" : "În garanție",
+            "occurredAt" : 1794304800,
+            "providers" : [
+
+            ],
+            "rating" : null,
+            "reference" : null,
+            "title" : "Compresor înlocuit"
+          }
+        ],
+        "readings" : [
+
+        ],
+        "section" : {
+          "hero" : null,
+          "tracked" : [
+            {
+              "date" : 1794304800,
+              "key" : "custom.compresor",
+              "metricAtTime" : null,
+              "name" : "Compresor"
+            }
+          ]
+        }
+      },
+      "before" : [
+
+      ],
+      "canUndo" : false,
+      "deadline" : null,
+      "firms" : [
+
+      ],
+      "name" : "a repair of something bought",
+      "now" : 1795687200,
+      "receipt" : false,
+      "refused" : null,
+      "section" : {
+        "category" : "purchase",
+        "name" : "Frigider Exemplu",
+        "readings" : [
+
+        ],
+        "values" : {
+
+        }
+      },
+      "undoRestores" : null
+    },
+    {
+      "action" : {
+        "do" : "record",
+        "items" : [
+          {
+            "cost" : "1600",
+            "name" : "Anvelope de iarnă"
+          }
+        ],
+        "kind" : "purchase",
+        "on" : 1794304800,
+        "provider" : 0,
+        "reference" : "FCT 0001",
+        "title" : "Anvelope de iarnă",
+        "total" : "1600"
+      },
+      "after" : {
+        "deadline" : null,
+        "firms" : [
+          {
+            "name" : "Service Exemplu SRL",
+            "sections" : 1,
+            "taxID" : null,
+            "trades" : [
+              "mechanic"
+            ]
+          }
+        ],
+        "history" : [
+          {
+            "cost" : {
+              "amount" : "1600",
+              "currency" : "RON"
+            },
+            "cycleDueDay" : null,
+            "isExample" : false,
+            "items" : [
+              {
+                "brand" : null,
+                "componentKey" : "tyres.winter",
+                "cost" : "1600",
+                "currency" : "RON",
+                "group" : "Roți",
+                "laborCost" : null,
+                "name" : "Anvelope de iarnă",
+                "partsCost" : null
+              }
+            ],
+            "kind" : "purchase",
+            "metricReading" : null,
+            "note" : null,
+            "occurredAt" : 1794304800,
+            "providers" : [
+              "Service Exemplu SRL"
+            ],
+            "rating" : null,
+            "reference" : "FCT 0001",
+            "title" : "Anvelope de iarnă"
+          }
+        ],
+        "readings" : [
+          {
+            "at" : 1780304400,
+            "startsCounter" : false,
+            "value" : 100000
+          },
+          {
+            "at" : 1788253200,
+            "startsCounter" : false,
+            "value" : 104500
+          }
+        ],
+        "section" : {
+          "hero" : null,
+          "tracked" : [
+            {
+              "date" : 1794304800,
+              "key" : "tyres.winter",
+              "metricAtTime" : null,
+              "name" : "Anvelope de iarnă"
+            }
+          ]
+        }
+      },
+      "before" : [
+
+      ],
+      "canUndo" : false,
+      "deadline" : null,
+      "firms" : [
+        "Service Exemplu SRL"
+      ],
+      "name" : "a purchase for the car",
+      "now" : 1795687200,
+      "receipt" : false,
+      "refused" : null,
+      "section" : {
+        "category" : "vehicle",
+        "name" : "VW Golf 2018",
+        "readings" : [
+          {
+            "at" : "2026-06-01T09:00:00Z",
+            "value" : 100000
+          },
+          {
+            "at" : "2026-09-01T09:00:00Z",
+            "value" : 104500
+          }
+        ],
+        "values" : {
+          "vehicle.plate" : {
+            "type" : "text",
+            "value" : "B-123-ABC"
+          },
+          "vehicle.year" : {
+            "type" : "number",
+            "value" : 2018
+          }
+        }
+      },
+      "undoRestores" : null
+    },
+    {
+      "action" : {
+        "do" : "record",
+        "kind" : "purchase",
+        "metricReading" : 50000,
+        "on" : 1794304800,
+        "title" : "Ștergătoare"
+      },
+      "after" : {
+        "deadline" : null,
+        "firms" : [
+
+        ],
+        "history" : [
+
+        ],
+        "readings" : [
+          {
+            "at" : 1780304400,
+            "startsCounter" : false,
+            "value" : 100000
+          },
+          {
+            "at" : 1788253200,
+            "startsCounter" : false,
+            "value" : 104500
+          }
+        ],
+        "section" : {
+          "hero" : null,
+          "tracked" : [
+
+          ]
+        }
+      },
+      "before" : [
+
+      ],
+      "canUndo" : false,
+      "deadline" : null,
+      "firms" : [
+
+      ],
+      "name" : "a purchase with a lower kilometres asks first",
+      "now" : 1795687200,
+      "receipt" : false,
+      "refused" : "lowerReading",
+      "section" : {
+        "category" : "vehicle",
+        "name" : "VW Golf 2018",
+        "readings" : [
+          {
+            "at" : "2026-06-01T09:00:00Z",
+            "value" : 100000
+          },
+          {
+            "at" : "2026-09-01T09:00:00Z",
+            "value" : 104500
+          }
+        ],
+        "values" : {
+          "vehicle.plate" : {
+            "type" : "text",
+            "value" : "B-123-ABC"
+          },
+          "vehicle.year" : {
+            "type" : "number",
+            "value" : 2018
+          }
+        }
+      },
+      "undoRestores" : null
+    },
+    {
+      "action" : {
+        "do" : "addNote",
+        "on" : 1794304800,
+        "text" : "  Udat și fertilizat\nCu îngrășământ lichid "
+      },
+      "after" : {
+        "deadline" : null,
+        "firms" : [
+
+        ],
+        "history" : [
+          {
+            "cost" : null,
+            "cycleDueDay" : null,
+            "isExample" : false,
+            "items" : [
+
+            ],
+            "kind" : "note",
+            "metricReading" : null,
+            "note" : "Udat și fertilizat\nCu îngrășământ lichid",
+            "occurredAt" : 1794304800,
+            "providers" : [
+
+            ],
+            "rating" : null,
+            "reference" : null,
+            "title" : "Udat și fertilizat"
+          }
+        ],
+        "readings" : [
+
+        ],
+        "section" : {
+          "hero" : null,
+          "tracked" : [
+
+          ]
+        }
+      },
+      "before" : [
+
+      ],
+      "canUndo" : true,
+      "deadline" : null,
+      "firms" : [
+
+      ],
+      "name" : "a note on a plant",
+      "now" : 1795687200,
+      "receipt" : true,
+      "refused" : null,
+      "section" : {
+        "category" : "plants",
+        "name" : "Ficus",
+        "readings" : [
+
+        ],
+        "values" : {
+
+        }
+      },
+      "undoRestores" : true
+    },
+    {
+      "action" : {
+        "do" : "addNote",
+        "text" : "   \n "
+      },
+      "after" : {
+        "deadline" : null,
+        "firms" : [
+
+        ],
+        "history" : [
+
+        ],
+        "readings" : [
+
+        ],
+        "section" : {
+          "hero" : null,
+          "tracked" : [
+
+          ]
+        }
+      },
+      "before" : [
+
+      ],
+      "canUndo" : false,
+      "deadline" : null,
+      "firms" : [
+
+      ],
+      "name" : "a note of nothing",
+      "now" : 1795687200,
+      "receipt" : false,
+      "refused" : "noteEmpty",
+      "section" : {
+        "category" : "plants",
+        "name" : "Ficus",
+        "readings" : [
+
+        ],
+        "values" : {
+
+        }
+      },
+      "undoRestores" : null
+    },
+    {
+      "action" : {
+        "do" : "setNote",
+        "entry" : 0,
+        "text" : "  Totul în regulă "
+      },
+      "after" : {
+        "deadline" : null,
+        "firms" : [
+
+        ],
+        "history" : [
+          {
+            "cost" : null,
+            "cycleDueDay" : null,
+            "isExample" : false,
+            "items" : [
+              {
+                "brand" : null,
+                "componentKey" : "custom.spalare",
+                "cost" : null,
+                "currency" : "RON",
+                "group" : null,
+                "laborCost" : null,
+                "name" : "Spălare",
+                "partsCost" : null
+              }
+            ],
+            "kind" : "maintenance",
+            "metricReading" : null,
+            "note" : "Totul în regulă",
+            "occurredAt" : 1794304800,
+            "providers" : [
+
+            ],
+            "rating" : null,
+            "reference" : null,
+            "title" : "Spălare"
+          }
+        ],
+        "readings" : [
+          {
+            "at" : 1780304400,
+            "startsCounter" : false,
+            "value" : 100000
+          },
+          {
+            "at" : 1788253200,
+            "startsCounter" : false,
+            "value" : 104500
+          }
+        ],
+        "section" : {
+          "hero" : null,
+          "tracked" : [
+            {
+              "date" : 1794304800,
+              "key" : "custom.spalare",
+              "metricAtTime" : null,
+              "name" : "Spălare"
+            }
+          ]
+        }
+      },
+      "before" : [
+        {
+          "do" : "recordVisit",
+          "items" : [
+            {
+              "name" : "Spălare"
+            }
+          ],
+          "on" : 1794304800
+        }
+      ],
+      "canUndo" : true,
+      "deadline" : null,
+      "firms" : [
+
+      ],
+      "name" : "a record's note",
+      "now" : 1795687200,
+      "receipt" : true,
+      "refused" : null,
+      "section" : {
+        "category" : "vehicle",
+        "name" : "VW Golf 2018",
+        "readings" : [
+          {
+            "at" : "2026-06-01T09:00:00Z",
+            "value" : 100000
+          },
+          {
+            "at" : "2026-09-01T09:00:00Z",
+            "value" : 104500
+          }
+        ],
+        "values" : {
+          "vehicle.plate" : {
+            "type" : "text",
+            "value" : "B-123-ABC"
+          },
+          "vehicle.year" : {
+            "type" : "number",
+            "value" : 2018
+          }
+        }
+      },
+      "undoRestores" : true
+    },
+    {
+      "action" : {
+        "do" : "setNote",
+        "entry" : 0,
+        "text" : "\n  Altă primă linie\nRestul"
+      },
+      "after" : {
+        "deadline" : null,
+        "firms" : [
+
+        ],
+        "history" : [
+          {
+            "cost" : null,
+            "cycleDueDay" : null,
+            "isExample" : false,
+            "items" : [
+
+            ],
+            "kind" : "note",
+            "metricReading" : null,
+            "note" : "Altă primă linie\nRestul",
+            "occurredAt" : 1794304800,
+            "providers" : [
+
+            ],
+            "rating" : null,
+            "reference" : null,
+            "title" : "Altă primă linie"
+          }
+        ],
+        "readings" : [
+
+        ],
+        "section" : {
+          "hero" : null,
+          "tracked" : [
+
+          ]
+        }
+      },
+      "before" : [
+        {
+          "do" : "addNote",
+          "on" : 1794304800,
+          "text" : "Prima notă"
+        }
+      ],
+      "canUndo" : true,
+      "deadline" : null,
+      "firms" : [
+
+      ],
+      "name" : "a note's title follows its first line",
+      "now" : 1795687200,
+      "receipt" : true,
+      "refused" : null,
+      "section" : {
+        "category" : "plants",
+        "name" : "Ficus",
+        "readings" : [
+
+        ],
+        "values" : {
+
+        }
+      },
+      "undoRestores" : true
+    },
+    {
+      "action" : {
+        "do" : "setNote",
+        "entry" : 0,
+        "text" : "   "
+      },
+      "after" : {
+        "deadline" : null,
+        "firms" : [
+
+        ],
+        "history" : [
+          {
+            "cost" : null,
+            "cycleDueDay" : null,
+            "isExample" : false,
+            "items" : [
+
+            ],
+            "kind" : "maintenance",
+            "metricReading" : null,
+            "note" : null,
+            "occurredAt" : 1794304800,
+            "providers" : [
+
+            ],
+            "rating" : null,
+            "reference" : null,
+            "title" : "Vizită"
+          }
+        ],
+        "readings" : [
+          {
+            "at" : 1780304400,
+            "startsCounter" : false,
+            "value" : 100000
+          },
+          {
+            "at" : 1788253200,
+            "startsCounter" : false,
+            "value" : 104500
+          }
+        ],
+        "section" : {
+          "hero" : null,
+          "tracked" : [
+
+          ]
+        }
+      },
+      "before" : [
+        {
+          "do" : "recordVisit",
+          "note" : "Ceva",
+          "on" : 1794304800
+        }
+      ],
+      "canUndo" : true,
+      "deadline" : null,
+      "firms" : [
+
+      ],
+      "name" : "a note cleared",
+      "now" : 1795687200,
+      "receipt" : true,
+      "refused" : null,
+      "section" : {
+        "category" : "vehicle",
+        "name" : "VW Golf 2018",
+        "readings" : [
+          {
+            "at" : "2026-06-01T09:00:00Z",
+            "value" : 100000
+          },
+          {
+            "at" : "2026-09-01T09:00:00Z",
+            "value" : 104500
+          }
+        ],
+        "values" : {
+          "vehicle.plate" : {
+            "type" : "text",
+            "value" : "B-123-ABC"
+          },
+          "vehicle.year" : {
+            "type" : "number",
+            "value" : 2018
+          }
+        }
+      },
+      "undoRestores" : true
+    },
+    {
+      "action" : {
+        "do" : "rate",
+        "entry" : 0,
+        "rating" : 7
+      },
+      "after" : {
+        "deadline" : null,
+        "firms" : [
+
+        ],
+        "history" : [
+          {
+            "cost" : null,
+            "cycleDueDay" : null,
+            "isExample" : false,
+            "items" : [
+
+            ],
+            "kind" : "maintenance",
+            "metricReading" : null,
+            "note" : null,
+            "occurredAt" : 1794304800,
+            "providers" : [
+
+            ],
+            "rating" : 5,
+            "reference" : null,
+            "title" : "Vizită"
+          }
+        ],
+        "readings" : [
+          {
+            "at" : 1780304400,
+            "startsCounter" : false,
+            "value" : 100000
+          },
+          {
+            "at" : 1788253200,
+            "startsCounter" : false,
+            "value" : 104500
+          }
+        ],
+        "section" : {
+          "hero" : null,
+          "tracked" : [
+
+          ]
+        }
+      },
+      "before" : [
+        {
+          "do" : "recordVisit",
+          "on" : 1794304800
+        }
+      ],
+      "canUndo" : false,
+      "deadline" : null,
+      "firms" : [
+
+      ],
+      "name" : "a job rated keeps five stars at most",
+      "now" : 1795687200,
+      "receipt" : false,
+      "refused" : null,
+      "section" : {
+        "category" : "vehicle",
+        "name" : "VW Golf 2018",
+        "readings" : [
+          {
+            "at" : "2026-06-01T09:00:00Z",
+            "value" : 100000
+          },
+          {
+            "at" : "2026-09-01T09:00:00Z",
+            "value" : 104500
+          }
+        ],
+        "values" : {
+          "vehicle.plate" : {
+            "type" : "text",
+            "value" : "B-123-ABC"
+          },
+          "vehicle.year" : {
+            "type" : "number",
+            "value" : 2018
+          }
+        }
+      },
+      "undoRestores" : null
+    },
+    {
+      "action" : {
+        "do" : "rate",
+        "entry" : 0,
+        "rating" : 0
+      },
+      "after" : {
+        "deadline" : null,
+        "firms" : [
+
+        ],
+        "history" : [
+          {
+            "cost" : null,
+            "cycleDueDay" : null,
+            "isExample" : false,
+            "items" : [
+
+            ],
+            "kind" : "maintenance",
+            "metricReading" : null,
+            "note" : null,
+            "occurredAt" : 1794304800,
+            "providers" : [
+
+            ],
+            "rating" : 1,
+            "reference" : null,
+            "title" : "Vizită"
+          }
+        ],
+        "readings" : [
+          {
+            "at" : 1780304400,
+            "startsCounter" : false,
+            "value" : 100000
+          },
+          {
+            "at" : 1788253200,
+            "startsCounter" : false,
+            "value" : 104500
+          }
+        ],
+        "section" : {
+          "hero" : null,
+          "tracked" : [
+
+          ]
+        }
+      },
+      "before" : [
+        {
+          "do" : "recordVisit",
+          "on" : 1794304800
+        }
+      ],
+      "canUndo" : false,
+      "deadline" : null,
+      "firms" : [
+
+      ],
+      "name" : "a job rated keeps one star at least",
+      "now" : 1795687200,
+      "receipt" : false,
+      "refused" : null,
+      "section" : {
+        "category" : "vehicle",
+        "name" : "VW Golf 2018",
+        "readings" : [
+          {
+            "at" : "2026-06-01T09:00:00Z",
+            "value" : 100000
+          },
+          {
+            "at" : "2026-09-01T09:00:00Z",
+            "value" : 104500
+          }
+        ],
+        "values" : {
+          "vehicle.plate" : {
+            "type" : "text",
+            "value" : "B-123-ABC"
+          },
+          "vehicle.year" : {
+            "type" : "number",
+            "value" : 2018
+          }
+        }
+      },
+      "undoRestores" : null
+    },
+    {
+      "action" : {
+        "do" : "rate",
+        "entry" : 0
+      },
+      "after" : {
+        "deadline" : null,
+        "firms" : [
+
+        ],
+        "history" : [
+          {
+            "cost" : null,
+            "cycleDueDay" : null,
+            "isExample" : false,
+            "items" : [
+
+            ],
+            "kind" : "maintenance",
+            "metricReading" : null,
+            "note" : null,
+            "occurredAt" : 1794304800,
+            "providers" : [
+
+            ],
+            "rating" : null,
+            "reference" : null,
+            "title" : "Vizită"
+          }
+        ],
+        "readings" : [
+          {
+            "at" : 1780304400,
+            "startsCounter" : false,
+            "value" : 100000
+          },
+          {
+            "at" : 1788253200,
+            "startsCounter" : false,
+            "value" : 104500
+          }
+        ],
+        "section" : {
+          "hero" : null,
+          "tracked" : [
+
+          ]
+        }
+      },
+      "before" : [
+        {
+          "do" : "recordVisit",
+          "on" : 1794304800,
+          "rating" : 4
+        }
+      ],
+      "canUndo" : false,
+      "deadline" : null,
+      "firms" : [
+
+      ],
+      "name" : "a rating cleared",
+      "now" : 1795687200,
+      "receipt" : false,
+      "refused" : null,
+      "section" : {
+        "category" : "vehicle",
+        "name" : "VW Golf 2018",
+        "readings" : [
+          {
+            "at" : "2026-06-01T09:00:00Z",
+            "value" : 100000
+          },
+          {
+            "at" : "2026-09-01T09:00:00Z",
+            "value" : 104500
+          }
+        ],
+        "values" : {
+          "vehicle.plate" : {
+            "type" : "text",
+            "value" : "B-123-ABC"
+          },
+          "vehicle.year" : {
+            "type" : "number",
+            "value" : 2018
+          }
+        }
+      },
+      "undoRestores" : null
+    },
+    {
+      "action" : {
+        "do" : "delete",
+        "entry" : 0
+      },
+      "after" : {
+        "deadline" : null,
+        "firms" : [
+          {
+            "name" : "Service Exemplu SRL",
+            "sections" : 1,
+            "taxID" : null,
+            "trades" : [
+              "mechanic"
+            ]
+          }
+        ],
+        "history" : [
+
+        ],
+        "readings" : [
+          {
+            "at" : 1780304400,
+            "startsCounter" : false,
+            "value" : 100000
+          },
+          {
+            "at" : 1788253200,
+            "startsCounter" : false,
+            "value" : 104500
+          }
+        ],
+        "section" : {
+          "hero" : 104500,
+          "tracked" : [
+
+          ]
+        }
+      },
+      "before" : [
+        {
+          "checklist" : [
+            {
+              "componentKey" : "engine.oil",
+              "cost" : "420"
+            },
+            {
+              "componentKey" : "filters.cabin"
+            },
+            {
+              "brand" : "Bosch",
+              "componentKey" : "brakes.padsFront",
+              "cost" : "380"
+            }
+          ],
+          "do" : "recordVisit",
+          "items" : [
+            {
+              "cost" : "20",
+              "name" : "Odorizant"
+            },
+            {
+              "cost" : "200",
+              "name" : "Manoperă 1,5 ore"
+            }
+          ],
+          "note" : "  Revizia anuală ",
+          "odometer" : 108000,
+          "on" : 1795168800,
+          "provider" : 0,
+          "rating" : 9,
+          "reference" : "SRV 0000001",
+          "total" : "1100"
+        }
+      ],
+      "canUndo" : false,
+      "deadline" : null,
+      "firms" : [
+        "Service Exemplu SRL"
+      ],
+      "name" : "deleting a visit takes its reading",
+      "now" : 1795687200,
+      "receipt" : false,
+      "refused" : null,
+      "section" : {
+        "category" : "vehicle",
+        "name" : "VW Golf 2018",
+        "readings" : [
+          {
+            "at" : "2026-06-01T09:00:00Z",
+            "value" : 100000
+          },
+          {
+            "at" : "2026-09-01T09:00:00Z",
+            "value" : 104500
+          }
+        ],
+        "values" : {
+          "vehicle.plate" : {
+            "type" : "text",
+            "value" : "B-123-ABC"
+          },
+          "vehicle.year" : {
+            "type" : "number",
+            "value" : 2018
+          }
+        }
+      },
+      "undoRestores" : null
+    },
+    {
+      "action" : {
+        "do" : "addItems",
+        "entry" : 0,
+        "items" : [
+          {
+            "cost" : "380",
+            "name" : "Plăcuțe de frână spate"
+          },
+          {
+            "cost" : "120",
+            "name" : "Manoperă"
+          }
+        ]
+      },
+      "after" : {
+        "deadline" : null,
+        "firms" : [
+
+        ],
+        "history" : [
+          {
+            "cost" : null,
+            "cycleDueDay" : null,
+            "isExample" : false,
+            "items" : [
+              {
+                "brand" : null,
+                "componentKey" : null,
+                "cost" : null,
+                "currency" : "RON",
+                "group" : null,
+                "laborCost" : "120",
+                "name" : "Manoperă",
+                "partsCost" : null
+              },
+              {
+                "brand" : null,
+                "componentKey" : "brakes.padsRear",
+                "cost" : "380",
+                "currency" : "RON",
+                "group" : "Frâne",
+                "laborCost" : null,
+                "name" : "Plăcuțe de frână spate",
+                "partsCost" : null
+              }
+            ],
+            "kind" : "repair",
+            "metricReading" : null,
+            "note" : null,
+            "occurredAt" : 1794304800,
+            "providers" : [
+
+            ],
+            "rating" : null,
+            "reference" : null,
+            "title" : "Frâne"
+          }
+        ],
+        "readings" : [
+          {
+            "at" : 1780304400,
+            "startsCounter" : false,
+            "value" : 100000
+          },
+          {
+            "at" : 1788253200,
+            "startsCounter" : false,
+            "value" : 104500
+          }
+        ],
+        "section" : {
+          "hero" : null,
+          "tracked" : [
+            {
+              "date" : 1794304800,
+              "key" : "brakes.padsRear",
+              "metricAtTime" : null,
+              "name" : "Plăcuțe de frână spate"
+            }
+          ]
+        }
+      },
+      "before" : [
+        {
+          "do" : "record",
+          "kind" : "repair",
+          "on" : 1794304800,
+          "title" : "Frâne"
+        }
+      ],
+      "canUndo" : false,
+      "deadline" : null,
+      "firms" : [
+
+      ],
+      "name" : "parts added to a record, each found in the category's parts",
+      "now" : 1795687200,
+      "receipt" : false,
+      "refused" : null,
+      "section" : {
+        "category" : "vehicle",
+        "name" : "VW Golf 2018",
+        "readings" : [
+          {
+            "at" : "2026-06-01T09:00:00Z",
+            "value" : 100000
+          },
+          {
+            "at" : "2026-09-01T09:00:00Z",
+            "value" : 104500
+          }
+        ],
+        "values" : {
+          "vehicle.plate" : {
+            "type" : "text",
+            "value" : "B-123-ABC"
+          },
+          "vehicle.year" : {
+            "type" : "number",
+            "value" : 2018
+          }
+        }
+      },
+      "undoRestores" : null
+    },
+    {
+      "action" : {
+        "cost" : "600",
+        "do" : "complete",
+        "items" : [
+          {
+            "componentKey" : "engine.oil",
+            "cost" : "300",
+            "name" : "Ulei"
+          },
+          {
+            "cost" : "150",
+            "name" : "Manoperă"
+          },
+          {
+            "cost" : "40",
+            "name" : "Filtru polen"
+          }
+        ],
+        "metricReading" : 108000,
+        "on" : 1795168800
+      },
+      "after" : {
+        "deadline" : {
+          "dueDay" : "2027-10-09",
+          "dueMetric" : 123000,
+          "status" : "active"
+        },
+        "firms" : [
+
+        ],
+        "history" : [
+          {
+            "cost" : {
+              "amount" : "600",
+              "currency" : "RON"
+            },
+            "cycleDueDay" : "2026-12-01",
+            "isExample" : false,
+            "items" : [
+              {
+                "brand" : null,
+                "componentKey" : "filters.cabin",
+                "cost" : "40",
+                "currency" : "RON",
+                "group" : "Filtre",
+                "laborCost" : null,
+                "name" : "Filtru polen",
+                "partsCost" : null
+              },
+              {
+                "brand" : null,
+                "componentKey" : null,
+                "cost" : null,
+                "currency" : "RON",
+                "group" : null,
+                "laborCost" : "150",
+                "name" : "Manoperă",
+                "partsCost" : null
+              },
+              {
+                "brand" : null,
+                "componentKey" : "engine.oil",
+                "cost" : "300",
+                "currency" : "RON",
+                "group" : "Motor",
+                "laborCost" : null,
+                "name" : "Ulei",
+                "partsCost" : null
+              }
+            ],
+            "kind" : "maintenance",
+            "metricReading" : 108000,
+            "note" : null,
+            "occurredAt" : 1795168800,
+            "providers" : [
+
+            ],
+            "rating" : null,
+            "reference" : null,
+            "title" : "Revizie periodică"
+          }
+        ],
+        "readings" : [
+          {
+            "at" : 1780304400,
+            "startsCounter" : false,
+            "value" : 100000
+          },
+          {
+            "at" : 1788253200,
+            "startsCounter" : false,
+            "value" : 104500
+          },
+          {
+            "at" : 1795168800,
+            "startsCounter" : false,
+            "value" : 108000
+          }
+        ],
+        "section" : {
+          "hero" : 108000,
+          "tracked" : [
+            {
+              "date" : 1795168800,
+              "key" : "engine.oil",
+              "metricAtTime" : 108000,
+              "name" : "Ulei"
+            },
+            {
+              "date" : 1795168800,
+              "key" : "filters.cabin",
+              "metricAtTime" : 108000,
+              "name" : "Filtru polen"
+            }
+          ]
+        }
+      },
+      "before" : [
+
+      ],
+      "canUndo" : true,
+      "deadline" : {
+        "blueprint" : "vehicle.service",
+        "firstDue" : "2026-12-01"
+      },
+      "firms" : [
+
+      ],
+      "name" : "a completion's parts and jobs",
+      "now" : 1795687200,
+      "receipt" : true,
+      "refused" : null,
+      "section" : {
+        "category" : "vehicle",
+        "name" : "VW Golf 2018",
+        "readings" : [
+          {
+            "at" : "2026-06-01T09:00:00Z",
+            "value" : 100000
+          },
+          {
+            "at" : "2026-09-01T09:00:00Z",
+            "value" : 104500
+          }
+        ],
+        "values" : {
+          "vehicle.plate" : {
+            "type" : "text",
+            "value" : "B-123-ABC"
+          },
+          "vehicle.year" : {
+            "type" : "number",
+            "value" : 2018
+          }
+        }
+      },
+      "undoRestores" : true
+    },
+    {
+      "action" : {
+        "do" : "delete",
+        "entry" : 0
+      },
+      "after" : {
+        "deadline" : {
+          "dueDay" : "2026-12-01",
+          "dueMetric" : 119500,
+          "status" : "active"
+        },
+        "firms" : [
+
+        ],
+        "history" : [
+
+        ],
+        "readings" : [
+          {
+            "at" : 1780304400,
+            "startsCounter" : false,
+            "value" : 100000
+          },
+          {
+            "at" : 1788253200,
+            "startsCounter" : false,
+            "value" : 104500
+          }
+        ],
+        "section" : {
+          "hero" : 104500,
+          "tracked" : [
+
+          ]
+        }
+      },
+      "before" : [
+        {
+          "do" : "complete",
+          "items" : [
+            {
+              "componentKey" : "engine.oil",
+              "cost" : "300",
+              "name" : "Ulei"
+            }
+          ],
+          "metricReading" : 108000,
+          "on" : 1795168800
+        }
+      ],
+      "canUndo" : false,
+      "deadline" : {
+        "blueprint" : "vehicle.service",
+        "firstDue" : "2026-12-01"
+      },
+      "firms" : [
+
+      ],
+      "name" : "deleting the latest completion moves its deadline back",
+      "now" : 1795687200,
+      "receipt" : false,
+      "refused" : null,
+      "section" : {
+        "category" : "vehicle",
+        "name" : "VW Golf 2018",
+        "readings" : [
+          {
+            "at" : "2026-06-01T09:00:00Z",
+            "value" : 100000
+          },
+          {
+            "at" : "2026-09-01T09:00:00Z",
+            "value" : 104500
+          }
+        ],
+        "values" : {
+          "vehicle.plate" : {
+            "type" : "text",
+            "value" : "B-123-ABC"
+          },
+          "vehicle.year" : {
+            "type" : "number",
+            "value" : 2018
+          }
+        }
+      },
+      "undoRestores" : null
+    },
+    {
+      "action" : {
+        "do" : "delete",
+        "entry" : 0
+      },
+      "after" : {
+        "deadline" : {
+          "dueDay" : "2027-09-23",
+          "dueMetric" : 119500,
+          "status" : "active"
+        },
+        "firms" : [
+
+        ],
+        "history" : [
+          {
+            "cost" : null,
+            "cycleDueDay" : "2027-09-13",
+            "isExample" : false,
+            "items" : [
+
+            ],
+            "kind" : "maintenance",
+            "metricReading" : null,
+            "note" : null,
+            "occurredAt" : 1795168800,
+            "providers" : [
+
+            ],
+            "rating" : null,
+            "reference" : null,
+            "title" : "Revizie periodică"
+          }
+        ],
+        "readings" : [
+          {
+            "at" : 1780304400,
+            "startsCounter" : false,
+            "value" : 100000
+          },
+          {
+            "at" : 1788253200,
+            "startsCounter" : false,
+            "value" : 104500
+          }
+        ],
+        "section" : {
+          "hero" : null,
+          "tracked" : [
+
+          ]
+        }
+      },
+      "before" : [
+        {
+          "do" : "complete",
+          "on" : 1794304800
+        },
+        {
+          "do" : "complete",
+          "on" : 1795168800
+        }
+      ],
+      "canUndo" : false,
+      "deadline" : {
+        "blueprint" : "vehicle.service",
+        "firstDue" : "2026-12-01"
+      },
+      "firms" : [
+
+      ],
+      "name" : "deleting an older completion leaves the deadline",
+      "now" : 1795687200,
+      "receipt" : false,
+      "refused" : null,
+      "section" : {
+        "category" : "vehicle",
+        "name" : "VW Golf 2018",
+        "readings" : [
+          {
+            "at" : "2026-06-01T09:00:00Z",
+            "value" : 100000
+          },
+          {
+            "at" : "2026-09-01T09:00:00Z",
+            "value" : 104500
+          }
+        ],
+        "values" : {
+          "vehicle.plate" : {
+            "type" : "text",
+            "value" : "B-123-ABC"
+          },
+          "vehicle.year" : {
+            "type" : "number",
+            "value" : 2018
+          }
+        }
+      },
+      "undoRestores" : null
+    },
+    {
+      "action" : {
+        "do" : "file",
+        "extras" : [
+          {
+            "cost" : "50",
+            "name" : "Altceva făcut"
+          },
+          {
+            "cost" : "80",
+            "name" : "Manoperă"
+          }
+        ],
+        "named" : "Firma Exemplu SRL",
+        "note" : "O notă",
+        "odometer" : 1000,
+        "on" : 1795168800,
+        "rating" : 4,
+        "reference" : "NR 0001",
+        "ticked" : [
+          {
+            "brand" : "Marca Exemplu",
+            "componentKey" : "brakes.padsFront",
+            "cost" : "100"
+          }
+        ],
+        "total" : "500"
+      },
+      "after" : {
+        "deadline" : null,
+        "firms" : [
+          {
+            "name" : "Firma Exemplu SRL",
+            "sections" : 1,
+            "taxID" : null,
+            "trades" : [
+              "mechanic"
+            ]
+          }
+        ],
+        "history" : [
+          {
+            "cost" : {
+              "amount" : "500",
+              "currency" : "RON"
+            },
+            "cycleDueDay" : null,
+            "isExample" : false,
+            "items" : [
+              {
+                "brand" : null,
+                "componentKey" : "custom.altceva-facut",
+                "cost" : "50",
+                "currency" : "RON",
+                "group" : null,
+                "laborCost" : null,
+                "name" : "Altceva făcut",
+                "partsCost" : null
+              },
+              {
+                "brand" : null,
+                "componentKey" : null,
+                "cost" : null,
+                "currency" : "RON",
+                "group" : null,
+                "laborCost" : "80",
+                "name" : "Manoperă",
+                "partsCost" : null
+              },
+              {
+                "brand" : "Marca Exemplu",
+                "componentKey" : "brakes.padsFront",
+                "cost" : "100",
+                "currency" : "RON",
+                "group" : "Frâne",
+                "laborCost" : null,
+                "name" : "Plăcuțe frână față",
+                "partsCost" : null
+              }
+            ],
+            "kind" : "maintenance",
+            "metricReading" : 1000,
+            "note" : null,
+            "occurredAt" : 1795168800,
+            "providers" : [
+              "Firma Exemplu SRL"
+            ],
+            "rating" : 4,
+            "reference" : "NR 0001",
+            "title" : "Plăcuțe frână față, Altceva făcut"
+          }
+        ],
+        "readings" : [
+          {
+            "at" : 1795168800,
+            "startsCounter" : false,
+            "value" : 1000
+          }
+        ],
+        "section" : {
+          "hero" : 1000,
+          "tracked" : [
+            {
+              "date" : 1795168800,
+              "key" : "brakes.padsFront",
+              "metricAtTime" : 1000,
+              "name" : "Plăcuțe frână față"
+            },
+            {
+              "date" : 1795168800,
+              "key" : "custom.altceva-facut",
+              "metricAtTime" : 1000,
+              "name" : "Altceva făcut"
+            }
+          ]
+        }
+      },
+      "before" : [
+
+      ],
+      "canUndo" : true,
+      "deadline" : null,
+      "firms" : [
+
+      ],
+      "name" : "a visit of vehicle (service) filed from its form",
+      "now" : 1795687200,
+      "receipt" : true,
+      "refused" : null,
+      "section" : {
+        "category" : "vehicle",
+        "name" : "Mașini exemplu",
+        "readings" : [
+
+        ],
+        "values" : {
+
+        }
+      },
+      "undoRestores" : true
+    },
+    {
+      "action" : {
+        "do" : "file",
+        "extras" : [
+          {
+            "cost" : "50",
+            "name" : "Altceva făcut"
+          },
+          {
+            "cost" : "80",
+            "name" : "Manoperă"
+          }
+        ],
+        "named" : "Firma Exemplu SRL",
+        "note" : "O notă",
+        "odometer" : 1000,
+        "on" : 1795168800,
+        "rating" : 4,
+        "reference" : "NR 0001",
+        "ticked" : [
+          {
+            "brand" : "Marca Exemplu",
+            "componentKey" : "heating.boiler",
+            "cost" : "100"
+          }
+        ],
+        "total" : "500"
+      },
+      "after" : {
+        "deadline" : null,
+        "firms" : [
+          {
+            "name" : "Firma Exemplu SRL",
+            "sections" : 1,
+            "taxID" : null,
+            "trades" : [
+              "handyman"
+            ]
+          }
+        ],
+        "history" : [
+          {
+            "cost" : {
+              "amount" : "500",
+              "currency" : "RON"
+            },
+            "cycleDueDay" : null,
+            "isExample" : false,
+            "items" : [
+              {
+                "brand" : null,
+                "componentKey" : "custom.altceva-facut",
+                "cost" : "50",
+                "currency" : "RON",
+                "group" : null,
+                "laborCost" : null,
+                "name" : "Altceva făcut",
+                "partsCost" : null
+              },
+              {
+                "brand" : null,
+                "componentKey" : "heating.boiler",
+                "cost" : "100",
+                "currency" : "RON",
+                "group" : "Încălzire",
+                "laborCost" : null,
+                "name" : "Centrală termică",
+                "partsCost" : null
+              },
+              {
+                "brand" : null,
+                "componentKey" : null,
+                "cost" : null,
+                "currency" : "RON",
+                "group" : null,
+                "laborCost" : "80",
+                "name" : "Manoperă",
+                "partsCost" : null
+              }
+            ],
+            "kind" : "repair",
+            "metricReading" : null,
+            "note" : null,
+            "occurredAt" : 1795168800,
+            "providers" : [
+              "Firma Exemplu SRL"
+            ],
+            "rating" : 4,
+            "reference" : "NR 0001",
+            "title" : "Centrală termică, Altceva făcut"
+          }
+        ],
+        "readings" : [
+
+        ],
+        "section" : {
+          "hero" : null,
+          "tracked" : [
+            {
+              "date" : 1795168800,
+              "key" : "custom.altceva-facut",
+              "metricAtTime" : null,
+              "name" : "Altceva făcut"
+            },
+            {
+              "date" : 1795168800,
+              "key" : "heating.boiler",
+              "metricAtTime" : null,
+              "name" : "Centrală termică"
+            }
+          ]
+        }
+      },
+      "before" : [
+
+      ],
+      "canUndo" : true,
+      "deadline" : null,
+      "firms" : [
+
+      ],
+      "name" : "a visit of home (job) filed from its form",
+      "now" : 1795687200,
+      "receipt" : true,
+      "refused" : null,
+      "section" : {
+        "category" : "home",
+        "name" : "Locuințe exemplu",
+        "readings" : [
+
+        ],
+        "values" : {
+
+        }
+      },
+      "undoRestores" : true
+    },
+    {
+      "action" : {
+        "do" : "file",
+        "extras" : [
+          {
+            "cost" : "50",
+            "name" : "Altceva făcut"
+          },
+          {
+            "cost" : "80",
+            "name" : "Manoperă"
+          }
+        ],
+        "named" : "Firma Exemplu SRL",
+        "note" : "O notă",
+        "odometer" : 1000,
+        "on" : 1795168800,
+        "rating" : 4,
+        "reference" : "NR 0001",
+        "ticked" : [
+          {
+            "brand" : "Marca Exemplu",
+            "componentKey" : "vaccine.rabies",
+            "cost" : "100"
+          }
+        ],
+        "total" : "500"
+      },
+      "after" : {
+        "deadline" : null,
+        "firms" : [
+          {
+            "name" : "Firma Exemplu SRL",
+            "sections" : 1,
+            "taxID" : null,
+            "trades" : [
+              "vet"
+            ]
+          }
+        ],
+        "history" : [
+          {
+            "cost" : {
+              "amount" : "500",
+              "currency" : "RON"
+            },
+            "cycleDueDay" : null,
+            "isExample" : false,
+            "items" : [
+              {
+                "brand" : null,
+                "componentKey" : "custom.altceva-facut",
+                "cost" : "50",
+                "currency" : "RON",
+                "group" : null,
+                "laborCost" : null,
+                "name" : "Altceva făcut",
+                "partsCost" : null
+              },
+              {
+                "brand" : null,
+                "componentKey" : null,
+                "cost" : null,
+                "currency" : "RON",
+                "group" : null,
+                "laborCost" : "80",
+                "name" : "Manoperă",
+                "partsCost" : null
+              },
+              {
+                "brand" : null,
+                "componentKey" : "vaccine.rabies",
+                "cost" : "100",
+                "currency" : "RON",
+                "group" : "Vaccinuri",
+                "laborCost" : null,
+                "name" : "Vaccin antirabic",
+                "partsCost" : null
+              }
+            ],
+            "kind" : "visit",
+            "metricReading" : null,
+            "note" : null,
+            "occurredAt" : 1795168800,
+            "providers" : [
+              "Firma Exemplu SRL"
+            ],
+            "rating" : 4,
+            "reference" : "NR 0001",
+            "title" : "Vaccin antirabic, Altceva făcut"
+          }
+        ],
+        "readings" : [
+
+        ],
+        "section" : {
+          "hero" : null,
+          "tracked" : [
+            {
+              "date" : 1795168800,
+              "key" : "custom.altceva-facut",
+              "metricAtTime" : null,
+              "name" : "Altceva făcut"
+            },
+            {
+              "date" : 1795168800,
+              "key" : "vaccine.rabies",
+              "metricAtTime" : null,
+              "name" : "Vaccin antirabic"
+            }
+          ]
+        }
+      },
+      "before" : [
+
+      ],
+      "canUndo" : true,
+      "deadline" : null,
+      "firms" : [
+
+      ],
+      "name" : "a visit of pet (vet) filed from its form",
+      "now" : 1795687200,
+      "receipt" : true,
+      "refused" : null,
+      "section" : {
+        "category" : "pet",
+        "name" : "Animale exemplu",
+        "readings" : [
+
+        ],
+        "values" : {
+
+        }
+      },
+      "undoRestores" : true
+    },
+    {
+      "action" : {
+        "do" : "file",
+        "extras" : [
+          {
+            "cost" : "50",
+            "name" : "Altceva făcut"
+          },
+          {
+            "cost" : "80",
+            "name" : "Manoperă"
+          }
+        ],
+        "named" : "Firma Exemplu SRL",
+        "note" : "O notă",
+        "odometer" : 1000,
+        "on" : 1795168800,
+        "rating" : 4,
+        "reference" : "NR 0001",
+        "total" : "500"
+      },
+      "after" : {
+        "deadline" : null,
+        "firms" : [
+          {
+            "name" : "Firma Exemplu SRL",
+            "sections" : 1,
+            "taxID" : null,
+            "trades" : [
+              "doctor"
+            ]
+          }
+        ],
+        "history" : [
+          {
+            "cost" : {
+              "amount" : "500",
+              "currency" : "RON"
+            },
+            "cycleDueDay" : null,
+            "isExample" : false,
+            "items" : [
+
+            ],
+            "kind" : "visit",
+            "metricReading" : null,
+            "note" : "O notă",
+            "occurredAt" : 1795168800,
+            "providers" : [
+              "Firma Exemplu SRL"
+            ],
+            "rating" : 4,
+            "reference" : "NR 0001",
+            "title" : "Vizită la medic"
+          }
+        ],
+        "readings" : [
+
+        ],
+        "section" : {
+          "hero" : null,
+          "tracked" : [
+
+          ]
+        }
+      },
+      "before" : [
+
+      ],
+      "canUndo" : true,
+      "deadline" : null,
+      "firms" : [
+
+      ],
+      "name" : "a visit of health (doctor) filed from its form",
+      "now" : 1795687200,
+      "receipt" : true,
+      "refused" : null,
+      "section" : {
+        "category" : "health",
+        "name" : "Sănătate exemplu",
+        "readings" : [
+
+        ],
+        "values" : {
+
+        }
+      },
+      "undoRestores" : true
+    },
+    {
+      "action" : {
+        "do" : "file",
+        "extras" : [
+          {
+            "cost" : "50",
+            "name" : "Altceva făcut"
+          },
+          {
+            "cost" : "80",
+            "name" : "Manoperă"
+          }
+        ],
+        "named" : "Firma Exemplu SRL",
+        "note" : "O notă",
+        "odometer" : 1000,
+        "on" : 1795168800,
+        "rating" : 4,
+        "reference" : "NR 0001",
+        "total" : "500"
+      },
+      "after" : {
+        "deadline" : null,
+        "firms" : [
+          {
+            "name" : "Firma Exemplu SRL",
+            "sections" : 1,
+            "taxID" : null,
+            "trades" : [
+              "other"
+            ]
+          }
+        ],
+        "history" : [
+          {
+            "cost" : {
+              "amount" : "500",
+              "currency" : "RON"
+            },
+            "cycleDueDay" : null,
+            "isExample" : false,
+            "items" : [
+
+            ],
+            "kind" : "repair",
+            "metricReading" : null,
+            "note" : "O notă",
+            "occurredAt" : 1795168800,
+            "providers" : [
+              "Firma Exemplu SRL"
+            ],
+            "rating" : 4,
+            "reference" : "NR 0001",
+            "title" : "Reparație"
+          }
+        ],
+        "readings" : [
+
+        ],
+        "section" : {
+          "hero" : null,
+          "tracked" : [
+
+          ]
+        }
+      },
+      "before" : [
+
+      ],
+      "canUndo" : true,
+      "deadline" : null,
+      "firms" : [
+
+      ],
+      "name" : "a visit of purchase (repair) filed from its form",
+      "now" : 1795687200,
+      "receipt" : true,
+      "refused" : null,
+      "section" : {
+        "category" : "purchase",
+        "name" : "Garanții exemplu",
+        "readings" : [
+
+        ],
+        "values" : {
+
+        }
+      },
+      "undoRestores" : true
+    },
+    {
+      "action" : {
+        "do" : "file",
+        "extras" : [
+          {
+            "cost" : "50",
+            "name" : "Altceva făcut"
+          },
+          {
+            "cost" : "80",
+            "name" : "Manoperă"
+          }
+        ],
+        "named" : "Firma Exemplu SRL",
+        "note" : "O notă",
+        "odometer" : 1000,
+        "on" : 1795168800,
+        "rating" : 4,
+        "reference" : "NR 0001",
+        "total" : "500"
+      },
+      "after" : {
+        "deadline" : null,
+        "firms" : [
+          {
+            "name" : "Firma Exemplu SRL",
+            "sections" : 1,
+            "taxID" : null,
+            "trades" : [
+              "handyman"
+            ]
+          }
+        ],
+        "history" : [
+          {
+            "cost" : {
+              "amount" : "500",
+              "currency" : "RON"
+            },
+            "cycleDueDay" : null,
+            "isExample" : false,
+            "items" : [
+              {
+                "brand" : null,
+                "componentKey" : "custom.altceva-facut",
+                "cost" : "50",
+                "currency" : "RON",
+                "group" : null,
+                "laborCost" : null,
+                "name" : "Altceva făcut",
+                "partsCost" : null
+              },
+              {
+                "brand" : null,
+                "componentKey" : null,
+                "cost" : null,
+                "currency" : "RON",
+                "group" : null,
+                "laborCost" : "80",
+                "name" : "Manoperă",
+                "partsCost" : null
+              }
+            ],
+            "kind" : "repair",
+            "metricReading" : null,
+            "note" : null,
+            "occurredAt" : 1795168800,
+            "providers" : [
+              "Firma Exemplu SRL"
+            ],
+            "rating" : 4,
+            "reference" : "NR 0001",
+            "title" : "Altceva făcut"
+          }
+        ],
+        "readings" : [
+
+        ],
+        "section" : {
+          "hero" : null,
+          "tracked" : [
+            {
+              "date" : 1795168800,
+              "key" : "custom.altceva-facut",
+              "metricAtTime" : null,
+              "name" : "Altceva făcut"
+            }
+          ]
+        }
+      },
+      "before" : [
+
+      ],
+      "canUndo" : true,
+      "deadline" : null,
+      "firms" : [
+
+      ],
+      "name" : "a visit of other (job) filed from its form",
+      "now" : 1795687200,
+      "receipt" : true,
+      "refused" : null,
+      "section" : {
+        "category" : "other",
+        "name" : "Altele exemplu",
+        "readings" : [
+
+        ],
+        "values" : {
+
+        }
+      },
+      "undoRestores" : true
+    },
+    {
+      "action" : {
+        "do" : "file",
+        "extras" : [
+          {
+            "cost" : "50",
+            "name" : "Altceva făcut"
+          },
+          {
+            "cost" : "80",
+            "name" : "Manoperă"
+          }
+        ],
+        "named" : "Firma Exemplu SRL",
+        "note" : "O notă",
+        "odometer" : 1000,
+        "on" : 1795168800,
+        "rating" : 4,
+        "reference" : "NR 0001",
+        "ticked" : [
+          {
+            "brand" : "Marca Exemplu",
+            "componentKey" : "drivetrain.chain",
+            "cost" : "100"
+          }
+        ],
+        "total" : "500"
+      },
+      "after" : {
+        "deadline" : null,
+        "firms" : [
+          {
+            "name" : "Firma Exemplu SRL",
+            "sections" : 1,
+            "taxID" : null,
+            "trades" : [
+              "mechanic"
+            ]
+          }
+        ],
+        "history" : [
+          {
+            "cost" : {
+              "amount" : "500",
+              "currency" : "RON"
+            },
+            "cycleDueDay" : null,
+            "isExample" : false,
+            "items" : [
+              {
+                "brand" : null,
+                "componentKey" : "custom.altceva-facut",
+                "cost" : "50",
+                "currency" : "RON",
+                "group" : null,
+                "laborCost" : null,
+                "name" : "Altceva făcut",
+                "partsCost" : null
+              },
+              {
+                "brand" : "Marca Exemplu",
+                "componentKey" : "drivetrain.chain",
+                "cost" : "100",
+                "currency" : "RON",
+                "group" : "Transmisie",
+                "laborCost" : null,
+                "name" : "Lanț",
+                "partsCost" : null
+              },
+              {
+                "brand" : null,
+                "componentKey" : null,
+                "cost" : null,
+                "currency" : "RON",
+                "group" : null,
+                "laborCost" : "80",
+                "name" : "Manoperă",
+                "partsCost" : null
+              }
+            ],
+            "kind" : "maintenance",
+            "metricReading" : 1000,
+            "note" : null,
+            "occurredAt" : 1795168800,
+            "providers" : [
+              "Firma Exemplu SRL"
+            ],
+            "rating" : 4,
+            "reference" : "NR 0001",
+            "title" : "Lanț, Altceva făcut"
+          }
+        ],
+        "readings" : [
+          {
+            "at" : 1795168800,
+            "startsCounter" : false,
+            "value" : 1000
+          }
+        ],
+        "section" : {
+          "hero" : 1000,
+          "tracked" : [
+            {
+              "date" : 1795168800,
+              "key" : "custom.altceva-facut",
+              "metricAtTime" : 1000,
+              "name" : "Altceva făcut"
+            },
+            {
+              "date" : 1795168800,
+              "key" : "drivetrain.chain",
+              "metricAtTime" : 1000,
+              "name" : "Lanț"
+            }
+          ]
+        }
+      },
+      "before" : [
+
+      ],
+      "canUndo" : true,
+      "deadline" : null,
+      "firms" : [
+
+      ],
+      "name" : "a visit of bike (service) filed from its form",
+      "now" : 1795687200,
+      "receipt" : true,
+      "refused" : null,
+      "section" : {
+        "category" : "bike",
+        "name" : "Biciclete exemplu",
+        "readings" : [
+
+        ],
+        "values" : {
+
+        }
+      },
+      "undoRestores" : true
+    },
+    {
+      "action" : {
+        "do" : "file",
+        "extras" : [
+          {
+            "cost" : "50",
+            "name" : "Altceva făcut"
+          },
+          {
+            "cost" : "80",
+            "name" : "Manoperă"
+          }
+        ],
+        "named" : "Firma Exemplu SRL",
+        "note" : "O notă",
+        "odometer" : 1000,
+        "on" : 1795168800,
+        "rating" : 4,
+        "reference" : "NR 0001",
+        "ticked" : [
+          {
+            "brand" : "Marca Exemplu",
+            "componentKey" : "maintenance.descale",
+            "cost" : "100"
+          }
+        ],
+        "total" : "500"
+      },
+      "after" : {
+        "deadline" : null,
+        "firms" : [
+
+        ],
+        "history" : [
+          {
+            "cost" : {
+              "amount" : "500",
+              "currency" : "RON"
+            },
+            "cycleDueDay" : null,
+            "isExample" : false,
+            "items" : [
+              {
+                "brand" : null,
+                "componentKey" : "custom.altceva-facut",
+                "cost" : "50",
+                "currency" : "RON",
+                "group" : null,
+                "laborCost" : null,
+                "name" : "Altceva făcut",
+                "partsCost" : null
+              },
+              {
+                "brand" : null,
+                "componentKey" : "maintenance.descale",
+                "cost" : "100",
+                "currency" : "RON",
+                "group" : "Întreținere",
+                "laborCost" : null,
+                "name" : "Decalcifiere",
+                "partsCost" : null
+              },
+              {
+                "brand" : null,
+                "componentKey" : null,
+                "cost" : null,
+                "currency" : "RON",
+                "group" : null,
+                "laborCost" : "80",
+                "name" : "Manoperă",
+                "partsCost" : null
+              }
+            ],
+            "kind" : "maintenance",
+            "metricReading" : null,
+            "note" : null,
+            "occurredAt" : 1795168800,
+            "providers" : [
+
+            ],
+            "rating" : null,
+            "reference" : "NR 0001",
+            "title" : "Decalcifiere, Altceva făcut"
+          }
+        ],
+        "readings" : [
+
+        ],
+        "section" : {
+          "hero" : null,
+          "tracked" : [
+            {
+              "date" : 1795168800,
+              "key" : "custom.altceva-facut",
+              "metricAtTime" : null,
+              "name" : "Altceva făcut"
+            },
+            {
+              "date" : 1795168800,
+              "key" : "maintenance.descale",
+              "metricAtTime" : null,
+              "name" : "Decalcifiere"
+            }
+          ]
+        }
+      },
+      "before" : [
+
+      ],
+      "canUndo" : true,
+      "deadline" : null,
+      "firms" : [
+
+      ],
+      "name" : "a visit of espresso (upkeep) filed from its form",
+      "now" : 1795687200,
+      "receipt" : true,
+      "refused" : null,
+      "section" : {
+        "category" : "espresso",
+        "name" : "Espressoare exemplu",
+        "readings" : [
+
+        ],
+        "values" : {
+
+        }
+      },
+      "undoRestores" : true
+    }
+  ],
+  "rule" : "HistoryActions: recordVisit, record, addNote, setNote, rate, delete, addItems; a visit filed from its form (VisitDraft.filing through CaptureFiler, its firm by ProviderActions.findOrCreate); ObligationActions.complete with its parts and jobs",
+  "shape" : "section: the section (its category, name, values in the archive's form, kilometre readings at UTC moments). firms: firms made first (a mechanic each, linked to it), by index. deadline: a deadline of its category made first (its blueprint and first due day), or null. before: actions taken first; action: the one compared. Each action's 'do' and its parts: 'on' a moment in seconds; amounts as text in lei; checklist: ticked parts (componentKey, cost, brand); items and extras: rows (name, cost, laborCost, componentKey); provider: a firm by index; named and taxID: a firm named on the form; entry: a record an earlier action made, by index; lowerReading: the answer to a lower counter. 'file' fills the visit form's draft with all of it and files what the form keeps. now: every action's clock, days counted in Bucharest. refused: the kind of refusal (lowerReading, noteEmpty, example), or null. after: the binder after it: every record of history by when, then title (its kind, title, when, counter, cost, note, number, rating, the cycle it closed, firms by name, its rows by name: part key, group, amounts as text, currency, brand), the section's readings by when, the deadline (due day, status, counter) or null, every firm by name (CUI, trades, sections it is linked to), and the section's hero value with the parts its history follows (each by key: its last name, when and counter). receipt: whether the action gives an undo receipt; canUndo: whether it has anything to take back. undoRestores: for one that has, whether undo gives the binder back as before it; null otherwise.",
+  "source" : "ios/DosarCuSina/Services/History/HistoryActions.swift, HistoryDeletion.swift, ios/DosarCuSina/Views/Add/Visit/VisitDraft.swift, ios/DosarCuSina/Views/Capture/Filing/CaptureFiler.swift",
+  "writtenBy" : "ios/DosarCuSinaTests/HistoryVectorsTests.swift"
+}

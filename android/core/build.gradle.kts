@@ -41,10 +41,21 @@ val travelResources = tasks.register<Sync>("travelResources") {
     }
     into(layout.buildDirectory.dir("travel-resources"))
 }
+// The words capture's shared readers look for that are no one kind's (what a line of work is that is
+// never a part), exported by the iOS app's CaptureLexiconExportTests to shared/catalog/capture/:
+// the one copy, never a list of Android's own (core.capture).
+val captureLexicon = tasks.register<Sync>("captureLexiconResources") {
+    from(shared.resolve("catalog/capture")) {
+        include("*.json")
+        into("com/ar/dosarcusina/core/capture")
+    }
+    into(layout.buildDirectory.dir("capture-lexicon"))
+}
 sourceSets.main {
     resources.srcDir(subscriptionCatalog)
     resources.srcDir(documentCatalog)
     resources.srcDir(travelResources)
+    resources.srcDir(captureLexicon)
 }
 
 // The tests read the iOS app's answers from the repository's shared/test-vectors/.

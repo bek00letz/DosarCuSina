@@ -1,0 +1,472 @@
+{
+  "cases" : [
+    {
+      "addsNote" : false,
+      "offersVisit" : true,
+      "shape" : {
+        "asksBrand" : true,
+        "asksCounter" : true,
+        "asksNote" : false,
+        "asksWork" : true,
+        "checksWarranty" : false,
+        "costIsOptional" : false,
+        "documentKind" : "invoice",
+        "fields" : [
+          "cost",
+          "counter",
+          "paper",
+          "provider",
+          "work"
+        ],
+        "historyKind" : "maintenance",
+        "paper" : "invoice",
+        "paperIsInvoice" : true,
+        "providerTrade" : "mechanic",
+        "requirement" : [
+          "cost",
+          "paper",
+          "work"
+        ],
+        "sum" : "parts"
+      },
+      "visitKind" : "service"
+    },
+    {
+      "addsNote" : false,
+      "offersVisit" : true,
+      "shape" : {
+        "asksBrand" : false,
+        "asksCounter" : false,
+        "asksNote" : false,
+        "asksWork" : true,
+        "checksWarranty" : false,
+        "costIsOptional" : false,
+        "documentKind" : "invoice",
+        "fields" : [
+          "cost",
+          "paper",
+          "provider",
+          "work"
+        ],
+        "historyKind" : "repair",
+        "paper" : "invoice",
+        "paperIsInvoice" : true,
+        "providerTrade" : "handyman",
+        "requirement" : [
+          "cost",
+          "paper",
+          "work"
+        ],
+        "sum" : "rows"
+      },
+      "visitKind" : "job"
+    },
+    {
+      "addsNote" : false,
+      "offersVisit" : true,
+      "shape" : {
+        "asksBrand" : false,
+        "asksCounter" : false,
+        "asksNote" : true,
+        "asksWork" : false,
+        "checksWarranty" : true,
+        "costIsOptional" : true,
+        "documentKind" : "invoice",
+        "fields" : [
+          "cost",
+          "note",
+          "paper",
+          "provider"
+        ],
+        "historyKind" : "repair",
+        "paper" : "invoice",
+        "paperIsInvoice" : true,
+        "providerTrade" : "other",
+        "requirement" : [
+          "cost",
+          "note",
+          "paper"
+        ],
+        "sum" : "rows"
+      },
+      "visitKind" : "repair"
+    },
+    {
+      "addsNote" : false,
+      "offersVisit" : true,
+      "shape" : {
+        "asksBrand" : false,
+        "asksCounter" : false,
+        "asksNote" : false,
+        "asksWork" : true,
+        "checksWarranty" : false,
+        "costIsOptional" : true,
+        "documentKind" : null,
+        "fields" : [
+          "cost",
+          "work"
+        ],
+        "historyKind" : "maintenance",
+        "paper" : null,
+        "paperIsInvoice" : false,
+        "providerTrade" : null,
+        "requirement" : [
+          "work"
+        ],
+        "sum" : "rows"
+      },
+      "visitKind" : "upkeep"
+    },
+    {
+      "addsNote" : false,
+      "offersVisit" : true,
+      "shape" : {
+        "asksBrand" : false,
+        "asksCounter" : false,
+        "asksNote" : true,
+        "asksWork" : false,
+        "checksWarranty" : false,
+        "costIsOptional" : true,
+        "documentKind" : "report",
+        "fields" : [
+          "cost",
+          "note",
+          "paper",
+          "provider"
+        ],
+        "historyKind" : "visit",
+        "paper" : "medical",
+        "paperIsInvoice" : false,
+        "providerTrade" : "doctor",
+        "requirement" : null,
+        "sum" : "rows"
+      },
+      "visitKind" : "doctor"
+    },
+    {
+      "addsNote" : false,
+      "offersVisit" : true,
+      "shape" : {
+        "asksBrand" : false,
+        "asksCounter" : false,
+        "asksNote" : false,
+        "asksWork" : true,
+        "checksWarranty" : false,
+        "costIsOptional" : true,
+        "documentKind" : "report",
+        "fields" : [
+          "cost",
+          "paper",
+          "provider",
+          "work"
+        ],
+        "historyKind" : "visit",
+        "paper" : "veterinary",
+        "paperIsInvoice" : false,
+        "providerTrade" : "vet",
+        "requirement" : null,
+        "sum" : "rows"
+      },
+      "visitKind" : "vet"
+    },
+    {
+      "addsNote" : true,
+      "offersVisit" : false,
+      "shape" : null,
+      "visitKind" : "note"
+    },
+    {
+      "addsNote" : false,
+      "offersVisit" : false,
+      "shape" : null,
+      "visitKind" : "none"
+    },
+    {
+      "category" : "vehicle",
+      "form" : {
+        "components" : [
+          "brakes.padsFront",
+          "brakes.padsRear",
+          "brakes.discsFront",
+          "brakes.discsRear",
+          "brakes.fluid",
+          "engine.oil",
+          "filters.air",
+          "filters.cabin",
+          "filters.fuel",
+          "engine.timing",
+          "engine.sparkPlugs",
+          "engine.coolant",
+          "engine.auxiliaryBelt",
+          "transmission.clutch",
+          "transmission.gearboxOil",
+          "suspension.shockAbsorbers",
+          "tyres.summer",
+          "tyres.winter",
+          "tyres.alignment",
+          "tyres.balancing",
+          "electrical.battery",
+          "body.wipers",
+          "climate.acService"
+        ],
+        "counterField" : "vehicle.odometer",
+        "fields" : [
+          "cost",
+          "counter",
+          "paper",
+          "provider",
+          "work"
+        ],
+        "hasChecklist" : true,
+        "hasRows" : true,
+        "paperFacts" : [
+          "day",
+          "total",
+          "issuer"
+        ],
+        "rowsAreParts" : true,
+        "warrantyField" : null
+      },
+      "listsParts" : true,
+      "visitKind" : "service"
+    },
+    {
+      "category" : "home",
+      "form" : {
+        "components" : [
+          "heating.boiler",
+          "heating.boilerService",
+          "heating.radiators",
+          "plumbing.taps",
+          "plumbing.waterHeater",
+          "plumbing.toilet",
+          "plumbing.waterFilter",
+          "gas.detector",
+          "kitchen.hood",
+          "kitchen.cooker",
+          "climate.acFilters",
+          "electrical.panel",
+          "windows.seals"
+        ],
+        "counterField" : null,
+        "fields" : [
+          "cost",
+          "paper",
+          "provider",
+          "work"
+        ],
+        "hasChecklist" : true,
+        "hasRows" : true,
+        "paperFacts" : [
+          "day",
+          "total",
+          "issuer"
+        ],
+        "rowsAreParts" : false,
+        "warrantyField" : null
+      },
+      "listsParts" : false,
+      "visitKind" : "job"
+    },
+    {
+      "category" : "documents",
+      "form" : null,
+      "listsParts" : false,
+      "visitKind" : "none"
+    },
+    {
+      "category" : "pet",
+      "form" : {
+        "components" : [
+          "vaccine.rabies",
+          "vaccine.core",
+          "parasites.internal",
+          "parasites.external",
+          "care.dental",
+          "care.grooming",
+          "medicine"
+        ],
+        "counterField" : null,
+        "fields" : [
+          "cost",
+          "paper",
+          "provider",
+          "work"
+        ],
+        "hasChecklist" : true,
+        "hasRows" : true,
+        "paperFacts" : [
+          "day",
+          "total",
+          "issuer"
+        ],
+        "rowsAreParts" : false,
+        "warrantyField" : null
+      },
+      "listsParts" : false,
+      "visitKind" : "vet"
+    },
+    {
+      "category" : "health",
+      "form" : {
+        "components" : [
+
+        ],
+        "counterField" : null,
+        "fields" : [
+          "cost",
+          "note",
+          "paper",
+          "provider"
+        ],
+        "hasChecklist" : false,
+        "hasRows" : false,
+        "paperFacts" : [
+          "day",
+          "total",
+          "issuer"
+        ],
+        "rowsAreParts" : false,
+        "warrantyField" : null
+      },
+      "listsParts" : false,
+      "visitKind" : "doctor"
+    },
+    {
+      "category" : "purchase",
+      "form" : {
+        "components" : [
+
+        ],
+        "counterField" : null,
+        "fields" : [
+          "cost",
+          "note",
+          "paper",
+          "provider"
+        ],
+        "hasChecklist" : false,
+        "hasRows" : false,
+        "paperFacts" : [
+          "day",
+          "total",
+          "issuer"
+        ],
+        "rowsAreParts" : false,
+        "warrantyField" : "purchase.warrantyUntil"
+      },
+      "listsParts" : false,
+      "visitKind" : "repair"
+    },
+    {
+      "category" : "subscription",
+      "form" : null,
+      "listsParts" : false,
+      "visitKind" : "none"
+    },
+    {
+      "category" : "other",
+      "form" : {
+        "components" : [
+
+        ],
+        "counterField" : null,
+        "fields" : [
+          "cost",
+          "paper",
+          "provider",
+          "work"
+        ],
+        "hasChecklist" : false,
+        "hasRows" : true,
+        "paperFacts" : [
+          "day",
+          "total",
+          "issuer"
+        ],
+        "rowsAreParts" : false,
+        "warrantyField" : null
+      },
+      "listsParts" : false,
+      "visitKind" : "job"
+    },
+    {
+      "category" : "bike",
+      "form" : {
+        "components" : [
+          "drivetrain.chain",
+          "drivetrain.cassette",
+          "brakes.pads",
+          "suspension.fork",
+          "wheels.tyres"
+        ],
+        "counterField" : "bike.odometer",
+        "fields" : [
+          "cost",
+          "counter",
+          "paper",
+          "provider",
+          "work"
+        ],
+        "hasChecklist" : true,
+        "hasRows" : true,
+        "paperFacts" : [
+          "day",
+          "total",
+          "issuer"
+        ],
+        "rowsAreParts" : true,
+        "warrantyField" : null
+      },
+      "listsParts" : true,
+      "visitKind" : "service"
+    },
+    {
+      "category" : "plants",
+      "form" : null,
+      "listsParts" : false,
+      "visitKind" : "note"
+    },
+    {
+      "category" : "tenancy",
+      "form" : null,
+      "listsParts" : false,
+      "visitKind" : "none"
+    },
+    {
+      "category" : "member",
+      "form" : null,
+      "listsParts" : false,
+      "visitKind" : "none"
+    },
+    {
+      "category" : "espresso",
+      "form" : {
+        "components" : [
+          "maintenance.descale",
+          "maintenance.gasket",
+          "maintenance.waterFilter"
+        ],
+        "counterField" : null,
+        "fields" : [
+          "cost",
+          "work"
+        ],
+        "hasChecklist" : true,
+        "hasRows" : true,
+        "paperFacts" : [
+          "day",
+          "total"
+        ],
+        "rowsAreParts" : false,
+        "warrantyField" : null
+      },
+      "listsParts" : false,
+      "visitKind" : "upkeep"
+    }
+  ],
+  "rule" : "VisitKind (shape, offersVisit, addsNote), VisitShape (fields, requirement, paper), VisitForm.make(for:) over every built-in category, VisitForm.listsParts",
+  "shape" : "visitKind with shape: what a kind's visit asks (null for one with no visits): the history kind it writes, its paper (raw, whether an invoice, how it is kept), whether it asks what was done, a part's brand, a note, the counter, whether its cost may be nothing (a hint under it), what its rows add up to (parts or rows), whether it checks the warranty, the trade of a firm it adds, what saving needs (any one of these fields, null: the day alone) and every field it shows. category with form: a built-in's form (null for none): the fields it shows, whether it ticks a checklist and writes rows, whether its rows are parts, the parts it ticks, its counter field and warranty field, what a paper fills in; listsParts: whether a record's page calls its rows parts.",
+  "source" : "ios/DosarCuSina/Models/Templates/VisitKind.swift, VisitShape.swift, ios/DosarCuSina/Services/History/VisitForm.swift",
+  "writtenBy" : "ios/DosarCuSinaTests/HistoryVectorsTests.swift"
+}

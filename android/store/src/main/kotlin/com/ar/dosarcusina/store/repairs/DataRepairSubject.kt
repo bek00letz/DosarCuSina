@@ -166,6 +166,40 @@ sealed interface DataRepairSubject {
      */
     data class DuplicateProviders(val keptId: UUID, val duplicateIds: List<UUID>, val name: String) :
         DataRepairSubject
+
+    /**
+     * A document moved here that still points at another section's deadline or visit, as the iOS app's
+     * `.staleLinks`: „[document]” din [place] e încă legat de locul de unde l-ai mutat. Îl dezleg de acolo?
+     */
+    data class StaleLinks(
+        val attachmentId: UUID,
+        val obligationId: UUID?,
+        val historyEntryId: UUID?,
+        val document: String,
+        val place: String,
+    ) : DataRepairSubject
+
+    /**
+     * A visit saved without its invoice while the one invoice that fits sits loose beside it, as the iOS app's
+     * `.visitInvoice`: Vizita din [day] la [section] s-a salvat fără factura ei, care e alături. O leg de vizită?
+     */
+    data class VisitInvoice(val visitId: UUID, val invoiceId: UUID, val day: CalendarDay, val section: String) :
+        DataRepairSubject
+
+    /**
+     * The same visit's invoice logged more than once in a section's history, as the iOS app's `.sameVisit`:
+     * Factura din [day] e trecută de mai multe ori în istoricul „[section]”. O las o singură dată?
+     */
+    data class SameVisit(val keep: UUID, val merge: List<UUID>, val day: CalendarDay, val section: String) :
+        DataRepairSubject
+
+    /**
+     * A visit's labour line an earlier version kept as a part, as the iOS app's `.labourPart`: La „[place]”,
+     * rândul „[line]” din vizita din [day] e trecut ca piesă. Îl păstrez ca manoperă a vizitei? Costul
+     * vizitei rămâne același. [place] is the section's name, else the visit's title, else the line's.
+     */
+    data class LabourPart(val itemId: UUID, val place: String, val line: String, val day: CalendarDay?) :
+        DataRepairSubject
 }
 
 /** A record by its kind and its key (`Table.keyOf`: its id, a category's key), as the iOS app's `RecordRef`. */

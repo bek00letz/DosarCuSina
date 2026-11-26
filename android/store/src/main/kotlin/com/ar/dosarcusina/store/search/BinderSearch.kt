@@ -2,6 +2,7 @@ package com.ar.dosarcusina.store.search
 
 import com.ar.dosarcusina.archive.v3.FieldDefinition
 import com.ar.dosarcusina.archive.v3.FieldValue
+import com.ar.dosarcusina.core.history.HistoryItemSnapshot
 import com.ar.dosarcusina.core.search.SearchComponent
 import com.ar.dosarcusina.core.search.SearchDeadline
 import com.ar.dosarcusina.core.search.SearchDocument
@@ -9,7 +10,6 @@ import com.ar.dosarcusina.core.search.SearchEntries
 import com.ar.dosarcusina.core.search.SearchFact
 import com.ar.dosarcusina.core.search.SearchFirm
 import com.ar.dosarcusina.core.search.SearchPaper
-import com.ar.dosarcusina.core.search.SearchPart
 import com.ar.dosarcusina.core.search.SearchRecord
 import com.ar.dosarcusina.core.search.SearchSection
 import com.ar.dosarcusina.core.search.SearchValue
@@ -173,7 +173,7 @@ class BinderSearch(
             parts = links.recordsOf(asset.pk).flatMap { entry ->
                 val names = links.providerNames(entry.pk)
                 links.partsOf(entry.pk).map { item ->
-                    SearchPart(
+                    HistoryItemSnapshot(
                         componentKey = item.componentKey, name = item.name,
                         entryId = entry.id, occurredAt = entry.occurredAt,
                         partBrandOrCode = item.partBrandOrCode, supplierName = links.providerName(item.supplier),
