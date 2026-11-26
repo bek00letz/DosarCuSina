@@ -6,6 +6,12 @@ To propose a change to a decision, open an issue with the **Proposal** template 
 
 ---
 
+## 2026-11-26
+
+### A number read becomes a Double one way, correctly rounded
+- **Decided:** a number read (a `Decimal`) becomes a `Double` only through `RomanianNumber.double`, which reads the number's exact decimal text and so gives the nearest Double, as Kotlin's `BigDecimal.toDouble()` does. Foundation's `NSDecimalNumber.doubleValue`, used before, can miss by one step: a printed index of 98765.4321 was stored as 98765.43209999999, where the Android app stores 98765.4321. The architecture check's `decimal-to-double` rule keeps it the only way. *Why:* both apps must store the same value for the same paper, or a bill filed on one and again on the other counts its index twice.
+- **Decided:** values earlier versions stored a step off are put back by a repair that runs by itself (`DecimalDoublesStep`, on both apps, by one rule, `RomanianNumber.correction(of:as:)`): a stored Double that isn't the Double of a number with at most its kind's decimals (`NumberKind.decimals`: two for money, three for a meter index or another measured value, none for kilometres and counts), while a Double at most two steps above or below it is (the old conversion missed about a third of the numbers with two or three decimals, by one step or, rarely, two), becomes the nearest such one; only where the steps are small enough that one such number at most is within reach, so the number meant is never in doubt. It covers readings, a record's counter and a section's numbers; what anyone sees doesn't change, so it doesn't ask, and it is the app's own step, with no change time. *Alternatives:* listing them for the owner to approve (nothing they see changes, so there is nothing to decide); correcting any number of decimals (the app writes at most three, and a number with more stays as stored: a four-decimal index kept a step off is not put back).
+
 ## 2026-11-25
 
 ### A scanned page in a backup is HEIC or JPEG (owner)

@@ -6616,6 +6616,9 @@
     "Numele și cât de important e vin din categoria lui, așa că rămân cum sunt." : {
       "comment" : "Error: a category's deadline can't be renamed or have its importance changed."
     },
+    "Numere cu zecimale" : {
+      "comment" : "Repair group: numbers with decimals an earlier version kept a hair off."
+    },
     "Numere de card întregi" : {
       "comment" : "Repair group: whole bank card numbers kept in rows, notes or titles by older builds."
     },
