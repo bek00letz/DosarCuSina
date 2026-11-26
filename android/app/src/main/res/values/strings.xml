@@ -1016,8 +1016,8 @@
     <string name="app_codul_de_jos_al_documentului_1a16a8">Codul de jos al documentului arată: %1$s</string>
     <string name="app_codul_de_jos_al_documentului_nu_808e9a">Codul de jos al documentului nu s-a citit sigur.</string>
     <string name="app_codul_nu_s_a_putut_pastra_in_bf6b93">Codul nu s-a putut păstra în siguranță pe acest telefon. Încearcă din nou peste puțin timp.</string>
-    <!-- iOS: Codul rămâne ascuns. Îl vezi după Face ID, din pagina actului. · Android says it differently: Android unlocks with the fingerprint or the phone's screen lock; there is no Face ID. -->
-    <string name="app_codul_ramane_ascuns_il_vezi_dupa_9b33a4">Codul rămâne ascuns. Îl vezi după deblocarea cu amprenta, din pagina actului.</string>
+    <!-- iOS: Codul rămâne ascuns. Îl vezi după Face ID, din pagina actului. · Android says it differently: Android unlocks with the fingerprint, the face or the phone's PIN, and has no Face ID: „deblocarea telefonului” covers all three (the owner's choice, 26 November 2026). -->
+    <string name="app_codul_ramane_ascuns_il_vezi_dupa_9b33a4">Codul rămâne ascuns. Îl vezi după deblocarea telefonului, din pagina actului.</string>
     <string name="app_codul_telefonului_65ed6f">Codul telefonului</string>
     <string name="app_coduri_be2962">Coduri</string>
     <string name="app_coduri_de_abonament_9709e9">Coduri de abonament</string>
@@ -1254,8 +1254,8 @@
     <!-- iOS: Deschide cu %@. -->
     <string name="app_deschide_cu_x_222969">Deschide cu %1$s.</string>
     <string name="app_deschide_dosar_cu_sina_ca_sa_c65054">Deschide Dosar cu Șină ca să bifezi.</string>
-    <!-- iOS: Deschide Dosar cu Șină ca să confirmi cu Face ID. · Android says it differently: Android unlocks with the fingerprint or the phone's screen lock; there is no Face ID. -->
-    <string name="app_deschide_dosar_cu_sina_ca_sa_80d887">Deschide Dosar cu Șină ca să confirmi cu amprenta.</string>
+    <!-- iOS: Deschide Dosar cu Șină ca să confirmi cu Face ID. · Android says it differently: Android unlocks with the fingerprint, the face or the phone's PIN, and has no Face ID: „deblocarea telefonului” covers all three (the owner's choice, 26 November 2026). -->
+    <string name="app_deschide_dosar_cu_sina_ca_sa_80d887">Deschide Dosar cu Șină ca să confirmi cu deblocarea telefonului.</string>
     <string name="app_deschide_dosar_cu_sina_ca_sa_c69b03">Deschide Dosar cu Șină ca să termini de bifat.</string>
     <string name="app_deschide_dosar_cu_sina_ca_sa_8b1dca">Deschide Dosar cu Șină ca să vezi termenele.</string>
     <string name="app_deschide_dosar_cu_sina_o_clipa_685d8d">Deschide Dosar cu Șină o clipă</string>
@@ -1326,8 +1326,8 @@
     <string name="app_documentul_sta_la_documentele_65809e">Documentul stă la documentele acestei persoane.</string>
     <string name="app_dosar_2491a9">Dosar</string>
     <string name="app_dosar_cu_sina_e_blocat_46f81e">Dosar cu Șină e blocat</string>
-    <!-- iOS: Dosar cu Șină e protejat cu Face ID. Deschide aplicația ca să vezi termenele. · Android says it differently: Android unlocks with the fingerprint or the phone's screen lock; there is no Face ID. -->
-    <string name="app_dosar_cu_sina_e_protejat_cu_face_ec0805">Dosar cu Șină e protejat cu deblocarea cu amprenta. Deschide aplicația ca să vezi termenele.</string>
+    <!-- iOS: Dosar cu Șină e protejat cu Face ID. Deschide aplicația ca să vezi termenele. · Android says it differently: Android unlocks with the fingerprint, the face or the phone's PIN, and has no Face ID: „deblocarea telefonului” covers all three (the owner's choice, 26 November 2026). -->
+    <string name="app_dosar_cu_sina_e_protejat_cu_face_ec0805">Dosar cu Șină e protejat cu deblocarea telefonului. Deschide aplicația ca să vezi termenele.</string>
     <string name="app_dosarul_are_prea_multe_fisiere_8bdd58">Dosarul are prea multe fișiere pentru o singură copie. Șterge documentele de care nu mai ai nevoie, apoi încearcă din nou.</string>
     <string name="app_dosarul_de_acum_nu_se_sterge_fa4c68">Dosarul de acum nu se șterge: rămâne deoparte pe telefon, neatins. Aplicația pornește goală; dacă ai o copie de siguranță, o pui înapoi din Setări.</string>
     <string name="app_dosarul_de_pe_telefon_s_a_4dcd1e">Dosarul de pe telefon s-a sincronizat cu alt cont, așa că rămâne aici și nu se amestecă. Ca să folosești contul acesta, păstrez întâi o copie a dosarului de acum.</string>
@@ -1639,10 +1639,10 @@
     <string name="app_il_adaug_in_dosar_odata_cu_actul_c6feb5">Îl adaug în dosar odată cu actul.</string>
     <string name="app_il_cere_asiguratorul_la_primul_49b5b4">Îl cere asigurătorul la primul telefon. E scris pe poliță.</string>
     <string name="app_il_gasesti_in_cauta_767603">Îl găsești în Caută.</string>
-    <!-- iOS: Îl poți scrie din Editează. Îl arăt doar după Face ID. · Android says it differently: Android unlocks with the fingerprint or the phone's screen lock; there is no Face ID. -->
-    <string name="app_il_poti_scrie_din_editeaza_il_ac2175">Îl poți scrie din Editează. Îl arăt doar după deblocarea cu amprenta.</string>
-    <!-- iOS: Îl vezi sau îl copiezi doar după Face ID. · Android says it differently: Android unlocks with the fingerprint or the phone's screen lock; there is no Face ID. -->
-    <string name="app_il_vezi_sau_il_copiezi_doar_dupa_5306e5">Îl vezi sau îl copiezi doar după deblocarea cu amprenta.</string>
+    <!-- iOS: Îl poți scrie din Editează. Îl arăt doar după Face ID. · Android says it differently: Android unlocks with the fingerprint, the face or the phone's PIN, and has no Face ID: „deblocarea telefonului” covers all three (the owner's choice, 26 November 2026). -->
+    <string name="app_il_poti_scrie_din_editeaza_il_ac2175">Îl poți scrie din Editează. Îl arăt doar după deblocarea telefonului.</string>
+    <!-- iOS: Îl vezi sau îl copiezi doar după Face ID. · Android says it differently: Android unlocks with the fingerprint, the face or the phone's PIN, and has no Face ID: „deblocarea telefonului” covers all three (the owner's choice, 26 November 2026). -->
+    <string name="app_il_vezi_sau_il_copiezi_doar_dupa_5306e5">Îl vezi sau îl copiezi doar după deblocarea telefonului.</string>
     <string name="app_impozit_pe_cladire_53942d">Impozit pe clădire</string>
     <string name="app_impozitul_pe_masina_platit_pe_13ef00">Impozitul pe mașină, plătit pe tot anul</string>
     <!-- iOS: În „%@” e una cu aceeași dată și același total, cea din %@. Dacă e aceeași, o actualizez, iar poza asta devine copia ei nouă. -->
@@ -2455,8 +2455,8 @@
     <string name="app_programarile_dureaza_pentru_e96d0b">Programările durează. Pentru pașaport, multe țări cer 6 luni de valabilitate.</string>
     <string name="app_protectia_a_ramas_pornita_ca_s_o_6bb707">Protecția a rămas pornită. Ca s-o oprești, confirmă că ești tu.</string>
     <string name="app_protectie_c2b28c">Protecție</string>
-    <!-- iOS: Protejat cu Face ID · Android says it differently: Android unlocks with the fingerprint or the phone's screen lock; there is no Face ID. -->
-    <string name="app_protejat_cu_face_id_3cff11">Protejat cu amprenta</string>
+    <!-- iOS: Protejat cu Face ID · Android says it differently: Android unlocks with the fingerprint, the face or the phone's PIN, and has no Face ID: „deblocarea telefonului” covers all three (the owner's choice, 26 November 2026). -->
+    <string name="app_protejat_cu_face_id_3cff11">Protejat cu deblocarea telefonului</string>
     <string name="app_pui_inapoi_copia_bd748e">Pui înapoi copia?</string>
     <string name="app_pune_aici_ce_cauti_des_un_numar_3e0927">Pune aici ce cauți des, un număr sau un cod. Un cod sau o parolă rămân ascunse, ca un PIN.</string>
     <string name="app_pune_aici_masina_casa_actele_sau_c32b65">Pune aici mașina, casa, actele sau pisica. Îți spun din timp când expiră ceva și țin minte cine a reparat ce.</string>
@@ -2662,8 +2662,8 @@
     <string name="app_sectiunea_607eaf">Secțiunea</string>
     <string name="app_sectiunea_aleasa_nu_mai_exista_28c8da">Secțiunea aleasă nu mai există. Alege alta.</string>
     <string name="app_sectiunea_e_protejata_2f58a7">Secțiunea e protejată</string>
-    <!-- iOS: Secțiunea e protejată. Deschide-o cu Face ID sau cu codul, apoi salvează. · Android says it differently: Android unlocks with the fingerprint or the phone's screen lock; there is no Face ID. -->
-    <string name="app_sectiunea_e_protejata_deschide_o_fbad37">Secțiunea e protejată. Deschide-o cu amprenta sau cu codul, apoi salvează.</string>
+    <!-- iOS: Secțiunea e protejată. Deschide-o cu Face ID sau cu codul, apoi salvează. · Android says it differently: Android unlocks with the fingerprint, the face or the phone's PIN, and has no Face ID: „deblocarea telefonului” covers all three (the owner's choice, 26 November 2026). -->
+    <string name="app_sectiunea_e_protejata_deschide_o_fbad37">Secțiunea e protejată. Deschide-o cu deblocarea telefonului, apoi salvează.</string>
     <string name="app_sectiunea_nu_mai_exista_e22362">Secțiunea nu mai există</string>
     <string name="app_sectiuni_edfc2b">Secțiuni</string>
     <!-- iOS: Secțiunile din „%@” pot sta acum și în altă secțiune. Le muți tu, din pagina fiecăreia, cu „Mută la…”. -->
@@ -2826,8 +2826,8 @@
     <string name="app_termenul_de_aici_e_deja_pe_x_asa_dce0e6">Termenul de aici e deja pe %1$s, așa că rămâne așa.</string>
     <!-- iOS: Termenul e acum pe %@. -->
     <string name="app_termenul_e_acum_pe_x_3b43af">Termenul e acum pe %1$s.</string>
-    <!-- iOS: Termenul e într-o categorie protejată. Deschide-l în Dosar cu Șină și confirmă cu Face ID ca să-l bifezi. · Android says it differently: Android unlocks with the fingerprint or the phone's screen lock; there is no Face ID. -->
-    <string name="app_termenul_e_intr_o_categorie_02741c">Termenul e într-o categorie protejată. Deschide-l în Dosar cu Șină și confirmă cu amprenta ca să-l bifezi.</string>
+    <!-- iOS: Termenul e într-o categorie protejată. Deschide-l în Dosar cu Șină și confirmă cu Face ID ca să-l bifezi. · Android says it differently: Android unlocks with the fingerprint, the face or the phone's PIN, and has no Face ID: „deblocarea telefonului” covers all three (the owner's choice, 26 November 2026). -->
+    <string name="app_termenul_e_intr_o_categorie_02741c">Termenul e într-o categorie protejată. Deschide-l în Dosar cu Șină și confirmă cu deblocarea telefonului ca să-l bifezi.</string>
     <string name="app_termenul_e_pus_pe_pauza_sau_c9423d">Termenul e pus pe pauză sau încheiat. Pornește-l din nou mai întâi.</string>
     <string name="app_termenul_nu_mai_e_activ_poate_l_42616a">Termenul nu mai e activ. Poate l-ai bifat deja.</string>
     <string name="app_termenul_nu_mai_exista_62e0e4">Termenul nu mai există</string>
