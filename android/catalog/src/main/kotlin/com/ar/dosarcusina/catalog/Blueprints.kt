@@ -1,12 +1,13 @@
 package com.ar.dosarcusina.catalog
 
+import com.ar.dosarcusina.core.deadlines.defaultProfile
+import com.ar.dosarcusina.core.values.ObligationKind
 import com.ar.dosarcusina.archive.v3.FieldValue
 import com.ar.dosarcusina.archive.v3.FieldValues
 import com.ar.dosarcusina.archive.v3.ObligationBlueprint
 import com.ar.dosarcusina.archive.v3.RecurrenceRule
 import com.ar.dosarcusina.archive.v3.ReminderProfile
 import com.ar.dosarcusina.core.deadlines.CompletionKind
-import com.ar.dosarcusina.core.deadlines.ObligationKind
 import com.ar.dosarcusina.core.urgency.Consequence
 import com.ar.dosarcusina.core.values.CalendarDay
 import com.ar.dosarcusina.core.values.Money

@@ -1,5 +1,6 @@
 package com.ar.dosarcusina.store.repairs
 
+import com.ar.dosarcusina.core.values.ObligationKind
 import com.ar.dosarcusina.archive.v3.FieldValue
 import com.ar.dosarcusina.archive.v3.RecurrenceRule
 import com.ar.dosarcusina.archive.v3.ReminderProfile
@@ -7,7 +8,6 @@ import com.ar.dosarcusina.catalog.BuiltInBlueprints
 import com.ar.dosarcusina.catalog.BuiltInTemplates
 import com.ar.dosarcusina.catalog.DocumentFields
 import com.ar.dosarcusina.catalog.remindersFor
-import com.ar.dosarcusina.core.deadlines.ObligationKind
 import com.ar.dosarcusina.core.values.CalendarDay
 import com.ar.dosarcusina.core.values.KeptObject
 import com.ar.dosarcusina.store.Tables

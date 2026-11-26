@@ -1,5 +1,6 @@
 package com.ar.dosarcusina.core.deadlines
 
+import com.ar.dosarcusina.core.values.ObligationKind
 import com.ar.dosarcusina.core.deadlines.CompletionShape.Cost
 import com.ar.dosarcusina.core.deadlines.CompletionShape.Counter
 import com.ar.dosarcusina.core.deadlines.CompletionShape.NewEnd

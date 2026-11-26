@@ -1,9 +1,9 @@
 package com.ar.dosarcusina.store.repairs
 
+import com.ar.dosarcusina.core.values.ObligationKind
 import com.ar.dosarcusina.archive.v3.ObligationBlueprint
 import com.ar.dosarcusina.archive.v3.RecurrenceRule
 import com.ar.dosarcusina.catalog.obligationKind
-import com.ar.dosarcusina.core.deadlines.ObligationKind
 import com.ar.dosarcusina.core.values.ObligationStatus
 import com.ar.dosarcusina.core.values.RomanianText
 import com.ar.dosarcusina.store.BinderView

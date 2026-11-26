@@ -1,5 +1,7 @@
 package com.ar.dosarcusina.archive.v2
 
+import com.ar.dosarcusina.core.deadlines.defaultProfile
+import com.ar.dosarcusina.core.values.ObligationKind
 import com.ar.dosarcusina.archive.ArchiveError
 import com.ar.dosarcusina.archive.DossierArchiveReader
 import com.ar.dosarcusina.archive.binder.BuiltIns
@@ -24,7 +26,6 @@ import com.ar.dosarcusina.archive.v3.ServiceItemRecord
 import com.ar.dosarcusina.archive.v3.UnreadableRecord
 import com.ar.dosarcusina.core.deadlines.CompletionKind
 import com.ar.dosarcusina.core.deadlines.HistoryKind
-import com.ar.dosarcusina.core.deadlines.ObligationKind
 import com.ar.dosarcusina.core.values.CalendarDay
 import com.ar.dosarcusina.core.values.DosarCalendar
 import com.ar.dosarcusina.core.values.KeptObject
