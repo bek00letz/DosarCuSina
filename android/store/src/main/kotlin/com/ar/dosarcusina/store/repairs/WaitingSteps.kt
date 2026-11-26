@@ -28,10 +28,6 @@ object WaitingSteps {
     val visitsWithoutInvoice = WaitingStep(
         DataRepairStepId.VISITS_WITHOUT_INVOICE, DataRepairGroup.VISITS_WITHOUT_INVOICE, CAPTURE_REPAIRS,
     )
-    val duplicateProviders = WaitingStep(
-        DataRepairStepId.DUPLICATE_PROVIDERS, DataRepairGroup.FIRMS_KEPT_TWICE,
-        "CaptureRepairs' firms and ProviderActions (Phase 3)",
-    )
     val doubleCompletions = WaitingStep(
         DataRepairStepId.DOUBLE_COMPLETIONS, DataRepairGroup.DEADLINES_CLOSED_TWICE,
         "LikelyDoubleCompletions, RecurrenceEngine and ObligationActions (Phase 3)",
@@ -60,11 +56,6 @@ object WaitingSteps {
         "capture's bill reader (BillReader: the bill's layout, its meter index and how it says the index " +
             "was taken) and SubscriptionMeter.number (capture, Phase 5)",
     )
-    val sectionsIntoTheirHome = WaitingStep(
-        DataRepairStepId.SECTIONS_INTO_THEIR_HOME, DataRepairGroup.BELONGS_TO_ANOTHER_SECTION,
-        "AssetActions.automaticParent and AssetActions.move (Phase 3)",
-        isSuggestion = true, applyVerb = ApplyVerb.MOVE,
-    )
     val renewalRepeats = WaitingStep(
         DataRepairStepId.RENEWAL_REPEATS, DataRepairGroup.RENEWED_DOCUMENTS,
         "CompletionKind and CompletionShape.replacesDocument (Phase 3)",
@@ -80,10 +71,5 @@ object WaitingSteps {
     val labourParts = WaitingStep(
         DataRepairStepId.LABOUR_PARTS, DataRepairGroup.LABOUR,
         "LabourLine and CaptureLexicon.labourWords (Phase 3)",
-    )
-    val lostRecords = WaitingStep(
-        DataRepairStepId.LOST_RECORDS, DataRepairGroup.LOST_RECORDS,
-        "AssetActions.create (Phase 3), and the words „Recuperate” it keeps, from the app's strings",
-        applyVerb = ApplyVerb.KEEP,
     )
 }

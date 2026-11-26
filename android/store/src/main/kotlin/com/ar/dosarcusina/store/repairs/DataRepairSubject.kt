@@ -1,6 +1,7 @@
 package com.ar.dosarcusina.store.repairs
 
 import com.ar.dosarcusina.archive.v3.FieldDefinition
+import com.ar.dosarcusina.catalog.Role
 import com.ar.dosarcusina.core.values.CalendarDay
 import com.ar.dosarcusina.core.values.MeasurementUnit
 import com.ar.dosarcusina.store.BinderView
@@ -103,6 +104,35 @@ sealed interface DataRepairSubject {
         val unit: MeasurementUnit?,
         val section: String,
     ) : DataRepairSubject
+
+    /**
+     * A section standing on its own is offered to move under the household's only section of the part
+     * its category may belong to ([role], worded by `BelongingWording.moveSuggestion`): Trec
+     * „[section]” la „[parent]”? Apare pe pagina locuinței și rămâne în „[category]”. With several of
+     * that part, [assetId] and [parentId] are none and it only says how (`BelongingWording.severalNote`).
+     */
+    data class IntoHome(
+        val assetId: UUID?,
+        val parentId: UUID?,
+        val role: Role,
+        val section: String?,
+        val parent: String?,
+        val category: String,
+    ) : DataRepairSubject
+
+    /**
+     * A record whose section was deleted on another device is kept in „Recuperate”, worded by its kind
+     * alone (the section's lock isn't known, so nothing of it is named): Un termen a rămas fără
+     * secțiune…, Un document…, O înregistrare din Istoric…, O citire de contor….
+     */
+    data class LostRecord(val kind: LostRecordsStep.Kind, val id: UUID) : DataRepairSubject
+
+    /**
+     * Firms kept twice (the same name or CUI) are joined into the one kept first: „[name]” apare de mai
+     * multe ori în Agendă (același nume sau același CUI). Le unesc într-una?
+     */
+    data class DuplicateProviders(val keptId: UUID, val duplicateIds: List<UUID>, val name: String) :
+        DataRepairSubject
 }
 
 /** A record by its kind and its key (`Table.keyOf`: its id, a category's key), as the iOS app's `RecordRef`. */
