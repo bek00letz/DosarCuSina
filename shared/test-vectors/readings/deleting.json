@@ -1,0 +1,452 @@
+{
+  "cases" : [
+    {
+      "after" : [
+        {
+          "at" : "2026-01-10T10:00:00Z",
+          "basis" : null,
+          "key" : "1",
+          "kind" : "odometer",
+          "startsCounter" : false,
+          "unit" : "km",
+          "value" : 145000
+        },
+        {
+          "at" : "2026-04-01T10:00:00Z",
+          "basis" : null,
+          "key" : "3",
+          "kind" : "odometer",
+          "startsCounter" : true,
+          "unit" : "km",
+          "value" : 2500
+        },
+        {
+          "at" : "2026-05-01T10:00:00Z",
+          "basis" : null,
+          "key" : "4",
+          "kind" : "odometer",
+          "startsCounter" : false,
+          "unit" : "km",
+          "value" : 3100
+        }
+      ],
+      "delete" : 2,
+      "name" : "the first of a new counter hands it on",
+      "readings" : [
+        {
+          "at" : "2026-01-10T10:00:00Z",
+          "basis" : null,
+          "key" : 1,
+          "kind" : "odometer",
+          "startsCounter" : false,
+          "unit" : "km",
+          "value" : 145000
+        },
+        {
+          "at" : "2026-03-01T10:00:00Z",
+          "basis" : null,
+          "key" : 2,
+          "kind" : "odometer",
+          "startsCounter" : true,
+          "unit" : "km",
+          "value" : 1200
+        },
+        {
+          "at" : "2026-04-01T10:00:00Z",
+          "basis" : null,
+          "key" : 3,
+          "kind" : "odometer",
+          "startsCounter" : false,
+          "unit" : "km",
+          "value" : 2500
+        },
+        {
+          "at" : "2026-05-01T10:00:00Z",
+          "basis" : null,
+          "key" : 4,
+          "kind" : "odometer",
+          "startsCounter" : false,
+          "unit" : "km",
+          "value" : 3100
+        }
+      ]
+    },
+    {
+      "after" : [
+        {
+          "at" : "2026-01-10T10:00:00Z",
+          "basis" : null,
+          "key" : "1",
+          "kind" : "odometer",
+          "startsCounter" : false,
+          "unit" : "km",
+          "value" : 145000
+        },
+        {
+          "at" : "2026-03-01T10:00:00Z",
+          "basis" : null,
+          "key" : "2",
+          "kind" : "odometer",
+          "startsCounter" : true,
+          "unit" : "km",
+          "value" : 1200
+        },
+        {
+          "at" : "2026-05-01T10:00:00Z",
+          "basis" : null,
+          "key" : "4",
+          "kind" : "odometer",
+          "startsCounter" : false,
+          "unit" : "km",
+          "value" : 3100
+        }
+      ],
+      "delete" : 3,
+      "name" : "a reading after the start",
+      "readings" : [
+        {
+          "at" : "2026-01-10T10:00:00Z",
+          "basis" : null,
+          "key" : 1,
+          "kind" : "odometer",
+          "startsCounter" : false,
+          "unit" : "km",
+          "value" : 145000
+        },
+        {
+          "at" : "2026-03-01T10:00:00Z",
+          "basis" : null,
+          "key" : 2,
+          "kind" : "odometer",
+          "startsCounter" : true,
+          "unit" : "km",
+          "value" : 1200
+        },
+        {
+          "at" : "2026-04-01T10:00:00Z",
+          "basis" : null,
+          "key" : 3,
+          "kind" : "odometer",
+          "startsCounter" : false,
+          "unit" : "km",
+          "value" : 2500
+        },
+        {
+          "at" : "2026-05-01T10:00:00Z",
+          "basis" : null,
+          "key" : 4,
+          "kind" : "odometer",
+          "startsCounter" : false,
+          "unit" : "km",
+          "value" : 3100
+        }
+      ]
+    },
+    {
+      "after" : [
+        {
+          "at" : "2026-03-01T10:00:00Z",
+          "basis" : null,
+          "key" : "2",
+          "kind" : "odometer",
+          "startsCounter" : true,
+          "unit" : "km",
+          "value" : 1200
+        },
+        {
+          "at" : "2026-04-01T10:00:00Z",
+          "basis" : null,
+          "key" : "3",
+          "kind" : "odometer",
+          "startsCounter" : false,
+          "unit" : "km",
+          "value" : 2500
+        },
+        {
+          "at" : "2026-05-01T10:00:00Z",
+          "basis" : null,
+          "key" : "4",
+          "kind" : "odometer",
+          "startsCounter" : false,
+          "unit" : "km",
+          "value" : 3100
+        }
+      ],
+      "delete" : 1,
+      "name" : "the old counter's reading",
+      "readings" : [
+        {
+          "at" : "2026-01-10T10:00:00Z",
+          "basis" : null,
+          "key" : 1,
+          "kind" : "odometer",
+          "startsCounter" : false,
+          "unit" : "km",
+          "value" : 145000
+        },
+        {
+          "at" : "2026-03-01T10:00:00Z",
+          "basis" : null,
+          "key" : 2,
+          "kind" : "odometer",
+          "startsCounter" : true,
+          "unit" : "km",
+          "value" : 1200
+        },
+        {
+          "at" : "2026-04-01T10:00:00Z",
+          "basis" : null,
+          "key" : 3,
+          "kind" : "odometer",
+          "startsCounter" : false,
+          "unit" : "km",
+          "value" : 2500
+        },
+        {
+          "at" : "2026-05-01T10:00:00Z",
+          "basis" : null,
+          "key" : 4,
+          "kind" : "odometer",
+          "startsCounter" : false,
+          "unit" : "km",
+          "value" : 3100
+        }
+      ]
+    },
+    {
+      "after" : [
+        {
+          "at" : "2026-01-10T10:00:00Z",
+          "basis" : null,
+          "key" : "1",
+          "kind" : "odometer",
+          "startsCounter" : false,
+          "unit" : "km",
+          "value" : 145000
+        }
+      ],
+      "delete" : 2,
+      "name" : "a new counter with one reading",
+      "readings" : [
+        {
+          "at" : "2026-01-10T10:00:00Z",
+          "basis" : null,
+          "key" : 1,
+          "kind" : "odometer",
+          "startsCounter" : false,
+          "unit" : "km",
+          "value" : 145000
+        },
+        {
+          "at" : "2026-03-01T10:00:00Z",
+          "basis" : null,
+          "key" : 2,
+          "kind" : "odometer",
+          "startsCounter" : true,
+          "unit" : "km",
+          "value" : 1200
+        }
+      ]
+    },
+    {
+      "after" : [
+        {
+          "at" : "2026-01-10T10:00:00Z",
+          "basis" : null,
+          "key" : "1",
+          "kind" : "odometer",
+          "startsCounter" : false,
+          "unit" : "km",
+          "value" : 145000
+        },
+        {
+          "at" : "2026-03-01T10:00:00Z",
+          "basis" : null,
+          "key" : "2",
+          "kind" : "odometer",
+          "startsCounter" : true,
+          "unit" : "km",
+          "value" : 1200
+        },
+        {
+          "at" : "2026-04-01T10:00:00Z",
+          "basis" : null,
+          "key" : "3",
+          "kind" : "odometer",
+          "startsCounter" : false,
+          "unit" : "km",
+          "value" : 2500
+        },
+        {
+          "at" : "2026-05-01T10:00:00Z",
+          "basis" : null,
+          "key" : "4",
+          "kind" : "odometer",
+          "startsCounter" : false,
+          "unit" : "km",
+          "value" : 3100
+        },
+        {
+          "at" : "2026-07-01T10:00:00Z",
+          "basis" : null,
+          "key" : "6",
+          "kind" : "odometer",
+          "startsCounter" : true,
+          "unit" : "km",
+          "value" : 700
+        }
+      ],
+      "delete" : 5,
+      "name" : "a second new counter",
+      "readings" : [
+        {
+          "at" : "2026-01-10T10:00:00Z",
+          "basis" : null,
+          "key" : 1,
+          "kind" : "odometer",
+          "startsCounter" : false,
+          "unit" : "km",
+          "value" : 145000
+        },
+        {
+          "at" : "2026-03-01T10:00:00Z",
+          "basis" : null,
+          "key" : 2,
+          "kind" : "odometer",
+          "startsCounter" : true,
+          "unit" : "km",
+          "value" : 1200
+        },
+        {
+          "at" : "2026-04-01T10:00:00Z",
+          "basis" : null,
+          "key" : 3,
+          "kind" : "odometer",
+          "startsCounter" : false,
+          "unit" : "km",
+          "value" : 2500
+        },
+        {
+          "at" : "2026-05-01T10:00:00Z",
+          "basis" : null,
+          "key" : 4,
+          "kind" : "odometer",
+          "startsCounter" : false,
+          "unit" : "km",
+          "value" : 3100
+        },
+        {
+          "at" : "2026-06-01T10:00:00Z",
+          "basis" : null,
+          "key" : 5,
+          "kind" : "odometer",
+          "startsCounter" : true,
+          "unit" : "km",
+          "value" : 10
+        },
+        {
+          "at" : "2026-07-01T10:00:00Z",
+          "basis" : null,
+          "key" : 6,
+          "kind" : "odometer",
+          "startsCounter" : false,
+          "unit" : "km",
+          "value" : 700
+        }
+      ]
+    },
+    {
+      "after" : [
+        {
+          "at" : "2026-01-10T10:00:00Z",
+          "basis" : null,
+          "key" : "1",
+          "kind" : "odometer",
+          "startsCounter" : false,
+          "unit" : "km",
+          "value" : 145000
+        },
+        {
+          "at" : "2026-04-01T10:00:00Z",
+          "basis" : null,
+          "key" : "3",
+          "kind" : "odometer",
+          "startsCounter" : true,
+          "unit" : "km",
+          "value" : 2500
+        },
+        {
+          "at" : "2026-05-01T10:00:00Z",
+          "basis" : null,
+          "key" : "4",
+          "kind" : "odometer",
+          "startsCounter" : false,
+          "unit" : "km",
+          "value" : 3100
+        },
+        {
+          "at" : "2026-03-15T10:00:00Z",
+          "basis" : null,
+          "key" : "5",
+          "kind" : "engineHours",
+          "startsCounter" : false,
+          "unit" : "h",
+          "value" : 40
+        }
+      ],
+      "delete" : 2,
+      "name" : "another unit's reading stays",
+      "readings" : [
+        {
+          "at" : "2026-01-10T10:00:00Z",
+          "basis" : null,
+          "key" : 1,
+          "kind" : "odometer",
+          "startsCounter" : false,
+          "unit" : "km",
+          "value" : 145000
+        },
+        {
+          "at" : "2026-03-01T10:00:00Z",
+          "basis" : null,
+          "key" : 2,
+          "kind" : "odometer",
+          "startsCounter" : true,
+          "unit" : "km",
+          "value" : 1200
+        },
+        {
+          "at" : "2026-04-01T10:00:00Z",
+          "basis" : null,
+          "key" : 3,
+          "kind" : "odometer",
+          "startsCounter" : false,
+          "unit" : "km",
+          "value" : 2500
+        },
+        {
+          "at" : "2026-05-01T10:00:00Z",
+          "basis" : null,
+          "key" : 4,
+          "kind" : "odometer",
+          "startsCounter" : false,
+          "unit" : "km",
+          "value" : 3100
+        },
+        {
+          "at" : "2026-03-15T10:00:00Z",
+          "basis" : null,
+          "key" : 5,
+          "kind" : "engineHours",
+          "startsCounter" : false,
+          "unit" : "h",
+          "value" : 40
+        }
+      ]
+    }
+  ],
+  "rule" : "HouseholdMutations.deleteReading(_:in:)",
+  "shape" : "readings: a section's readings by key. delete: the key of the one that goes. after: the readings left by key, a counter the deleted one started handed on to the next of its counter.",
+  "source" : "ios/DosarCuSina/Services/History/Readings.swift",
+  "writtenBy" : "ios/DosarCuSinaTests/ReadingVectorsTests.swift"
+}
