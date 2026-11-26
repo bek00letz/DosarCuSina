@@ -1,0 +1,2282 @@
+{
+  "cases" : [
+    {
+      "deadlines" : [
+        {
+          "dueDay" : "2026-11-20",
+          "estimatedCost" : {
+            "amount" : "1250",
+            "currency" : "RON"
+          },
+          "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0001",
+          "isSensitive" : false,
+          "kind" : "insurance",
+          "reminders" : {
+            "consequence" : "legal",
+            "followUpAfterLapse" : null,
+            "graceDays" : 0,
+            "leadDays" : [
+              30,
+              7,
+              1
+            ],
+            "travelMarginDays" : 0
+          },
+          "sectionId" : "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbb0001",
+          "sectionName" : "VW Golf 2018",
+          "snoozedUntil" : null,
+          "status" : "active",
+          "title" : "RCA"
+        },
+        {
+          "dueDay" : "2026-11-23",
+          "estimatedCost" : null,
+          "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0002",
+          "isSensitive" : false,
+          "kind" : "health",
+          "reminders" : {
+            "consequence" : "health",
+            "followUpAfterLapse" : null,
+            "graceDays" : 7,
+            "leadDays" : [
+              7,
+              0
+            ],
+            "travelMarginDays" : 0
+          },
+          "sectionId" : "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbb0002",
+          "sectionName" : "PawPaw",
+          "snoozedUntil" : null,
+          "status" : "active",
+          "title" : "Vaccin antirabic"
+        },
+        {
+          "dueDay" : "2026-11-26",
+          "estimatedCost" : {
+            "amount" : "450",
+            "currency" : "RON"
+          },
+          "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0003",
+          "isSensitive" : false,
+          "kind" : "tax",
+          "reminders" : {
+            "consequence" : "financial",
+            "followUpAfterLapse" : null,
+            "graceDays" : 0,
+            "leadDays" : [
+              14,
+              1
+            ],
+            "travelMarginDays" : 0
+          },
+          "sectionId" : "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbb0003",
+          "sectionName" : "Apartament Exemplu",
+          "snoozedUntil" : null,
+          "status" : "active",
+          "title" : "Impozit pe clădiri"
+        },
+        {
+          "dueDay" : "2026-12-03",
+          "estimatedCost" : null,
+          "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0004",
+          "isSensitive" : false,
+          "kind" : "legal",
+          "reminders" : {
+            "consequence" : "legal",
+            "followUpAfterLapse" : null,
+            "graceDays" : 0,
+            "leadDays" : [
+              30,
+              7,
+              0
+            ],
+            "travelMarginDays" : 0
+          },
+          "sectionId" : "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbb0001",
+          "sectionName" : "VW Golf 2018",
+          "snoozedUntil" : null,
+          "status" : "active",
+          "title" : "ITP"
+        },
+        {
+          "dueDay" : "2026-12-15",
+          "estimatedCost" : {
+            "amount" : "900",
+            "currency" : "RON"
+          },
+          "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0005",
+          "isSensitive" : false,
+          "kind" : "maintenance",
+          "reminders" : {
+            "consequence" : "comfort",
+            "followUpAfterLapse" : null,
+            "graceDays" : 0,
+            "leadDays" : [
+              14
+            ],
+            "travelMarginDays" : 0
+          },
+          "sectionId" : "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbb0001",
+          "sectionName" : "VW Golf 2018",
+          "snoozedUntil" : null,
+          "status" : "active",
+          "title" : "Revizie"
+        },
+        {
+          "dueDay" : "2027-03-01",
+          "estimatedCost" : {
+            "amount" : "28",
+            "currency" : "EUR"
+          },
+          "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0006",
+          "isSensitive" : false,
+          "kind" : "legal",
+          "reminders" : {
+            "consequence" : "legal",
+            "followUpAfterLapse" : null,
+            "graceDays" : 0,
+            "leadDays" : [
+              30,
+              7,
+              0
+            ],
+            "travelMarginDays" : 0
+          },
+          "sectionId" : "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbb0001",
+          "sectionName" : "VW Golf 2018",
+          "snoozedUntil" : null,
+          "status" : "active",
+          "title" : "Rovinietă"
+        },
+        {
+          "dueDay" : "2027-04-10",
+          "estimatedCost" : null,
+          "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0007",
+          "isSensitive" : false,
+          "kind" : "renewal",
+          "reminders" : {
+            "consequence" : "legal",
+            "followUpAfterLapse" : null,
+            "graceDays" : 0,
+            "leadDays" : [
+              30,
+              7
+            ],
+            "travelMarginDays" : 180
+          },
+          "sectionId" : "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbb0004",
+          "sectionName" : "Persoană Exemplu",
+          "snoozedUntil" : null,
+          "status" : "active",
+          "title" : "Pașaport"
+        },
+        {
+          "dueDay" : "2026-11-27",
+          "estimatedCost" : null,
+          "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0008",
+          "isSensitive" : false,
+          "kind" : "routine",
+          "reminders" : {
+            "consequence" : "comfort",
+            "followUpAfterLapse" : null,
+            "graceDays" : 2,
+            "leadDays" : [
+              0
+            ],
+            "travelMarginDays" : 0
+          },
+          "sectionId" : "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbb0005",
+          "sectionName" : "Monstera",
+          "snoozedUntil" : null,
+          "status" : "active",
+          "title" : "Udat"
+        },
+        {
+          "dueDay" : "2026-11-25",
+          "estimatedCost" : null,
+          "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0009",
+          "isSensitive" : false,
+          "kind" : "payment",
+          "reminders" : {
+            "consequence" : "financial",
+            "followUpAfterLapse" : null,
+            "graceDays" : 0,
+            "leadDays" : [
+              14,
+              1
+            ],
+            "travelMarginDays" : 0
+          },
+          "sectionId" : "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbb0006",
+          "sectionName" : "Sală Exemplu",
+          "snoozedUntil" : "2026-11-28",
+          "status" : "active",
+          "title" : "Abonament sală"
+        },
+        {
+          "dueDay" : "2026-11-24",
+          "estimatedCost" : null,
+          "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0010",
+          "isSensitive" : false,
+          "kind" : "maintenance",
+          "reminders" : {
+            "consequence" : "comfort",
+            "followUpAfterLapse" : null,
+            "graceDays" : 0,
+            "leadDays" : [
+              14
+            ],
+            "travelMarginDays" : 0
+          },
+          "sectionId" : "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbb0003",
+          "sectionName" : "Apartament Exemplu",
+          "snoozedUntil" : null,
+          "status" : "paused",
+          "title" : "Filtru"
+        },
+        {
+          "dueDay" : "2026-11-01",
+          "estimatedCost" : null,
+          "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0011",
+          "isSensitive" : false,
+          "kind" : "tax",
+          "reminders" : {
+            "consequence" : "financial",
+            "followUpAfterLapse" : null,
+            "graceDays" : 0,
+            "leadDays" : [
+              14,
+              1
+            ],
+            "travelMarginDays" : 0
+          },
+          "sectionId" : "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbb0003",
+          "sectionName" : "Apartament Exemplu",
+          "snoozedUntil" : null,
+          "status" : "done",
+          "title" : "Taxă veche"
+        },
+        {
+          "dueDay" : "2026-11-02",
+          "estimatedCost" : null,
+          "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0012",
+          "isSensitive" : false,
+          "kind" : "insurance",
+          "reminders" : {
+            "consequence" : "legal",
+            "followUpAfterLapse" : null,
+            "graceDays" : 0,
+            "leadDays" : [
+              30,
+              7,
+              1
+            ],
+            "travelMarginDays" : 0
+          },
+          "sectionId" : "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbb0003",
+          "sectionName" : "Apartament Exemplu",
+          "snoozedUntil" : null,
+          "status" : "archived",
+          "title" : "Asigurare veche"
+        },
+        {
+          "dueDay" : "2027-01-05",
+          "estimatedCost" : {
+            "amount" : "1200",
+            "currency" : "RON"
+          },
+          "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0013",
+          "isSensitive" : false,
+          "kind" : "insurance",
+          "reminders" : {
+            "consequence" : "legal",
+            "followUpAfterLapse" : null,
+            "graceDays" : 0,
+            "leadDays" : [
+              30,
+              7,
+              1
+            ],
+            "travelMarginDays" : 0
+          },
+          "sectionId" : "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbb0003",
+          "sectionName" : "Apartament Exemplu",
+          "snoozedUntil" : null,
+          "status" : "active",
+          "title" : "Asigurare locuință"
+        },
+        {
+          "dueDay" : "2026-12-20",
+          "estimatedCost" : null,
+          "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0014",
+          "isSensitive" : false,
+          "kind" : "tax",
+          "reminders" : {
+            "consequence" : "financial",
+            "followUpAfterLapse" : null,
+            "graceDays" : 0,
+            "leadDays" : [
+              14,
+              1
+            ],
+            "travelMarginDays" : 0
+          },
+          "sectionId" : null,
+          "sectionName" : null,
+          "snoozedUntil" : null,
+          "status" : "active",
+          "title" : "Declarația unică"
+        },
+        {
+          "dueDay" : "2026-12-15",
+          "estimatedCost" : null,
+          "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0015",
+          "isSensitive" : false,
+          "kind" : "health",
+          "reminders" : {
+            "consequence" : "health",
+            "followUpAfterLapse" : null,
+            "graceDays" : 0,
+            "leadDays" : [
+              7
+            ],
+            "travelMarginDays" : 0
+          },
+          "sectionId" : "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbb0002",
+          "sectionName" : "PawPaw",
+          "snoozedUntil" : null,
+          "status" : "active",
+          "title" : "Deparazitare"
+        },
+        {
+          "dueDay" : "2026-12-10",
+          "estimatedCost" : null,
+          "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0016",
+          "isSensitive" : false,
+          "kind" : "tax",
+          "reminders" : {
+            "consequence" : "financial",
+            "followUpAfterLapse" : null,
+            "graceDays" : 0,
+            "leadDays" : [
+              14,
+              1
+            ],
+            "travelMarginDays" : 0
+          },
+          "sectionId" : "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbb0003",
+          "sectionName" : "Apartament Exemplu",
+          "snoozedUntil" : null,
+          "status" : "active",
+          "title" : "Taxă locală"
+        },
+        {
+          "dueDay" : "2026-12-10",
+          "estimatedCost" : null,
+          "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0017",
+          "isSensitive" : false,
+          "kind" : "maintenance",
+          "reminders" : {
+            "consequence" : "comfort",
+            "followUpAfterLapse" : null,
+            "graceDays" : 0,
+            "leadDays" : [
+              14
+            ],
+            "travelMarginDays" : 0
+          },
+          "sectionId" : "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbb0003",
+          "sectionName" : "Apartament Exemplu",
+          "snoozedUntil" : null,
+          "status" : "active",
+          "title" : "Schimb ulei"
+        }
+      ],
+      "hiddenCount" : 2,
+      "isAllClear" : false,
+      "later" : {
+        "count" : 2,
+        "estimatedCost" : [
+          {
+            "amount" : "1200",
+            "currency" : "RON"
+          },
+          {
+            "amount" : "28",
+            "currency" : "EUR"
+          }
+        ],
+        "nextDay" : "2027-01-05"
+      },
+      "maxNow" : 5,
+      "name" : "a binder of every urgency",
+      "needsActionCount" : 2,
+      "now" : [
+        {
+          "daysRemaining" : -6,
+          "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0001",
+          "score" : 1415,
+          "urgency" : "overdue"
+        },
+        {
+          "daysRemaining" : 7,
+          "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0004",
+          "score" : 1214,
+          "urgency" : "soon"
+        },
+        {
+          "daysRemaining" : 0,
+          "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0003",
+          "score" : 1087,
+          "urgency" : "today"
+        },
+        {
+          "daysRemaining" : 135,
+          "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0007",
+          "score" : 1072,
+          "urgency" : "soon"
+        },
+        {
+          "daysRemaining" : -3,
+          "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0002",
+          "score" : 800,
+          "urgency" : "withinGrace"
+        }
+      ],
+      "overflowCount" : 2,
+      "soon" : [
+        {
+          "entries" : [
+            {
+              "daysRemaining" : 1,
+              "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0008",
+              "score" : 100,
+              "urgency" : "soon"
+            }
+          ],
+          "sectionId" : "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbb0005",
+          "sectionName" : "Monstera"
+        },
+        {
+          "entries" : [
+            {
+              "daysRemaining" : 14,
+              "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0016",
+              "score" : 800,
+              "urgency" : "soon"
+            },
+            {
+              "daysRemaining" : 14,
+              "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0017",
+              "score" : 100,
+              "urgency" : "upcoming"
+            }
+          ],
+          "sectionId" : "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbb0003",
+          "sectionName" : "Apartament Exemplu"
+        },
+        {
+          "entries" : [
+            {
+              "daysRemaining" : 19,
+              "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0015",
+              "score" : 600,
+              "urgency" : "upcoming"
+            }
+          ],
+          "sectionId" : "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbb0002",
+          "sectionName" : "PawPaw"
+        },
+        {
+          "entries" : [
+            {
+              "daysRemaining" : 19,
+              "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0005",
+              "score" : 108,
+              "urgency" : "upcoming"
+            }
+          ],
+          "sectionId" : "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbb0001",
+          "sectionName" : "VW Golf 2018"
+        },
+        {
+          "entries" : [
+            {
+              "daysRemaining" : 24,
+              "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0014",
+              "score" : 800,
+              "urgency" : "upcoming"
+            }
+          ],
+          "sectionId" : null,
+          "sectionName" : "Fără secțiune"
+        }
+      ],
+      "today" : "2026-11-26"
+    },
+    {
+      "deadlines" : [
+        {
+          "dueDay" : "2026-11-20",
+          "estimatedCost" : {
+            "amount" : "1250",
+            "currency" : "RON"
+          },
+          "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0001",
+          "isSensitive" : false,
+          "kind" : "insurance",
+          "reminders" : {
+            "consequence" : "legal",
+            "followUpAfterLapse" : null,
+            "graceDays" : 0,
+            "leadDays" : [
+              30,
+              7,
+              1
+            ],
+            "travelMarginDays" : 0
+          },
+          "sectionId" : "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbb0001",
+          "sectionName" : "VW Golf 2018",
+          "snoozedUntil" : null,
+          "status" : "active",
+          "title" : "RCA"
+        },
+        {
+          "dueDay" : "2026-11-23",
+          "estimatedCost" : null,
+          "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0002",
+          "isSensitive" : false,
+          "kind" : "health",
+          "reminders" : {
+            "consequence" : "health",
+            "followUpAfterLapse" : null,
+            "graceDays" : 7,
+            "leadDays" : [
+              7,
+              0
+            ],
+            "travelMarginDays" : 0
+          },
+          "sectionId" : "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbb0002",
+          "sectionName" : "PawPaw",
+          "snoozedUntil" : null,
+          "status" : "active",
+          "title" : "Vaccin antirabic"
+        },
+        {
+          "dueDay" : "2026-11-26",
+          "estimatedCost" : {
+            "amount" : "450",
+            "currency" : "RON"
+          },
+          "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0003",
+          "isSensitive" : false,
+          "kind" : "tax",
+          "reminders" : {
+            "consequence" : "financial",
+            "followUpAfterLapse" : null,
+            "graceDays" : 0,
+            "leadDays" : [
+              14,
+              1
+            ],
+            "travelMarginDays" : 0
+          },
+          "sectionId" : "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbb0003",
+          "sectionName" : "Apartament Exemplu",
+          "snoozedUntil" : null,
+          "status" : "active",
+          "title" : "Impozit pe clădiri"
+        },
+        {
+          "dueDay" : "2026-12-03",
+          "estimatedCost" : null,
+          "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0004",
+          "isSensitive" : false,
+          "kind" : "legal",
+          "reminders" : {
+            "consequence" : "legal",
+            "followUpAfterLapse" : null,
+            "graceDays" : 0,
+            "leadDays" : [
+              30,
+              7,
+              0
+            ],
+            "travelMarginDays" : 0
+          },
+          "sectionId" : "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbb0001",
+          "sectionName" : "VW Golf 2018",
+          "snoozedUntil" : null,
+          "status" : "active",
+          "title" : "ITP"
+        },
+        {
+          "dueDay" : "2026-12-15",
+          "estimatedCost" : {
+            "amount" : "900",
+            "currency" : "RON"
+          },
+          "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0005",
+          "isSensitive" : false,
+          "kind" : "maintenance",
+          "reminders" : {
+            "consequence" : "comfort",
+            "followUpAfterLapse" : null,
+            "graceDays" : 0,
+            "leadDays" : [
+              14
+            ],
+            "travelMarginDays" : 0
+          },
+          "sectionId" : "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbb0001",
+          "sectionName" : "VW Golf 2018",
+          "snoozedUntil" : null,
+          "status" : "active",
+          "title" : "Revizie"
+        },
+        {
+          "dueDay" : "2027-03-01",
+          "estimatedCost" : {
+            "amount" : "28",
+            "currency" : "EUR"
+          },
+          "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0006",
+          "isSensitive" : false,
+          "kind" : "legal",
+          "reminders" : {
+            "consequence" : "legal",
+            "followUpAfterLapse" : null,
+            "graceDays" : 0,
+            "leadDays" : [
+              30,
+              7,
+              0
+            ],
+            "travelMarginDays" : 0
+          },
+          "sectionId" : "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbb0001",
+          "sectionName" : "VW Golf 2018",
+          "snoozedUntil" : null,
+          "status" : "active",
+          "title" : "Rovinietă"
+        },
+        {
+          "dueDay" : "2027-04-10",
+          "estimatedCost" : null,
+          "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0007",
+          "isSensitive" : false,
+          "kind" : "renewal",
+          "reminders" : {
+            "consequence" : "legal",
+            "followUpAfterLapse" : null,
+            "graceDays" : 0,
+            "leadDays" : [
+              30,
+              7
+            ],
+            "travelMarginDays" : 180
+          },
+          "sectionId" : "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbb0004",
+          "sectionName" : "Persoană Exemplu",
+          "snoozedUntil" : null,
+          "status" : "active",
+          "title" : "Pașaport"
+        },
+        {
+          "dueDay" : "2026-11-27",
+          "estimatedCost" : null,
+          "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0008",
+          "isSensitive" : false,
+          "kind" : "routine",
+          "reminders" : {
+            "consequence" : "comfort",
+            "followUpAfterLapse" : null,
+            "graceDays" : 2,
+            "leadDays" : [
+              0
+            ],
+            "travelMarginDays" : 0
+          },
+          "sectionId" : "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbb0005",
+          "sectionName" : "Monstera",
+          "snoozedUntil" : null,
+          "status" : "active",
+          "title" : "Udat"
+        },
+        {
+          "dueDay" : "2026-11-25",
+          "estimatedCost" : null,
+          "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0009",
+          "isSensitive" : false,
+          "kind" : "payment",
+          "reminders" : {
+            "consequence" : "financial",
+            "followUpAfterLapse" : null,
+            "graceDays" : 0,
+            "leadDays" : [
+              14,
+              1
+            ],
+            "travelMarginDays" : 0
+          },
+          "sectionId" : "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbb0006",
+          "sectionName" : "Sală Exemplu",
+          "snoozedUntil" : "2026-11-28",
+          "status" : "active",
+          "title" : "Abonament sală"
+        },
+        {
+          "dueDay" : "2026-11-24",
+          "estimatedCost" : null,
+          "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0010",
+          "isSensitive" : false,
+          "kind" : "maintenance",
+          "reminders" : {
+            "consequence" : "comfort",
+            "followUpAfterLapse" : null,
+            "graceDays" : 0,
+            "leadDays" : [
+              14
+            ],
+            "travelMarginDays" : 0
+          },
+          "sectionId" : "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbb0003",
+          "sectionName" : "Apartament Exemplu",
+          "snoozedUntil" : null,
+          "status" : "paused",
+          "title" : "Filtru"
+        },
+        {
+          "dueDay" : "2026-11-01",
+          "estimatedCost" : null,
+          "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0011",
+          "isSensitive" : false,
+          "kind" : "tax",
+          "reminders" : {
+            "consequence" : "financial",
+            "followUpAfterLapse" : null,
+            "graceDays" : 0,
+            "leadDays" : [
+              14,
+              1
+            ],
+            "travelMarginDays" : 0
+          },
+          "sectionId" : "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbb0003",
+          "sectionName" : "Apartament Exemplu",
+          "snoozedUntil" : null,
+          "status" : "done",
+          "title" : "Taxă veche"
+        },
+        {
+          "dueDay" : "2026-11-02",
+          "estimatedCost" : null,
+          "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0012",
+          "isSensitive" : false,
+          "kind" : "insurance",
+          "reminders" : {
+            "consequence" : "legal",
+            "followUpAfterLapse" : null,
+            "graceDays" : 0,
+            "leadDays" : [
+              30,
+              7,
+              1
+            ],
+            "travelMarginDays" : 0
+          },
+          "sectionId" : "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbb0003",
+          "sectionName" : "Apartament Exemplu",
+          "snoozedUntil" : null,
+          "status" : "archived",
+          "title" : "Asigurare veche"
+        },
+        {
+          "dueDay" : "2027-01-05",
+          "estimatedCost" : {
+            "amount" : "1200",
+            "currency" : "RON"
+          },
+          "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0013",
+          "isSensitive" : false,
+          "kind" : "insurance",
+          "reminders" : {
+            "consequence" : "legal",
+            "followUpAfterLapse" : null,
+            "graceDays" : 0,
+            "leadDays" : [
+              30,
+              7,
+              1
+            ],
+            "travelMarginDays" : 0
+          },
+          "sectionId" : "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbb0003",
+          "sectionName" : "Apartament Exemplu",
+          "snoozedUntil" : null,
+          "status" : "active",
+          "title" : "Asigurare locuință"
+        },
+        {
+          "dueDay" : "2026-12-20",
+          "estimatedCost" : null,
+          "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0014",
+          "isSensitive" : false,
+          "kind" : "tax",
+          "reminders" : {
+            "consequence" : "financial",
+            "followUpAfterLapse" : null,
+            "graceDays" : 0,
+            "leadDays" : [
+              14,
+              1
+            ],
+            "travelMarginDays" : 0
+          },
+          "sectionId" : null,
+          "sectionName" : null,
+          "snoozedUntil" : null,
+          "status" : "active",
+          "title" : "Declarația unică"
+        },
+        {
+          "dueDay" : "2026-12-15",
+          "estimatedCost" : null,
+          "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0015",
+          "isSensitive" : false,
+          "kind" : "health",
+          "reminders" : {
+            "consequence" : "health",
+            "followUpAfterLapse" : null,
+            "graceDays" : 0,
+            "leadDays" : [
+              7
+            ],
+            "travelMarginDays" : 0
+          },
+          "sectionId" : "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbb0002",
+          "sectionName" : "PawPaw",
+          "snoozedUntil" : null,
+          "status" : "active",
+          "title" : "Deparazitare"
+        },
+        {
+          "dueDay" : "2026-12-10",
+          "estimatedCost" : null,
+          "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0016",
+          "isSensitive" : false,
+          "kind" : "tax",
+          "reminders" : {
+            "consequence" : "financial",
+            "followUpAfterLapse" : null,
+            "graceDays" : 0,
+            "leadDays" : [
+              14,
+              1
+            ],
+            "travelMarginDays" : 0
+          },
+          "sectionId" : "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbb0003",
+          "sectionName" : "Apartament Exemplu",
+          "snoozedUntil" : null,
+          "status" : "active",
+          "title" : "Taxă locală"
+        },
+        {
+          "dueDay" : "2026-12-10",
+          "estimatedCost" : null,
+          "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0017",
+          "isSensitive" : false,
+          "kind" : "maintenance",
+          "reminders" : {
+            "consequence" : "comfort",
+            "followUpAfterLapse" : null,
+            "graceDays" : 0,
+            "leadDays" : [
+              14
+            ],
+            "travelMarginDays" : 0
+          },
+          "sectionId" : "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbb0003",
+          "sectionName" : "Apartament Exemplu",
+          "snoozedUntil" : null,
+          "status" : "active",
+          "title" : "Schimb ulei"
+        }
+      ],
+      "hiddenCount" : 2,
+      "isAllClear" : false,
+      "later" : {
+        "count" : 2,
+        "estimatedCost" : [
+          {
+            "amount" : "1200",
+            "currency" : "RON"
+          },
+          {
+            "amount" : "28",
+            "currency" : "EUR"
+          }
+        ],
+        "nextDay" : "2027-01-05"
+      },
+      "maxNow" : 1,
+      "name" : "only the most pressing, as a box asks",
+      "needsActionCount" : 2,
+      "now" : [
+        {
+          "daysRemaining" : -6,
+          "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0001",
+          "score" : 1415,
+          "urgency" : "overdue"
+        }
+      ],
+      "overflowCount" : 6,
+      "soon" : [
+        {
+          "entries" : [
+            {
+              "daysRemaining" : -3,
+              "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0002",
+              "score" : 800,
+              "urgency" : "withinGrace"
+            },
+            {
+              "daysRemaining" : 19,
+              "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0015",
+              "score" : 600,
+              "urgency" : "upcoming"
+            }
+          ],
+          "sectionId" : "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbb0002",
+          "sectionName" : "PawPaw"
+        },
+        {
+          "entries" : [
+            {
+              "daysRemaining" : 0,
+              "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0003",
+              "score" : 1087,
+              "urgency" : "today"
+            },
+            {
+              "daysRemaining" : 14,
+              "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0016",
+              "score" : 800,
+              "urgency" : "soon"
+            },
+            {
+              "daysRemaining" : 14,
+              "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0017",
+              "score" : 100,
+              "urgency" : "upcoming"
+            }
+          ],
+          "sectionId" : "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbb0003",
+          "sectionName" : "Apartament Exemplu"
+        },
+        {
+          "entries" : [
+            {
+              "daysRemaining" : 1,
+              "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0008",
+              "score" : 100,
+              "urgency" : "soon"
+            }
+          ],
+          "sectionId" : "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbb0005",
+          "sectionName" : "Monstera"
+        },
+        {
+          "entries" : [
+            {
+              "daysRemaining" : 7,
+              "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0004",
+              "score" : 1214,
+              "urgency" : "soon"
+            },
+            {
+              "daysRemaining" : 19,
+              "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0005",
+              "score" : 108,
+              "urgency" : "upcoming"
+            }
+          ],
+          "sectionId" : "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbb0001",
+          "sectionName" : "VW Golf 2018"
+        },
+        {
+          "entries" : [
+            {
+              "daysRemaining" : 24,
+              "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0014",
+              "score" : 800,
+              "urgency" : "upcoming"
+            }
+          ],
+          "sectionId" : null,
+          "sectionName" : "Fără secțiune"
+        },
+        {
+          "entries" : [
+            {
+              "daysRemaining" : 135,
+              "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0007",
+              "score" : 1072,
+              "urgency" : "soon"
+            }
+          ],
+          "sectionId" : "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbb0004",
+          "sectionName" : "Persoană Exemplu"
+        }
+      ],
+      "today" : "2026-11-26"
+    },
+    {
+      "deadlines" : [
+
+      ],
+      "hiddenCount" : 0,
+      "isAllClear" : true,
+      "later" : {
+        "count" : 0,
+        "estimatedCost" : [
+
+        ],
+        "nextDay" : null
+      },
+      "maxNow" : 5,
+      "name" : "nothing",
+      "needsActionCount" : 0,
+      "now" : [
+
+      ],
+      "overflowCount" : 0,
+      "soon" : [
+
+      ],
+      "today" : "2026-11-26"
+    },
+    {
+      "deadlines" : [
+        {
+          "dueDay" : "2026-11-20",
+          "estimatedCost" : {
+            "amount" : "1250",
+            "currency" : "RON"
+          },
+          "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0001",
+          "isSensitive" : false,
+          "kind" : "insurance",
+          "reminders" : {
+            "consequence" : "legal",
+            "followUpAfterLapse" : null,
+            "graceDays" : 0,
+            "leadDays" : [
+              30,
+              7,
+              1
+            ],
+            "travelMarginDays" : 0
+          },
+          "sectionId" : "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbb0001",
+          "sectionName" : "VW Golf 2018",
+          "snoozedUntil" : null,
+          "status" : "active",
+          "title" : "RCA"
+        },
+        {
+          "dueDay" : "2026-11-23",
+          "estimatedCost" : null,
+          "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0002",
+          "isSensitive" : false,
+          "kind" : "health",
+          "reminders" : {
+            "consequence" : "health",
+            "followUpAfterLapse" : null,
+            "graceDays" : 7,
+            "leadDays" : [
+              7,
+              0
+            ],
+            "travelMarginDays" : 0
+          },
+          "sectionId" : "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbb0002",
+          "sectionName" : "PawPaw",
+          "snoozedUntil" : null,
+          "status" : "active",
+          "title" : "Vaccin antirabic"
+        },
+        {
+          "dueDay" : "2026-11-26",
+          "estimatedCost" : {
+            "amount" : "450",
+            "currency" : "RON"
+          },
+          "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0003",
+          "isSensitive" : false,
+          "kind" : "tax",
+          "reminders" : {
+            "consequence" : "financial",
+            "followUpAfterLapse" : null,
+            "graceDays" : 0,
+            "leadDays" : [
+              14,
+              1
+            ],
+            "travelMarginDays" : 0
+          },
+          "sectionId" : "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbb0003",
+          "sectionName" : "Apartament Exemplu",
+          "snoozedUntil" : null,
+          "status" : "active",
+          "title" : "Impozit pe clădiri"
+        },
+        {
+          "dueDay" : "2026-12-03",
+          "estimatedCost" : null,
+          "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0004",
+          "isSensitive" : false,
+          "kind" : "legal",
+          "reminders" : {
+            "consequence" : "legal",
+            "followUpAfterLapse" : null,
+            "graceDays" : 0,
+            "leadDays" : [
+              30,
+              7,
+              0
+            ],
+            "travelMarginDays" : 0
+          },
+          "sectionId" : "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbb0001",
+          "sectionName" : "VW Golf 2018",
+          "snoozedUntil" : null,
+          "status" : "active",
+          "title" : "ITP"
+        },
+        {
+          "dueDay" : "2026-12-15",
+          "estimatedCost" : {
+            "amount" : "900",
+            "currency" : "RON"
+          },
+          "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0005",
+          "isSensitive" : false,
+          "kind" : "maintenance",
+          "reminders" : {
+            "consequence" : "comfort",
+            "followUpAfterLapse" : null,
+            "graceDays" : 0,
+            "leadDays" : [
+              14
+            ],
+            "travelMarginDays" : 0
+          },
+          "sectionId" : "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbb0001",
+          "sectionName" : "VW Golf 2018",
+          "snoozedUntil" : null,
+          "status" : "active",
+          "title" : "Revizie"
+        },
+        {
+          "dueDay" : "2027-03-01",
+          "estimatedCost" : {
+            "amount" : "28",
+            "currency" : "EUR"
+          },
+          "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0006",
+          "isSensitive" : false,
+          "kind" : "legal",
+          "reminders" : {
+            "consequence" : "legal",
+            "followUpAfterLapse" : null,
+            "graceDays" : 0,
+            "leadDays" : [
+              30,
+              7,
+              0
+            ],
+            "travelMarginDays" : 0
+          },
+          "sectionId" : "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbb0001",
+          "sectionName" : "VW Golf 2018",
+          "snoozedUntil" : null,
+          "status" : "active",
+          "title" : "Rovinietă"
+        },
+        {
+          "dueDay" : "2027-04-10",
+          "estimatedCost" : null,
+          "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0007",
+          "isSensitive" : false,
+          "kind" : "renewal",
+          "reminders" : {
+            "consequence" : "legal",
+            "followUpAfterLapse" : null,
+            "graceDays" : 0,
+            "leadDays" : [
+              30,
+              7
+            ],
+            "travelMarginDays" : 180
+          },
+          "sectionId" : "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbb0004",
+          "sectionName" : "Persoană Exemplu",
+          "snoozedUntil" : null,
+          "status" : "active",
+          "title" : "Pașaport"
+        },
+        {
+          "dueDay" : "2026-11-27",
+          "estimatedCost" : null,
+          "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0008",
+          "isSensitive" : false,
+          "kind" : "routine",
+          "reminders" : {
+            "consequence" : "comfort",
+            "followUpAfterLapse" : null,
+            "graceDays" : 2,
+            "leadDays" : [
+              0
+            ],
+            "travelMarginDays" : 0
+          },
+          "sectionId" : "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbb0005",
+          "sectionName" : "Monstera",
+          "snoozedUntil" : null,
+          "status" : "active",
+          "title" : "Udat"
+        },
+        {
+          "dueDay" : "2026-11-25",
+          "estimatedCost" : null,
+          "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0009",
+          "isSensitive" : false,
+          "kind" : "payment",
+          "reminders" : {
+            "consequence" : "financial",
+            "followUpAfterLapse" : null,
+            "graceDays" : 0,
+            "leadDays" : [
+              14,
+              1
+            ],
+            "travelMarginDays" : 0
+          },
+          "sectionId" : "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbb0006",
+          "sectionName" : "Sală Exemplu",
+          "snoozedUntil" : "2026-11-28",
+          "status" : "active",
+          "title" : "Abonament sală"
+        },
+        {
+          "dueDay" : "2026-11-24",
+          "estimatedCost" : null,
+          "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0010",
+          "isSensitive" : false,
+          "kind" : "maintenance",
+          "reminders" : {
+            "consequence" : "comfort",
+            "followUpAfterLapse" : null,
+            "graceDays" : 0,
+            "leadDays" : [
+              14
+            ],
+            "travelMarginDays" : 0
+          },
+          "sectionId" : "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbb0003",
+          "sectionName" : "Apartament Exemplu",
+          "snoozedUntil" : null,
+          "status" : "paused",
+          "title" : "Filtru"
+        },
+        {
+          "dueDay" : "2026-11-01",
+          "estimatedCost" : null,
+          "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0011",
+          "isSensitive" : false,
+          "kind" : "tax",
+          "reminders" : {
+            "consequence" : "financial",
+            "followUpAfterLapse" : null,
+            "graceDays" : 0,
+            "leadDays" : [
+              14,
+              1
+            ],
+            "travelMarginDays" : 0
+          },
+          "sectionId" : "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbb0003",
+          "sectionName" : "Apartament Exemplu",
+          "snoozedUntil" : null,
+          "status" : "done",
+          "title" : "Taxă veche"
+        },
+        {
+          "dueDay" : "2026-11-02",
+          "estimatedCost" : null,
+          "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0012",
+          "isSensitive" : false,
+          "kind" : "insurance",
+          "reminders" : {
+            "consequence" : "legal",
+            "followUpAfterLapse" : null,
+            "graceDays" : 0,
+            "leadDays" : [
+              30,
+              7,
+              1
+            ],
+            "travelMarginDays" : 0
+          },
+          "sectionId" : "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbb0003",
+          "sectionName" : "Apartament Exemplu",
+          "snoozedUntil" : null,
+          "status" : "archived",
+          "title" : "Asigurare veche"
+        },
+        {
+          "dueDay" : "2027-01-05",
+          "estimatedCost" : {
+            "amount" : "1200",
+            "currency" : "RON"
+          },
+          "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0013",
+          "isSensitive" : false,
+          "kind" : "insurance",
+          "reminders" : {
+            "consequence" : "legal",
+            "followUpAfterLapse" : null,
+            "graceDays" : 0,
+            "leadDays" : [
+              30,
+              7,
+              1
+            ],
+            "travelMarginDays" : 0
+          },
+          "sectionId" : "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbb0003",
+          "sectionName" : "Apartament Exemplu",
+          "snoozedUntil" : null,
+          "status" : "active",
+          "title" : "Asigurare locuință"
+        },
+        {
+          "dueDay" : "2026-12-20",
+          "estimatedCost" : null,
+          "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0014",
+          "isSensitive" : false,
+          "kind" : "tax",
+          "reminders" : {
+            "consequence" : "financial",
+            "followUpAfterLapse" : null,
+            "graceDays" : 0,
+            "leadDays" : [
+              14,
+              1
+            ],
+            "travelMarginDays" : 0
+          },
+          "sectionId" : null,
+          "sectionName" : null,
+          "snoozedUntil" : null,
+          "status" : "active",
+          "title" : "Declarația unică"
+        },
+        {
+          "dueDay" : "2026-12-15",
+          "estimatedCost" : null,
+          "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0015",
+          "isSensitive" : false,
+          "kind" : "health",
+          "reminders" : {
+            "consequence" : "health",
+            "followUpAfterLapse" : null,
+            "graceDays" : 0,
+            "leadDays" : [
+              7
+            ],
+            "travelMarginDays" : 0
+          },
+          "sectionId" : "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbb0002",
+          "sectionName" : "PawPaw",
+          "snoozedUntil" : null,
+          "status" : "active",
+          "title" : "Deparazitare"
+        },
+        {
+          "dueDay" : "2026-12-10",
+          "estimatedCost" : null,
+          "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0016",
+          "isSensitive" : false,
+          "kind" : "tax",
+          "reminders" : {
+            "consequence" : "financial",
+            "followUpAfterLapse" : null,
+            "graceDays" : 0,
+            "leadDays" : [
+              14,
+              1
+            ],
+            "travelMarginDays" : 0
+          },
+          "sectionId" : "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbb0003",
+          "sectionName" : "Apartament Exemplu",
+          "snoozedUntil" : null,
+          "status" : "active",
+          "title" : "Taxă locală"
+        },
+        {
+          "dueDay" : "2026-12-10",
+          "estimatedCost" : null,
+          "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0017",
+          "isSensitive" : false,
+          "kind" : "maintenance",
+          "reminders" : {
+            "consequence" : "comfort",
+            "followUpAfterLapse" : null,
+            "graceDays" : 0,
+            "leadDays" : [
+              14
+            ],
+            "travelMarginDays" : 0
+          },
+          "sectionId" : "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbb0003",
+          "sectionName" : "Apartament Exemplu",
+          "snoozedUntil" : null,
+          "status" : "active",
+          "title" : "Schimb ulei"
+        }
+      ],
+      "hiddenCount" : 2,
+      "isAllClear" : true,
+      "later" : {
+        "count" : 12,
+        "estimatedCost" : [
+          {
+            "amount" : "3800",
+            "currency" : "RON"
+          },
+          {
+            "amount" : "28",
+            "currency" : "EUR"
+          }
+        ],
+        "nextDay" : "2026-11-20"
+      },
+      "maxNow" : 5,
+      "name" : "nothing needs the person yet",
+      "needsActionCount" : 0,
+      "now" : [
+
+      ],
+      "overflowCount" : 0,
+      "soon" : [
+        {
+          "entries" : [
+            {
+              "daysRemaining" : 191,
+              "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0007",
+              "score" : 1000,
+              "urgency" : "upcoming"
+            }
+          ],
+          "sectionId" : "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbb0004",
+          "sectionName" : "Persoană Exemplu"
+        }
+      ],
+      "today" : "2026-10-01"
+    },
+    {
+      "deadlines" : [
+        {
+          "dueDay" : "2026-11-27",
+          "estimatedCost" : null,
+          "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0040",
+          "isSensitive" : false,
+          "kind" : "routine",
+          "reminders" : {
+            "consequence" : "comfort",
+            "followUpAfterLapse" : null,
+            "graceDays" : 2,
+            "leadDays" : [
+              0
+            ],
+            "travelMarginDays" : 0
+          },
+          "sectionId" : "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbb0010",
+          "sectionName" : "Plantă 1",
+          "snoozedUntil" : null,
+          "status" : "active",
+          "title" : "Udat 1"
+        },
+        {
+          "dueDay" : "2026-11-27",
+          "estimatedCost" : null,
+          "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0041",
+          "isSensitive" : false,
+          "kind" : "routine",
+          "reminders" : {
+            "consequence" : "comfort",
+            "followUpAfterLapse" : null,
+            "graceDays" : 2,
+            "leadDays" : [
+              0
+            ],
+            "travelMarginDays" : 0
+          },
+          "sectionId" : "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbb0011",
+          "sectionName" : "Plantă 2",
+          "snoozedUntil" : null,
+          "status" : "active",
+          "title" : "Udat 2"
+        },
+        {
+          "dueDay" : "2026-11-27",
+          "estimatedCost" : null,
+          "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0042",
+          "isSensitive" : false,
+          "kind" : "routine",
+          "reminders" : {
+            "consequence" : "comfort",
+            "followUpAfterLapse" : null,
+            "graceDays" : 2,
+            "leadDays" : [
+              0
+            ],
+            "travelMarginDays" : 0
+          },
+          "sectionId" : "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbb0012",
+          "sectionName" : "Plantă 3",
+          "snoozedUntil" : null,
+          "status" : "active",
+          "title" : "Udat 3"
+        },
+        {
+          "dueDay" : "2026-11-27",
+          "estimatedCost" : null,
+          "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0043",
+          "isSensitive" : false,
+          "kind" : "routine",
+          "reminders" : {
+            "consequence" : "comfort",
+            "followUpAfterLapse" : null,
+            "graceDays" : 2,
+            "leadDays" : [
+              0
+            ],
+            "travelMarginDays" : 0
+          },
+          "sectionId" : "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbb0013",
+          "sectionName" : "Plantă 4",
+          "snoozedUntil" : null,
+          "status" : "active",
+          "title" : "Udat 4"
+        },
+        {
+          "dueDay" : "2026-11-27",
+          "estimatedCost" : null,
+          "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0044",
+          "isSensitive" : false,
+          "kind" : "routine",
+          "reminders" : {
+            "consequence" : "comfort",
+            "followUpAfterLapse" : null,
+            "graceDays" : 2,
+            "leadDays" : [
+              0
+            ],
+            "travelMarginDays" : 0
+          },
+          "sectionId" : "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbb0014",
+          "sectionName" : "Plantă 5",
+          "snoozedUntil" : null,
+          "status" : "active",
+          "title" : "Udat 5"
+        },
+        {
+          "dueDay" : "2026-11-27",
+          "estimatedCost" : null,
+          "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0045",
+          "isSensitive" : false,
+          "kind" : "routine",
+          "reminders" : {
+            "consequence" : "comfort",
+            "followUpAfterLapse" : null,
+            "graceDays" : 2,
+            "leadDays" : [
+              0
+            ],
+            "travelMarginDays" : 0
+          },
+          "sectionId" : "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbb0015",
+          "sectionName" : "Plantă 6",
+          "snoozedUntil" : null,
+          "status" : "active",
+          "title" : "Udat 6"
+        },
+        {
+          "dueDay" : "2026-11-27",
+          "estimatedCost" : null,
+          "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0046",
+          "isSensitive" : false,
+          "kind" : "routine",
+          "reminders" : {
+            "consequence" : "comfort",
+            "followUpAfterLapse" : null,
+            "graceDays" : 2,
+            "leadDays" : [
+              0
+            ],
+            "travelMarginDays" : 0
+          },
+          "sectionId" : "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbb0016",
+          "sectionName" : "Plantă 7",
+          "snoozedUntil" : null,
+          "status" : "active",
+          "title" : "Udat 7"
+        },
+        {
+          "dueDay" : "2026-11-27",
+          "estimatedCost" : null,
+          "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0047",
+          "isSensitive" : false,
+          "kind" : "routine",
+          "reminders" : {
+            "consequence" : "comfort",
+            "followUpAfterLapse" : null,
+            "graceDays" : 2,
+            "leadDays" : [
+              0
+            ],
+            "travelMarginDays" : 0
+          },
+          "sectionId" : "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbb0017",
+          "sectionName" : "Plantă 8",
+          "snoozedUntil" : null,
+          "status" : "active",
+          "title" : "Udat 8"
+        }
+      ],
+      "hiddenCount" : 0,
+      "isAllClear" : false,
+      "later" : {
+        "count" : 0,
+        "estimatedCost" : [
+
+        ],
+        "nextDay" : null
+      },
+      "maxNow" : 5,
+      "name" : "more than Acum holds",
+      "needsActionCount" : 0,
+      "now" : [
+        {
+          "daysRemaining" : 1,
+          "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0040",
+          "score" : 100,
+          "urgency" : "soon"
+        },
+        {
+          "daysRemaining" : 1,
+          "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0041",
+          "score" : 100,
+          "urgency" : "soon"
+        },
+        {
+          "daysRemaining" : 1,
+          "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0042",
+          "score" : 100,
+          "urgency" : "soon"
+        },
+        {
+          "daysRemaining" : 1,
+          "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0043",
+          "score" : 100,
+          "urgency" : "soon"
+        },
+        {
+          "daysRemaining" : 1,
+          "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0044",
+          "score" : 100,
+          "urgency" : "soon"
+        }
+      ],
+      "overflowCount" : 3,
+      "soon" : [
+        {
+          "entries" : [
+            {
+              "daysRemaining" : 1,
+              "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0045",
+              "score" : 100,
+              "urgency" : "soon"
+            }
+          ],
+          "sectionId" : "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbb0015",
+          "sectionName" : "Plantă 6"
+        },
+        {
+          "entries" : [
+            {
+              "daysRemaining" : 1,
+              "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0046",
+              "score" : 100,
+              "urgency" : "soon"
+            }
+          ],
+          "sectionId" : "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbb0016",
+          "sectionName" : "Plantă 7"
+        },
+        {
+          "entries" : [
+            {
+              "daysRemaining" : 1,
+              "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0047",
+              "score" : 100,
+              "urgency" : "soon"
+            }
+          ],
+          "sectionId" : "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbb0017",
+          "sectionName" : "Plantă 8"
+        }
+      ],
+      "today" : "2026-11-26"
+    },
+    {
+      "deadlines" : [
+        {
+          "dueDay" : "2026-11-20",
+          "estimatedCost" : {
+            "amount" : "1250",
+            "currency" : "RON"
+          },
+          "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0001",
+          "isSensitive" : false,
+          "kind" : "insurance",
+          "reminders" : {
+            "consequence" : "legal",
+            "followUpAfterLapse" : null,
+            "graceDays" : 0,
+            "leadDays" : [
+              30,
+              7,
+              1
+            ],
+            "travelMarginDays" : 0
+          },
+          "sectionId" : "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbb0001",
+          "sectionName" : "VW Golf 2018",
+          "snoozedUntil" : null,
+          "status" : "active",
+          "title" : "RCA"
+        },
+        {
+          "dueDay" : "2026-11-23",
+          "estimatedCost" : null,
+          "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0002",
+          "isSensitive" : false,
+          "kind" : "health",
+          "reminders" : {
+            "consequence" : "health",
+            "followUpAfterLapse" : null,
+            "graceDays" : 7,
+            "leadDays" : [
+              7,
+              0
+            ],
+            "travelMarginDays" : 0
+          },
+          "sectionId" : "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbb0002",
+          "sectionName" : "PawPaw",
+          "snoozedUntil" : null,
+          "status" : "active",
+          "title" : "Vaccin antirabic"
+        },
+        {
+          "dueDay" : "2026-11-26",
+          "estimatedCost" : {
+            "amount" : "450",
+            "currency" : "RON"
+          },
+          "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0003",
+          "isSensitive" : false,
+          "kind" : "tax",
+          "reminders" : {
+            "consequence" : "financial",
+            "followUpAfterLapse" : null,
+            "graceDays" : 0,
+            "leadDays" : [
+              14,
+              1
+            ],
+            "travelMarginDays" : 0
+          },
+          "sectionId" : "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbb0003",
+          "sectionName" : "Apartament Exemplu",
+          "snoozedUntil" : null,
+          "status" : "active",
+          "title" : "Impozit pe clădiri"
+        },
+        {
+          "dueDay" : "2026-12-03",
+          "estimatedCost" : null,
+          "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0004",
+          "isSensitive" : false,
+          "kind" : "legal",
+          "reminders" : {
+            "consequence" : "legal",
+            "followUpAfterLapse" : null,
+            "graceDays" : 0,
+            "leadDays" : [
+              30,
+              7,
+              0
+            ],
+            "travelMarginDays" : 0
+          },
+          "sectionId" : "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbb0001",
+          "sectionName" : "VW Golf 2018",
+          "snoozedUntil" : null,
+          "status" : "active",
+          "title" : "ITP"
+        },
+        {
+          "dueDay" : "2026-12-15",
+          "estimatedCost" : {
+            "amount" : "900",
+            "currency" : "RON"
+          },
+          "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0005",
+          "isSensitive" : false,
+          "kind" : "maintenance",
+          "reminders" : {
+            "consequence" : "comfort",
+            "followUpAfterLapse" : null,
+            "graceDays" : 0,
+            "leadDays" : [
+              14
+            ],
+            "travelMarginDays" : 0
+          },
+          "sectionId" : "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbb0001",
+          "sectionName" : "VW Golf 2018",
+          "snoozedUntil" : null,
+          "status" : "active",
+          "title" : "Revizie"
+        },
+        {
+          "dueDay" : "2027-03-01",
+          "estimatedCost" : {
+            "amount" : "28",
+            "currency" : "EUR"
+          },
+          "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0006",
+          "isSensitive" : false,
+          "kind" : "legal",
+          "reminders" : {
+            "consequence" : "legal",
+            "followUpAfterLapse" : null,
+            "graceDays" : 0,
+            "leadDays" : [
+              30,
+              7,
+              0
+            ],
+            "travelMarginDays" : 0
+          },
+          "sectionId" : "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbb0001",
+          "sectionName" : "VW Golf 2018",
+          "snoozedUntil" : null,
+          "status" : "active",
+          "title" : "Rovinietă"
+        },
+        {
+          "dueDay" : "2027-04-10",
+          "estimatedCost" : null,
+          "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0007",
+          "isSensitive" : false,
+          "kind" : "renewal",
+          "reminders" : {
+            "consequence" : "legal",
+            "followUpAfterLapse" : null,
+            "graceDays" : 0,
+            "leadDays" : [
+              30,
+              7
+            ],
+            "travelMarginDays" : 180
+          },
+          "sectionId" : "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbb0004",
+          "sectionName" : "Persoană Exemplu",
+          "snoozedUntil" : null,
+          "status" : "active",
+          "title" : "Pașaport"
+        },
+        {
+          "dueDay" : "2026-11-27",
+          "estimatedCost" : null,
+          "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0008",
+          "isSensitive" : false,
+          "kind" : "routine",
+          "reminders" : {
+            "consequence" : "comfort",
+            "followUpAfterLapse" : null,
+            "graceDays" : 2,
+            "leadDays" : [
+              0
+            ],
+            "travelMarginDays" : 0
+          },
+          "sectionId" : "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbb0005",
+          "sectionName" : "Monstera",
+          "snoozedUntil" : null,
+          "status" : "active",
+          "title" : "Udat"
+        },
+        {
+          "dueDay" : "2026-11-25",
+          "estimatedCost" : null,
+          "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0009",
+          "isSensitive" : false,
+          "kind" : "payment",
+          "reminders" : {
+            "consequence" : "financial",
+            "followUpAfterLapse" : null,
+            "graceDays" : 0,
+            "leadDays" : [
+              14,
+              1
+            ],
+            "travelMarginDays" : 0
+          },
+          "sectionId" : "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbb0006",
+          "sectionName" : "Sală Exemplu",
+          "snoozedUntil" : "2026-11-28",
+          "status" : "active",
+          "title" : "Abonament sală"
+        },
+        {
+          "dueDay" : "2026-11-24",
+          "estimatedCost" : null,
+          "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0010",
+          "isSensitive" : false,
+          "kind" : "maintenance",
+          "reminders" : {
+            "consequence" : "comfort",
+            "followUpAfterLapse" : null,
+            "graceDays" : 0,
+            "leadDays" : [
+              14
+            ],
+            "travelMarginDays" : 0
+          },
+          "sectionId" : "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbb0003",
+          "sectionName" : "Apartament Exemplu",
+          "snoozedUntil" : null,
+          "status" : "paused",
+          "title" : "Filtru"
+        },
+        {
+          "dueDay" : "2026-11-01",
+          "estimatedCost" : null,
+          "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0011",
+          "isSensitive" : false,
+          "kind" : "tax",
+          "reminders" : {
+            "consequence" : "financial",
+            "followUpAfterLapse" : null,
+            "graceDays" : 0,
+            "leadDays" : [
+              14,
+              1
+            ],
+            "travelMarginDays" : 0
+          },
+          "sectionId" : "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbb0003",
+          "sectionName" : "Apartament Exemplu",
+          "snoozedUntil" : null,
+          "status" : "done",
+          "title" : "Taxă veche"
+        },
+        {
+          "dueDay" : "2026-11-02",
+          "estimatedCost" : null,
+          "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0012",
+          "isSensitive" : false,
+          "kind" : "insurance",
+          "reminders" : {
+            "consequence" : "legal",
+            "followUpAfterLapse" : null,
+            "graceDays" : 0,
+            "leadDays" : [
+              30,
+              7,
+              1
+            ],
+            "travelMarginDays" : 0
+          },
+          "sectionId" : "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbb0003",
+          "sectionName" : "Apartament Exemplu",
+          "snoozedUntil" : null,
+          "status" : "archived",
+          "title" : "Asigurare veche"
+        },
+        {
+          "dueDay" : "2027-01-05",
+          "estimatedCost" : {
+            "amount" : "1200",
+            "currency" : "RON"
+          },
+          "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0013",
+          "isSensitive" : false,
+          "kind" : "insurance",
+          "reminders" : {
+            "consequence" : "legal",
+            "followUpAfterLapse" : null,
+            "graceDays" : 0,
+            "leadDays" : [
+              30,
+              7,
+              1
+            ],
+            "travelMarginDays" : 0
+          },
+          "sectionId" : "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbb0003",
+          "sectionName" : "Apartament Exemplu",
+          "snoozedUntil" : null,
+          "status" : "active",
+          "title" : "Asigurare locuință"
+        },
+        {
+          "dueDay" : "2026-12-20",
+          "estimatedCost" : null,
+          "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0014",
+          "isSensitive" : false,
+          "kind" : "tax",
+          "reminders" : {
+            "consequence" : "financial",
+            "followUpAfterLapse" : null,
+            "graceDays" : 0,
+            "leadDays" : [
+              14,
+              1
+            ],
+            "travelMarginDays" : 0
+          },
+          "sectionId" : null,
+          "sectionName" : null,
+          "snoozedUntil" : null,
+          "status" : "active",
+          "title" : "Declarația unică"
+        },
+        {
+          "dueDay" : "2026-12-15",
+          "estimatedCost" : null,
+          "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0015",
+          "isSensitive" : false,
+          "kind" : "health",
+          "reminders" : {
+            "consequence" : "health",
+            "followUpAfterLapse" : null,
+            "graceDays" : 0,
+            "leadDays" : [
+              7
+            ],
+            "travelMarginDays" : 0
+          },
+          "sectionId" : "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbb0002",
+          "sectionName" : "PawPaw",
+          "snoozedUntil" : null,
+          "status" : "active",
+          "title" : "Deparazitare"
+        },
+        {
+          "dueDay" : "2026-12-10",
+          "estimatedCost" : null,
+          "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0016",
+          "isSensitive" : false,
+          "kind" : "tax",
+          "reminders" : {
+            "consequence" : "financial",
+            "followUpAfterLapse" : null,
+            "graceDays" : 0,
+            "leadDays" : [
+              14,
+              1
+            ],
+            "travelMarginDays" : 0
+          },
+          "sectionId" : "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbb0003",
+          "sectionName" : "Apartament Exemplu",
+          "snoozedUntil" : null,
+          "status" : "active",
+          "title" : "Taxă locală"
+        },
+        {
+          "dueDay" : "2026-12-10",
+          "estimatedCost" : null,
+          "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0017",
+          "isSensitive" : false,
+          "kind" : "maintenance",
+          "reminders" : {
+            "consequence" : "comfort",
+            "followUpAfterLapse" : null,
+            "graceDays" : 0,
+            "leadDays" : [
+              14
+            ],
+            "travelMarginDays" : 0
+          },
+          "sectionId" : "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbb0003",
+          "sectionName" : "Apartament Exemplu",
+          "snoozedUntil" : null,
+          "status" : "active",
+          "title" : "Schimb ulei"
+        }
+      ],
+      "hiddenCount" : 1,
+      "isAllClear" : false,
+      "later" : {
+        "count" : 1,
+        "estimatedCost" : [
+          {
+            "amount" : "28",
+            "currency" : "EUR"
+          }
+        ],
+        "nextDay" : "2027-03-01"
+      },
+      "maxNow" : 5,
+      "name" : "a month on",
+      "needsActionCount" : 11,
+      "now" : [
+        {
+          "daysRemaining" : -36,
+          "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0001",
+          "score" : 1439,
+          "urgency" : "overdue"
+        },
+        {
+          "daysRemaining" : -23,
+          "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0004",
+          "score" : 1423,
+          "urgency" : "overdue"
+        },
+        {
+          "daysRemaining" : -30,
+          "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0003",
+          "score" : 1237,
+          "urgency" : "overdue"
+        },
+        {
+          "daysRemaining" : -31,
+          "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0009",
+          "score" : 1230,
+          "urgency" : "overdue"
+        },
+        {
+          "daysRemaining" : -16,
+          "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0016",
+          "score" : 1216,
+          "urgency" : "overdue"
+        }
+      ],
+      "overflowCount" : 8,
+      "soon" : [
+        {
+          "entries" : [
+            {
+              "daysRemaining" : -33,
+              "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0002",
+              "score" : 1030,
+              "urgency" : "overdue"
+            },
+            {
+              "daysRemaining" : -11,
+              "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0015",
+              "score" : 1011,
+              "urgency" : "overdue"
+            }
+          ],
+          "sectionId" : "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbb0002",
+          "sectionName" : "PawPaw"
+        },
+        {
+          "entries" : [
+            {
+              "daysRemaining" : -29,
+              "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0008",
+              "score" : 529,
+              "urgency" : "overdue"
+            }
+          ],
+          "sectionId" : "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbb0005",
+          "sectionName" : "Monstera"
+        },
+        {
+          "entries" : [
+            {
+              "daysRemaining" : -16,
+              "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0017",
+              "score" : 516,
+              "urgency" : "overdue"
+            },
+            {
+              "daysRemaining" : 10,
+              "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0013",
+              "score" : 1198,
+              "urgency" : "soon"
+            }
+          ],
+          "sectionId" : "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbb0003",
+          "sectionName" : "Apartament Exemplu"
+        },
+        {
+          "entries" : [
+            {
+              "daysRemaining" : -11,
+              "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0005",
+              "score" : 519,
+              "urgency" : "overdue"
+            }
+          ],
+          "sectionId" : "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbb0001",
+          "sectionName" : "VW Golf 2018"
+        },
+        {
+          "entries" : [
+            {
+              "daysRemaining" : -6,
+              "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0014",
+              "score" : 1206,
+              "urgency" : "overdue"
+            }
+          ],
+          "sectionId" : null,
+          "sectionName" : "Fără secțiune"
+        },
+        {
+          "entries" : [
+            {
+              "daysRemaining" : 105,
+              "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0007",
+              "score" : 1118,
+              "urgency" : "soon"
+            }
+          ],
+          "sectionId" : "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbb0004",
+          "sectionName" : "Persoană Exemplu"
+        }
+      ],
+      "today" : "2026-12-26"
+    }
+  ],
+  "rule" : "AttentionModel.digest(_:now:calendar:limits:)",
+  "shape" : "today, maxNow (the most Acum lists) and the deadlines, each as in attention-entry; now: Acum's entries in order; soon: Curând's groups in order, each its sectionId (null for the household's own deadlines), the name it is ordered by (the household's own group: „Fără secțiune”, the screen's words) and its entries in order; later: how many, the first day and what they cost by currency (default first); overflowCount, hiddenCount (snoozed and paused), needsActionCount (the badge's count) and isAllClear.",
+  "source" : "ios/DosarCuSina/Services/Attention/AttentionModel.swift",
+  "writtenBy" : "ios/DosarCuSinaTests/AttentionVectorsTests.swift"
+}
