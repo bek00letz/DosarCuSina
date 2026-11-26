@@ -3524,6 +3524,73 @@
       ]
     },
     {
+      "name" : "typed an index with four decimals, kept as printed",
+      "outcomes" : [
+        {
+          "after" : [
+            {
+              "at" : "2026-06-05T10:00:00Z",
+              "basis" : null,
+              "key" : "1",
+              "kind" : "gas",
+              "startsCounter" : false,
+              "unit" : "m3",
+              "value" : 98000
+            },
+            {
+              "at" : "2026-07-05T10:00:00Z",
+              "basis" : "read",
+              "key" : "new",
+              "kind" : "gas",
+              "startsCounter" : false,
+              "unit" : "m3",
+              "value" : 98765.4321
+            }
+          ],
+          "answer" : null,
+          "counterStart" : null,
+          "current" : 98765.4321,
+          "recorded" : true,
+          "setAside" : [
+
+          ]
+        }
+      ],
+      "planned" : {
+        "at" : "2026-07-05T10:00:00Z",
+        "basis" : null,
+        "kind" : "gas",
+        "numberKind" : "meterIndex",
+        "replaces" : [
+
+        ],
+        "source" : "person",
+        "typed" : "98.765,4321",
+        "unit" : "m3",
+        "value" : null
+      },
+      "plannedAs" : {
+        "basis" : "read",
+        "continuesCounter" : false,
+        "isStored" : true,
+        "kind" : "gas",
+        "unit" : "m3",
+        "value" : 98765.4321
+      },
+      "question" : null,
+      "readings" : [
+        {
+          "at" : "2026-06-05T10:00:00Z",
+          "basis" : null,
+          "key" : 1,
+          "kind" : "gas",
+          "startsCounter" : false,
+          "unit" : "m3",
+          "value" : 98000
+        }
+      ]
+    },
+    {
       "name" : "an estimate is never stored",
       "outcomes" : [
         {

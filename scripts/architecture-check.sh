@@ -150,6 +150,13 @@ rule number-parser "$app" '(^|/)RomanianNumber[^/]*\.swift$' \
     'Decimal\(string: *([a-z]|String\()|(^|[^A-Za-z0-9_.])(Double|Float)\( *("|[A-Za-z_.]*([tT]ext|[sS]tring|[rR]aw)\))|replacingOccurrences\(of: *",", *with: *"\."\)|NumberFormatter\(\)|\.number\.parseStrategy|ParseStrategy' - \
     "Read numbers from text with the one shared reader: RomanianNumber.read (or .value) for what is printed or typed, RomanianNumber.canonical for the machine form, ModelQuestions.number(_:as:) for a model's answer. Readers that disagree turn 45,724 into 45.724, and a detour through Double changes amounts."
 
+# A number read (a Decimal) becomes a Double one way: RomanianNumber.double, correctly rounded,
+# as Kotlin's BigDecimal.toDouble() is. Foundation's NSDecimalNumber.doubleValue can miss by one
+# step (98765.4321 becomes 98765.43209999999), so the two apps would store different values.
+rule decimal-to-double "$app" '(^|/)RomanianNumber\.swift$' \
+    'NSDecimalNumber\([^;]*\)\.(double|float)Value|NSDecimalNumber\)\.(double|float)Value|(^|[^A-Za-z0-9_])(Double|Float)\( *truncating:' - \
+    "Turn a Decimal into a Double with RomanianNumber.double(_:), the one correctly rounded conversion. NSDecimalNumber's doubleValue can miss the nearest Double by one step (98765.4321 becomes 98765.43209999999), and the Android app would store another value."
+
 # A kind's printed labels are data: its profile's table (CaptureKindProfile.labels), or the one
 # every document shares (CaptureKindProfile.commonLabels). Words the shared readers look for that
 # are no one kind's (stop words, the buyer's block, an issuer's prefixes, address labels) are the

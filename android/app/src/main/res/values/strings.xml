@@ -2145,6 +2145,7 @@
     <!-- iOS: Numele secțiunilor, termenele și titlurile actelor apar când cauți pe iPhone. Ce e protejat cu %@, codurile, numerele de pe acte și exemplele nu apar niciodată. Cât timp toată aplicația e blocată, nu apare nimic. -->
     <string name="app_numele_sectiunilor_termenele_si_d3b4be">Numele secțiunilor, termenele și titlurile actelor apar când cauți pe iPhone. Ce e protejat cu %1$s, codurile, numerele de pe acte și exemplele nu apar niciodată. Cât timp toată aplicația e blocată, nu apare nimic.</string>
     <string name="app_numele_si_cat_de_important_e_vin_2a6409">Numele și cât de important e vin din categoria lui, așa că rămân cum sunt.</string>
+    <string name="app_numere_cu_zecimale_94d50a">Numere cu zecimale</string>
     <string name="app_numere_de_card_intregi_7084ed">Numere de card întregi</string>
     <string name="app_numere_de_polita_fara_numar_91e1bb">Numere de poliță fără număr</string>
     <string name="app_numerele_facturilor_83a027">Numerele facturilor</string>

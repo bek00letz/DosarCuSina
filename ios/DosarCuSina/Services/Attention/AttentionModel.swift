@@ -173,7 +173,7 @@ public enum AttentionModel {
             let window = max(attentionWindow, 1)
             closeness = max(0, (window - min(days, window)) * 280 / window)
         }
-        let cost = obligation.estimatedCost.map { NSDecimalNumber(decimal: $0.amount).doubleValue } ?? 0
+        let cost = obligation.estimatedCost.map { RomanianNumber.double($0.amount) } ?? 0
         let costNudge = cost > 0 ? min(Int(log10(cost + 1) * 3), 9) : 0
         return consequence + closeness + costNudge
     }

@@ -1659,6 +1659,7 @@
    "Numele secțiunii noi": {"name": "app_numele_sectiunii_noi_064a2c", "args": [], "text": "Numele secțiunii noi"},
    "Numele secțiunilor, termenele și titlurile actelor apar când cauți pe iPhone. Ce e protejat cu %@, codurile, numerele de pe acte și exemplele nu apar niciodată. Cât timp toată aplicația e blocată, nu apare nimic.": {"name": "app_numele_sectiunilor_termenele_si_d3b4be", "args": ["text"], "text": "Numele secțiunilor, termenele și titlurile actelor apar când cauți pe iPhone. Ce e protejat cu %1$s, codurile, numerele de pe acte și exemplele nu apar niciodată. Cât timp toată aplicația e blocată, nu apare nimic."},
    "Numele și cât de important e vin din categoria lui, așa că rămân cum sunt.": {"name": "app_numele_si_cat_de_important_e_vin_2a6409", "args": [], "text": "Numele și cât de important e vin din categoria lui, așa că rămân cum sunt."},
+   "Numere cu zecimale": {"name": "app_numere_cu_zecimale_94d50a", "args": [], "text": "Numere cu zecimale"},
    "Numere de card întregi": {"name": "app_numere_de_card_intregi_7084ed", "args": [], "text": "Numere de card întregi"},
    "Numere de poliță fără număr": {"name": "app_numere_de_polita_fara_numar_91e1bb", "args": [], "text": "Numere de poliță fără număr"},
    "Numerele facturilor": {"name": "app_numerele_facturilor_83a027", "args": [], "text": "Numerele facturilor"},
