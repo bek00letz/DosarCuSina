@@ -1,0 +1,190 @@
+{
+  "keepsBackSide" : [
+    "documentType.drivingLicence",
+    "documentType.euHealthCard",
+    "documentType.idCard",
+    "documentType.nationalHealthCard",
+    "documentType.other",
+    "documentType.residencePermit"
+  ],
+  "readOnPhoneOnly" : [
+    "documentType.bankCard"
+  ],
+  "sharedWithCare" : [
+    "documentType.bankCard"
+  ],
+  "typeField" : "document.type",
+  "types" : [
+    {
+      "aliases" : [
+        "Buletin",
+        "CI",
+        "ID card"
+      ],
+      "key" : "documentType.idCard",
+      "label" : "Carte de identitate"
+    },
+    {
+      "aliases" : [
+        "Pasaport",
+        "Passport"
+      ],
+      "key" : "documentType.passport",
+      "label" : "Pașaport"
+    },
+    {
+      "aliases" : [
+        "Permis de sedere",
+        "Residence permit",
+        "Permis de ședere temporară",
+        "Permis de ședere pe termen lung",
+        "Carte de rezidență",
+        "Residence card"
+      ],
+      "key" : "documentType.residencePermit",
+      "label" : "Permis de ședere"
+    },
+    {
+      "aliases" : [
+        "Permis",
+        "Driving licence"
+      ],
+      "key" : "documentType.drivingLicence",
+      "label" : "Permis de conducere"
+    },
+    {
+      "aliases" : [
+        "CEASS",
+        "EHIC",
+        "Card european de asigurări sociale de sănătate"
+      ],
+      "key" : "documentType.euHealthCard",
+      "label" : "Card european de sănătate"
+    },
+    {
+      "aliases" : [
+        "Card de sănătate",
+        "Cardul de sănătate",
+        "Card național de asigurări sociale de sănătate"
+      ],
+      "key" : "documentType.nationalHealthCard",
+      "label" : "Card național de sănătate"
+    },
+    {
+      "aliases" : [
+        "Green card"
+      ],
+      "key" : "documentType.greenCard",
+      "label" : "Carte verde"
+    },
+    {
+      "aliases" : [
+        "Card"
+      ],
+      "key" : "documentType.bankCard",
+      "label" : "Card bancar"
+    },
+    {
+      "aliases" : [
+        "Certificat digital",
+        "Token"
+      ],
+      "key" : "documentType.eSignature",
+      "label" : "Semnătură electronică"
+    },
+    {
+      "aliases" : [
+        "Cazier judiciar"
+      ],
+      "key" : "documentType.criminalRecord",
+      "label" : "Cazier"
+    },
+    {
+      "aliases" : [
+        "Altul"
+      ],
+      "key" : "documentType.other",
+      "label" : "Alt document"
+    }
+  ],
+  "unnamed" : "Document",
+  "validityMonthsAfterIssue" : {
+    "documentVariant.criminalRecord.judicial" : 6
+  },
+  "variantField" : "document.variant",
+  "variants" : [
+    {
+      "documentName" : null,
+      "key" : "documentVariant.idCard.electronic",
+      "label" : "Electronică, cu cip (CEI)",
+      "type" : "documentType.idCard"
+    },
+    {
+      "documentName" : null,
+      "key" : "documentVariant.idCard.withoutChip",
+      "label" : "Fără cip, modelul vechi",
+      "type" : "documentType.idCard"
+    },
+    {
+      "documentName" : "Carte de identitate simplă",
+      "key" : "documentVariant.idCard.simple",
+      "label" : "Simplă (CIS)",
+      "type" : "documentType.idCard"
+    },
+    {
+      "documentName" : null,
+      "key" : "documentVariant.passport.electronic",
+      "label" : "Simplu electronic",
+      "type" : "documentType.passport"
+    },
+    {
+      "documentName" : "Pașaport temporar",
+      "key" : "documentVariant.passport.temporary",
+      "label" : "Simplu temporar",
+      "type" : "documentType.passport"
+    },
+    {
+      "documentName" : "Carte de rezidență",
+      "key" : "documentVariant.residencePermit.residenceCard",
+      "label" : "Carte de rezidență, pentru un membru de familie al unui cetățean UE",
+      "type" : "documentType.residencePermit"
+    },
+    {
+      "documentName" : "Permis de ședere (Acordul de retragere)",
+      "key" : "documentVariant.residencePermit.withdrawalAgreement",
+      "label" : "Pentru cetățeni britanici (Acordul de retragere)",
+      "type" : "documentType.residencePermit"
+    },
+    {
+      "documentName" : "Card de debit",
+      "key" : "documentVariant.bankCard.debit",
+      "label" : "De debit",
+      "type" : "documentType.bankCard"
+    },
+    {
+      "documentName" : "Card de credit",
+      "key" : "documentVariant.bankCard.credit",
+      "label" : "De credit",
+      "type" : "documentType.bankCard"
+    },
+    {
+      "documentName" : "Cazier judiciar",
+      "key" : "documentVariant.criminalRecord.judicial",
+      "label" : "Judiciar",
+      "type" : "documentType.criminalRecord"
+    },
+    {
+      "documentName" : "Cazier fiscal",
+      "key" : "documentVariant.criminalRecord.fiscal",
+      "label" : "Fiscal",
+      "type" : "documentType.criminalRecord"
+    },
+    {
+      "documentName" : "Cazier auto",
+      "key" : "documentVariant.criminalRecord.driving",
+      "label" : "Auto",
+      "type" : "documentType.criminalRecord"
+    }
+  ],
+  "writtenBy" : "ios/DosarCuSinaTests/DocumentCatalogExportTests.swift"
+}

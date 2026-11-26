@@ -1,6 +1,7 @@
 package com.ar.dosarcusina.catalog
 
 import com.ar.dosarcusina.archive.v3.Condition
+import com.ar.dosarcusina.core.documents.DocumentTypeCatalog
 import com.ar.dosarcusina.core.readiness.TravelData
 import com.ar.dosarcusina.core.values.CalendarDay
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -10,14 +11,15 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
 /**
- * What a personal document can be, read once for the whole app from shared/travel/documents.json
- * (`core.readiness.DocumentTypes`): each variant is the documents category's own option, offered for
+ * What a personal document can be, read once for the whole app from shared/catalog/documents/documents.json
+ * (`core.documents.DocumentTypeCatalog`): each variant is the documents category's own option, offered for
  * its type, and the names and rules the section actions read are the iOS app's. The full answers
  * are the iOS app's shared cases (`SectionVectorsTest`, in :store); `TravelDataTest` checks the types.
  */
 class DocumentTypesTest {
     private val catalog = Catalog.builtIn
-    private val types = TravelData.builtIn.documents
+    private val types = DocumentTypeCatalog.builtIn
+    private val travel = TravelData.builtIn.documents
 
     @Test
     fun eachVariantIsTheDocumentsCategorysOptionOfferedForItsType() {
@@ -47,8 +49,8 @@ class DocumentTypesTest {
     fun theRulesAreTheTypesOwnData() {
         assertTrue(types.keepsBackSide(null), "A document with no type yet counts as Alt document")
         assertFalse(types.keepsBackSide("documentType.bankCard"), "Its back shows the security code")
-        assertEquals(180, types.travelMarginDays("Pasaport"))
-        assertEquals(0, types.travelMarginDays("documentType.idCard"))
+        assertEquals(180, travel.travelMarginDays("Pasaport"))
+        assertEquals(0, travel.travelMarginDays("documentType.idCard"))
         val issued = requireNotNull(CalendarDay.parse("2026-08-31"))
         val until = types.validUntil(issued, "documentType.criminalRecord", "documentVariant.criminalRecord.judicial")
         assertEquals("2027-02-28", until?.isoString, "Six months, the shorter month's last day")

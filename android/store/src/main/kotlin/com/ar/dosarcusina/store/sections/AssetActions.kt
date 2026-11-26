@@ -21,8 +21,7 @@ import com.ar.dosarcusina.catalog.recurrenceRule
 import com.ar.dosarcusina.core.readings.LowerReadingAnswer
 import com.ar.dosarcusina.core.readings.MeasurementKind
 import com.ar.dosarcusina.core.readings.ReadingSource
-import com.ar.dosarcusina.core.readiness.DocumentTypes
-import com.ar.dosarcusina.core.readiness.TravelData
+import com.ar.dosarcusina.core.documents.DocumentTypeCatalog
 import com.ar.dosarcusina.core.subscriptions.BillReminders
 import com.ar.dosarcusina.core.values.CalendarDay
 import com.ar.dosarcusina.core.values.DosarCalendar
@@ -161,7 +160,7 @@ class AssetActions(
     /** The app's own categories: a section's definition when its category's record isn't here. */
     private val catalog: Catalog = Catalog.builtIn,
     /** What a personal document can be: its types, their variants and the names they give. */
-    private val documentTypes: DocumentTypes = TravelData.builtIn.documents,
+    private val documentTypes: DocumentTypeCatalog = DocumentTypeCatalog.builtIn,
 ) {
     // Planning
 

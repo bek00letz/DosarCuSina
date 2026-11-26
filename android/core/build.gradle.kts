@@ -21,6 +21,16 @@ val subscriptionCatalog = tasks.register<Sync>("subscriptionCatalogResources") {
     }
     into(layout.buildDirectory.dir("subscription-catalog"))
 }
+// What a personal document can be (its types, variants, names and the app's rules on them), exported
+// by the iOS app's DocumentCatalogExportTests to shared/catalog/documents/ and copied into the module's
+// resources as it is built: the one copy, read by core.documents.DocumentTypeCatalog for the whole app.
+val documentCatalog = tasks.register<Sync>("documentCatalogResources") {
+    from(shared.resolve("catalog/documents")) {
+        include("*.json")
+        into("com/ar/dosarcusina/core/documents")
+    }
+    into(layout.buildDirectory.dir("document-catalog"))
+}
 // The one copy: shared/travel/*.json (what a traveller carries, the countries and the document
 // types' travel data, exported by the iOS TravelExportTests) goes into the module's resources as
 // it is built, so the trip check reads the rules the iOS app exported, never ones of its own.
@@ -33,6 +43,7 @@ val travelResources = tasks.register<Sync>("travelResources") {
 }
 sourceSets.main {
     resources.srcDir(subscriptionCatalog)
+    resources.srcDir(documentCatalog)
     resources.srcDir(travelResources)
 }
 
@@ -41,5 +52,7 @@ tasks.test {
     inputs.dir(shared.resolve("test-vectors")).withPathSensitivity(PathSensitivity.RELATIVE).withPropertyName("vectors")
     inputs.dir(shared.resolve("catalog/subscriptions")).withPathSensitivity(PathSensitivity.RELATIVE)
         .withPropertyName("subscriptionCatalog")
+    inputs.dir(shared.resolve("catalog/documents")).withPathSensitivity(PathSensitivity.RELATIVE)
+        .withPropertyName("documentCatalog")
     systemProperty("dosar.shared", shared.canonicalPath)
 }

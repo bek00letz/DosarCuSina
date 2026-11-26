@@ -6,7 +6,7 @@ import com.ar.dosarcusina.archive.v3.Condition
 import com.ar.dosarcusina.archive.v3.FieldDefinition
 import com.ar.dosarcusina.archive.v3.FieldValue
 import com.ar.dosarcusina.archive.v3.FieldValues
-import com.ar.dosarcusina.core.readiness.DocumentTypes
+import com.ar.dosarcusina.core.documents.DocumentTypeCatalog
 import com.ar.dosarcusina.core.subscriptions.SubscriptionGroup
 import com.ar.dosarcusina.core.values.option
 import kotlinx.serialization.json.JsonObject
@@ -42,7 +42,7 @@ object FieldRules {
         values: FieldValues,
         fields: List<FieldDefinition>,
         previous: FieldValues?,
-        documentTypes: DocumentTypes,
+        documentTypes: DocumentTypeCatalog,
     ): FieldValues {
         val filled = if (previous == null) withDefaults(values, fields) else values
         return withDerived(withoutWhatNoLongerBelongs(filled, fields), fields, previous, documentTypes)
@@ -83,7 +83,7 @@ object FieldRules {
         values: FieldValues,
         fields: List<FieldDefinition>,
         previous: FieldValues?,
-        documentTypes: DocumentTypes,
+        documentTypes: DocumentTypeCatalog,
     ): FieldValues {
         var result = values
         for (field in fields) {
@@ -120,16 +120,16 @@ object FieldRules {
     /** How a field is worked out from others (`FieldDerivation`). */
     sealed interface Derivation {
         /** The fields it reads. */
-        fun inputs(documentTypes: DocumentTypes): List<String>
+        fun inputs(documentTypes: DocumentTypeCatalog): List<String>
 
         /** Its value for [values]; none when they don't give one. */
-        fun value(values: FieldValues, documentTypes: DocumentTypes): FieldValue?
+        fun value(values: FieldValues, documentTypes: DocumentTypeCatalog): FieldValue?
 
         /** A date field plus a number of months from another field (a purchase's date and its warranty). */
         data class AddMonths(val dateField: String, val monthsField: String) : Derivation {
-            override fun inputs(documentTypes: DocumentTypes) = listOf(dateField, monthsField)
+            override fun inputs(documentTypes: DocumentTypeCatalog) = listOf(dateField, monthsField)
 
-            override fun value(values: FieldValues, documentTypes: DocumentTypes): FieldValue? {
+            override fun value(values: FieldValues, documentTypes: DocumentTypeCatalog): FieldValue? {
                 val day = (values[dateField] as? FieldValue.Day)?.value ?: return null
                 val months = (values[monthsField] as? FieldValue.Number)?.value ?: return null
                 return if (months > 0) FieldValue.Day(day.addingMonths(months.toInt())) else null
@@ -138,10 +138,10 @@ object FieldRules {
 
         /** A document's last valid day from the day it was issued, when its type and variant have a validity. */
         data class ValidityAfterIssue(val issueField: String) : Derivation {
-            override fun inputs(documentTypes: DocumentTypes) =
+            override fun inputs(documentTypes: DocumentTypeCatalog) =
                 listOf(issueField, documentTypes.typeField, documentTypes.variantField)
 
-            override fun value(values: FieldValues, documentTypes: DocumentTypes): FieldValue? {
+            override fun value(values: FieldValues, documentTypes: DocumentTypeCatalog): FieldValue? {
                 val issued = (values[issueField] as? FieldValue.Day)?.value ?: return null
                 val type = values[documentTypes.typeField]?.textValue
                 val variant = values[documentTypes.variantField]?.textValue
@@ -151,9 +151,9 @@ object FieldRules {
 
         /** The group a subscription is listed under, from its service: the person's choice stays until it changes. */
         data class ServiceGroup(val serviceField: String) : Derivation {
-            override fun inputs(documentTypes: DocumentTypes) = listOf(serviceField)
+            override fun inputs(documentTypes: DocumentTypeCatalog) = listOf(serviceField)
 
-            override fun value(values: FieldValues, documentTypes: DocumentTypes): FieldValue =
+            override fun value(values: FieldValues, documentTypes: DocumentTypeCatalog): FieldValue =
                 FieldValue.Text(SubscriptionGroup.of(values[serviceField]?.textValue).key)
         }
     }
