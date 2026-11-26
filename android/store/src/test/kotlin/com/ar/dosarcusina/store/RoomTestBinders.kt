@@ -5,6 +5,7 @@ import com.ar.dosarcusina.archive.TestBinders
 import com.ar.dosarcusina.archive.binder.Binder
 import com.ar.dosarcusina.archive.binder.BinderChanges
 import com.ar.dosarcusina.archive.binder.Removed
+import com.ar.dosarcusina.store.locks.SectionLocks
 import java.io.File
 import java.nio.file.Files
 
@@ -12,9 +13,12 @@ import java.nio.file.Files
 val storeScratch: File
     get() = File(System.getProperty("dosar.storeScratch") ?: "build/store-tests").also { it.mkdirs() }
 
-/** A new store in memory, with a folder of its own for its files. */
-fun scratchStore(): BinderStore =
-    BinderStore.inMemory(Files.createTempDirectory(storeScratch.toPath(), "files-").toFile())
+/** A new folder of its own under [storeScratch]. */
+fun scratchFolder(prefix: String): File = Files.createTempDirectory(storeScratch.toPath(), prefix).toFile()
+
+/** A new store in memory, with a folder of its own for its files and its locks kept in memory. */
+fun scratchStore(locks: SectionLocks = SectionLocks(file = null)): BinderStore =
+    BinderStore.inMemory(scratchFolder("files-"), locks)
 
 /** This phone's lock choices, in memory. */
 class MemoryLocks(var choices: Map<String, Boolean> = emptyMap()) : DeviceLocks {
