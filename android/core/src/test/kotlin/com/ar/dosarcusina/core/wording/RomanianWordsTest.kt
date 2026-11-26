@@ -28,7 +28,7 @@ class RomanianWordsTest {
 
     @Test
     fun `a word Android says differently`() {
-        assertEquals("Protejat cu amprenta", Word.app("Protejat cu Face ID").written())
+        assertEquals("Protejat cu deblocarea telefonului", Word.app("Protejat cu Face ID").written())
     }
 
     @Test

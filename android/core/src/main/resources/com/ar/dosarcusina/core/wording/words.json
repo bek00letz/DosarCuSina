@@ -2056,6 +2056,7 @@
    "Scrie numele persoanei.": {"name": "app_scrie_numele_persoanei_13f576", "args": [], "text": "Scrie numele persoanei."},
    "Scrie parola din nou": {"name": "app_scrie_parola_din_nou_0f42e5", "args": [], "text": "Scrie parola din nou"},
    "Scrie parola pe care ai ales-o când ai făcut copia.": {"name": "app_scrie_parola_pe_care_ai_ales_o_6abe81", "args": [], "text": "Scrie parola pe care ai ales-o când ai făcut copia."},
+   "Scrie suma cu cel mult %lld cifre.": {"name": "app_scrie_suma_cu_cel_mult_n_cifre_adbee8", "args": ["count"], "plural": {"arg": 1, "one": "Scrie suma cu cel mult o cifră.", "few": "Scrie suma cu cel mult %1$,d cifre.", "other": "Scrie suma cu cel mult %1$,d de cifre."}},
    "Scrie suma doar cu cifre, de exemplu 1.250,50.": {"name": "app_scrie_suma_doar_cu_cifre_de_96d4ce", "args": [], "text": "Scrie suma doar cu cifre, de exemplu 1.250,50."},
    "Scrie un număr întreg, fără zecimale.": {"name": "app_scrie_un_numar_intreg_fara_df8ad0", "args": [], "text": "Scrie un număr întreg, fără zecimale."},
    "Scrie un număr întreg, mai mare decât zero.": {"name": "app_scrie_un_numar_intreg_mai_mare_0c907b", "args": [], "text": "Scrie un număr întreg, mai mare decât zero."},

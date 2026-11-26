@@ -2609,6 +2609,12 @@
     <string name="app_scrie_numele_persoanei_13f576">Scrie numele persoanei.</string>
     <string name="app_scrie_parola_din_nou_0f42e5">Scrie parola din nou</string>
     <string name="app_scrie_parola_pe_care_ai_ales_o_6abe81">Scrie parola pe care ai ales-o când ai făcut copia.</string>
+    <!-- iOS: Scrie suma cu cel mult %lld cifre. -->
+    <plurals name="app_scrie_suma_cu_cel_mult_n_cifre_adbee8">
+        <item quantity="one">Scrie suma cu cel mult o cifră.</item>
+        <item quantity="few">Scrie suma cu cel mult %1$,d cifre.</item>
+        <item quantity="other">Scrie suma cu cel mult %1$,d de cifre.</item>
+    </plurals>
     <string name="app_scrie_suma_doar_cu_cifre_de_96d4ce">Scrie suma doar cu cifre, de exemplu 1.250,50.</string>
     <string name="app_scrie_un_numar_intreg_fara_df8ad0">Scrie un număr întreg, fără zecimale.</string>
     <string name="app_scrie_un_numar_intreg_mai_mare_0c907b">Scrie un număr întreg, mai mare decât zero.</string>
