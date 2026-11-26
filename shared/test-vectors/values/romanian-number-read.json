@@ -1717,9 +1717,7 @@
         "value" : "123456789012345678901234567890"
       },
       "money" : {
-        "ambiguous" : false,
-        "needsCheck" : false,
-        "value" : "123456789012345678901234567890"
+        "problem" : "tooManyDigits"
       },
       "origin" : "document",
       "unit" : null
@@ -1742,9 +1740,7 @@
         "value" : "1234567890123456789012345678901"
       },
       "money" : {
-        "ambiguous" : false,
-        "needsCheck" : false,
-        "value" : "1234567890123456789012345678901"
+        "problem" : "tooManyDigits"
       },
       "origin" : "document",
       "unit" : null
@@ -1767,9 +1763,7 @@
         "value" : "12345678901234567890123456789012345678900000000000"
       },
       "money" : {
-        "ambiguous" : false,
-        "needsCheck" : false,
-        "value" : "12345678901234567890123456789012345678900000000000"
+        "problem" : "tooManyDigits"
       },
       "origin" : "document",
       "unit" : null
@@ -1788,9 +1782,7 @@
         "value" : "0.1234567890123456789"
       },
       "money" : {
-        "ambiguous" : false,
-        "needsCheck" : false,
-        "value" : "0.1234567890123456789"
+        "problem" : "tooManyDigits"
       },
       "origin" : "document",
       "unit" : null
@@ -2659,7 +2651,7 @@
     }
   ],
   "rule" : "RomanianNumber.read(_:as:from:unit:)",
-  "shape" : "input: text; origin: document or typed; unit: a field's unit as written (read with MeasurementUnit), or null. For each kind (money, count, meterIndex, kilometres): value (the number, as Foundation's Decimal writes it), ambiguous and needsCheck, or problem (empty, unreadable, negative, notWhole).",
+  "shape" : "input: text; origin: document or typed; unit: a field's unit as written (read with MeasurementUnit), or null. For each kind (money, count, meterIndex, kilometres): value (the number, as Foundation's Decimal writes it), ambiguous and needsCheck, or problem (empty, unreadable, negative, notWhole, tooManyDigits).",
   "source" : "ios/DosarCuSina/Models/Values/RomanianNumber.swift",
   "writtenBy" : "ios/DosarCuSinaTests/ValueVectorsTests.swift"
 }
