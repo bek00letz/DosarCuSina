@@ -29,6 +29,16 @@ import Foundation
 ///   all in groups of four, only a card at its start counts ("4111 1111 1111 1111 0828"),
 ///   or one right after it, since every part of such a number is grouped like a card.
 ///
+///   Groups apart by anything else (a dot, a slash, several spaces or another kind of space,
+///   a dash with spaces around it: "4111.1111.1111.1111", "4111 / 1111 / …") count too, with
+///   one kind of gap throughout, printed like a card and passing the Luhn check, whether alone or
+///   next to other digits; so dates ("01.02.2026"), amounts ("1.250.000"), versions and a table's
+///   columns stay as they are. A date printed with dots, slashes or dashes ("01.02.2026",
+///   "2026-02-01") is a number of its own, so a card printed right after it is found as if
+///   alone ("01.02.2026 4111 1111 1111 1111"), never read as the end of a long number in fours.
+///   Digits of any script count as the digits they are ("４１１１…",
+///   "٤١١١…"), and the four kept are written in ASCII digits.
+///
 ///   What is never a card, whatever its digits: digits glued to a letter, before or after
 ///   them ("AB4111…", an IBAN's account in one piece, its first group after the country's
 ///   letters), since a card number is never printed glued to letters; groups that carry on an
@@ -39,7 +49,8 @@ import Foundation
 ///   values kept that way (`KeptWhole`).
 /// - **On a bank card** (`strict`): any run of eight digits or more, whatever it starts
 ///   with or whether its check digit passes, since a misread digit must not let the rest
-///   through. Nothing is kept whole there.
+///   through; groups apart by one space or dash are one run, and what is left of a longer run
+///   apart by anything else is another. Nothing is kept whole there.
 ///
 /// A number taken out is written as its last four digits after a mask: "•••• 4821".
 public enum PaymentCardNumbers {
@@ -119,23 +130,101 @@ public enum PaymentCardNumbers {
 
     // MARK: - Runs of digits
 
+    /// What may stand between two groups of a number's digits: a run of spaces (any kind of
+    /// space, a tab included), or one dash, dot or slash with spaces around it or none.
+    static let gapPattern = #"(?:[\t\p{Zs}]*+[-./][\t\p{Zs}]*+|[\t\p{Zs}]++)"#
+
+    /// Whether a character is part of what stands between two groups (`gapPattern`).
+    static func isGapCharacter(_ character: Character) -> Bool {
+        if character == "-" || character == "." || character == "/" || character == "\t" { return true }
+        return character.unicodeScalars.count == 1 && character.unicodeScalars.first?.properties.generalCategory == .spaceSeparator
+    }
+
+    /// A decimal digit of any script as its ASCII digit ("٤", "４" and "4" are all "4").
+    static func digit(_ character: Character) -> Character? {
+        guard character.isNumber, let value = character.wholeNumberValue, (0...9).contains(value) else { return nil }
+        return Character(String(value))
+    }
+
+    /// What stands between two groups of a run.
+    struct Gap: Equatable {
+        enum Kind: Equatable { case space, dash, dot, slash }
+        let kind: Kind
+        /// One space or one dash: the way most numbers are printed in groups.
+        let isNarrow: Bool
+
+        init(_ text: Substring) {
+            kind = text.contains("-") ? .dash : text.contains(".") ? .dot : text.contains("/") ? .slash : .space
+            isNarrow = text == " " || text == "-"
+        }
+    }
+
     struct Run {
         let range: Range<String.Index>
+        /// The run's digits as ASCII digits, whatever script they are written in.
         let digits: String
-        /// Where each group of digits sits, in order: the pieces between single spaces or dashes.
+        /// Each group's digits, the same way.
+        let pieces: [String]
+        /// Where each group of digits sits, in order: the pieces between its gaps.
         let groups: [Range<String.Index>]
         /// How many digits each group has.
         let groupSizes: [Int]
+        /// What stands between each group and the next.
+        let gaps: [Gap]
         /// The whole run of digits found in the text, not a part of a longer one.
         let isWhole: Bool
 
         init(groups: ArraySlice<Range<String.Index>>, in text: String, isWhole: Bool) {
             self.groups = Array(groups)
             self.range = (groups.first?.lowerBound ?? text.startIndex)..<(groups.last?.upperBound ?? text.startIndex)
-            let pieces = groups.map { text[$0].filter { $0.isASCII && $0.isNumber } }
+            let pieces = groups.map { String(text[$0].compactMap(PaymentCardNumbers.digit)) }
+            self.pieces = pieces
             self.digits = pieces.joined()
             self.groupSizes = pieces.map(\.count)
+            self.gaps = zip(self.groups, self.groups.dropFirst()).map { Gap(text[$0.upperBound..<$1.lowerBound]) }
             self.isWhole = isWhole
+        }
+
+        /// Some of its groups are apart by something else than one space or one dash.
+        var isApartByOthers: Bool {
+            gaps.contains { !$0.isNarrow }
+        }
+
+        /// Its stretches of groups apart by one space or one dash only, in order, each taken as
+        /// a whole run: the run itself when nothing else stands between its groups. A date in it
+        /// (`isDate(at:)`) is a stretch of its own, so its year never starts a card printed after it.
+        func stretches(in text: String) -> [Run] {
+            let dates = groups.indices.dropLast(2).filter(isDate(at:))
+            let insideDates = Set(dates.flatMap { [$0, $0 + 1] })
+            let dateEdges = Set(dates.flatMap { [$0 - 1, $0 + 2] }.filter { gaps.indices.contains($0) })
+            let ends = Set(gaps.indices.filter { !gaps[$0].isNarrow && !insideDates.contains($0) }).union(dateEdges)
+            guard !ends.isEmpty else { return [self] }
+            var stretches: [Run] = []
+            var start = 0
+            for index in ends.sorted() {
+                stretches.append(Run(groups: groups[start...index], in: text, isWhole: true))
+                start = index + 1
+            }
+            stretches.append(Run(groups: groups[start...], in: text, isWhole: true))
+            return stretches
+        }
+
+        /// Whether the three groups from `start` are a date: a day, a month and a year of four
+        /// digits ("01.02.2026", "2/1/2026", "2026-02-01"), apart twice by the same dot, slash or
+        /// dash. A card never prints groups that short, so a date is never part of one.
+        private func isDate(at start: Int) -> Bool {
+            guard gaps[start].kind == gaps[start + 1].kind, gaps[start].kind != .space else { return false }
+            let sizes = Array(groupSizes[start...(start + 2)])
+            let values = pieces[start...(start + 2)].map { Int($0) ?? 0 }
+            let short = 1...2
+            if short.contains(sizes[0]), short.contains(sizes[1]), sizes[2] == 4 {
+                return ((1...31).contains(values[0]) && (1...12).contains(values[1]))
+                    || ((1...12).contains(values[0]) && (1...31).contains(values[1]))
+            }
+            if sizes[0] == 4, short.contains(sizes[1]), short.contains(sizes[2]) {
+                return (1...12).contains(values[1]) && (1...31).contains(values[2])
+            }
+            return false
         }
 
         /// Printed in groups of four ("4111 1111 1111 1111").
@@ -154,8 +243,15 @@ public enum PaymentCardNumbers {
         /// A card number by the "anywhere" rule. A whole run printed in groups of four counts
         /// even when its check digit was misread; a part of a longer run must pass the check and
         /// be printed like a card, since inside a long number printed in fours every part is.
+        /// Groups apart by anything else (dots, slashes, several spaces, which dates, amounts and
+        /// a table's columns give too) count only with one kind of gap throughout, printed like a
+        /// card and passing the check.
         var isCardNumber: Bool {
             guard (14...19).contains(digits.count), let brand = PaymentCardNumbers.brand(of: digits), brand.lengths.contains(digits.count) else { return false }
+            if isApartByOthers {
+                let kinds = gaps.map(\.kind)
+                return kinds.allSatisfy { $0 == kinds.first } && printedLikeACard && PaymentCardNumbers.passesLuhn(digits)
+            }
             if !isWhole { return printedLikeACard && PaymentCardNumbers.passesLuhn(digits) }
             return PaymentCardNumbers.passesLuhn(digits) || (groupedInFours && digits.count == 16)
         }
@@ -165,26 +261,75 @@ public enum PaymentCardNumbers {
         }
     }
 
-    /// Runs of digits with at most one space or dash between them, not part of a longer
-    /// run: twelve digits or more, or (`strict`) eight or more.
-    static func runs(in text: String, strict: Bool) -> [Run] {
-        let least = strict ? 8 : 12
-        let pattern = #"(?<!\d[ -]?)\d(?:[ -]?\d){"# + String(least - 1) + #",}(?![ -]?\d)"#
+    /// Runs of digits, of any script, whose groups are apart by what `gapPattern` allows, not
+    /// part of a longer run, with `least` digits or more.
+    static func spans(in text: String, least: Int) -> [Run] {
+        let pattern = #"\d(?:"# + gapPattern + #"?\d){"# + String(least - 1) + #",}(?!"# + gapPattern + #"?\d)"#
         return TextPattern.matches(pattern, in: text, caseInsensitive: false).map { match in
             Run(groups: groups(in: text, range: match.range)[...], in: text, isWhole: true)
         }
     }
 
-    /// The card numbers in the text by the "anywhere" rule, in order: a whole run of digits
-    /// that is one, else the parts of a longer run that are (`parts(of:in:)`), looked for only
-    /// in what of the run isn't a code (`pieces(of:in:outside:)`).
+    /// Runs of digits with at most one space or dash between them, not part of a longer
+    /// run: twelve digits or more, or (`strict`) eight or more. On a bank card (`strict`), where
+    /// a longer run's groups are apart by anything else (dots, slashes, several spaces), the card
+    /// numbers the "anywhere" rule finds in it are runs, and so is what is left of it beside
+    /// them, with eight digits or more.
+    static func runs(in text: String, strict: Bool) -> [Run] {
+        let least = strict ? 8 : 12
+        var ibans: [Range<String.Index>]?
+        return spans(in: text, least: least).flatMap { span -> [Run] in
+            let stretches = span.stretches(in: text)
+            guard strict, span.isApartByOthers else { return stretches.filter { $0.digits.count >= least } }
+            if ibans == nil { ibans = text.contains(where: \.isLetter) ? IBAN.ranges(in: text) : [] }
+            let cards = cardNumbers(inSpan: span, of: text, outside: ibans ?? [])
+            var found = cards
+            var rest: [Range<String.Index>] = []
+            func keepRest() {
+                if !rest.isEmpty {
+                    let run = Run(groups: rest[...], in: text, isWhole: true)
+                    if run.digits.count >= least { found.append(run) }
+                }
+                rest = []
+            }
+            let inACard = { (group: Range<String.Index>) in cards.contains { $0.range.overlaps(group) } }
+            for stretch in stretches {
+                if stretch.digits.count >= least, !stretch.groups.contains(where: inACard) {
+                    keepRest()
+                    found.append(stretch)
+                    continue
+                }
+                for group in stretch.groups {
+                    if inACard(group) { keepRest() } else { rest.append(group) }
+                }
+            }
+            keepRest()
+            return found.sorted { $0.range.lowerBound < $1.range.lowerBound }
+        }
+    }
+
+    /// The card numbers in the text by the "anywhere" rule, in order (`cardNumbers(inSpan:of:outside:)`).
     static func cardNumbers(in text: String) -> [Run] {
         let ibans = text.contains(where: \.isLetter) ? IBAN.ranges(in: text) : []
-        return runs(in: text, strict: false).flatMap { run in
+        return spans(in: text, least: 12).flatMap { cardNumbers(inSpan: $0, of: text, outside: ibans) }
+    }
+
+    /// The card numbers in one run of the text (`spans(in:least:)`) by the "anywhere" rule, in
+    /// order: in each of its stretches apart by one space or dash, a whole stretch that is one,
+    /// else the parts of a longer one that are (`parts(of:in:where:)`), looked for only in what
+    /// of it isn't a code (`pieces(of:in:outside:)`); then, where something else stands between
+    /// groups (dots, slashes, several spaces), the card numbers printed that way.
+    static func cardNumbers(inSpan span: Run, of text: String, outside ibans: [Range<String.Index>]) -> [Run] {
+        func cards(in run: Run, where accepts: (Run) -> Bool) -> [Run] {
             pieces(of: run, in: text, outside: ibans).flatMap { piece in
-                piece.isCardNumber ? [piece] : parts(of: piece, in: text)
+                accepts(piece) ? [piece] : parts(of: piece, in: text, where: accepts)
             }
         }
+        let found = span.stretches(in: text).filter { $0.digits.count >= 12 }.flatMap { cards(in: $0, where: \.isCardNumber) }
+        guard span.isApartByOthers else { return found }
+        let apart = cards(in: span) { $0.isApartByOthers && $0.isCardNumber }
+            .filter { card in !found.contains { $0.range.overlaps(card.range) } }
+        return (found + apart).sorted { $0.range.lowerBound < $1.range.lowerBound }
     }
 
     /// What of a run can be a card number, once the digits that belong to a code are left
@@ -224,12 +369,13 @@ public enum PaymentCardNumbers {
 
     /// Whether the run carries on an IBAN printed in groups, its check passing or not: a
     /// country that issues IBANs (`IBAN.lengths`) in capitals and two check
-    /// digits, maybe groups of four letters or digits, then the run, one space or dash apart
-    /// ("RO49 AAAA 1234 5678 9012 3456").
+    /// digits, maybe groups of four letters or digits, then the run, each apart by spaces or by
+    /// one dash, dot or slash ("RO49 AAAA 1234 5678 9012 3456", "RO49.AAAA.1234.5678…").
     static func continuesAnIBAN(_ run: Run, in text: String) -> Bool {
         let before = text[..<run.range.lowerBound].suffix(48)
-        guard before.last == " " || before.last == "-" else { return false }
-        let head = #"(?<![\p{L}\p{N}])([A-Z]{2})\d{2}(?:[ -][A-Z0-9]{4})*[ -]$"#
+        guard let last = before.last, isGapCharacter(last) else { return false }
+        let apart = #"(?:[-./]|[\t\p{Zs}]++)"#
+        let head = #"(?<![\p{L}\p{N}])([A-Z]{2})\d{2}(?:"# + apart + #"[A-Z0-9]{4})*"# + apart + #"$"#
         guard let country = TextPattern.first(head, in: String(before), caseInsensitive: false)?[1] else { return false }
         return IBAN.lengths[country] != nil
     }
@@ -237,13 +383,13 @@ public enum PaymentCardNumbers {
     /// The card numbers inside a run that isn't one as a whole: a card number printed next to
     /// other digits ("12 4111 1111 1111 1111", "4111-1111-1111-1111-27"). Only parts that
     /// begin and end where the run's groups do are tried, from the left and the longest first
-    /// at each place; a part is taken when it is a card number (`isCardNumber`: printed like a
-    /// card and passing the Luhn check). Digits with nothing between them stay
+    /// at each place; a part is taken when `accepts` takes it (a card number, `isCardNumber`:
+    /// printed like a card and passing the Luhn check). Digits with nothing between them stay
     /// one number. In a run printed all in groups of four, every part is grouped like a card,
     /// so a part is tried only at its start or right after a card found there: a card printed
     /// before other digits, never the middle or the end of a long number (a 20-digit health
     /// card number in five groups).
-    static func parts(of run: Run, in text: String) -> [Run] {
+    static func parts(of run: Run, in text: String, where accepts: (Run) -> Bool = \.isCardNumber) -> [Run] {
         let sizes = run.groupSizes
         guard sizes.count >= 2 else { return [] }
         let cardLengths = 14...19
@@ -262,7 +408,7 @@ public enum PaymentCardNumbers {
             }
             let part = ends.reversed().lazy
                 .map { Run(groups: run.groups[start...$0], in: text, isWhole: false) }
-                .first(where: \.isCardNumber)
+                .first(where: accepts)
             if let part {
                 found.append(part)
                 start += part.groups.count
@@ -276,14 +422,14 @@ public enum PaymentCardNumbers {
         return found
     }
 
-    /// The groups of digits in `range`: the pieces between its spaces and dashes.
+    /// The groups of digits in `range`: the pieces between its gaps.
     private static func groups(in text: String, range: Range<String.Index>) -> [Range<String.Index>] {
         var groups: [Range<String.Index>] = []
         var groupStart: String.Index?
         var index = range.lowerBound
         while index < range.upperBound {
             let next = text.index(after: index)
-            if text[index] == " " || text[index] == "-" {
+            if isGapCharacter(text[index]) {
                 if let groupStart { groups.append(groupStart..<index) }
                 groupStart = nil
             } else if groupStart == nil {

@@ -4,6 +4,7 @@ import com.ar.dosarcusina.archive.binder.BuiltInDefinition
 import com.ar.dosarcusina.archive.binder.BuiltIns
 import com.ar.dosarcusina.archive.v3.CategoryBehavior
 import com.ar.dosarcusina.archive.v3.ComponentDefinition
+import com.ar.dosarcusina.archive.v3.FieldDefinition
 import com.ar.dosarcusina.archive.v3.FieldSection
 import com.ar.dosarcusina.archive.v3.ObligationBlueprint
 import com.ar.dosarcusina.core.values.JsonCodec
@@ -34,6 +35,10 @@ class Catalog private constructor(
     val replacedFieldKeys: Map<String, String>,
     /** Built-in keys of earlier catalogs that nothing replaced (`rental`). */
     val retiredKeys: Set<String>,
+    /** What a category of one's own is made of besides its switches' answers (`ownCategories.json`). */
+    val ownCategories: OwnCategories,
+    /** The household's own deadlines, which belong to no section (`household.json`). */
+    val household: HouseholdRules,
 ) : BuiltIns {
     private val byKey: Map<String, BuiltInDefinition> = all.associateBy(BuiltInDefinition::key)
 
@@ -44,6 +49,8 @@ class Catalog private constructor(
         TEMPLATES("templates.json"),
         CATALOG("catalog.json"),
         KEYS("keys.json"),
+        OWN_CATEGORIES("ownCategories.json"),
+        HOUSEHOLD("household.json"),
     }
 
     companion object {
@@ -87,6 +94,34 @@ class Catalog private constructor(
                 replacedKeys = catalog.strings("replacedKeys"),
                 replacedFieldKeys = catalog.strings("replacedFieldKeys"),
                 retiredKeys = catalog.list("retiredKeys").map { it.text("retiredKeys") }.toSet(),
+                ownCategories = ownCategories(parse(text, File.OWN_CATEGORIES).obj(File.OWN_CATEGORIES.fileName)),
+                household = HouseholdRules(
+                    parse(text, File.HOUSEHOLD).obj(File.HOUSEHOLD.fileName)
+                        .parts("blueprints", ObligationBlueprint.codec, "household"),
+                ),
+            )
+        }
+
+        private fun ownCategories(own: JsonObject): OwnCategories {
+            val fields = LinkedHashMap<CategorySwitches.Counter, FieldDefinition>()
+            val services = LinkedHashMap<CategorySwitches.Counter, ObligationBlueprint>()
+            for (entry in own.list("counters").map { it.obj("counters") }) {
+                val name = entry.string("counter")
+                val counter = CategorySwitches.Counter.of(name)
+                    ?: throw CatalogError("$name is no counter this build knows")
+                entry["field"]?.let { fields[counter] = whole(it, FieldDefinition.codec, "$name.field") }
+                val service = entry["service"] ?: throw CatalogError("$name has no service")
+                services[counter] = whole(service, ObligationBlueprint.codec, "$name.service")
+            }
+            val missing = CategorySwitches.Counter.entries.filter { it !in services }
+            catalogCheck(missing.isEmpty()) { "ownCategories.json has no service for ${missing.map { it.raw }}" }
+            catalogCheck(own.string("counterSectionKey") == CategorySwitches.COUNTER_SECTION_KEY) {
+                "ownCategories.json puts the counter in another section"
+            }
+            return OwnCategories(
+                basePockets = own.list("basePockets").map { it.text("basePockets") },
+                fields = fields,
+                services = services,
             )
         }
 

@@ -1,0 +1,1033 @@
+{
+  "cases" : [
+    {
+      "kept" : [
+        {
+          "destination" : "Sibiu",
+          "end" : "2027-04-12",
+          "id" : "00000000-FEED-4ACE-BEEF-000000000202",
+          "pets" : [
+
+          ],
+          "region" : "europeanUnion",
+          "start" : "2027-04-10",
+          "travellers" : [
+            {
+              "member" : "00000000-FEED-4ACE-BEEF-000000000001"
+            }
+          ],
+          "vehicles" : [
+
+          ]
+        },
+        {
+          "destination" : "Grecia",
+          "end" : "2027-07-14",
+          "id" : "00000000-FEED-4ACE-BEEF-000000000201",
+          "pets" : [
+
+          ],
+          "region" : "europeanUnion",
+          "start" : "2027-07-01",
+          "travellers" : [
+            {
+              "member" : "00000000-FEED-4ACE-BEEF-000000000001"
+            }
+          ],
+          "vehicles" : [
+
+          ]
+        }
+      ],
+      "name" : "trips ahead, kept the soonest first",
+      "rule" : "load(today:)",
+      "single" : null,
+      "stored" : [
+        {
+          "destination" : "Grecia",
+          "end" : "2027-07-14",
+          "id" : "00000000-FEED-4ACE-BEEF-000000000201",
+          "pets" : [
+
+          ],
+          "region" : "europeanUnion",
+          "start" : "2027-07-01",
+          "travellers" : [
+            {
+              "member" : "00000000-FEED-4ACE-BEEF-000000000001"
+            }
+          ],
+          "vehicles" : [
+
+          ]
+        },
+        {
+          "destination" : "Sibiu",
+          "end" : "2027-04-12",
+          "id" : "00000000-FEED-4ACE-BEEF-000000000202",
+          "pets" : [
+
+          ],
+          "region" : "europeanUnion",
+          "start" : "2027-04-10",
+          "travellers" : [
+            {
+              "member" : "00000000-FEED-4ACE-BEEF-000000000001"
+            }
+          ],
+          "vehicles" : [
+
+          ]
+        }
+      ],
+      "today" : "2027-04-01",
+      "writes" : true
+    },
+    {
+      "kept" : [
+        {
+          "destination" : "",
+          "end" : "2027-04-01",
+          "id" : "00000000-FEED-4ACE-BEEF-000000000204",
+          "pets" : [
+
+          ],
+          "region" : "europeanUnion",
+          "start" : "2027-03-28",
+          "travellers" : [
+            {
+              "member" : "00000000-FEED-4ACE-BEEF-000000000001"
+            }
+          ],
+          "vehicles" : [
+
+          ]
+        },
+        {
+          "destination" : "Grecia",
+          "end" : "2027-07-14",
+          "id" : "00000000-FEED-4ACE-BEEF-000000000201",
+          "pets" : [
+
+          ],
+          "region" : "europeanUnion",
+          "start" : "2027-07-01",
+          "travellers" : [
+            {
+              "member" : "00000000-FEED-4ACE-BEEF-000000000001"
+            }
+          ],
+          "vehicles" : [
+
+          ]
+        }
+      ],
+      "name" : "a trip that is over is forgotten; one that ends today is kept",
+      "rule" : "load(today:)",
+      "single" : null,
+      "stored" : [
+        {
+          "destination" : "Grecia",
+          "end" : "2027-07-14",
+          "id" : "00000000-FEED-4ACE-BEEF-000000000201",
+          "pets" : [
+
+          ],
+          "region" : "europeanUnion",
+          "start" : "2027-07-01",
+          "travellers" : [
+            {
+              "member" : "00000000-FEED-4ACE-BEEF-000000000001"
+            }
+          ],
+          "vehicles" : [
+
+          ]
+        },
+        {
+          "destination" : "Viena",
+          "end" : "2027-03-31",
+          "id" : "00000000-FEED-4ACE-BEEF-000000000203",
+          "pets" : [
+
+          ],
+          "region" : "europeanUnion",
+          "start" : "2027-03-20",
+          "travellers" : [
+            {
+              "member" : "00000000-FEED-4ACE-BEEF-000000000001"
+            }
+          ],
+          "vehicles" : [
+
+          ]
+        },
+        {
+          "destination" : "",
+          "end" : "2027-04-01",
+          "id" : "00000000-FEED-4ACE-BEEF-000000000204",
+          "pets" : [
+
+          ],
+          "region" : "europeanUnion",
+          "start" : "2027-03-28",
+          "travellers" : [
+            {
+              "member" : "00000000-FEED-4ACE-BEEF-000000000001"
+            }
+          ],
+          "vehicles" : [
+
+          ]
+        }
+      ],
+      "today" : "2027-04-01",
+      "writes" : true
+    },
+    {
+      "kept" : [
+        {
+          "destination" : "Creta",
+          "end" : "2027-07-14",
+          "id" : "00000000-FEED-4ACE-BEEF-000000000200",
+          "pets" : [
+
+          ],
+          "region" : "europeanUnion",
+          "start" : "2027-07-01",
+          "travellers" : [
+            {
+              "member" : "00000000-FEED-4ACE-BEEF-000000000001"
+            }
+          ],
+          "vehicles" : [
+
+          ]
+        },
+        {
+          "destination" : "Grecia",
+          "end" : "2027-07-14",
+          "id" : "00000000-FEED-4ACE-BEEF-000000000201",
+          "pets" : [
+
+          ],
+          "region" : "europeanUnion",
+          "start" : "2027-07-01",
+          "travellers" : [
+            {
+              "member" : "00000000-FEED-4ACE-BEEF-000000000001"
+            }
+          ],
+          "vehicles" : [
+
+          ]
+        }
+      ],
+      "name" : "the same days are told apart by id",
+      "rule" : "load(today:)",
+      "single" : null,
+      "stored" : [
+        {
+          "destination" : "Grecia",
+          "end" : "2027-07-14",
+          "id" : "00000000-FEED-4ACE-BEEF-000000000201",
+          "pets" : [
+
+          ],
+          "region" : "europeanUnion",
+          "start" : "2027-07-01",
+          "travellers" : [
+            {
+              "member" : "00000000-FEED-4ACE-BEEF-000000000001"
+            }
+          ],
+          "vehicles" : [
+
+          ]
+        },
+        {
+          "destination" : "Creta",
+          "end" : "2027-07-14",
+          "id" : "00000000-FEED-4ACE-BEEF-000000000200",
+          "pets" : [
+
+          ],
+          "region" : "europeanUnion",
+          "start" : "2027-07-01",
+          "travellers" : [
+            {
+              "member" : "00000000-FEED-4ACE-BEEF-000000000001"
+            }
+          ],
+          "vehicles" : [
+
+          ]
+        }
+      ],
+      "today" : "2027-04-01",
+      "writes" : true
+    },
+    {
+      "kept" : [
+        {
+          "destination" : "",
+          "end" : "2027-05-03",
+          "id" : "00000000-FEED-4ACE-BEEF-000000000205",
+          "pets" : [
+
+          ],
+          "region" : "europeanUnion",
+          "start" : "2027-05-01",
+          "travellers" : [
+            {
+              "member" : "00000000-FEED-4ACE-BEEF-000000000001"
+            }
+          ],
+          "vehicles" : [
+
+          ]
+        }
+      ],
+      "name" : "a destination search couldn't keep is forgotten",
+      "rule" : "load(today:)",
+      "single" : null,
+      "stored" : [
+        {
+          "destination" : "Grecia, CNP 1800101990006",
+          "end" : "2027-05-03",
+          "id" : "00000000-FEED-4ACE-BEEF-000000000205",
+          "pets" : [
+
+          ],
+          "region" : "europeanUnion",
+          "start" : "2027-05-01",
+          "travellers" : [
+            {
+              "member" : "00000000-FEED-4ACE-BEEF-000000000001"
+            }
+          ],
+          "vehicles" : [
+
+          ]
+        }
+      ],
+      "today" : "2027-04-01",
+      "writes" : true
+    },
+    {
+      "kept" : [
+        {
+          "destination" : "Sibiu",
+          "end" : "2027-04-12",
+          "id" : "00000000-FEED-4ACE-BEEF-000000000202",
+          "pets" : [
+
+          ],
+          "region" : "europeanUnion",
+          "start" : "2027-04-10",
+          "travellers" : [
+            {
+              "member" : "00000000-FEED-4ACE-BEEF-000000000001"
+            }
+          ],
+          "vehicles" : [
+
+          ]
+        },
+        {
+          "destination" : "Londra",
+          "end" : "2027-06-05",
+          "id" : "00000000-FEED-4ACE-BEEF-000000000206",
+          "pets" : [
+
+          ],
+          "region" : "outsideEU",
+          "start" : "2027-06-01",
+          "travellers" : [
+            {
+              "member" : "00000000-FEED-4ACE-BEEF-000000000001"
+            }
+          ],
+          "vehicles" : [
+
+          ]
+        }
+      ],
+      "name" : "the one trip of before is brought across",
+      "rule" : "load(today:)",
+      "single" : {
+        "destination" : "Londra",
+        "end" : "2027-06-05",
+        "id" : "00000000-FEED-4ACE-BEEF-000000000206",
+        "pets" : [
+
+        ],
+        "region" : "outsideEU",
+        "start" : "2027-06-01",
+        "travellers" : [
+          {
+            "member" : "00000000-FEED-4ACE-BEEF-000000000001"
+          }
+        ],
+        "vehicles" : [
+
+        ]
+      },
+      "stored" : [
+        {
+          "destination" : "Sibiu",
+          "end" : "2027-04-12",
+          "id" : "00000000-FEED-4ACE-BEEF-000000000202",
+          "pets" : [
+
+          ],
+          "region" : "europeanUnion",
+          "start" : "2027-04-10",
+          "travellers" : [
+            {
+              "member" : "00000000-FEED-4ACE-BEEF-000000000001"
+            }
+          ],
+          "vehicles" : [
+
+          ]
+        }
+      ],
+      "today" : "2027-04-01",
+      "writes" : true
+    },
+    {
+      "kept" : [
+        {
+          "destination" : "Sibiu",
+          "end" : "2027-04-12",
+          "id" : "00000000-FEED-4ACE-BEEF-000000000202",
+          "pets" : [
+
+          ],
+          "region" : "europeanUnion",
+          "start" : "2027-04-10",
+          "travellers" : [
+            {
+              "member" : "00000000-FEED-4ACE-BEEF-000000000001"
+            }
+          ],
+          "vehicles" : [
+
+          ]
+        },
+        {
+          "destination" : "Londra",
+          "end" : "2027-06-05",
+          "id" : "00000000-FEED-4ACE-BEEF-000000000206",
+          "pets" : [
+
+          ],
+          "region" : "outsideEU",
+          "start" : "2027-06-01",
+          "travellers" : [
+            {
+              "member" : "00000000-FEED-4ACE-BEEF-000000000001"
+            }
+          ],
+          "vehicles" : [
+
+          ]
+        }
+      ],
+      "name" : "the one trip of before, already in the list",
+      "rule" : "load(today:)",
+      "single" : {
+        "destination" : "Londra",
+        "end" : "2027-06-05",
+        "id" : "00000000-FEED-4ACE-BEEF-000000000206",
+        "pets" : [
+
+        ],
+        "region" : "outsideEU",
+        "start" : "2027-06-01",
+        "travellers" : [
+          {
+            "member" : "00000000-FEED-4ACE-BEEF-000000000001"
+          }
+        ],
+        "vehicles" : [
+
+        ]
+      },
+      "stored" : [
+        {
+          "destination" : "Sibiu",
+          "end" : "2027-04-12",
+          "id" : "00000000-FEED-4ACE-BEEF-000000000202",
+          "pets" : [
+
+          ],
+          "region" : "europeanUnion",
+          "start" : "2027-04-10",
+          "travellers" : [
+            {
+              "member" : "00000000-FEED-4ACE-BEEF-000000000001"
+            }
+          ],
+          "vehicles" : [
+
+          ]
+        },
+        {
+          "destination" : "Londra",
+          "end" : "2027-06-05",
+          "id" : "00000000-FEED-4ACE-BEEF-000000000206",
+          "pets" : [
+
+          ],
+          "region" : "outsideEU",
+          "start" : "2027-06-01",
+          "travellers" : [
+            {
+              "member" : "00000000-FEED-4ACE-BEEF-000000000001"
+            }
+          ],
+          "vehicles" : [
+
+          ]
+        }
+      ],
+      "today" : "2027-04-01",
+      "writes" : true
+    },
+    {
+      "kept" : [
+
+      ],
+      "name" : "nothing kept",
+      "rule" : "load(today:)",
+      "single" : null,
+      "stored" : [
+
+      ],
+      "today" : "2027-04-01",
+      "writes" : false
+    },
+    {
+      "kept" : [
+
+      ],
+      "name" : "everything over",
+      "rule" : "load(today:)",
+      "single" : null,
+      "stored" : [
+        {
+          "destination" : "Viena",
+          "end" : "2027-03-31",
+          "id" : "00000000-FEED-4ACE-BEEF-000000000203",
+          "pets" : [
+
+          ],
+          "region" : "europeanUnion",
+          "start" : "2027-03-20",
+          "travellers" : [
+            {
+              "member" : "00000000-FEED-4ACE-BEEF-000000000001"
+            }
+          ],
+          "vehicles" : [
+
+          ]
+        }
+      ],
+      "today" : "2027-04-01",
+      "writes" : true
+    },
+    {
+      "kept" : [
+        {
+          "destination" : "Sibiu",
+          "end" : "2027-04-12",
+          "id" : "00000000-FEED-4ACE-BEEF-000000000202",
+          "pets" : [
+
+          ],
+          "region" : "europeanUnion",
+          "start" : "2027-04-10",
+          "travellers" : [
+            {
+              "member" : "00000000-FEED-4ACE-BEEF-000000000001"
+            }
+          ],
+          "vehicles" : [
+
+          ]
+        },
+        {
+          "destination" : "Grecia",
+          "end" : "2027-07-14",
+          "id" : "00000000-FEED-4ACE-BEEF-000000000201",
+          "pets" : [
+
+          ],
+          "region" : "europeanUnion",
+          "start" : "2027-07-01",
+          "travellers" : [
+            {
+              "member" : "00000000-FEED-4ACE-BEEF-000000000001"
+            }
+          ],
+          "vehicles" : [
+
+          ]
+        }
+      ],
+      "name" : "a new trip",
+      "rule" : "save(_:)",
+      "saved" : {
+        "destination" : "Sibiu",
+        "end" : "2027-04-12",
+        "id" : "00000000-FEED-4ACE-BEEF-000000000202",
+        "pets" : [
+
+        ],
+        "region" : "europeanUnion",
+        "start" : "2027-04-10",
+        "travellers" : [
+          {
+            "member" : "00000000-FEED-4ACE-BEEF-000000000001"
+          }
+        ],
+        "vehicles" : [
+
+        ]
+      },
+      "stored" : [
+        {
+          "destination" : "Grecia",
+          "end" : "2027-07-14",
+          "id" : "00000000-FEED-4ACE-BEEF-000000000201",
+          "pets" : [
+
+          ],
+          "region" : "europeanUnion",
+          "start" : "2027-07-01",
+          "travellers" : [
+            {
+              "member" : "00000000-FEED-4ACE-BEEF-000000000001"
+            }
+          ],
+          "vehicles" : [
+
+          ]
+        }
+      ]
+    },
+    {
+      "kept" : [
+        {
+          "destination" : "Sibiu",
+          "end" : "2027-04-12",
+          "id" : "00000000-FEED-4ACE-BEEF-000000000202",
+          "pets" : [
+
+          ],
+          "region" : "europeanUnion",
+          "start" : "2027-04-10",
+          "travellers" : [
+            {
+              "member" : "00000000-FEED-4ACE-BEEF-000000000001"
+            }
+          ],
+          "vehicles" : [
+
+          ]
+        },
+        {
+          "destination" : "Grecia",
+          "end" : "2027-07-15",
+          "id" : "00000000-FEED-4ACE-BEEF-000000000201",
+          "pets" : [
+
+          ],
+          "region" : "outsideEU",
+          "start" : "2027-07-02",
+          "travellers" : [
+            {
+              "member" : "00000000-FEED-4ACE-BEEF-000000000001"
+            }
+          ],
+          "vehicles" : [
+
+          ]
+        }
+      ],
+      "name" : "a trip changed, by its id",
+      "rule" : "save(_:)",
+      "saved" : {
+        "destination" : "Grecia",
+        "end" : "2027-07-15",
+        "id" : "00000000-FEED-4ACE-BEEF-000000000201",
+        "pets" : [
+
+        ],
+        "region" : "outsideEU",
+        "start" : "2027-07-02",
+        "travellers" : [
+          {
+            "member" : "00000000-FEED-4ACE-BEEF-000000000001"
+          }
+        ],
+        "vehicles" : [
+
+        ]
+      },
+      "stored" : [
+        {
+          "destination" : "Grecia",
+          "end" : "2027-07-14",
+          "id" : "00000000-FEED-4ACE-BEEF-000000000201",
+          "pets" : [
+
+          ],
+          "region" : "europeanUnion",
+          "start" : "2027-07-01",
+          "travellers" : [
+            {
+              "member" : "00000000-FEED-4ACE-BEEF-000000000001"
+            }
+          ],
+          "vehicles" : [
+
+          ]
+        },
+        {
+          "destination" : "Sibiu",
+          "end" : "2027-04-12",
+          "id" : "00000000-FEED-4ACE-BEEF-000000000202",
+          "pets" : [
+
+          ],
+          "region" : "europeanUnion",
+          "start" : "2027-04-10",
+          "travellers" : [
+            {
+              "member" : "00000000-FEED-4ACE-BEEF-000000000001"
+            }
+          ],
+          "vehicles" : [
+
+          ]
+        }
+      ]
+    },
+    {
+      "kept" : [
+        {
+          "destination" : "",
+          "end" : "2027-05-03",
+          "id" : "00000000-FEED-4ACE-BEEF-000000000205",
+          "pets" : [
+
+          ],
+          "region" : "europeanUnion",
+          "start" : "2027-05-01",
+          "travellers" : [
+            {
+              "member" : "00000000-FEED-4ACE-BEEF-000000000001"
+            }
+          ],
+          "vehicles" : [
+
+          ]
+        },
+        {
+          "destination" : "Grecia",
+          "end" : "2027-07-14",
+          "id" : "00000000-FEED-4ACE-BEEF-000000000201",
+          "pets" : [
+
+          ],
+          "region" : "europeanUnion",
+          "start" : "2027-07-01",
+          "travellers" : [
+            {
+              "member" : "00000000-FEED-4ACE-BEEF-000000000001"
+            }
+          ],
+          "vehicles" : [
+
+          ]
+        }
+      ],
+      "name" : "a destination search couldn't keep",
+      "rule" : "save(_:)",
+      "saved" : {
+        "destination" : "Grecia, CNP 1800101990006",
+        "end" : "2027-05-03",
+        "id" : "00000000-FEED-4ACE-BEEF-000000000205",
+        "pets" : [
+
+        ],
+        "region" : "europeanUnion",
+        "start" : "2027-05-01",
+        "travellers" : [
+          {
+            "member" : "00000000-FEED-4ACE-BEEF-000000000001"
+          }
+        ],
+        "vehicles" : [
+
+        ]
+      },
+      "stored" : [
+        {
+          "destination" : "Grecia",
+          "end" : "2027-07-14",
+          "id" : "00000000-FEED-4ACE-BEEF-000000000201",
+          "pets" : [
+
+          ],
+          "region" : "europeanUnion",
+          "start" : "2027-07-01",
+          "travellers" : [
+            {
+              "member" : "00000000-FEED-4ACE-BEEF-000000000001"
+            }
+          ],
+          "vehicles" : [
+
+          ]
+        }
+      ]
+    },
+    {
+      "kept" : [
+        {
+          "destination" : "Sibiu",
+          "end" : "2027-04-12",
+          "id" : "00000000-FEED-4ACE-BEEF-000000000202",
+          "pets" : [
+
+          ],
+          "region" : "europeanUnion",
+          "start" : "2027-04-10",
+          "travellers" : [
+            {
+              "member" : "00000000-FEED-4ACE-BEEF-000000000001"
+            }
+          ],
+          "vehicles" : [
+
+          ]
+        }
+      ],
+      "name" : "a trip forgotten by its id",
+      "removed" : "00000000-FEED-4ACE-BEEF-000000000201",
+      "rule" : "remove(_:)",
+      "stored" : [
+        {
+          "destination" : "Grecia",
+          "end" : "2027-07-14",
+          "id" : "00000000-FEED-4ACE-BEEF-000000000201",
+          "pets" : [
+
+          ],
+          "region" : "europeanUnion",
+          "start" : "2027-07-01",
+          "travellers" : [
+            {
+              "member" : "00000000-FEED-4ACE-BEEF-000000000001"
+            }
+          ],
+          "vehicles" : [
+
+          ]
+        },
+        {
+          "destination" : "Sibiu",
+          "end" : "2027-04-12",
+          "id" : "00000000-FEED-4ACE-BEEF-000000000202",
+          "pets" : [
+
+          ],
+          "region" : "europeanUnion",
+          "start" : "2027-04-10",
+          "travellers" : [
+            {
+              "member" : "00000000-FEED-4ACE-BEEF-000000000001"
+            }
+          ],
+          "vehicles" : [
+
+          ]
+        }
+      ]
+    },
+    {
+      "kept" : [
+        {
+          "destination" : "Grecia",
+          "end" : "2027-07-14",
+          "id" : "00000000-FEED-4ACE-BEEF-000000000201",
+          "pets" : [
+
+          ],
+          "region" : "europeanUnion",
+          "start" : "2027-07-01",
+          "travellers" : [
+            {
+              "member" : "00000000-FEED-4ACE-BEEF-000000000001"
+            }
+          ],
+          "vehicles" : [
+
+          ]
+        }
+      ],
+      "name" : "an id not kept",
+      "removed" : "00000000-FEED-4ACE-BEEF-000000000299",
+      "rule" : "remove(_:)",
+      "stored" : [
+        {
+          "destination" : "Grecia",
+          "end" : "2027-07-14",
+          "id" : "00000000-FEED-4ACE-BEEF-000000000201",
+          "pets" : [
+
+          ],
+          "region" : "europeanUnion",
+          "start" : "2027-07-01",
+          "travellers" : [
+            {
+              "member" : "00000000-FEED-4ACE-BEEF-000000000001"
+            }
+          ],
+          "vehicles" : [
+
+          ]
+        }
+      ]
+    },
+    {
+      "isOver" : false,
+      "isValid" : true,
+      "plan" : {
+        "destination" : "Grecia",
+        "end" : "2027-07-14",
+        "id" : "00000000-FEED-4ACE-BEEF-000000000201",
+        "pets" : [
+
+        ],
+        "region" : "europeanUnion",
+        "start" : "2027-07-01",
+        "travellers" : [
+          {
+            "member" : "00000000-FEED-4ACE-BEEF-000000000001"
+          }
+        ],
+        "vehicles" : [
+
+        ]
+      },
+      "rule" : "isValid, isOver(by:)",
+      "today" : "2027-04-01"
+    },
+    {
+      "isOver" : true,
+      "isValid" : true,
+      "plan" : {
+        "destination" : "Viena",
+        "end" : "2027-03-31",
+        "id" : "00000000-FEED-4ACE-BEEF-000000000203",
+        "pets" : [
+
+        ],
+        "region" : "europeanUnion",
+        "start" : "2027-03-20",
+        "travellers" : [
+          {
+            "member" : "00000000-FEED-4ACE-BEEF-000000000001"
+          }
+        ],
+        "vehicles" : [
+
+        ]
+      },
+      "rule" : "isValid, isOver(by:)",
+      "today" : "2027-04-01"
+    },
+    {
+      "isOver" : false,
+      "isValid" : true,
+      "plan" : {
+        "destination" : "",
+        "end" : "2027-04-01",
+        "id" : "00000000-FEED-4ACE-BEEF-000000000204",
+        "pets" : [
+
+        ],
+        "region" : "europeanUnion",
+        "start" : "2027-03-28",
+        "travellers" : [
+          {
+            "member" : "00000000-FEED-4ACE-BEEF-000000000001"
+          }
+        ],
+        "vehicles" : [
+
+        ]
+      },
+      "rule" : "isValid, isOver(by:)",
+      "today" : "2027-04-01"
+    },
+    {
+      "isOver" : false,
+      "isValid" : false,
+      "plan" : {
+        "destination" : "",
+        "end" : "2027-05-01",
+        "id" : "00000000-FEED-4ACE-BEEF-000000000207",
+        "pets" : [
+
+        ],
+        "region" : "europeanUnion",
+        "start" : "2027-05-10",
+        "travellers" : [
+          {
+            "member" : "00000000-FEED-4ACE-BEEF-000000000001"
+          }
+        ],
+        "vehicles" : [
+
+        ]
+      },
+      "rule" : "isValid, isOver(by:)",
+      "today" : "2027-04-01"
+    },
+    {
+      "isOver" : false,
+      "isValid" : true,
+      "plan" : {
+        "destination" : "",
+        "end" : "2027-04-01",
+        "id" : "00000000-FEED-4ACE-BEEF-000000000208",
+        "pets" : [
+
+        ],
+        "region" : "europeanUnion",
+        "start" : "2027-04-01",
+        "travellers" : [
+          {
+            "member" : "00000000-FEED-4ACE-BEEF-000000000001"
+          }
+        ],
+        "vehicles" : [
+
+        ]
+      },
+      "rule" : "isValid, isOver(by:)",
+      "today" : "2027-04-01"
+    }
+  ],
+  "rule" : "TripPlanStore: load(today:), save(_:), remove(_:); TripPlan.isValid and isOver(by:)",
+  "shape" : "cases[] by rule: load reads the trips kept (stored, and the one trip kept before there could be several, single) into the trips still ahead, the soonest first, each destination remembered only as search would (SearchPrivacy.mayRemember); writes says whether loading writes the list again; save and remove give the list kept after",
+  "source" : "ios/DosarCuSina/Services/Readiness/TripPlanStore.swift, ReadinessModels.swift",
+  "writtenBy" : "ios/DosarCuSinaTests/ReadinessVectorsTests.swift"
+}

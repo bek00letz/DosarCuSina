@@ -221,6 +221,35 @@ struct TextVectorsTests {
         "Plătită cu cardul 4111 1111 1111 1111 în ședința de vineri; țânțarii știu", "Șofer: 5555 5555 5555 4444, țară România",
         "Nr. 12.4111 1111 1111 1111", "Total 1.250,00 lei, card 4111-1111-1111-1111", "Plătit cu 4111 1111 1111 1111 azi",
         "VISA 4111 1111 1111 1112", "nr. 4111 1111 1111 1111", "Card: 4111111111111111",
+        // Groups apart by dots, slashes, several spaces, other spaces or a dash with spaces round it.
+        "4111.1111.1111.1111", "4111/1111/1111/1111", "4111  1111  1111  1111", "4111   1111 1111  1111",
+        "4111\u{00A0}1111\u{00A0}1111\u{00A0}1111", "4111\t1111\t1111\t1111", "4111\u{202F}1111\u{202F}1111\u{202F}1111",
+        "4111 - 1111 - 1111 - 1111", "4111 / 1111 / 1111 / 1111", "Card: 5555.5555.5555.4444 azi", "3782.822463.10005",
+        "{luhn:4000.0000.0000.000}", "Ref 12/4111/1111/1111/1111", "Nr. 12.4111.1111.1111.1111 lei", "4111.1111.1111.1111.pdf",
+        "4111.1111.1111.1111; 5555.5555.5555.4444", "Plată 4111/1111/1111/1111, 12.03.2026",
+        // Apart that way, never a card: the check digit fails, the gaps differ, or the groups aren't a card's.
+        "4111.1111.1111.1112", "4111  1111  1111  1112", "4111.1111 1111/1111", "4111.1111-1111.1111",
+        "Perioada 01.02.2026 - 28.02.2026", "30.05.2026 31.05.2026", "30.05.2026-30.06.2026", "Data 31/12/2026 12:30",
+        "Suma 1.250.000 lei", "4.111.111.111.111.111", "Versiunea 4.1.1.1", "192.168.100.200", "B-123-ABC",
+        "4500   4600   4700   4800", "Tel 0722.123.456", "8064.2000.0000.0000.0001", "{luhn:3.0569309.02590}",
+        "scan 2026-03-15 10.45.12.pdf", "RO49.AAAA.1B31.0075.9384.0000", "RO00.AAAA.4111.1111.1111.1111",
+        "RO00  AAAA  4111  1111  1111  1111", "CNP 1800101990006 / 4111",
+        // A date is a number of its own: a card right after it is found as if alone, a long number stays.
+        "01.02.2026 4111 1111 1111 1111", "01-02-2026 4111 1111 1111 1111", "01/02/2026 4111 1111 1111 1111",
+        "2026-02-01 4111 1111 1111 1111", "Plătit 01.02.2026 12:30 4111 1111 1111 1111", "01.02.2026 14.30 4111 1111 1111 1111",
+        "31.12.2026 5555-5555-5555-4444", "01.02.2026 4111 1111 1111 1112", "2/1/2026 4111 1111 1111 1111",
+        "01.02.2026 8064 2000 0000 0000 0001", "01.02.2026 1234 5678 9012 3456", "01.02.2026 4111 1111 1111 1111 0828",
+        // Digits of other scripts are the digits they are: full-width, Arabic-Indic, Devanagari, mathematical.
+        "\u{FF14}\u{FF11}\u{FF11}\u{FF11} \u{FF11}\u{FF11}\u{FF11}\u{FF11} \u{FF11}\u{FF11}\u{FF11}\u{FF11} \u{FF11}\u{FF11}\u{FF11}\u{FF11}",
+        "Card \u{FF15}\u{FF15}\u{FF15}\u{FF15}\u{FF15}\u{FF15}\u{FF15}\u{FF15}\u{FF15}\u{FF15}\u{FF15}\u{FF15}\u{FF14}\u{FF14}\u{FF14}\u{FF14}",
+        "\u{0664}\u{0661}\u{0661}\u{0661} \u{0661}\u{0661}\u{0661}\u{0661} \u{0661}\u{0661}\u{0661}\u{0661} \u{0661}\u{0661}\u{0661}\u{0661}",
+        "\u{096A}\u{0967}\u{0967}\u{0967}-\u{0967}\u{0967}\u{0967}\u{0967}-\u{0967}\u{0967}\u{0967}\u{0967}-\u{0967}\u{0967}\u{0967}\u{0967}",
+        "\u{1D7D3}\u{1D7D3}\u{1D7D3}\u{1D7D3} \u{1D7D3}\u{1D7D3}\u{1D7D3}\u{1D7D3} \u{1D7D3}\u{1D7D3}\u{1D7D3}\u{1D7D3} \u{1D7D2}\u{1D7D2}\u{1D7D2}\u{1D7D2}",
+        "4111 \u{0661}\u{0661}\u{0661}\u{0661} 1111 \u{FF11}\u{FF11}\u{FF11}\u{FF11}", "\u{FF14}\u{FF11}\u{FF11}\u{FF11}.\u{FF11}\u{FF11}\u{FF11}\u{FF11}.\u{FF11}\u{FF11}\u{FF11}\u{FF11}.\u{FF11}\u{FF11}\u{FF11}\u{FF11}",
+        "\u{FF14}\u{FF11}\u{FF11}\u{FF11} \u{FF11}\u{FF11}\u{FF11}\u{FF11} \u{FF11}\u{FF11}\u{FF11}\u{FF11} \u{FF11}\u{FF11}\u{FF11}\u{FF12}",
+        "AB\u{FF14}\u{FF11}\u{FF11}\u{FF11}\u{FF11}\u{FF11}\u{FF11}\u{FF11}\u{FF11}\u{FF11}\u{FF11}\u{FF11}\u{FF11}\u{FF11}\u{FF11}\u{FF11}",
+        "CNP \u{FF11}\u{FF18}\u{FF10}\u{FF10}\u{FF11}\u{FF10}\u{FF11}\u{FF19}\u{FF19}\u{FF10}\u{FF10}\u{FF10}\u{FF16}",
+        "\u{FF14}\u{FF11}\u{FF11}\u{FF11} \u{FF11}\u{FF11}\u{FF11}\u{FF11} \u{FF11}\u{FF11}\u{FF11}\u{FF11} \u{FF11}\u{FF11}\u{FF11}\u{FF11} \u{FF10}\u{FF18}\u{FF12}\u{FF18}",
         // Already masked, and the last digits under a mask.
         "•••• 4444", "**** **** **** 4821", "XXXX-XXXX-XXXX-4821", "•••• 1111 •••• 4444",
         // On a bank card any run of eight digits or more goes; digits of other scripts are digits there.
@@ -365,6 +394,7 @@ struct TextVectorsTests {
             ["document.cardLastFour": ("12", "text")],
             ["x.pin": (sealed, "secret"), "x.note": ("Plătit cu 4111-1111-1111-1111", "text")],
             ["x.phone": ("{luhn:64200000000123}", "phone"), "x.text": ("fără cifre", "text")],
+            ["x.note": ("Card 4111  1111  1111  1111, din 01.02.2026", "longText"), "x.label": ("5555/5555/5555/4444", "text")],
             [:],
         ]
         let cases: [JSONValue] = inputs.map { input in
@@ -430,6 +460,8 @@ struct TextVectorsTests {
         let texts = [
             "Card 4111 1111 1111 1111", "Fără card", "RO49 AAAA 1B31 0075 9384 0000", "Microcip {luhn:64200000000123}",
             "•••• 1111", "Nr. 12 4111 1111 1111 1111 și 5555-5555-5555-4444", "",
+            "Plătit cu 4111.1111.1111.1111 și 5555/5555/5555/4444", "Card \u{FF14}\u{FF11}\u{FF11}\u{FF11}\u{FF11}\u{FF11}\u{FF11}\u{FF11}\u{FF11}\u{FF11}\u{FF11}\u{FF11}\u{FF11}\u{FF11}\u{FF11}\u{FF11}",
+            "Revizie 01.02.2026, 1.250.000 km",
         ]
         let lists = [["Mecanic", "Card 4111 1111 1111 1111"], ["Electrician", "Instalator"], [], ["5555555555554444"]]
         var cases: [JSONValue] = texts.map { template in

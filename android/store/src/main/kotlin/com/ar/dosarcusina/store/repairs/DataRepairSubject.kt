@@ -51,6 +51,15 @@ sealed interface DataRepairSubject {
      * issuer and label when [named], else without naming either (a locked category's paper, or no
      * issuer's name).
      */
+    /**
+     * A service deadline of a category of one's own whose note is only its rule, copied there by an
+     * earlier version, has it taken away: La „[section]”, notița de la „[deadline]” spune doar cât de
+     * des se face: „[note]”. O scot? Asta se vede oricum la Se repetă, mereu la zi. With no section, the
+     * deadline's own name stands for it.
+     */
+    data class ServiceNote(val obligationId: UUID, val deadline: String, val section: String?, val note: String) :
+        DataRepairSubject
+
     data class LessonLabel(val lessonId: UUID, val named: Named?) : DataRepairSubject {
         data class Named(val issuerName: String, val label: String)
     }

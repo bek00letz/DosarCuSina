@@ -3,7 +3,8 @@ import SwiftData
 
 /// Pure checks: given a situation and what the binder holds, a checklist with problems
 /// first. Every rule of the readiness screens lives here (which document a trip needs,
-/// which policy a claim goes to, what a buyer asks for); the screens only draw it.
+/// which policy a claim goes to, what a buyer asks for, and which sentence each check says,
+/// `ReadinessWords`); the screens only draw it.
 public enum ReadinessEngine {
     /// The checklist for `scenario`. `today` matters for a sale and a claim (is the ITP
     /// still valid now?); a trip is checked for its own days, and says a day already passed as
@@ -79,10 +80,6 @@ public enum ReadinessEngine {
         asset.values[DocumentFields.expiry]?.dateValue
     }
 
-    static func typeTitle(_ type: String) -> String {
-        DocumentType.label(for: type) ?? type
-    }
-
     static func hasValue(_ key: String, on asset: ReadinessAsset) -> Bool {
         asset.values[key]?.textValue.map { !$0.trimmingCharacters(in: .whitespaces).isEmpty } ?? false
     }
@@ -96,11 +93,11 @@ public enum ReadinessEngine {
     }
 
     /// A deadline the section doesn't have: add it.
-    static func notInBinder(_ id: String, title: String, detail: String, asset: ReadinessAsset, blueprintKey: String) -> ReadinessItem {
+    static func notInBinder(_ id: String, title: ReadinessWords, detail: ReadinessWords, asset: ReadinessAsset, blueprintKey: String) -> ReadinessItem {
         ReadinessItem(id: id, status: .missing, title: title, detail: detail, action: .addDeadline(assetID: asset.id, blueprintKey: blueprintKey))
     }
 
-    static func reminder(_ id: String, _ title: String, _ detail: String) -> ReadinessItem {
+    static func reminder(_ id: String, _ title: ReadinessWords, _ detail: ReadinessWords) -> ReadinessItem {
         ReadinessItem(id: id, status: .reminder, title: title, detail: detail)
     }
 }
@@ -112,13 +109,10 @@ extension ReadinessEngine {
     /// its cars and its pets.
     public static func tripCandidates(in assets: [ReadinessAsset]) -> TripCandidates {
         let holders = assets.filter { $0.role == .holder }.sorted { $0.name.localizedStandardCompare($1.name) == .orderedAscending }
-        var travellers = holders.map { TripCandidates.Traveller(traveller: .member($0.id), name: $0.name) }
+        var travellers = holders.map { TripCandidates.Traveller(traveller: .member($0.id), words: .text($0.name)) }
         // Documents filed under no one travel only while one of them is still current.
         if unfiledDocuments(in: assets).contains(where: \.isCurrentDocument) {
-            travellers.append(TripCandidates.Traveller(
-                traveller: .unfiled,
-                name: String(localized: "Acte fără titular", comment: "Trip: personal documents not filed under any person, chosen as one traveller.")
-            ))
+            travellers.append(TripCandidates.Traveller(traveller: .unfiled, words: .unfiledTraveller))
         }
         func options(_ list: [ReadinessAsset]) -> [TripCandidates.Option] {
             list.sorted { $0.name.localizedStandardCompare($1.name) == .orderedAscending }.map { TripCandidates.Option(id: $0.id, name: $0.name) }
@@ -160,17 +154,17 @@ extension ReadinessEngine {
         var groups: [ReadinessGroup] = []
         for candidate in candidates.travellers where plan.travellers.contains(candidate.traveller) {
             groups.append(ReadinessGroup(
-                id: "trip.person.\(candidate.traveller.key)", title: candidate.name, symbol: "person.crop.circle",
+                id: "trip.person.\(candidate.traveller.key)", title: candidate.words, symbol: "person.crop.circle",
                 items: travellerChecks(candidate.traveller, plan: plan, assets: assets, holderCount: candidates.travellers.count,
                                        today: today, calendar: calendar)
             ))
         }
         for car in assets.filter(isVehicle) where plan.vehicles.contains(car.id) {
-            groups.append(ReadinessGroup(id: "trip.vehicle.\(car.id)", title: car.name, symbol: "car.fill",
+            groups.append(ReadinessGroup(id: "trip.vehicle.\(car.id)", title: .text(car.name), symbol: "car.fill",
                                          items: carChecks(car, plan: plan, assets: assets, today: today, calendar: calendar)))
         }
         for pet in assets.filter(isPet) where plan.pets.contains(pet.id) {
-            groups.append(ReadinessGroup(id: "trip.pet.\(pet.id)", title: pet.name, symbol: "pawprint.fill",
+            groups.append(ReadinessGroup(id: "trip.pet.\(pet.id)", title: .text(pet.name), symbol: "pawprint.fill",
                                          items: petChecks(pet, plan: plan, today: today, calendar: calendar)))
         }
         return groups
@@ -235,7 +229,7 @@ extension ReadinessEngine {
             items.append(healthCard(own, traveller: traveller, assets: assets, holderCount: holderCount, end: plan.end, today: today))
         }
         if TravelRules.remindsOfVisa(in: plan.region) {
-            items.append(reminder("trip.visa.\(key)", TravelWording.visaTitle, TravelWording.visaDetail))
+            items.append(reminder("trip.visa.\(key)", .visaTitle, .visaDetail))
         }
         return items
     }
@@ -246,10 +240,10 @@ extension ReadinessEngine {
         let id = "trip.citizenship.\(traveller.key)"
         switch traveller {
         case .member(let member):
-            return ReadinessItem(id: id, status: .missing, title: TravelWording.citizenshipTitle, detail: TravelWording.citizenshipAsked,
+            return ReadinessItem(id: id, status: .missing, title: .citizenshipTitle, detail: .citizenshipAsked,
                                  action: .chooseCitizenship(holderID: member))
         case .unfiled:
-            return ReadinessItem(id: id, status: .missing, title: TravelWording.citizenshipTitle, detail: TravelWording.citizenshipOfUnfiled)
+            return ReadinessItem(id: id, status: .missing, title: .citizenshipTitle, detail: .citizenshipOfUnfiled)
         }
     }
 
@@ -297,30 +291,25 @@ extension ReadinessEngine {
         if let best = covering.min(by: { ($0.order, $1.countsUntil) < ($1.order, $0.countsUntil) }) {
             // An earlier choice is in the binder but doesn't last: say why this one is taken.
             let instead = dated.contains { $0.order < best.order }
-            return ReadinessItem(id: id, status: .ok, title: typeTitle(best.type),
+            return ReadinessItem(id: id, status: .ok, title: .documentType(best.type),
                                  detail: TravelWording.valid(requirement, type: best.type, until: best.countsUntil, instead: instead),
                                  action: .open(.asset(best.document.id)))
         }
         // The one that lasts longest, the most preferred type on a tie.
         if let best = dated.min(by: { ($1.countsUntil, $0.order) < ($0.countsUntil, $1.order) }) {
-            return ReadinessItem(id: id, status: .problem, title: typeTitle(best.type),
+            return ReadinessItem(id: id, status: .problem, title: .documentType(best.type),
                                  detail: TravelWording.ends(requirement, type: best.type, expiry: best.expiry, goodUntil: best.countsUntil, today: today),
                                  action: .open(.asset(best.document.id)))
         }
         if let simple = notForTravel.first, found.isEmpty {
-            return ReadinessItem(id: id, status: .problem, title: simple.name, detail: TravelWording.notATravelDocument,
+            return ReadinessItem(id: id, status: .problem, title: .text(simple.name), detail: .notATravelDocument,
                                  action: addDocument(for: traveller) ?? .open(.asset(simple.id)))
         }
         if let undated = found.first {
-            return ReadinessItem(id: id, status: .missing, title: undated.name, detail: TravelWording.undated, action: .editSection(assetID: undated.id))
+            return ReadinessItem(id: id, status: .missing, title: .text(undated.name), detail: .undated, action: .editSection(assetID: undated.id))
         }
         return ReadinessItem(id: id, status: .missing, title: TravelWording.title(of: requirement), detail: TravelWording.missing(requirement),
                              action: addDocument(for: traveller))
-    }
-
-    /// "A expirat pe …" for a day already passed, else what `ahead` says of a day still to come.
-    static func ending(_ day: CalendarDay, today: CalendarDay, passed: (String) -> String, ahead: (String) -> String) -> String {
-        day < today ? passed(DosarFormat.longDay(day)) : ahead(DosarFormat.longDay(day))
     }
 
     /// The European health card, as a document or as the renewal on a health profile filed
@@ -328,7 +317,7 @@ extension ReadinessEngine {
     static func healthCard(_ own: [ReadinessAsset], traveller: TripTraveller, assets: [ReadinessAsset], holderCount: Int,
                            end: CalendarDay, today: CalendarDay) -> ReadinessItem {
         let id = "trip.ehic.\(traveller.key)"
-        let title = typeTitle(DocumentType.euHealthCard)
+        let title = ReadinessWords.documentType(DocumentType.euHealthCard)
         let cards = documents(of: DocumentType.euHealthCard, in: own)
         let profiles = assets.filter { asset in
             guard asset.obligations[BuiltInBlueprints.healthEUCard] != nil else { return false }
@@ -342,25 +331,20 @@ extension ReadinessEngine {
             profile.obligations[BuiltInBlueprints.healthEUCard].map { (until: $0.due, action: ReadinessAction.open(.obligation($0.id))) }
         }
         guard let best = (fromCards + fromProfiles).max(by: { $0.until < $1.until }) else {
-            return ReadinessItem(id: id, status: .missing, need: .optional, title: title,
-                                 detail: String(localized: "Te ajută dacă ai nevoie de un medic în UE. Adaugă-l dacă îl ai.", comment: "Trip check: no European health card in the binder, which is optional."),
-                                 action: addDocument(for: traveller))
+            return ReadinessItem(id: id, status: .missing, need: .optional, title: title, detail: .healthCardMissing, action: addDocument(for: traveller))
         }
         if DueDayValidity.covers(through: end, due: best.until) {
-            return ReadinessItem(id: id, status: .ok, need: .optional, title: title,
-                                 detail: String(localized: "Valabil până pe \(DosarFormat.longDay(best.until)).", comment: "Readiness: a deadline valid until a day."),
-                                 action: best.action)
+            return ReadinessItem(id: id, status: .ok, need: .optional, title: title, detail: .validUntil(best.until), action: best.action)
         }
         return ReadinessItem(id: id, status: .warning, need: .optional, title: title,
-                             detail: ending(best.until, today: today,
-                                            passed: { String(localized: "A expirat pe \($0). Cere altul de la casa de asigurări de sănătate.", comment: "Trip check: the European health card has already expired.") },
-                                            ahead: { String(localized: "Expiră pe \($0), înainte să te întorci. Cere altul de la casa de asigurări de sănătate.", comment: "Trip check: the European health card ends before the end of the trip.") }),
+                             detail: best.until < today ? .healthCardExpired(best.until) : .healthCardEnds(best.until),
                              action: best.action)
     }
 
     /// A deadline that must still be valid when the trip ends (RCA, ITP).
-    static func validThroughTrip(_ key: String, title: String, on car: ReadinessAsset, end: CalendarDay, today: CalendarDay,
-                                 failing: (String) -> String, passed: (String) -> String, missing: String) -> ReadinessItem {
+    static func validThroughTrip(_ key: String, title: ReadinessWords, on car: ReadinessAsset, end: CalendarDay, today: CalendarDay,
+                                 failing: (CalendarDay) -> ReadinessWords, passed: (CalendarDay) -> ReadinessWords,
+                                 missing: ReadinessWords) -> ReadinessItem {
         let id = "\(key).\(car.id)"
         guard let obligation = car.obligations[key] else {
             return notInBinder(id, title: title, detail: missing, asset: car, blueprintKey: key)
@@ -368,9 +352,7 @@ extension ReadinessEngine {
         let ok = DueDayValidity.covers(through: end, due: obligation.due)
         return ReadinessItem(
             id: id, status: ok ? .ok : .problem, title: title,
-            detail: ok
-                ? String(localized: "Valabil până pe \(DosarFormat.longDay(obligation.due)).", comment: "Readiness: a deadline valid until a day.")
-                : ending(obligation.due, today: today, passed: passed, ahead: failing),
+            detail: ok ? .validUntil(obligation.due) : (obligation.due < today ? passed(obligation.due) : failing(obligation.due)),
             action: .open(.obligation(obligation.id))
         )
     }
@@ -378,14 +360,10 @@ extension ReadinessEngine {
     static func carChecks(_ car: ReadinessAsset, plan: TripPlan, assets: [ReadinessAsset], today: CalendarDay, calendar: Calendar) -> [ReadinessItem] {
         let rca = car.obligations[BuiltInBlueprints.vehicleRCA]
         var items = [
-            validThroughTrip(BuiltInBlueprints.vehicleRCA, title: String(localized: "RCA"), on: car, end: plan.end, today: today,
-                             failing: { String(localized: "Expiră pe \($0), înainte să te întorci. Reînnoiește-l înainte de plecare.", comment: "Trip check: the RCA ends during the trip.") },
-                             passed: { String(localized: "A expirat pe \($0). Fără RCA valabil nu ai voie să ieși cu mașina. Reînnoiește-l înainte de plecare.", comment: "Trip check: the RCA has already expired.") },
-                             missing: String(localized: "Nu e în dosar. Fără RCA valabil nu ai voie să ieși cu mașina.", comment: "Trip check: no RCA deadline.")),
-            validThroughTrip(BuiltInBlueprints.vehicleITP, title: String(localized: "ITP"), on: car, end: plan.end, today: today,
-                             failing: { String(localized: "Expiră pe \($0), înainte să te întorci. Fă-l înainte de plecare.", comment: "Trip check: the ITP ends during the trip.") },
-                             passed: { String(localized: "A expirat pe \($0). Fă-l înainte de plecare.", comment: "Trip check: the ITP has already expired.") },
-                             missing: String(localized: "Nu e în dosar. Adaugă data ca să verific.", comment: "Trip check: no ITP deadline.")),
+            validThroughTrip(BuiltInBlueprints.vehicleRCA, title: .rcaTitle, on: car, end: plan.end, today: today,
+                             failing: ReadinessWords.rcaEnds, passed: ReadinessWords.rcaExpired, missing: .rcaMissing),
+            validThroughTrip(BuiltInBlueprints.vehicleITP, title: .itpTitle, on: car, end: plan.end, today: today,
+                             failing: ReadinessWords.itpEnds, passed: ReadinessWords.itpExpired, missing: .itpMissing),
         ]
 
         // The green card comes with the RCA; a card filed on its own counts too, for the car
@@ -393,52 +371,34 @@ extension ReadinessEngine {
         let greenCards = documents(of: DocumentType.greenCard, in: assets)
             .filter { covers($0, car: car) }
             .compactMap { card in expiry(card).map { (card, $0) } }
-        let greenTitle = String(localized: "Carte verde (RCA)", comment: "Trip check: the green card, which comes with the RCA.")
         let greenID = "trip.greenCard.\(car.id)"
         if case let (card, until)? = greenCards.max(by: { $0.1 < $1.1 }), DueDayValidity.covers(through: plan.end, due: until) {
-            items.append(ReadinessItem(id: greenID, status: .ok, title: greenTitle,
-                                       detail: String(localized: "Valabilă până pe \(DosarFormat.longDay(until)).", comment: "Readiness: something valid until a day (feminine)."),
-                                       action: .open(.asset(card.id))))
+            items.append(ReadinessItem(id: greenID, status: .ok, title: .greenCardTitle, detail: .validUntilFeminine(until), action: .open(.asset(card.id))))
         } else if let rca, DueDayValidity.covers(through: plan.end, due: rca.due) {
-            items.append(ReadinessItem(id: greenID, status: .ok, title: greenTitle,
-                                       detail: String(localized: "Inclusă în RCA. Ia-o cu tine, tipărită sau pe telefon.", comment: "Trip check: the green card comes with a valid RCA."),
-                                       action: .open(.obligation(rca.id))))
+            items.append(ReadinessItem(id: greenID, status: .ok, title: .greenCardTitle, detail: .greenCardWithRCA, action: .open(.obligation(rca.id))))
         } else if let rca {
-            items.append(ReadinessItem(id: greenID, status: .problem, title: greenTitle,
-                                       detail: rca.due < today
-                                           ? String(localized: "Vine cu RCA-ul, care a expirat.", comment: "Trip check: no green card because the RCA has already expired.")
-                                           : String(localized: "Vine cu RCA-ul, care expiră înainte să te întorci.", comment: "Trip check: no green card because the RCA ends during the trip."),
-                                       action: .open(.obligation(rca.id))))
+            items.append(ReadinessItem(id: greenID, status: .problem, title: .greenCardTitle,
+                                       detail: rca.due < today ? .greenCardRCAExpired : .greenCardRCAEnds, action: .open(.obligation(rca.id))))
         } else {
-            items.append(notInBinder(greenID, title: greenTitle,
-                                     detail: String(localized: "Vine cu RCA-ul. Adaugă RCA-ul ca să verific.", comment: "Trip check: no RCA, so no green card."),
-                                     asset: car, blueprintKey: BuiltInBlueprints.vehicleRCA))
+            items.append(notInBinder(greenID, title: .greenCardTitle, detail: .greenCardNoRCA, asset: car, blueprintKey: BuiltInBlueprints.vehicleRCA))
         }
 
         // The vignette is needed on Romanian roads: on the way to the border and on the way back.
         let vignetteKey = BuiltInBlueprints.vehicleVignette
         let vignetteID = "\(vignetteKey).\(car.id)"
-        let vignetteTitle = String(localized: "Rovinietă")
         if let vignette = car.obligations[vignetteKey] {
-            let day = DosarFormat.longDay(vignette.due)
+            let action = ReadinessAction.open(.obligation(vignette.id))
             if DueDayValidity.covers(through: plan.end, due: vignette.due) {
-                items.append(ReadinessItem(id: vignetteID, status: .ok, title: vignetteTitle,
-                                           detail: String(localized: "Valabilă până pe \(day).", comment: "Readiness: something valid until a day (feminine)."), action: .open(.obligation(vignette.id))))
+                items.append(ReadinessItem(id: vignetteID, status: .ok, title: .vignetteTitle, detail: .validUntilFeminine(vignette.due), action: action))
             } else if DueDayValidity.covers(through: plan.start, due: vignette.due) {
-                items.append(ReadinessItem(id: vignetteID, status: .warning, title: vignetteTitle,
-                                           detail: String(localized: "Expiră pe \(day), cât ești plecat. Cumpără alta pentru drumul înapoi, online sau la benzinărie.", comment: "Trip check: the vignette ends during the trip."),
-                                           action: .open(.obligation(vignette.id))))
+                items.append(ReadinessItem(id: vignetteID, status: .warning, title: .vignetteTitle, detail: .vignetteEndsDuringTrip(vignette.due), action: action))
             } else {
-                items.append(ReadinessItem(id: vignetteID, status: .problem, title: vignetteTitle,
-                                           detail: vignette.due < today
-                                               ? String(localized: "A expirat pe \(day). Ai nevoie de ea până la graniță. O cumperi online sau la benzinărie.", comment: "Trip check: the vignette has ended before the trip starts.")
-                                               : String(localized: "Expiră pe \(day), înainte să pleci. Ai nevoie de ea până la graniță. O cumperi online sau la benzinărie.", comment: "Trip check: the vignette ends before the trip starts, on a day still to come."),
-                                           action: .open(.obligation(vignette.id))))
+                items.append(ReadinessItem(id: vignetteID, status: .problem, title: .vignetteTitle,
+                                           detail: vignette.due < today ? .vignetteExpired(vignette.due) : .vignetteEndsBeforeTrip(vignette.due),
+                                           action: action))
             }
         } else {
-            items.append(notInBinder(vignetteID, title: vignetteTitle,
-                                     detail: String(localized: "Nu e în dosar. Ai nevoie de ea până la graniță și la întoarcere.", comment: "Trip check: no vignette deadline."),
-                                     asset: car, blueprintKey: vignetteKey))
+            items.append(notInBinder(vignetteID, title: .vignetteTitle, detail: .vignetteMissing, asset: car, blueprintKey: vignetteKey))
         }
 
         items.append(drivingLicence(for: car, plan: plan, assets: assets, today: today))
@@ -448,27 +408,21 @@ extension ReadinessEngine {
     /// Someone going has to drive: a licence valid until the trip ends.
     static func drivingLicence(for car: ReadinessAsset, plan: TripPlan, assets: [ReadinessAsset], today: CalendarDay) -> ReadinessItem {
         let id = "trip.licence.\(car.id)"
-        let title = typeTitle(DocumentType.drivingLicence)
+        let title = ReadinessWords.documentType(DocumentType.drivingLicence)
         let going = plan.travellers.flatMap { personalDocuments(of: $0, in: assets) }
         let licences = documents(of: DocumentType.drivingLicence, in: going).compactMap { licence in expiry(licence).map { (licence, $0) } }
         if case let (licence, until)? = licences.max(by: { $0.1 < $1.1 }) {
             if DueDayValidity.covers(through: plan.end, due: until) {
-                return ReadinessItem(id: id, status: .ok, title: title,
-                                     detail: String(localized: "Valabil până pe \(DosarFormat.longDay(until)).", comment: "Readiness: a deadline valid until a day."),
-                                     action: .open(.asset(licence.id)))
+                return ReadinessItem(id: id, status: .ok, title: title, detail: .validUntil(until), action: .open(.asset(licence.id)))
             }
-            return ReadinessItem(id: id, status: .problem, title: title,
-                                 detail: ending(until, today: today,
-                                                passed: { String(localized: "A expirat pe \($0). Fă-ți altul înainte de plecare.", comment: "Trip check: the driving licence has already expired.") },
-                                                ahead: { String(localized: "Expiră pe \($0), înainte să te întorci.", comment: "Trip check: the driving licence ends during the trip.") }),
+            return ReadinessItem(id: id, status: .problem, title: title, detail: until < today ? .licenceExpired(until) : .licenceEnds(until),
                                  action: .open(.asset(licence.id)))
         }
         let firstMember = plan.travellers.compactMap { traveller -> UUID? in
             if case .member(let id) = traveller { return id }
             return nil
         }.sorted { $0.uuidString < $1.uuidString }.first
-        return ReadinessItem(id: id, status: .missing, title: title,
-                             detail: String(localized: "Nu e în dosar pentru cine pleacă. Adaugă permisul celui care conduce.", comment: "Trip check: no driving licence among the people going."),
+        return ReadinessItem(id: id, status: .missing, title: title, detail: .licenceMissing,
                              action: firstMember.map { .addPersonalDocument(holderID: $0) })
     }
 
@@ -480,26 +434,18 @@ extension ReadinessEngine {
         var items: [ReadinessItem] = []
         let hasPassport = hasValue(PetFields.passport, on: pet)
         items.append(ReadinessItem(
-            id: "trip.petPassport.\(pet.id)", status: hasPassport ? .ok : .missing,
-            title: String(localized: "Pașaport european", comment: "Trip check: a pet's European passport."),
-            detail: hasPassport
-                ? String(localized: "Numărul e în dosar. Ia pașaportul cu tine.", comment: "Trip check: the pet's passport number is in the binder.")
-                : String(localized: "Adaugă numărul pașaportului. Fără el animalul nu trece granița.", comment: "Trip check: no pet passport number."),
+            id: "trip.petPassport.\(pet.id)", status: hasPassport ? .ok : .missing, title: .petPassportTitle,
+            detail: hasPassport ? .petPassportKept : .petPassportMissing,
             action: hasPassport ? .open(.asset(pet.id)) : .editSection(assetID: pet.id)
         ))
         let rabiesID = "trip.rabies.\(pet.id)"
-        let rabiesTitle = String(localized: "Vaccin antirabic", comment: "Trip check: a pet's rabies vaccine.")
         if let rabies = pet.obligations[BuiltInBlueprints.petRabies] {
-            items.append(ReadinessItem(id: rabiesID, title: rabiesTitle, rabies: rabies, plan: plan, today: today, calendar: calendar))
+            items.append(ReadinessItem(id: rabiesID, rabies: rabies, plan: plan, today: today, calendar: calendar))
         } else {
-            items.append(notInBinder(rabiesID, title: rabiesTitle,
-                                     detail: String(localized: "Nu e în dosar. Adaugă data vaccinului ca să verific.", comment: "Trip check: no rabies vaccine deadline."),
-                                     asset: pet, blueprintKey: BuiltInBlueprints.petRabies))
+            items.append(notInBinder(rabiesID, title: .rabiesTitle, detail: .rabiesMissing, asset: pet, blueprintKey: BuiltInBlueprints.petRabies))
         }
         if plan.region != .europeanUnion {
-            items.append(reminder("trip.petTiter.\(pet.id)",
-                                  String(localized: "Ce cere țara pentru animale", comment: "Trip reminder: rules for pets outside the EU."),
-                                  String(localized: "Unele țări din afara UE cer și un test de anticorpi, făcut cu luni înainte. Întreabă medicul veterinar.", comment: "Trip reminder: rabies antibody test for some countries.")))
+            items.append(reminder("trip.petTiter.\(pet.id)", .petRulesTitle, .petRulesDetail))
         }
         return items
     }
@@ -511,39 +457,35 @@ extension ReadinessItem {
     /// one before ran out (done on or before the due day of the cycle it closed); a first one,
     /// or one after a lapse, waits its 21 days. When the binder can't tell which it was, the
     /// person is asked to look in the pet's passport.
-    init(id: String, title: String, rabies: ReadinessObligation, plan: TripPlan, today: CalendarDay, calendar: Calendar) {
+    init(id: String, rabies: ReadinessObligation, plan: TripPlan, today: CalendarDay, calendar: Calendar) {
         let wait = ReadinessEngine.rabiesWaitDays
         let latestAllowed = plan.start.adding(days: -wait, calendar: calendar)
         let validOnReturn = DueDayValidity.covers(through: plan.end, due: rabies.due)
-        let until = DosarFormat.longDay(rabies.due)
         let status: ReadinessStatus
-        let detail: String
+        let detail: ReadinessWords
         if !validOnReturn {
             status = .problem
-            detail = rabies.due < today
-                ? String(localized: "A expirat pe \(until). Fă-l din nou cu cel puțin 21 de zile înainte de plecare.", comment: "Trip check: the rabies vaccine has already expired.")
-                : String(localized: "Expiră pe \(until), înainte să te întorci. Fă-l din nou înainte să expire, ca să fie valabil de îndată.", comment: "Trip check: the rabies vaccine ends during the trip; a booster before it ends counts at once.")
+            detail = rabies.due < today ? .rabiesExpired(rabies.due) : .rabiesEnds(rabies.due)
         } else if let done = rabies.lastDone, done > latestAllowed {
-            let given = DosarFormat.longDay(done)
             switch rabies.lastCycleDue.map({ done <= $0 }) {
             case true?:
                 status = .ok
-                detail = String(localized: "Rapel făcut pe \(given), înainte să expire cel vechi, deci e valabil de îndată. Valabil până pe \(until).", comment: "Trip check: a rabies booster given close to departure, but before the previous one ran out, counts at once.")
+                detail = .rabiesBoosterOnTime(done, rabies.due)
             case false?:
                 status = .problem
-                detail = String(localized: "Făcut pe \(given), după ce expirase cel vechi. Trebuie făcut cu cel puțin 21 de zile înainte de plecare, adică până pe \(DosarFormat.longDay(latestAllowed)). Întreabă medicul veterinar.", comment: "Trip check: the rabies vaccine was given after the previous one lapsed, too close to departure.")
+                detail = .rabiesAfterLapse(done, latestAllowed)
             case nil:
                 status = .warning
-                detail = String(localized: "Făcut pe \(given), cu mai puțin de 21 de zile înainte de plecare. Un rapel făcut înainte să expire cel vechi e valabil de îndată. Altfel, întreabă medicul veterinar.", comment: "Trip check: a rabies vaccine close to departure, not known whether it was a booster on time.")
+                detail = .rabiesTooClose(done)
             }
         } else if rabies.lastDone == nil {
             status = .warning
-            detail = String(localized: "Valabil până pe \(until). Verifică în pașaport că e făcut cu cel puțin 21 de zile înainte de plecare.", comment: "Trip check: the rabies vaccine is valid but its date isn't known.")
+            detail = .rabiesUndated(rabies.due)
         } else {
             status = .ok
-            detail = String(localized: "Valabil până pe \(until).", comment: "Readiness: a deadline valid until a day.")
+            detail = .validUntil(rabies.due)
         }
-        self.init(id: id, status: status, title: title, detail: detail, action: .open(.obligation(rabies.id)))
+        self.init(id: id, status: status, title: .rabiesTitle, detail: detail, action: .open(.obligation(rabies.id)))
     }
 }
 
@@ -551,86 +493,57 @@ extension ReadinessItem {
 
 extension ReadinessEngine {
     static func sale(of car: ReadinessAsset, today: CalendarDay) -> [ReadinessGroup] {
-        func fact(_ key: String, _ title: String, present: String) -> ReadinessItem {
+        func fact(_ key: String, _ title: ReadinessWords, present: ReadinessWords) -> ReadinessItem {
             let has = hasValue(key, on: car)
-            return ReadinessItem(id: "sale.\(key)", status: has ? .ok : .missing, title: title,
-                                 detail: has ? present : String(localized: "Adaugă-o înainte de vânzare. O găsești pe talon.", comment: "Sale check: a value to add from the registration certificate."),
+            return ReadinessItem(id: "sale.\(key)", status: has ? .ok : .missing, title: title, detail: has ? present : .factMissing,
                                  action: has ? .open(.asset(car.id)) : .editSection(assetID: car.id))
         }
 
         var buyer: [ReadinessItem] = [
-            reminder("sale.registration", String(localized: "Certificatul de înmatriculare (talonul)", comment: "Sale: the registration certificate."),
-                     String(localized: "Originalul îl dai cumpărătorului.", comment: "Sale: hand the original over.")),
-            fact(VehicleFields.civ, String(localized: "Cartea de identitate a vehiculului (CIV)"),
-                 present: String(localized: "Seria e în dosar. Originalul îl dai cumpărătorului.", comment: "Sale check: the CIV number is in the binder.")),
-            fact(VehicleFields.vin, String(localized: "Serie de șasiu (VIN)"),
-                 present: String(localized: "E în dosar, pentru contract.", comment: "Sale check: the VIN is in the binder.")),
+            reminder("sale.registration", .registrationTitle, .registrationDetail),
+            fact(VehicleFields.civ, .civTitle, present: .civKept),
+            fact(VehicleFields.vin, .vinTitle, present: .vinKept),
         ]
 
         let itpKey = BuiltInBlueprints.vehicleITP
         if let itp = car.obligations[itpKey] {
             let valid = DueDayValidity.isValid(due: itp.due, on: today)
-            buyer.append(ReadinessItem(
-                id: "sale.itp", status: valid ? .ok : .problem, title: String(localized: "ITP"),
-                detail: valid
-                    ? String(localized: "Valabil până pe \(DosarFormat.longDay(itp.due)). Cumpărătorul are nevoie de el ca să înmatriculeze mașina.", comment: "Sale check: the ITP is valid.")
-                    : String(localized: "A expirat pe \(DosarFormat.longDay(itp.due)). Fără ITP valabil, cumpărătorul nu poate înmatricula mașina.", comment: "Sale check: the ITP has expired."),
-                action: .open(.obligation(itp.id))
-            ))
+            buyer.append(ReadinessItem(id: "sale.itp", status: valid ? .ok : .problem, title: .itpTitle,
+                                       detail: valid ? .saleITPValid(itp.due) : .saleITPExpired(itp.due), action: .open(.obligation(itp.id))))
         } else {
-            buyer.append(notInBinder("sale.itp", title: String(localized: "ITP"),
-                                     detail: String(localized: "Nu e în dosar. Cumpărătorul are nevoie de ITP valabil ca să înmatriculeze mașina.", comment: "Sale check: no ITP deadline."),
-                                     asset: car, blueprintKey: itpKey))
+            buyer.append(notInBinder("sale.itp", title: .itpTitle, detail: .saleITPMissing, asset: car, blueprintKey: itpKey))
         }
 
         let rcaKey = BuiltInBlueprints.vehicleRCA
         if let rca = car.obligations[rcaKey] {
             let valid = DueDayValidity.isValid(due: rca.due, on: today)
-            buyer.append(ReadinessItem(
-                id: "sale.rca", status: valid ? .ok : .warning, title: String(localized: "RCA"),
-                detail: valid
-                    ? String(localized: "Valabil până pe \(DosarFormat.longDay(rca.due)). Nu trece la cumpărător: el își face polița lui.", comment: "Sale check: the RCA is valid; the buyer needs their own.")
-                    : String(localized: "A expirat pe \(DosarFormat.longDay(rca.due)). Până la vânzare nu ai voie să circuli cu mașina.", comment: "Sale check: the RCA has expired."),
-                action: .open(.obligation(rca.id))
-            ))
+            buyer.append(ReadinessItem(id: "sale.rca", status: valid ? .ok : .warning, title: .rcaTitle,
+                                       detail: valid ? .saleRCAValid(rca.due) : .saleRCAExpired(rca.due), action: .open(.obligation(rca.id))))
         } else {
-            buyer.append(notInBinder("sale.rca", title: String(localized: "RCA"),
-                                     detail: String(localized: "Nu e în dosar. Cumpărătorul poate cere să-l vadă.", comment: "Sale check: no RCA deadline."),
-                                     asset: car, blueprintKey: rcaKey))
+            buyer.append(notInBinder("sale.rca", title: .rcaTitle, detail: .saleRCAMissing, asset: car, blueprintKey: rcaKey))
         }
 
         // What shows how the car was looked after helps the sale; the buyer can't ask for it.
         buyer.append(ReadinessItem(
-            id: "sale.history", status: car.historyCount > 0 ? .ok : .missing, need: .optional, title: String(localized: "Istoric de service"),
-            detail: car.historyCount > 0
-                ? String(localized: "\(car.historyCount) intrări de arătat cumpărătorului.", locale: .dosarDefault, comment: "Readiness: how many history entries a buyer can be shown.")
-                : String(localized: "Un istoric complet crește încrederea și prețul. Adaugă reviziile pe care le știi.", comment: "Sale check: no service history, which is optional."),
+            id: "sale.history", status: car.historyCount > 0 ? .ok : .missing, need: .optional, title: .serviceHistoryTitle,
+            detail: car.historyCount > 0 ? .serviceHistoryCount(car.historyCount) : .serviceHistoryMissing,
             action: .open(.asset(car.id))
         ))
         let hasInvoices = car.documentKinds.contains(.invoice)
         buyer.append(ReadinessItem(
-            id: "sale.invoices", status: hasInvoices ? .ok : .missing, need: .optional, title: String(localized: "Facturi de service"),
-            detail: hasInvoices
-                ? String(localized: "Sunt facturi în dosar.")
-                : String(localized: "Dacă le ai, arată cumpărătorului cum a fost îngrijită mașina.", comment: "Sale check: no service invoices filed on the car, which are optional."),
+            id: "sale.invoices", status: hasInvoices ? .ok : .missing, need: .optional, title: .serviceInvoicesTitle,
+            detail: hasInvoices ? .serviceInvoicesKept : .serviceInvoicesMissing,
             action: hasInvoices ? .open(.asset(car.id)) : .addDocument(assetID: car.id)
         ))
-        buyer.append(reminder("sale.contract", String(localized: "Contractul de vânzare-cumpărare", comment: "Sale: the sale contract."),
-                              String(localized: "Semnat de amândoi, câte un exemplar pentru tine, pentru cumpărător și pentru primărie.", comment: "Sale: copies of the sale contract.")))
-        buyer.append(reminder("sale.ownerID", String(localized: "Cartea ta de identitate", comment: "Sale: the seller's ID card."),
-                              String(localized: "Pentru contract și la primărie.", comment: "Sale: why the seller's ID card is needed.")))
+        buyer.append(reminder("sale.contract", .saleContractTitle, .saleContractDetail))
+        buyer.append(reminder("sale.ownerID", .ownerIDTitle, .ownerIDDetail))
 
         // After the sale: what to stop or move to the buyer.
-        var after: [ReadinessItem] = [
-            reminder("sale.after.localTax", String(localized: "Scoate mașina de pe numele tău la primărie", comment: "After the sale: deregister the car at the local tax office."),
-                     String(localized: "La biroul de taxe locale, cu contractul. Altfel plătești impozit pe ea mai departe.", comment: "After the sale: why to deregister the car.")),
-        ]
+        var after: [ReadinessItem] = [reminder("sale.after.localTax", .deregisterTitle, .deregisterDetail)]
         for policy in car.allObligations where policy.kind == .insurance {
-            let name = policy.title.isEmpty ? String(localized: "polița", comment: "After the sale: a policy without a name.") : policy.title
             after.append(ReadinessItem(
                 id: "sale.after.cancel.\(policy.id)", status: .reminder,
-                title: String(localized: "Reziliază \(name)", comment: "After the sale: cancel a policy. The name is the deadline's, e.g. RCA or CASCO."),
-                detail: String(localized: "Cu contractul de vânzare, la asigurător. Primești înapoi banii pe lunile rămase.", comment: "After the sale: cancelling a policy returns the unused months."),
+                title: policy.title.isEmpty ? .cancelUnnamedPolicy : .cancelPolicy(policy.title), detail: .cancelPolicyDetail,
                 action: .open(.obligation(policy.id))
             ))
         }
@@ -638,22 +551,18 @@ extension ReadinessEngine {
         // Money: what must be paid before the tax office gives the papers for the sale.
         var money: [ReadinessItem] = []
         for owed in car.allObligations where (owed.kind == .tax || owed.kind == .payment) && owed.due <= today {
-            let detail = owed.amount.map {
-                String(localized: "Trebuia plătit pe \(DosarFormat.longDay(owed.due)) · \($0.formatted())", comment: "Sale check: an unpaid amount and the day it was due.")
-            } ?? String(localized: "Trebuia plătit pe \(DosarFormat.longDay(owed.due)).", comment: "Sale check: an unpaid deadline and the day it was due.")
-            money.append(ReadinessItem(id: "sale.owed.\(owed.id)", status: .problem, title: owed.title, detail: detail, action: .open(.obligation(owed.id))))
+            money.append(ReadinessItem(id: "sale.owed.\(owed.id)", status: .problem, title: .text(owed.title),
+                                       detail: owed.amount.map { .owedWithAmount(owed.due, $0) } ?? .owed(owed.due),
+                                       action: .open(.obligation(owed.id))))
         }
-        money.append(reminder("sale.money.localTax", String(localized: "Impozitul pe mașină, plătit pe tot anul", comment: "Sale: pay the car tax for the year."),
-                              String(localized: "Primăria îți dă certificatul fiscal pentru vânzare doar fără datorii.", comment: "Sale: the tax certificate needs no debts.")))
-        money.append(reminder("sale.money.fines", String(localized: "Amenzile neplătite", comment: "Sale: unpaid fines."),
-                              String(localized: "Tot pentru certificatul fiscal. Le vezi pe ghiseul.ro.", comment: "Sale: where to see unpaid fines.")))
-        money.append(reminder("sale.money.loan", String(localized: "Leasing sau credit pe mașină", comment: "Sale: a lease or loan on the car."),
-                              String(localized: "Dacă mașina e încă în leasing sau garanție la bancă, o vinzi doar după ce e achitată.", comment: "Sale: a car under a lease or pledge.")))
+        money.append(reminder("sale.money.localTax", .carTaxTitle, .carTaxDetail))
+        money.append(reminder("sale.money.fines", .finesTitle, .finesDetail))
+        money.append(reminder("sale.money.loan", .loanTitle, .loanDetail))
 
         return [
-            ReadinessGroup(id: "sale.buyer", title: String(localized: "Pentru cumpărător", comment: "Sale group: the documents and papers for the buyer."), symbol: "doc.text.fill", items: buyer),
-            ReadinessGroup(id: "sale.money", title: String(localized: "De achitat înainte", comment: "Sale group: what must be paid before selling."), symbol: "banknote.fill", items: money),
-            ReadinessGroup(id: "sale.after", title: String(localized: "După vânzare", comment: "Sale group: what to cancel or move after the sale."), symbol: "checklist", items: after),
+            ReadinessGroup(id: "sale.buyer", title: .saleBuyerGroup, symbol: "doc.text.fill", items: buyer),
+            ReadinessGroup(id: "sale.money", title: .saleMoneyGroup, symbol: "banknote.fill", items: money),
+            ReadinessGroup(id: "sale.after", title: .saleAfterGroup, symbol: "checklist", items: after),
         ]
     }
 }
@@ -662,18 +571,13 @@ extension ReadinessEngine {
 
 extension ReadinessEngine {
     /// When a policy is the one to call, by its deadline. A policy of the person's own has none.
-    static func whenToUse(_ blueprintKey: String) -> String? {
+    static func whenToUse(_ blueprintKey: String) -> ReadinessWords? {
         switch blueprintKey {
-        case BuiltInBlueprints.vehicleRCA:
-            String(localized: "Când ai lovit pe altcineva: îi dai lui datele poliței. Dacă te-a lovit altcineva, plătește RCA-ul lui.", comment: "Claim: when the car's RCA is the policy to use.")
-        case BuiltInBlueprints.vehicleCASCO:
-            String(localized: "Pentru mașina ta, oricine e de vină.", comment: "Claim: when CASCO is the policy to use.")
-        case BuiltInBlueprints.homePAD:
-            String(localized: "Cutremur, inundație sau alunecare de teren.", comment: "Claim: what the mandatory home policy (PAD) covers.")
-        case BuiltInBlueprints.homeInsurance:
-            String(localized: "Apă de la vecini, incendiu, furt și ce mai scrie pe poliță.", comment: "Claim: what the optional home policy covers.")
-        default:
-            nil
+        case BuiltInBlueprints.vehicleRCA: .whenRCA
+        case BuiltInBlueprints.vehicleCASCO: .whenCASCO
+        case BuiltInBlueprints.homePAD: .whenPAD
+        case BuiltInBlueprints.homeInsurance: .whenHomeInsurance
+        default: nil
         }
     }
 
@@ -688,7 +592,7 @@ extension ReadinessEngine {
             let deadline = asset.obligations[entry.blueprintKey]
             let reference = deadline?.reference.flatMap { $0.trimmingCharacters(in: .whitespaces).isEmpty ? nil : $0 }
             return ReadinessPolicy(
-                blueprintKey: entry.blueprintKey, title: entry.title, whenToUse: whenToUse(entry.blueprintKey),
+                blueprintKey: entry.blueprintKey, title: entry.title, whenToUseWords: whenToUse(entry.blueprintKey),
                 insurer: value(.insurer), policyNumber: reference ?? value(.policyNumber), claimsPhone: value(.claimsPhone),
                 deadlineID: deadline?.id, validUntil: deadline?.due,
                 policyholderClass: Policyholders.bonusMalus(ofPolicyholder: value(.policyholder), among: people)
@@ -708,90 +612,66 @@ extension ReadinessEngine {
     static func claim(on asset: ReadinessAsset, blueprintKey: String?, today: CalendarDay, people: [Policyholders.Person] = []) -> ReadinessChecklist {
         let options = claimPolicies(on: asset, people: people)
         let policy = claimPolicy(among: options, blueprintKey: blueprintKey)
-        let isCar = isVehicle(asset)
 
         var policyItems: [ReadinessItem] = []
         if let policy {
             if policy.policyNumber == nil {
-                policyItems.append(ReadinessItem(id: "claim.policyNumber", status: .missing, title: String(localized: "Număr poliță"),
-                                                 detail: String(localized: "Îl cere asigurătorul la primul telefon. E scris pe poliță.", comment: "Claim check: no policy number."),
+                policyItems.append(ReadinessItem(id: "claim.policyNumber", status: .missing, title: .policyNumberTitle, detail: .policyNumberMissing,
                                                  action: .editSection(assetID: asset.id)))
             }
             if policy.claimsPhone == nil {
-                policyItems.append(ReadinessItem(id: "claim.phone", status: .missing, title: String(localized: "Telefon pentru daune"),
-                                                 detail: String(localized: "E pe poliță sau pe site-ul asigurătorului. Adaugă-l ca să suni dintr-o atingere.", comment: "Claim check: no claims phone."),
+                policyItems.append(ReadinessItem(id: "claim.phone", status: .missing, title: .claimsPhoneTitle, detail: .claimsPhoneMissing,
                                                  action: .editSection(assetID: asset.id)))
             }
             if let id = policy.deadlineID, let until = policy.validUntil {
                 let valid = DueDayValidity.isValid(due: until, on: today)
-                policyItems.append(ReadinessItem(
-                    id: "claim.validity", status: valid ? .ok : .problem,
-                    title: String(localized: "Valabilitatea poliței", comment: "Claim check: whether the policy is still valid."),
-                    detail: valid
-                        ? String(localized: "Valabilă până pe \(DosarFormat.longDay(until)).", comment: "Readiness: something valid until a day (feminine).")
-                        : String(localized: "A expirat pe \(DosarFormat.longDay(until)). Sună totuși: asigurătorul îți spune ce acoperă.", comment: "Claim check: the policy has expired."),
-                    action: .open(.obligation(id))
-                ))
+                policyItems.append(ReadinessItem(id: "claim.validity", status: valid ? .ok : .problem, title: .policyValidityTitle,
+                                                 detail: valid ? .validUntilFeminine(until) : .policyExpired(until), action: .open(.obligation(id))))
             } else {
-                policyItems.append(notInBinder("claim.validity", title: String(localized: "Valabilitatea poliței", comment: "Claim check: whether the policy is still valid."),
-                                               detail: String(localized: "Nu știu până când e valabilă. Adaugă termenul poliței.", comment: "Claim check: the policy's deadline isn't in the binder."),
+                policyItems.append(notInBinder("claim.validity", title: .policyValidityTitle, detail: .policyValidityUnknown,
                                                asset: asset, blueprintKey: policy.blueprintKey))
             }
         }
         let hasPolicy = asset.documentKinds.contains(.policy)
         policyItems.append(ReadinessItem(
-            id: "claim.policyDocument", status: hasPolicy ? .ok : .missing, need: .optional, title: String(localized: "Polița"),
-            detail: hasPolicy ? String(localized: "E în dosar, cu poză.", comment: "Claim check: the policy is filed.") : String(localized: "Fă o poză poliței, ca s-o ai la îndemână.", comment: "Claim check: no policy filed."),
+            id: "claim.policyDocument", status: hasPolicy ? .ok : .missing, need: .optional, title: .policyDocumentTitle,
+            detail: hasPolicy ? .policyFiled : .policyPhotoMissing,
             action: hasPolicy ? .open(.asset(asset.id)) : .addDocument(assetID: asset.id)
         ))
 
         let photos: [ReadinessItem]
         let papers: [ReadinessItem]
-        if isCar {
+        if isVehicle(asset) {
             photos = [
-                reminder("claim.photo.cars", String(localized: "Mașinile, cu numerele la vedere", comment: "Claim photo: the cars."),
-                         String(localized: "Din față, din spate și din lateral, înainte să le mutați.", comment: "Claim photo: angles of the cars.")),
-                reminder("claim.photo.damage", String(localized: "Fiecare avarie", comment: "Claim photo: each damage."),
-                         String(localized: "De aproape și de departe, ca să se vadă unde e.", comment: "Claim photo: how to photograph damage.")),
-                reminder("claim.photo.place", String(localized: "Locul", comment: "Claim photo: the place."),
-                         String(localized: "Indicatoare, marcaje, urme pe carosabil.", comment: "Claim photo: what of the place.")),
-                reminder("claim.photo.otherDriver", String(localized: "Actele celuilalt șofer", comment: "Claim photo: the other driver's papers."),
-                         String(localized: "Talonul, permisul și polița RCA, dacă e și altă mașină.", comment: "Claim photo: which papers of the other driver.")),
-                reminder("claim.photo.report", String(localized: "Constatarea amiabilă", comment: "Claim photo: the joint accident report."),
-                         String(localized: "După ce o semnați amândoi. Dacă nu vă înțelegeți, mergi la Poliție.", comment: "Claim photo: the signed joint report. Without agreement the drivers go to the police station; a call to 112 is only for injuries.")),
+                reminder("claim.photo.cars", .photoCarsTitle, .photoCarsDetail),
+                reminder("claim.photo.damage", .photoDamageTitle, .photoDamageDetail),
+                reminder("claim.photo.place", .photoPlaceTitle, .photoPlaceDetail),
+                reminder("claim.photo.otherDriver", .photoOtherDriverTitle, .photoOtherDriverDetail),
+                reminder("claim.photo.report", .photoReportTitle, .photoReportDetail),
             ]
             papers = [
-                reminder("claim.paper.driver", String(localized: "Permisul de conducere și cartea de identitate", comment: "Claim paper: the driver's papers."),
-                         String(localized: "Ale celui care conducea.", comment: "Claim paper: whose papers.")),
-                reminder("claim.paper.car", String(localized: "Talonul și cartea de identitate a mașinii", comment: "Claim paper: the car's papers."),
-                         String(localized: "Le cere asigurătorul la constatare.", comment: "Claim paper: why the car's papers.")),
-                reminder("claim.paper.report", String(localized: "Constatarea amiabilă sau procesul-verbal de la poliție", comment: "Claim paper: the accident report."),
-                         String(localized: "Originalul, nu doar poza.", comment: "Claim paper: the original report.")),
+                reminder("claim.paper.driver", .paperDriverTitle, .paperDriverDetail),
+                reminder("claim.paper.car", .paperCarTitle, .paperCarDetail),
+                reminder("claim.paper.report", .paperReportTitle, .paperReportDetail),
             ]
         } else {
             photos = [
-                reminder("claim.photo.rooms", String(localized: "Fiecare zonă afectată", comment: "Claim photo: each damaged area of the home (a room, a wall, the roof, the stairs)."),
-                         String(localized: "Întâi de departe, apoi avariile de aproape.", comment: "Claim photo: how to photograph each damaged area.")),
-                reminder("claim.photo.source", String(localized: "De unde a pornit", comment: "Claim photo: the cause."),
-                         String(localized: "Țeava, acoperișul, geamul sau peretele.", comment: "Claim photo: what the cause can be.")),
-                reminder("claim.photo.goods", String(localized: "Lucrurile stricate", comment: "Claim photo: damaged belongings."),
-                         String(localized: "Înainte să arunci ceva, cu bonurile dacă le ai.", comment: "Claim photo: keep damaged things until photographed.")),
+                reminder("claim.photo.rooms", .photoRoomsTitle, .photoRoomsDetail),
+                reminder("claim.photo.source", .photoSourceTitle, .photoSourceDetail),
+                reminder("claim.photo.goods", .photoGoodsTitle, .photoGoodsDetail),
             ]
             papers = [
-                reminder("claim.paper.id", String(localized: "Cartea de identitate", comment: "Claim paper: the ID card."),
-                         String(localized: "A celui care are polița.", comment: "Claim paper: whose ID card.")),
-                reminder("claim.paper.deed", String(localized: "Actul de proprietate", comment: "Claim paper: the property deed."),
-                         String(localized: "Contractul sau extrasul de carte funciară.", comment: "Claim paper: which property paper.")),
-                reminder("claim.paper.report", String(localized: "Procesul-verbal, dacă a venit cineva", comment: "Claim paper: an official report."),
-                         String(localized: "De la pompieri, poliție sau administratorul blocului.", comment: "Claim paper: who writes the report.")),
+                reminder("claim.paper.id", .paperIDTitle, .paperIDDetail),
+                reminder("claim.paper.deed", .paperDeedTitle, .paperDeedDetail),
+                reminder("claim.paper.report", .paperOfficialReportTitle, .paperOfficialReportDetail),
             ]
         }
 
         return ReadinessChecklist(
             groups: [
-                ReadinessGroup(id: "claim.policy", title: String(localized: "Polița", comment: "Claim group: the policy."), symbol: "doc.text.fill", items: policyItems),
-                ReadinessGroup(id: "claim.photos", title: String(localized: "Ce fotografiezi", comment: "Claim group: what to photograph."), symbol: "camera.fill", items: photos),
-                ReadinessGroup(id: "claim.papers", title: String(localized: "Acte de avut la îndemână", comment: "Claim group: documents to have ready."), symbol: "folder.fill", items: papers),
+                ReadinessGroup(id: "claim.policy", title: .claimPolicyGroup, symbol: "doc.text.fill", items: policyItems),
+                ReadinessGroup(id: "claim.photos", title: .claimPhotosGroup, symbol: "camera.fill", items: photos),
+                ReadinessGroup(id: "claim.papers", title: .claimPapersGroup, symbol: "folder.fill", items: papers),
             ],
             policy: policy,
             policyOptions: options
