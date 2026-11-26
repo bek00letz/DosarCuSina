@@ -72,6 +72,19 @@ struct ReminderMomentsTests {
         #expect(calendar.timeZone.isDaylightSavingTime(for: autumn), "The first 03:30, still on summer time")
     }
 
+    @Test func aTimeSkippedByHalfAnHourIsTheFirstMinuteAfterTheGapThatDay() throws {
+        // 4 October 2026 on Lord Howe Island: 02:00 becomes 02:30, half an hour skipped.
+        let lordHowe = Calendar.dosar(in: try #require(TimeZone(identifier: "Australia/Lord_Howe")))
+        let day = CalendarDay("2026-10-04")
+        for minute in [2 * 60, 2 * 60 + 15] {
+            let skipped = day.moment(atMinute: minute, in: lordHowe)
+            let parts = lordHowe.dateComponents([.day, .hour, .minute], from: skipped)
+            #expect(parts.day == 4 && parts.hour == 2 && parts.minute == 30, "02:30 that day, never the next day")
+        }
+        let before = lordHowe.dateComponents([.day, .hour, .minute], from: day.moment(atMinute: 60 + 59, in: lordHowe))
+        #expect(before.day == 4 && before.hour == 1 && before.minute == 59)
+    }
+
     @Test func aReminderAtASkippedTimeIsPlannedForThatMinute() throws {
         var item = snapshot("Vaccin", kind: .health, due: "2027-03-28", offsets: [0])
         item.reminderMinuteOfDay = 3 * 60 + 30

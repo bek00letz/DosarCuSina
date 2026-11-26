@@ -111,6 +111,13 @@ Newest first. Copy this template:
 - **Decisions:** entries added to or questioned in DECISIONS.md, or "none".
 ```
 
+### 2026-11-26 — owner (with Claude) — `claude/moment-in-a-half-hour-gap`
+- **Did:** a reminder time the clocks skip is the first minute after the gap that same day, whatever the gap's length: `CalendarDay.moment(atMinute:)` takes the moment the clocks change (`TimeZone.nextDaylightSavingTimeTransition`) instead of looking for the same time again, which on Lord Howe Island (half an hour skipped) found the next day's 02:00, a day late. Android already answered this way; its list of answers given differently (`CalendarDayVectorsTest.ANSWERED_DIFFERENTLY`) is now empty, and the shared case in `shared/test-vectors/values/app-calendar.json` holds the one answer.
+- **Tests:** on GitHub (the Mac was under heavy load): `ReminderMomentsTests` gains the half-hour gap; `ValueVectorsTests` keeps the shared case fresh.
+- **Left open:** none.
+- **Next:** the Android importer.
+- **Decisions:** none.
+
 ### 2026-11-26 — owner (with Claude) — `claude/golden-archives-on-ci`
 - **Did:** a failed `build-and-test` run keeps the iOS golden archives made afresh, as it keeps the String Catalogs: `GoldenArchiveTests` writes them to `TEST_RUNNER_GOLDEN_ARCHIVES_OUT` when the committed ones are out of date, and `tests/run_tests.sh` points it at the run's `test-results` (`golden-archives/`, laid out as `shared/fixtures/golden/ios/`). AGENTS.md's `build-and-test` row and "Where things are documented" say so, beside the copy matrix.
 - **Tests:** on GitHub; the out-of-date path itself was not run (it needs a change to what a backup holds).
@@ -123,6 +130,7 @@ Newest first. Copy this template:
 - **Tests:** `./gradlew :archive:test :archive:lint :core:lint detekt`; `ArchiveVectorsTests` alone on iPhone 18 Pro (iOS 27.0), which wrote the iOS-made files. The full suites, and the app's Lint, on GitHub. The plain archives the two apps write today are byte for byte the same.
 - **Left open:** the importer (`DossierArchiveReader`'s checking and extracting, `DossierImporter`, `ArchiveMerge`) builds on this next. The zip dates use the phone's time zone through `ZoneId.systemDefault()` until `:core` has the app's calendar. Names that are the same text written two ways (`ș` as one character or as `s` and a comma) are one file on both apps, as Swift compares them.
 - **Next:** the importer, on `DosarZipEngine.Reader` and `ArchiveOpening`.
+- **Decisions:** none new.
 
 ### 2026-11-25 — owner (with Claude) — `claude/android-p1-values`
 - **Did:** Phase 1's value rules, in `android/core` (`com.ar.dosarcusina.core.values`): `CalendarDay` (kept as written, `valid`, month arithmetic that clamps and keeps a series' day, `daysInMonth`, order), `MonthDay`, `StoredDay`, `DosarCalendar` (Gregorian, weeks from Monday, the phone's time zone read each time) and `DosarLocale`; `MachineText` (ISO days, hex, a moment written in UTC to the second and read in every form the iPhone reads, machine JSON written byte for byte as the iPhone's encoder, compact and readable, and a Double as Swift writes it); `RomanianNumber` (`read` by kind, `canonical`, `format`) on `BigDecimal` with Foundation's 128-bit `Decimal` digits (`DecimalText`); `Money`'s stored form; `MeasurementUnit` keys; `RomanianText.fold`; `KeptJson.laying` and `mappingKept`, `KeptObject`, `KeptList` and `ThreeWay`, on kotlinx.serialization trees (1.13.0, the one dependency added). Every rule is pinned by the iOS app's own answers: `ios/DosarCuSinaTests/ValueVectorsTests.swift` writes 24 files to `shared/test-vectors/values/` (fresh or failing, as the copy matrix; `TEST_RUNNER_VALUE_VECTORS_WRITE=1` rewrites them) and the `:core` tests read every case. detekt now lets guard clauses return early (`ReturnCount`, for read-or-refuse code).
