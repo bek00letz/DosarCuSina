@@ -47,6 +47,7 @@ What a category of one's own is made of besides the answers to its few questions
 
 - **`basePockets`:** the pockets every new category of one's own starts with (`CategorySwitches.basePockets`); the switches add theirs.
 - **`counterSectionKey`:** the field section a counter goes in (`custom.counter`).
+- **`recovered`:** „Recuperate”, the category of one's own the repair list keeps records in whose section was deleted on another device (`LostRecordsStep`): its `key`, `name`, `symbol`, `pockets` and the id of its one section (`sectionID`), the same on every device and on both apps, so two devices that keep records there make one.
 - **`counters`:** each way a service is counted, in `CategorySwitches.Counter`'s order (the order a category's service is read in): `counter` (its raw value, which names the service deadline `custom.service.<counter>`), `defaultEvery` (the interval it starts at: months, kilometres or hours), `field` (its counter field, none for a service by time) and `service` (its service deadline at `defaultEvery`, as a template's `blueprints` writes one). The interval the person types is laid into the deadline's `recurrence` and `firstDue` by the rule both apps share (`CategorySwitches.serviceBlueprint`).
 - **`writtenBy`:** the test that writes the files.
 

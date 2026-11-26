@@ -2,7 +2,9 @@ package com.ar.dosarcusina.store
 
 import androidx.room3.withReadTransaction
 import androidx.room3.withWriteTransaction
+import com.ar.dosarcusina.catalog.Catalog
 import com.ar.dosarcusina.store.schema.StoredMoment
+import com.ar.dosarcusina.store.security.SecretsKeptSealed
 import kotlinx.coroutines.runBlocking
 import java.io.File
 import java.time.Instant
@@ -35,6 +37,8 @@ interface StepQuestion
  *   what it holds only through [RecordContents.delete] ([Step.delete]).
  * - **It keeps card numbers out** ([FreeText]): every card number in the words of every record it
  *   saves is masked just before it saves, whoever wrote it, a backup's own writer included.
+ * - **It keeps secrets sealed** ([SecretsKeptSealed]): a section that would keep a secret in plain
+ *   (a PIN, an alarm code) stops the save; every action seals first.
  * - **It keeps change times, and only it** ([ChangeTimes], [CycleTimes]), by whose step it is
  *   ([ChangeOrigin]), at the step's clock: the opener's, else the first one a step inside it gives,
  *   else the moment it saves.
@@ -153,6 +157,7 @@ class UnitOfWork(
         // them; what the step changed is read before the save, while the store holds where it started.
         ParentLinks.stamp(step)
         FreeText.mask(step)
+        SecretsKeptSealed.check(step, Catalog.builtIn)
         ChangeTimes.stamp(step, scope.origin, now)
         val receipt = scope.receipt
         val pending = receipt?.prepare(step, store.files, undoRoot)

@@ -1,0 +1,350 @@
+{
+  "cases" : [
+    {
+      "categories" : {
+        "plants" : {
+          "example" : {
+            "automaticParent" : null,
+            "possibleParents" : [
+
+            ]
+          },
+          "real" : {
+            "automaticParent" : null,
+            "possibleParents" : [
+
+            ]
+          }
+        },
+        "subscription" : {
+          "example" : {
+            "automaticParent" : null,
+            "possibleParents" : [
+
+            ]
+          },
+          "real" : {
+            "automaticParent" : null,
+            "possibleParents" : [
+
+            ]
+          }
+        },
+        "tenancy" : {
+          "example" : {
+            "automaticParent" : null,
+            "possibleParents" : [
+
+            ]
+          },
+          "real" : {
+            "automaticParent" : null,
+            "possibleParents" : [
+
+            ]
+          }
+        },
+        "vehicle" : {
+          "example" : {
+            "automaticParent" : null,
+            "possibleParents" : [
+
+            ]
+          },
+          "real" : {
+            "automaticParent" : null,
+            "possibleParents" : [
+
+            ]
+          }
+        }
+      },
+      "homes" : [
+
+      ],
+      "name" : "no home"
+    },
+    {
+      "categories" : {
+        "plants" : {
+          "example" : {
+            "automaticParent" : null,
+            "possibleParents" : [
+
+            ]
+          },
+          "real" : {
+            "automaticParent" : "Apartament Exemplu",
+            "possibleParents" : [
+              "Apartament Exemplu"
+            ]
+          }
+        },
+        "subscription" : {
+          "example" : {
+            "automaticParent" : null,
+            "possibleParents" : [
+
+            ]
+          },
+          "real" : {
+            "automaticParent" : null,
+            "possibleParents" : [
+              "Apartament Exemplu"
+            ]
+          }
+        },
+        "tenancy" : {
+          "example" : {
+            "automaticParent" : null,
+            "possibleParents" : [
+
+            ]
+          },
+          "real" : {
+            "automaticParent" : null,
+            "possibleParents" : [
+
+            ]
+          }
+        },
+        "vehicle" : {
+          "example" : {
+            "automaticParent" : null,
+            "possibleParents" : [
+
+            ]
+          },
+          "real" : {
+            "automaticParent" : null,
+            "possibleParents" : [
+
+            ]
+          }
+        }
+      },
+      "homes" : [
+        {
+          "isExample" : false,
+          "name" : "Apartament Exemplu"
+        }
+      ],
+      "name" : "one home"
+    },
+    {
+      "categories" : {
+        "plants" : {
+          "example" : {
+            "automaticParent" : null,
+            "possibleParents" : [
+
+            ]
+          },
+          "real" : {
+            "automaticParent" : null,
+            "possibleParents" : [
+              "Apartament Exemplu",
+              "Casa de la țară"
+            ]
+          }
+        },
+        "subscription" : {
+          "example" : {
+            "automaticParent" : null,
+            "possibleParents" : [
+
+            ]
+          },
+          "real" : {
+            "automaticParent" : null,
+            "possibleParents" : [
+              "Apartament Exemplu",
+              "Casa de la țară"
+            ]
+          }
+        },
+        "tenancy" : {
+          "example" : {
+            "automaticParent" : null,
+            "possibleParents" : [
+
+            ]
+          },
+          "real" : {
+            "automaticParent" : null,
+            "possibleParents" : [
+
+            ]
+          }
+        },
+        "vehicle" : {
+          "example" : {
+            "automaticParent" : null,
+            "possibleParents" : [
+
+            ]
+          },
+          "real" : {
+            "automaticParent" : null,
+            "possibleParents" : [
+
+            ]
+          }
+        }
+      },
+      "homes" : [
+        {
+          "isExample" : false,
+          "name" : "Apartament Exemplu"
+        },
+        {
+          "isExample" : false,
+          "name" : "Casa de la țară"
+        }
+      ],
+      "name" : "two homes"
+    },
+    {
+      "categories" : {
+        "plants" : {
+          "example" : {
+            "automaticParent" : "Casă exemplu",
+            "possibleParents" : [
+              "Casă exemplu"
+            ]
+          },
+          "real" : {
+            "automaticParent" : "Apartament Exemplu",
+            "possibleParents" : [
+              "Apartament Exemplu"
+            ]
+          }
+        },
+        "subscription" : {
+          "example" : {
+            "automaticParent" : null,
+            "possibleParents" : [
+              "Casă exemplu"
+            ]
+          },
+          "real" : {
+            "automaticParent" : null,
+            "possibleParents" : [
+              "Apartament Exemplu"
+            ]
+          }
+        },
+        "tenancy" : {
+          "example" : {
+            "automaticParent" : null,
+            "possibleParents" : [
+
+            ]
+          },
+          "real" : {
+            "automaticParent" : null,
+            "possibleParents" : [
+
+            ]
+          }
+        },
+        "vehicle" : {
+          "example" : {
+            "automaticParent" : null,
+            "possibleParents" : [
+
+            ]
+          },
+          "real" : {
+            "automaticParent" : null,
+            "possibleParents" : [
+
+            ]
+          }
+        }
+      },
+      "homes" : [
+        {
+          "isExample" : false,
+          "name" : "Apartament Exemplu"
+        },
+        {
+          "isExample" : true,
+          "name" : "Casă exemplu"
+        }
+      ],
+      "name" : "one home and an example home"
+    },
+    {
+      "categories" : {
+        "plants" : {
+          "example" : {
+            "automaticParent" : "Casă exemplu",
+            "possibleParents" : [
+              "Casă exemplu"
+            ]
+          },
+          "real" : {
+            "automaticParent" : null,
+            "possibleParents" : [
+
+            ]
+          }
+        },
+        "subscription" : {
+          "example" : {
+            "automaticParent" : null,
+            "possibleParents" : [
+              "Casă exemplu"
+            ]
+          },
+          "real" : {
+            "automaticParent" : null,
+            "possibleParents" : [
+
+            ]
+          }
+        },
+        "tenancy" : {
+          "example" : {
+            "automaticParent" : null,
+            "possibleParents" : [
+
+            ]
+          },
+          "real" : {
+            "automaticParent" : null,
+            "possibleParents" : [
+
+            ]
+          }
+        },
+        "vehicle" : {
+          "example" : {
+            "automaticParent" : null,
+            "possibleParents" : [
+
+            ]
+          },
+          "real" : {
+            "automaticParent" : null,
+            "possibleParents" : [
+
+            ]
+          }
+        }
+      },
+      "homes" : [
+        {
+          "isExample" : true,
+          "name" : "Casă exemplu"
+        }
+      ],
+      "name" : "only an example home"
+    }
+  ],
+  "rule" : "AssetActions.possibleParents(for:isExample:in:) and automaticParent(for:isExample:in:), by CategoryBehavior.mayBelongTo and goesUnderTheOnlyOne",
+  "shape" : "homes: the homes made, in order, each an example or not. categories: for a plant, a subscription, a tenancy and a car (by key), for a real new section and an example one, the sections it can stand in, by name, and where it goes when nobody said (null: on its own).",
+  "source" : "ios/DosarCuSina/Services/Obligations/AssetActions+Move.swift",
+  "writtenBy" : "ios/DosarCuSinaTests/SectionVectorsTests.swift"
+}
