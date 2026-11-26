@@ -4,7 +4,7 @@ import Testing
 
 /// The built-in catalog (`BuiltInTemplates`), written to `shared/catalog/` as data, so the
 /// Android app reads the same categories and never keeps a catalog of its own
-/// (docs/ANDROID_PLAN.md, "How parity is kept", item 1). Three files, which
+/// (docs/ANDROID_PLAN.md, "How parity is kept", item 1). Five files, which
 /// `shared/catalog/README.md` describes:
 ///
 /// - `templates.json`: every built-in's definition, in the catalog's order and in the shape a
@@ -14,7 +14,11 @@ import Testing
 ///   defaults (on the binder, locked), and the keys earlier catalogs had (`replacedKeys`,
 ///   `retiredKeys`, `replacedFieldKeys`);
 /// - `keys.json`: the built-in field, deadline and category keys code names
-///   (`BuiltInFieldKeys.swift`, `SubscriptionFields`, `BuiltInTemplates.Key`).
+///   (`BuiltInFieldKeys.swift`, `SubscriptionFields`, `BuiltInTemplates.Key`);
+/// - `ownCategories.json`: what a category of one's own is made of besides the answers to its
+///   switches (`CategorySwitches`): the pockets it starts with, and each way of counting a service
+///   with its counter field and its service deadline;
+/// - `household.json`: the household's own deadlines (`HouseholdRules.blueprints`).
 ///
 /// Fresh or failing, as `CopyMatrixTests` keeps docs/COPY_MATRIX.md: the test writes the files
 /// again and fails when what is committed differs. A run that finds them out of date leaves
@@ -107,6 +111,8 @@ struct CatalogExportTests {
             "templates.json": try render(BuiltInTemplates.all.map(CatalogTemplate.init)),
             "catalog.json": try render(Catalog()),
             "keys.json": try render(Keys()),
+            "ownCategories.json": try render(OwnCategories()),
+            "household.json": try render(Household()),
         ]
     }
 
@@ -171,6 +177,37 @@ struct CatalogExportTests {
         var keys: [String: [String: String]] = Dictionary(
             CatalogExportTests.namedKeys.map { ($0.key.name, $0.value) }, uniquingKeysWith: { first, _ in first }
         )
+        var writtenBy = CatalogExportTests.writtenBy
+    }
+
+    /// What a category of one's own is made of besides the answers to its switches
+    /// (`CategorySwitches`): the pockets every new one starts with, the field section a counter
+    /// goes in, and for each way a service is counted, the interval it starts at, its counter field
+    /// (none for a service by time) and its service deadline at that interval. The interval the
+    /// person types is laid into the deadline by `CategorySwitches.serviceBlueprint`'s rule, which
+    /// Android ports; the words and the rest of the deadline come from here.
+    struct OwnCategories: Encodable {
+        struct Counter: Encodable {
+            var counter: String
+            var defaultEvery: Int
+            var field: FieldDefinition?
+            var service: ObligationBlueprint
+        }
+
+        var basePockets = CategorySwitches.basePockets.map(\.rawValue)
+        var counterSectionKey = CategorySwitches.counterSectionKey
+        /// In `CategorySwitches.Counter`'s order, the one a category's service is read in.
+        var counters = CategorySwitches.Counter.allCases.map { counter in
+            Counter(counter: counter.rawValue, defaultEvery: counter.defaultEvery, field: CategorySwitches.counterField(counter),
+                    service: CategorySwitches.serviceBlueprint(CategorySwitches.Service(counter)))
+        }
+        var writtenBy = CatalogExportTests.writtenBy
+    }
+
+    /// The household's own deadlines (`HouseholdRules.blueprints`): what a deadline with no
+    /// section is made from, as `HouseholdRules.reconcile` makes it.
+    struct Household: Encodable {
+        var blueprints = HouseholdRules.blueprints
         var writtenBy = CatalogExportTests.writtenBy
     }
 
