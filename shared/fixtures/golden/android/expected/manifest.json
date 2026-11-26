@@ -1,0 +1,39 @@
+{
+  "appVersion" : "1.0",
+  "checksums" : {
+    "data/assets.json" : "32cbe1f4bf6fd544bd37f1f0e34c0fd73cb396ef2a5a3333ab9c2ac1d65f0893",
+    "data/attachments.json" : "5a14c717d686b97cca11310389faa11c03d90dcc77cbdad5e40689de656cab77",
+    "data/history.json" : "3622f005ac10deda923b2ce1fa4c1618448bb84f801bcda16330a2b27915bdfe",
+    "data/issuer_lessons.json" : "16848c85f1d67f20b1a77757361a8618b5d03bc5f5948d9e66611b9772271ff4",
+    "data/measurements.json" : "c4e2619cd27d87049bc4fdc13dc73b08e486200876c6a8727302fbf1afc3c45f",
+    "data/obligations.json" : "c77c3783ed7808499a92e6d453cc7961c701b330a0052d82baed12ae443323db",
+    "data/providers.json" : "a8bdb69df129a1414af2af69988d49f96b6be908674df62eb215101c490b1521",
+    "data/service_items.json" : "481524bb65a27ca3fd5884a883a65f5d176ac64606392a5a91e661b5ac804dcd",
+    "data/templates.json" : "60ef45629bc775fea24853870ce738a778b04e6defcba8bb78e488af3708afe1",
+    "vault/1f2db755-5485-4342-8693-1084a0048f25.pdf" : "9d4534ff3da6ed3c86a44bccb2f6adf8fa5b1902fbd716bfd6116de7c43d8ceb",
+    "vault/6c780de6-6633-478a-b1ad-8e459aaa6b4c.pdf" : "8095699a4ee91ce1dee5204b43c9d845242ef860909deca223193379922c2ed0",
+    "vault/7d1e2f30-0000-4000-8000-00000000d001/page-1.jpg" : "ef3aa2acee38b7f20b24b9a715d8f542b3fe6ee975835dae0f319078daa71ccb",
+    "vault/7f5331cd-10b6-4066-ac2e-1971ea219dcb/page-1.heic" : "1ffd0acee8fe39f193eddf148c72a47155cf41d1753465e1a0a6225836067a37",
+    "vault/7f5331cd-10b6-4066-ac2e-1971ea219dcb/page-2.jpg" : "ef3aa2acee38b7f20b24b9a715d8f542b3fe6ee975835dae0f319078daa71ccb",
+    "vault/7f5331cd-10b6-4066-ac2e-1971ea219dcb/thumbnail.heic" : "40aa2db9dd34371473dc35cb6ceac678b58c9a715144ffaec71bbe55a3e44beb",
+    "vault/9b6965e3-833a-4ec2-8564-ab39c694566b/page-1.jpg" : "64740da1346376d1df1d51d687b14beb010f9bdbc9a2abbc51c4567d6424bf93",
+    "vault/e75da1f2-05d3-4005-b53c-0e9af2a52174/page-1.jpg" : "ef3aa2acee38b7f20b24b9a715d8f542b3fe6ee975835dae0f319078daa71ccb",
+    "vault/e75da1f2-05d3-4005-b53c-0e9af2a52174/thumbnail.jpg" : "64740da1346376d1df1d51d687b14beb010f9bdbc9a2abbc51c4567d6424bf93",
+    "vault/photos/038c6cef-a824-46a4-a416-0e864764e587.jpg" : "52d7572898ee3e0df732722863e81cf3d03b7fd485351621c19fd3582881dc51"
+  },
+  "counts" : {
+    "assets" : 11,
+    "attachments" : 6,
+    "historyEntries" : 2,
+    "issuerLessons" : 1,
+    "measurements" : 7,
+    "obligations" : 18,
+    "providers" : 3,
+    "serviceItems" : 3,
+    "templates" : 15
+  },
+  "exportedAt" : "2026-11-20T10:00:00Z",
+  "format" : "com.ar.dosarcusina.dossier",
+  "platform" : "Android",
+  "schemaVersion" : 3
+}

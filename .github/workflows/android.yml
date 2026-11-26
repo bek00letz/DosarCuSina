@@ -53,6 +53,16 @@ jobs:
       - name: Build the app and run the tests
         run: ./gradlew --stacktrace assembleDebug assembleRelease test
 
+      # Android's golden archives made afresh when the committed ones are out of date
+      # (GoldenAndroidArchivesTest): copy them over shared/fixtures/golden/android/.
+      - name: Keep the golden archives made afresh
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: android-golden-archives
+          path: android/archive/build/golden-archives/
+          if-no-files-found: ignore
+
       - name: Keep the reports
         if: failure()
         uses: actions/upload-artifact@v7

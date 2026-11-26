@@ -26,4 +26,14 @@ tasks.test {
         systemProperty("dosar.writeArchiveVectors", "1")
         outputs.upToDateWhen { false }
     }
+    // `-PwriteGoldenArchives` writes Android's golden archives in shared/fixtures/golden/android
+    // again (its README says when). A run that finds the committed ones out of date leaves them
+    // made afresh in build/golden-archives/, which the Android workflow keeps from a failed run.
+    if (providers.gradleProperty("writeGoldenArchives").isPresent) {
+        systemProperty("dosar.writeGoldenArchives", "1")
+        outputs.upToDateWhen { false }
+    }
+    val goldenOut = layout.buildDirectory.dir("golden-archives")
+    systemProperty("dosar.goldenArchivesOut", goldenOut.get().asFile.path)
+    doFirst { goldenOut.get().asFile.deleteRecursively() }
 }
