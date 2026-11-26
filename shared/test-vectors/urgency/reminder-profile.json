@@ -1,0 +1,424 @@
+{
+  "cases" : [
+    {
+      "hasTravelCutoff" : false,
+      "input" : {
+        "consequence" : "legal",
+        "followUpAfterLapse" : null,
+        "graceDays" : 0,
+        "leadDays" : [
+          30,
+          7,
+          0
+        ],
+        "travelMarginDays" : 0
+      },
+      "profile" : {
+        "consequence" : "legal",
+        "followUpAfterLapse" : true,
+        "graceDays" : 0,
+        "leadDays" : [
+          30,
+          7,
+          0
+        ],
+        "travelMarginDays" : 0
+      },
+      "urgencyRule" : {
+        "firstLeadDays" : 30,
+        "graceDays" : 0,
+        "maxWindowDays" : 30,
+        "travelMarginDays" : 0
+      }
+    },
+    {
+      "hasTravelCutoff" : false,
+      "input" : {
+        "consequence" : "financial",
+        "followUpAfterLapse" : null,
+        "graceDays" : 0,
+        "leadDays" : [
+          0,
+          7,
+          30,
+          7,
+          -7
+        ],
+        "travelMarginDays" : 0
+      },
+      "profile" : {
+        "consequence" : "financial",
+        "followUpAfterLapse" : true,
+        "graceDays" : 0,
+        "leadDays" : [
+          30,
+          7,
+          0
+        ],
+        "travelMarginDays" : 0
+      },
+      "urgencyRule" : {
+        "firstLeadDays" : 30,
+        "graceDays" : 0,
+        "maxWindowDays" : 21,
+        "travelMarginDays" : 0
+      }
+    },
+    {
+      "hasTravelCutoff" : false,
+      "input" : {
+        "consequence" : "comfort",
+        "followUpAfterLapse" : null,
+        "graceDays" : 3,
+        "leadDays" : [
+
+        ],
+        "travelMarginDays" : 0
+      },
+      "profile" : {
+        "consequence" : "comfort",
+        "followUpAfterLapse" : false,
+        "graceDays" : 3,
+        "leadDays" : [
+
+        ],
+        "travelMarginDays" : 0
+      },
+      "urgencyRule" : {
+        "firstLeadDays" : 0,
+        "graceDays" : 3,
+        "maxWindowDays" : 3,
+        "travelMarginDays" : 0
+      }
+    },
+    {
+      "hasTravelCutoff" : true,
+      "input" : {
+        "consequence" : "legal",
+        "followUpAfterLapse" : null,
+        "graceDays" : 0,
+        "leadDays" : [
+          90,
+          0
+        ],
+        "travelMarginDays" : 180
+      },
+      "profile" : {
+        "consequence" : "legal",
+        "followUpAfterLapse" : true,
+        "graceDays" : 0,
+        "leadDays" : [
+          90,
+          0
+        ],
+        "travelMarginDays" : 180
+      },
+      "urgencyRule" : {
+        "firstLeadDays" : 90,
+        "graceDays" : 0,
+        "maxWindowDays" : 30,
+        "travelMarginDays" : 180
+      }
+    },
+    {
+      "hasTravelCutoff" : true,
+      "input" : {
+        "consequence" : "health",
+        "followUpAfterLapse" : true,
+        "graceDays" : -5,
+        "leadDays" : [
+          40000,
+          -40000
+        ],
+        "travelMarginDays" : 99999
+      },
+      "profile" : {
+        "consequence" : "health",
+        "followUpAfterLapse" : true,
+        "graceDays" : 0,
+        "leadDays" : [
+          36500
+        ],
+        "travelMarginDays" : 36500
+      },
+      "urgencyRule" : {
+        "firstLeadDays" : 36500,
+        "graceDays" : 0,
+        "maxWindowDays" : 7,
+        "travelMarginDays" : 36500
+      }
+    },
+    {
+      "hasTravelCutoff" : false,
+      "input" : {
+        "consequence" : "newer",
+        "followUpAfterLapse" : false,
+        "graceDays" : 0,
+        "leadDays" : [
+          14,
+          1
+        ],
+        "travelMarginDays" : 0
+      },
+      "profile" : {
+        "consequence" : "legal",
+        "followUpAfterLapse" : false,
+        "graceDays" : 0,
+        "leadDays" : [
+          14,
+          1
+        ],
+        "travelMarginDays" : 0
+      },
+      "urgencyRule" : {
+        "firstLeadDays" : 14,
+        "graceDays" : 0,
+        "maxWindowDays" : 30,
+        "travelMarginDays" : 0
+      }
+    },
+    {
+      "hasTravelCutoff" : false,
+      "input" : {
+        "consequence" : "health",
+        "followUpAfterLapse" : null,
+        "graceDays" : 7,
+        "leadDays" : [
+          7,
+          1
+        ],
+        "travelMarginDays" : 0
+      },
+      "profile" : {
+        "consequence" : "health",
+        "followUpAfterLapse" : false,
+        "graceDays" : 7,
+        "leadDays" : [
+          7,
+          1
+        ],
+        "travelMarginDays" : 0
+      },
+      "urgencyRule" : {
+        "firstLeadDays" : 7,
+        "graceDays" : 7,
+        "maxWindowDays" : 7,
+        "travelMarginDays" : 0
+      }
+    },
+    {
+      "cycle" : "every 3 days",
+      "cycleStart" : "2026-11-23",
+      "due" : "2026-11-26",
+      "leadDays" : [
+        1,
+        0
+      ],
+      "stored" : {
+        "consequence" : "legal",
+        "followUpAfterLapse" : null,
+        "graceDays" : 0,
+        "leadDays" : [
+          7,
+          1,
+          0
+        ],
+        "travelMarginDays" : 0
+      }
+    },
+    {
+      "cycle" : "every 3 days, no lead fits",
+      "cycleStart" : "2026-11-23",
+      "due" : "2026-11-26",
+      "leadDays" : [
+        0
+      ],
+      "stored" : {
+        "consequence" : "legal",
+        "followUpAfterLapse" : null,
+        "graceDays" : 0,
+        "leadDays" : [
+          7,
+          3
+        ],
+        "travelMarginDays" : 0
+      }
+    },
+    {
+      "cycle" : "every month from a month's end",
+      "cycleStart" : "2026-02-28",
+      "due" : "2026-03-31",
+      "leadDays" : [
+        7,
+        0
+      ],
+      "stored" : {
+        "consequence" : "legal",
+        "followUpAfterLapse" : null,
+        "graceDays" : 0,
+        "leadDays" : [
+          30,
+          7,
+          0
+        ],
+        "travelMarginDays" : 0
+      }
+    },
+    {
+      "cycle" : "every month",
+      "cycleStart" : "2026-02-28",
+      "due" : "2026-03-30",
+      "leadDays" : [
+        7,
+        0
+      ],
+      "stored" : {
+        "consequence" : "legal",
+        "followUpAfterLapse" : null,
+        "graceDays" : 0,
+        "leadDays" : [
+          30,
+          7,
+          0
+        ],
+        "travelMarginDays" : 0
+      }
+    },
+    {
+      "cycle" : "every month, after February",
+      "cycleStart" : "2026-02-01",
+      "due" : "2026-03-01",
+      "leadDays" : [
+        7
+      ],
+      "stored" : {
+        "consequence" : "legal",
+        "followUpAfterLapse" : null,
+        "graceDays" : 0,
+        "leadDays" : [
+          60,
+          30,
+          7
+        ],
+        "travelMarginDays" : 0
+      }
+    },
+    {
+      "cycle" : "every year from a leap day",
+      "cycleStart" : "2027-02-28",
+      "due" : "2028-02-29",
+      "leadDays" : [
+        30
+      ],
+      "stored" : {
+        "consequence" : "legal",
+        "followUpAfterLapse" : null,
+        "graceDays" : 0,
+        "leadDays" : [
+          365,
+          30
+        ],
+        "travelMarginDays" : 0
+      }
+    },
+    {
+      "cycle" : "every two weeks",
+      "cycleStart" : "2026-11-30",
+      "due" : "2026-12-14",
+      "leadDays" : [
+        7,
+        0
+      ],
+      "stored" : {
+        "consequence" : "legal",
+        "followUpAfterLapse" : null,
+        "graceDays" : 0,
+        "leadDays" : [
+          14,
+          7,
+          0
+        ],
+        "travelMarginDays" : 0
+      }
+    },
+    {
+      "cycle" : "a passport every ten years",
+      "cycleStart" : "2017-08-31",
+      "due" : "2027-08-31",
+      "leadDays" : [
+        90,
+        0
+      ],
+      "stored" : {
+        "consequence" : "legal",
+        "followUpAfterLapse" : null,
+        "graceDays" : 0,
+        "leadDays" : [
+          90,
+          0
+        ],
+        "travelMarginDays" : 180
+      }
+    },
+    {
+      "cycle" : "a travel margin longer than the lead's room",
+      "cycleStart" : "2027-01-31",
+      "due" : "2027-08-31",
+      "leadDays" : [
+        0
+      ],
+      "stored" : {
+        "consequence" : "legal",
+        "followUpAfterLapse" : null,
+        "graceDays" : 0,
+        "leadDays" : [
+          90,
+          0
+        ],
+        "travelMarginDays" : 180
+      }
+    },
+    {
+      "cycle" : "doesn't repeat",
+      "cycleStart" : null,
+      "due" : "2026-11-26",
+      "leadDays" : [
+        30,
+        7
+      ],
+      "stored" : {
+        "consequence" : "legal",
+        "followUpAfterLapse" : null,
+        "graceDays" : 0,
+        "leadDays" : [
+          30,
+          7
+        ],
+        "travelMarginDays" : 0
+      }
+    },
+    {
+      "cycle" : "fixed dates",
+      "cycleStart" : "2026-09-30",
+      "due" : "2026-11-26",
+      "leadDays" : [
+        30,
+        7
+      ],
+      "stored" : {
+        "consequence" : "legal",
+        "followUpAfterLapse" : null,
+        "graceDays" : 0,
+        "leadDays" : [
+          30,
+          7
+        ],
+        "travelMarginDays" : 0
+      }
+    }
+  ],
+  "rule" : "ReminderProfile(leadDays:consequence:graceDays:followUpAfterLapse:travelMarginDays:), its urgencyRule and hasTravelCutoff; forCycle(startingOn:due:)",
+  "shape" : "input: a profile as given (the consequence's stored text; followUpAfterLapse null when it doesn't say); profile: what it is (leads by their size, each once, largest first, every length held to 0…36500, the follow-up by its consequence when it doesn't say); urgencyRule: its rule. cycle: a stored profile of a deadline due on due whose cycle began on cycleStart (RecurrenceEngine's, null when the rule has no set length), leadDays: the leads that cycle reminds with.",
+  "source" : "ios/DosarCuSina/Models/Obligations/ObligationTypes.swift, ios/DosarCuSina/Services/Obligations/CycleReminders.swift",
+  "writtenBy" : "ios/DosarCuSinaTests/UrgencyVectorsTests.swift"
+}
