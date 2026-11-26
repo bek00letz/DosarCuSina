@@ -237,7 +237,7 @@ class DocumentTypes(
      * is called ("Carte de identitate", "Cazier judiciar"), when its type is one this build knows
      * (`AssetActions.documentName`).
      */
-    fun documentName(typeText: String?, variantText: String?): String? {
+    fun nameFromFields(typeText: String?, variantText: String?): String? {
         val type = key(typeText) ?: return null
         val variant = variantText?.let { variants.option(it)?.key }
         return documentName(type, variant)

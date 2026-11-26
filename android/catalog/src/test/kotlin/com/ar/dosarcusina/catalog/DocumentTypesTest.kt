@@ -38,9 +38,9 @@ class DocumentTypesTest {
         val electronic = types.documentName("documentType.idCard", "documentVariant.idCard.electronic")
         assertEquals("Carte de identitate", electronic)
         assertEquals(types.unnamed, types.documentName("documentType.somethingNewer", null))
-        assertEquals("Cazier fiscal", types.documentName("Cazier", "Fiscal"), "Both stored as labels")
-        assertEquals("Pașaport", types.documentName("Pasaport", null))
-        assertNull(types.documentName(null, null))
+        assertEquals("Cazier fiscal", types.nameFromFields("Cazier", "Fiscal"), "Both stored as labels")
+        assertEquals("Pașaport", types.nameFromFields("Pasaport", null))
+        assertNull(types.nameFromFields(null, null))
     }
 
     @Test

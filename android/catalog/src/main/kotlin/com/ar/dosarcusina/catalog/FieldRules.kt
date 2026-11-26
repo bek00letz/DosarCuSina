@@ -44,30 +44,55 @@ object FieldRules {
         previous: FieldValues?,
         documentTypes: DocumentTypes,
     ): FieldValues {
+        val filled = if (previous == null) withDefaults(values, fields) else values
+        return withDerived(withoutWhatNoLongerBelongs(filled, fields), fields, previous, documentTypes)
+    }
+
+    /** [values] with each empty field's default (a new section only). */
+    private fun withDefaults(values: FieldValues, fields: List<FieldDefinition>): FieldValues {
         var result = values
-        if (previous == null) {
-            for (field in fields.filter { result[it.key] == null }) {
-                val default = field.defaultValue?.let(FieldValue::read) ?: continue
-                result = result.with(field.key, default)
-            }
+        for (field in fields.filter { values[it.key] == null }) {
+            val default = field.defaultValue?.let(FieldValue::read) ?: continue
+            result = result.with(field.key, default)
         }
+        return result
+    }
+
+    /**
+     * [values] without what no longer belongs: a field whose condition isn't met, a choice whose option
+     * isn't offered for the other values. Twice, so a value that depended on a dropped one goes too.
+     */
+    private fun withoutWhatNoLongerBelongs(values: FieldValues, fields: List<FieldDefinition>): FieldValues {
+        var result = values
         repeat(PASSES) {
             for (field in fields) {
-                val key = (result[field.key] as? FieldValue.Text)?.value
-                val option = key?.takeIf { field.type == FieldDefinition.CHOICE }?.let { field.options?.option(it) }
-                if (!field.applies(result) || (option != null && !isOffered(option, result))) {
-                    result = result.with(field.key, null)
-                }
+                if (!belongs(field, result)) result = result.with(field.key, null)
             }
         }
+        return result
+    }
+
+    private fun belongs(field: FieldDefinition, values: FieldValues): Boolean {
+        val key = (values[field.key] as? FieldValue.Text)?.value
+        val option = key?.takeIf { field.type == FieldDefinition.CHOICE }?.let { field.options?.option(it) }
+        return field.applies(values) && (option == null || isOffered(option, values))
+    }
+
+    /** [values] with each derived field worked out again when an input changed, or while it is empty. */
+    private fun withDerived(
+        values: FieldValues,
+        fields: List<FieldDefinition>,
+        previous: FieldValues?,
+        documentTypes: DocumentTypes,
+    ): FieldValues {
+        var result = values
         for (field in fields) {
             val derivation = derivation(field) ?: continue
             val inputsChanged = previous?.let { old -> derivation.inputs(documentTypes).any { old[it] != result[it] } }
                 ?: true
             val givenNow = previous?.let { it[field.key] != result[field.key] } ?: (result[field.key] != null)
-            if (result[field.key] == null || (inputsChanged && !givenNow)) {
-                derivation.value(result, documentTypes)?.let { result = result.with(field.key, it) }
-            }
+            val worksOut = result[field.key] == null || (inputsChanged && !givenNow)
+            derivation.value(result, documentTypes)?.takeIf { worksOut }?.let { result = result.with(field.key, it) }
         }
         return result
     }

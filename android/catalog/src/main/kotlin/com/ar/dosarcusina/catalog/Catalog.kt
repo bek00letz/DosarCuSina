@@ -119,20 +119,23 @@ class Catalog private constructor(
             catalogCheck(own.string("counterSectionKey") == CategorySwitches.COUNTER_SECTION_KEY) {
                 "ownCategories.json puts the counter in another section"
             }
-            val recovered = own["recovered"]?.obj("recovered") ?: throw CatalogError("recovered is missing")
-            val sectionID = recovered.string("sectionID")
             return OwnCategories(
                 basePockets = own.list("basePockets").map { it.text("basePockets") },
                 fields = fields,
                 services = services,
-                recovered = RecoveredCategory(
-                    key = recovered.string("key"),
-                    name = recovered.string("name"),
-                    symbol = recovered.string("symbol"),
-                    pockets = recovered.list("pockets").map { it.text("recovered.pockets") },
-                    sectionID = runCatching { UUID.fromString(sectionID) }.getOrNull()
-                        ?: throw CatalogError("recovered.sectionID isn't an id"),
-                ),
+                recovered = recovered(own["recovered"]?.obj("recovered") ?: throw CatalogError("recovered is missing")),
+            )
+        }
+
+        private fun recovered(recovered: JsonObject): RecoveredCategory {
+            val sectionID = recovered.string("sectionID")
+            return RecoveredCategory(
+                key = recovered.string("key"),
+                name = recovered.string("name"),
+                symbol = recovered.string("symbol"),
+                pockets = recovered.list("pockets").map { it.text("recovered.pockets") },
+                sectionID = runCatching { UUID.fromString(sectionID) }.getOrNull()
+                    ?: throw CatalogError("recovered.sectionID isn't an id"),
             )
         }
 

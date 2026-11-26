@@ -303,7 +303,7 @@ class AssetActions(
      * What a personal document with [values] is called by its type and variant ("Carte de
      * identitate", "Cazier judiciar"), when it has a type this build knows.
      */
-    fun documentName(values: FieldValues): String? = documentTypes.documentName(
+    fun documentName(values: FieldValues): String? = documentTypes.nameFromFields(
         values[documentTypes.typeField]?.textValue, values[documentTypes.variantField]?.textValue,
     )
 
