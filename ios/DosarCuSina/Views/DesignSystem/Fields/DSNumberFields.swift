@@ -180,7 +180,7 @@ struct DSMetricField: View {
     private var validation: DSValidation {
         let (validation, parsed) = DSNumberText.validation(text, as: kind, unit: unit, isRequired: isRequired)
         guard let parsed else { return validation }
-        return validator?(NSDecimalNumber(decimal: parsed).doubleValue) ?? .valid
+        return validator?(RomanianNumber.double(parsed)) ?? .valid
     }
 
     private var prompt: Text {
@@ -221,7 +221,7 @@ struct DSMetricField: View {
             // Only what the person types becomes the value. Showing a stored value
             // changes the text too, and reading that back could turn 45.724 km into 457.
             guard isFocused else { return }
-            value = RomanianNumber.value(newText, as: kind, unit: unit).map { NSDecimalNumber(decimal: $0).doubleValue }
+            value = RomanianNumber.value(newText, as: kind, unit: unit).map(RomanianNumber.double)
         }
         .onChange(of: isFocused) { _, focused in
             if !focused {

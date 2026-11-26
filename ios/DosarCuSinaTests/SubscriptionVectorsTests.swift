@@ -600,6 +600,12 @@ struct SubscriptionVectorsTests {
                     subscriptions: [Subscription(number: 11, parent: 1, provider: engie, service: ServiceKind.electricity)], homes: [Home(number: 1, address: nil)]),
             Placing(name: "A service typed as text", service: "Gaze naturale", subscriptions: [Subscription(number: 11, parent: 1, provider: "Engie", service: "gaz")],
                     homes: [Home(number: 1, address: nil)]),
+            Placing(name: "Typed text and the key name the same service", service: "Gaze naturale", codes: [.clc: "DEG0000000000001"],
+                    subscriptions: [gas(11, under: 1, [clc: "DEG0000000000001"])], homes: [Home(number: 1, address: nil)]),
+            Placing(name: "Typed text naming another service is never the one", service: "Energie electrică",
+                    subscriptions: [gas(11, under: 1)], homes: [Home(number: 1, address: nil)]),
+            Placing(name: "Typed text no service has tells nothing apart", service: "Ceva necunoscut",
+                    subscriptions: [gas(11, under: 1)], homes: [Home(number: 1, address: nil)]),
             Placing(name: "Inside the home the person chose, a new one there", codes: [.clc: "DEG0000000000009"],
                     subscriptions: [gas(11, under: 1, [clc: "DEG0000000000009"])], homes: twoStreetHomes, within: 5),
             Placing(name: "A code that is only spaces is no code", codes: [.clc: " - "], subscriptions: [gas(11, under: 1, [clc: "DEG0000000000001"])],
@@ -750,13 +756,14 @@ struct SubscriptionVectorsTests {
     // MARK: The meter
 
     static func meter() -> Vectors {
-        // Indexes whose decimals Foundation's `NSDecimalNumber.doubleValue` turns into the nearest double: it
-        // misses by a hair for some others (98765.4321 becomes 98765.43209999999), which a reader that rounds
-        // correctly doesn't match.
+        // An index becomes the Double nearest it (`RomanianNumber.double`), as Kotlin's `BigDecimal.toDouble()`
+        // gives it: 98765.4321 is stored as 98765.4321, where Foundation's `NSDecimalNumber.doubleValue`, the
+        // conversion of earlier versions, gave 98765.43209999999.
         let readings: [(index: String?, basis: String?, service: String?)] = [
             ("12345", nil, ServiceKind.gas), ("1234.567", "estimated", ServiceKind.electricity), ("0", "read", ServiceKind.water),
             ("-5", nil, ServiceKind.gas), (nil, nil, ServiceKind.gas), ("100", nil, ServiceKind.heating), ("100", nil, ServiceKind.mobile),
             ("100", nil, nil), ("100", "bogus", "Gaze naturale"), ("98765.5", "read", "Curent"), ("0.125", nil, ServiceKind.water),
+            ("98765.4321", "read", ServiceKind.gas), ("4321.0987", nil, ServiceKind.water), ("1.001", "estimated", ServiceKind.electricity),
         ]
         let days = ["2026-10-05", "2026-03-29", "2026-10-25"]
         var cases: [JSONValue] = []

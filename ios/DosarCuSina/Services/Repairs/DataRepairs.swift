@@ -54,6 +54,7 @@ struct DataRepairs {
         PersonalLessonLabelsStep(),
         LabourPartsStep(),
         LostRecordsStep(),
+        DecimalDoublesStep(),
     ]
 
     static func step(_ id: DataRepairStepID) -> any DataRepairStep {
@@ -135,6 +136,7 @@ enum DataRepairStepID: String, CaseIterable, Sendable, Hashable {
     case personalLessonLabels = "personal-lesson-labels"
     case labourParts = "labour-parts"
     case lostRecords = "lost-records"
+    case decimalDoubles = "decimal-doubles"
 }
 
 /// One thing a repair would change, in plain words, with what applying it needs.
