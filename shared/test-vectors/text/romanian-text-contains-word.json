@@ -1,0 +1,184 @@
+{
+  "built" : "A token in a case's text is a number that passes its check, built when the test runs so the repository never holds one. {luhn:DIGITS}: DIGITS as written with the Luhn check digit after them. {iban:CC:BBAN}: CC, the two ISO 13616 check digits (98 minus BBAN + CC + \"00\" mod 97, letters as A=10 … Z=35), then BBAN. {iban4:CC:BBAN}: the same, in groups of four with a space between. {fours:DIGITS}: DIGITS in groups of four with a space between. Answers name the same tokens.",
+  "cases" : [
+    {
+      "found" : false,
+      "match" : "word",
+      "natural" : "stem",
+      "phrase" : "index",
+      "text" : "Indexare anuală"
+    },
+    {
+      "found" : true,
+      "match" : null,
+      "natural" : "stem",
+      "phrase" : "index",
+      "text" : "Index nou: 12.345"
+    },
+    {
+      "found" : false,
+      "match" : null,
+      "natural" : "word",
+      "phrase" : "rca",
+      "text" : "Marca mașinii"
+    },
+    {
+      "found" : true,
+      "match" : null,
+      "natural" : "word",
+      "phrase" : "RCA",
+      "text" : "Poliță rca valabilă"
+    },
+    {
+      "found" : true,
+      "match" : "stem",
+      "natural" : "stem",
+      "phrase" : "garanti",
+      "text" : "Garanția expiră"
+    },
+    {
+      "found" : false,
+      "match" : "word",
+      "natural" : "stem",
+      "phrase" : "garanti",
+      "text" : "Garanția expiră"
+    },
+    {
+      "found" : true,
+      "match" : null,
+      "natural" : "stem",
+      "phrase" : "scadent",
+      "text" : "Data scadentă"
+    },
+    {
+      "found" : false,
+      "match" : null,
+      "natural" : "stem",
+      "phrase" : "achitat",
+      "text" : "Neachitat"
+    },
+    {
+      "found" : true,
+      "match" : null,
+      "natural" : "stem",
+      "phrase" : "achitat",
+      "text" : "Achitată integral"
+    },
+    {
+      "found" : true,
+      "match" : null,
+      "natural" : "word",
+      "phrase" : "kwh",
+      "text" : "Consum 120kwh"
+    },
+    {
+      "found" : true,
+      "match" : null,
+      "natural" : "word",
+      "phrase" : "kWh",
+      "text" : "120 kWh"
+    },
+    {
+      "found" : true,
+      "match" : null,
+      "natural" : "stem",
+      "phrase" : "data scadenței",
+      "text" : "DATA SCADENȚEI: 12.03.2027"
+    },
+    {
+      "found" : true,
+      "match" : null,
+      "natural" : "stem",
+      "phrase" : "factura nr",
+      "text" : "Factura, nr. 12"
+    },
+    {
+      "found" : true,
+      "match" : null,
+      "natural" : "stem",
+      "phrase" : "factura nr",
+      "text" : "Factura-nr12"
+    },
+    {
+      "found" : false,
+      "match" : null,
+      "natural" : "stem",
+      "phrase" : "factura nr",
+      "text" : "Facturanr 12"
+    },
+    {
+      "found" : true,
+      "match" : null,
+      "natural" : "stem",
+      "phrase" : "plătit",
+      "text" : "Platit cu cardul"
+    },
+    {
+      "found" : true,
+      "match" : null,
+      "natural" : "stem",
+      "phrase" : "ședința",
+      "text" : "Ședinţa de vineri"
+    },
+    {
+      "found" : false,
+      "match" : null,
+      "natural" : "word",
+      "phrase" : "",
+      "text" : "orice"
+    },
+    {
+      "found" : false,
+      "match" : null,
+      "natural" : "word",
+      "phrase" : "---",
+      "text" : "--- "
+    },
+    {
+      "found" : true,
+      "match" : null,
+      "natural" : "word",
+      "phrase" : "cod",
+      "text" : "Cod2026"
+    },
+    {
+      "found" : true,
+      "match" : null,
+      "natural" : "word",
+      "phrase" : "2026",
+      "text" : "Nr.12/2026"
+    },
+    {
+      "found" : true,
+      "match" : null,
+      "natural" : "stem",
+      "phrase" : "total de plată",
+      "text" : "Total  de   plată: 120 lei"
+    },
+    {
+      "found" : false,
+      "match" : null,
+      "natural" : "stem",
+      "phrase" : "total de plată",
+      "text" : "Totalul de plată"
+    },
+    {
+      "found" : true,
+      "match" : null,
+      "natural" : "word",
+      "phrase" : "vin",
+      "text" : "VIN: WVWZZZ1KZAW000000"
+    },
+    {
+      "found" : false,
+      "match" : null,
+      "natural" : "word",
+      "phrase" : "vin",
+      "text" : "Vinieta"
+    }
+  ],
+  "rule" : "RomanianText.containsWord(_:in:as:) and WordMatch.natural(for:): a keyword in text, as whole words or with an ending on its last",
+  "shape" : "phrase, text: a keyword and the text it is looked for in. match: word or stem as asked, or null for the natural rule. natural: what the natural rule gives for the folded phrase. found: whether the phrase is in the text.",
+  "source" : "ios/Shared/RomanianText.swift",
+  "writtenBy" : "ios/DosarCuSinaTests/TextVectorsTests.swift"
+}

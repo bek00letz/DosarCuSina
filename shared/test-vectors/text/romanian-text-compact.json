@@ -1,0 +1,149 @@
+{
+  "built" : "A token in a case's text is a number that passes its check, built when the test runs so the repository never holds one. {luhn:DIGITS}: DIGITS as written with the Luhn check digit after them. {iban:CC:BBAN}: CC, the two ISO 13616 check digits (98 minus BBAN + CC + \"00\" mod 97, letters as A=10 … Z=35), then BBAN. {iban4:CC:BBAN}: the same, in groups of four with a space between. {fours:DIGITS}: DIGITS in groups of four with a space between. Answers name the same tokens.",
+  "cases" : [
+    {
+      "compact" : "B123ABC",
+      "input" : "B-123-ABC"
+    },
+    {
+      "compact" : "B123ABC",
+      "input" : "b 123 abc"
+    },
+    {
+      "compact" : "SERVICEEXEMPLUSRL",
+      "input" : "Service Exemplu S.R.L."
+    },
+    {
+      "compact" : "SERVICEEXEMPLUSRL",
+      "input" : "SERVICE EXEMPLU SRL"
+    },
+    {
+      "compact" : "RO49AAAA1B31007593840000",
+      "input" : "RO49 AAAA 1B31 0075 9384 0000"
+    },
+    {
+      "compact" : "STAIASTST",
+      "input" : "Șțăîâ ŞŢ şţ"
+    },
+    {
+      "compact" : "STRASSE",
+      "input" : "Straße"
+    },
+    {
+      "compact" : "FINAL",
+      "input" : "ﬁnal"
+    },
+    {
+      "compact" : "١٢٣",
+      "input" : "١٢٣"
+    },
+    {
+      "compact" : "½X²",
+      "input" : "½ x²"
+    },
+    {
+      "compact" : "E",
+      "input" : "é"
+    },
+    {
+      "compact" : "ISTANBUL",
+      "input" : "İstanbul"
+    },
+    {
+      "compact" : "Ǆ",
+      "input" : "ǅ"
+    },
+    {
+      "compact" : "Ⅻ",
+      "input" : "Ⅻ"
+    },
+    {
+      "compact" : "B12",
+      "input" : "Ｂ-１２"
+    },
+    {
+      "compact" : "PLATITAINSEDINTADEVINERITANTARIISTIU",
+      "input" : "Plătită, în ședința de vineri: țânțarii știu."
+    },
+    {
+      "compact" : "120KWH",
+      "input" : "120kwh"
+    },
+    {
+      "compact" : "",
+      "input" : ""
+    },
+    {
+      "compact" : "",
+      "input" : "--- ,,, ..."
+    },
+    {
+      "compact" : "NR122026",
+      "input" : "Nr.12/2026"
+    },
+    {
+      "compact" : "Μ",
+      "input" : "µ"
+    },
+    {
+      "compact" : "ΣΙΣΥΦΟΣΣ",
+      "input" : "Σίσυφος ς"
+    },
+    {
+      "compact" : "S",
+      "input" : "ſ"
+    },
+    {
+      "compact" : "ʼN",
+      "input" : "ŉ"
+    },
+    {
+      "compact" : "J",
+      "input" : "ǰ"
+    },
+    {
+      "compact" : "I",
+      "input" : "ı"
+    },
+    {
+      "compact" : "SS",
+      "input" : "ẞ"
+    },
+    {
+      "compact" : "FFSTFFI",
+      "input" : "ﬀ ﬆ ﬃ"
+    },
+    {
+      "compact" : "ᎠᎠ",
+      "input" : "Ꭰꭰ"
+    },
+    {
+      "compact" : "Ǉ",
+      "input" : "ǈ"
+    },
+    {
+      "compact" : "ΒΘΦΠΚΡΕ",
+      "input" : "ϐϑϕϖϰϱϵ"
+    },
+    {
+      "compact" : "ՄՆ",
+      "input" : "ﬓ"
+    },
+    {
+      "compact" : "S",
+      "input" : "ẛ"
+    },
+    {
+      "compact" : "Α",
+      "input" : "ᾀ"
+    },
+    {
+      "compact" : "ԵՒ",
+      "input" : "և"
+    }
+  ],
+  "rule" : "RomanianText.compact(_:): a value as compared and checked, the one way codes, numbers, plates and names are compared",
+  "shape" : "input: text. compact: folded, in capitals, letters and digits only.",
+  "source" : "ios/Shared/RomanianText.swift",
+  "writtenBy" : "ios/DosarCuSinaTests/TextVectorsTests.swift"
+}

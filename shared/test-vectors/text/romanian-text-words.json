@@ -1,0 +1,249 @@
+{
+  "built" : "A token in a case's text is a number that passes its check, built when the test runs so the repository never holds one. {luhn:DIGITS}: DIGITS as written with the Luhn check digit after them. {iban:CC:BBAN}: CC, the two ISO 13616 check digits (98 minus BBAN + CC + \"00\" mod 97, letters as A=10 … Z=35), then BBAN. {iban4:CC:BBAN}: the same, in groups of four with a space between. {fours:DIGITS}: DIGITS in groups of four with a space between. Answers name the same tokens.",
+  "cases" : [
+    {
+      "input" : "B-123-ABC",
+      "words" : [
+        "b",
+        "123",
+        "abc"
+      ]
+    },
+    {
+      "input" : "b 123 abc",
+      "words" : [
+        "b",
+        "123",
+        "abc"
+      ]
+    },
+    {
+      "input" : "Service Exemplu S.R.L.",
+      "words" : [
+        "service",
+        "exemplu",
+        "s",
+        "r",
+        "l"
+      ]
+    },
+    {
+      "input" : "SERVICE EXEMPLU SRL",
+      "words" : [
+        "service",
+        "exemplu",
+        "srl"
+      ]
+    },
+    {
+      "input" : "RO49 AAAA 1B31 0075 9384 0000",
+      "words" : [
+        "ro49",
+        "aaaa",
+        "1b31",
+        "0075",
+        "9384",
+        "0000"
+      ]
+    },
+    {
+      "input" : "Șțăîâ ŞŢ şţ",
+      "words" : [
+        "staia",
+        "st",
+        "st"
+      ]
+    },
+    {
+      "input" : "Straße",
+      "words" : [
+        "strasse"
+      ]
+    },
+    {
+      "input" : "ﬁnal",
+      "words" : [
+        "final"
+      ]
+    },
+    {
+      "input" : "١٢٣",
+      "words" : [
+        "١٢٣"
+      ]
+    },
+    {
+      "input" : "½ x²",
+      "words" : [
+        "½",
+        "x²"
+      ]
+    },
+    {
+      "input" : "é",
+      "words" : [
+        "e"
+      ]
+    },
+    {
+      "input" : "İstanbul",
+      "words" : [
+        "istanbul"
+      ]
+    },
+    {
+      "input" : "ǅ",
+      "words" : [
+        "ǆ"
+      ]
+    },
+    {
+      "input" : "Ⅻ",
+      "words" : [
+        "ⅻ"
+      ]
+    },
+    {
+      "input" : "Ｂ-１２",
+      "words" : [
+        "b",
+        "12"
+      ]
+    },
+    {
+      "input" : "Plătită, în ședința de vineri: țânțarii știu.",
+      "words" : [
+        "platita",
+        "in",
+        "sedinta",
+        "de",
+        "vineri",
+        "tantarii",
+        "stiu"
+      ]
+    },
+    {
+      "input" : "120kwh",
+      "words" : [
+        "120kwh"
+      ]
+    },
+    {
+      "input" : "",
+      "words" : [
+
+      ]
+    },
+    {
+      "input" : "--- ,,, ...",
+      "words" : [
+
+      ]
+    },
+    {
+      "input" : "Nr.12/2026",
+      "words" : [
+        "nr",
+        "12",
+        "2026"
+      ]
+    },
+    {
+      "input" : "µ",
+      "words" : [
+        "μ"
+      ]
+    },
+    {
+      "input" : "Σίσυφος ς",
+      "words" : [
+        "σισυφοσ",
+        "σ"
+      ]
+    },
+    {
+      "input" : "ſ",
+      "words" : [
+        "s"
+      ]
+    },
+    {
+      "input" : "ŉ",
+      "words" : [
+        "ʼn"
+      ]
+    },
+    {
+      "input" : "ǰ",
+      "words" : [
+        "j"
+      ]
+    },
+    {
+      "input" : "ı",
+      "words" : [
+        "ı"
+      ]
+    },
+    {
+      "input" : "ẞ",
+      "words" : [
+        "ss"
+      ]
+    },
+    {
+      "input" : "ﬀ ﬆ ﬃ",
+      "words" : [
+        "ff",
+        "st",
+        "ffi"
+      ]
+    },
+    {
+      "input" : "Ꭰꭰ",
+      "words" : [
+        "ꭰꭰ"
+      ]
+    },
+    {
+      "input" : "ǈ",
+      "words" : [
+        "ǉ"
+      ]
+    },
+    {
+      "input" : "ϐϑϕϖϰϱϵ",
+      "words" : [
+        "βθφπκρε"
+      ]
+    },
+    {
+      "input" : "ﬓ",
+      "words" : [
+        "մն"
+      ]
+    },
+    {
+      "input" : "ẛ",
+      "words" : [
+        "s"
+      ]
+    },
+    {
+      "input" : "ᾀ",
+      "words" : [
+        "α"
+      ]
+    },
+    {
+      "input" : "և",
+      "words" : [
+        "եւ"
+      ]
+    }
+  ],
+  "rule" : "RomanianText.words(_:): the folded words of a text",
+  "shape" : "input: text. words: its folded runs of letters and digits, in order, everything else dropped.",
+  "source" : "ios/Shared/RomanianText.swift",
+  "writtenBy" : "ios/DosarCuSinaTests/TextVectorsTests.swift"
+}
