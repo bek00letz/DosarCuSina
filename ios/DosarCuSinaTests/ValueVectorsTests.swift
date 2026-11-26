@@ -989,7 +989,7 @@ struct ValueVectorsTests {
             name: "romanian-number-correction",
             rule: "RomanianNumber.correction(of:as:), the rule DecimalDoublesStep puts a number kept a step off back by",
             source: "ios/DosarCuSina/Models/Values/RomanianNumber.swift",
-            shape: "stored: a Double as stored, as Swift writes it (its shortest text). For each kind (money, count, meterIndex, kilometres, with 2, 0, 3 and 0 decimals): the Double it is put back on, as Swift writes it, or null when it stands.",
+            shape: "stored: a Double as stored, as Swift writes it (its shortest text). For each kind (money, count, meterIndex, kilometres, with 2, 0, 6 and 0 decimals): the Double it is put back on, as Swift writes it, or null when it stands.",
             cases: cases
         )
     }

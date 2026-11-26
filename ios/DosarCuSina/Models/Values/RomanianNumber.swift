@@ -14,13 +14,15 @@ public enum NumberKind: Sendable, Hashable, CaseIterable {
     /// Kilometres and counts have no decimals, so "45,724 km" can only be 45724.
     public var isWhole: Bool { self == .count || self == .kilometres }
 
-    /// The most decimals the app writes a number of this kind with: two for money, three for a
-    /// meter index or another measured value („1.234,567 m³”), none for kilometres and counts.
-    /// What `RomanianNumber.correction(of:as:)` takes a stored number's short decimal to have.
+    /// The most decimals a stored number of this kind is taken to have, by
+    /// `RomanianNumber.correction(of:as:)`: two for money, none for kilometres and counts, and
+    /// six for a meter index or another measured value, which the reader takes with any
+    /// decimals: six is as far as the correction reaches safely for the values a meter shows
+    /// (up to 2³⁰, about 1.07 × 10⁹).
     public var decimals: Int {
         switch self {
         case .money: 2
-        case .meterIndex: 3
+        case .meterIndex: 6
         case .count, .kilometres: 0
         }
     }
@@ -153,11 +155,11 @@ public enum RomanianNumber {
         Double(value.description) ?? .nan
     }
 
-    /// The Double an earlier version meant to store, when `stored` is a step or two off it, or
-    /// nil when `stored` stands. Earlier versions turned a number into a Double through
+    /// The Double an earlier version meant to store, when `stored` is a few steps off it, or nil
+    /// when `stored` stands. Earlier versions turned a number into a Double through
     /// `NSDecimalNumber.doubleValue`, which misses the nearest Double for about a third of the
-    /// numbers with two or three decimals, by one step (one ULP) or, rarely, two: a meter index
-    /// printed 1234,567 or 98765,4321 was kept beside its Double (98765.43209999999). The one
+    /// numbers with two decimals or more, by one step (one ULP), two, or for four to six
+    /// decimals three: a meter index printed 98765,4321 was kept as 98765.43209999999. The one
     /// rule, the same in both apps (`DecimalDoublesStep`):
     ///
     /// - a number of `kind` is short when it has at most `kind.decimals` decimals; a Double is a
@@ -165,8 +167,8 @@ public enum RomanianNumber {
     /// - `stored` is corrected when it isn't a short number's, and a Double at most
     ///   `missedSteps` steps above or below it is: it becomes the nearest such one;
     /// - only while the steps around `stored` are small enough that one short number at most
-    ///   lies within reach (`ulp` × 2 × `missedSteps` below 10⁻ᵈ); a number past that (above
-    ///   about 10¹² for three decimals) stands, as does zero, an infinity or what isn't a number;
+    ///   lies within reach (`ulp` × 2 × `missedSteps` below 10⁻ᵈ); a number past that (from
+    ///   2³⁰, about 1.07 × 10⁹, for a meter index's six decimals; far higher for money) stands, as does zero, an infinity or what isn't a number;
     ///   and zero is never what a number becomes: the old conversion wrote it exactly.
     public static func correction(of stored: Double, as kind: NumberKind) -> Double? {
         let decimals = kind.decimals
@@ -183,8 +185,9 @@ public enum RomanianNumber {
     }
 
     /// How many steps (ULPs) `NSDecimalNumber.doubleValue` missed the nearest Double by, at most,
-    /// for a number with up to three decimals: measured over millions of them, from 0 to 10¹².
-    static let missedSteps = 2
+    /// for a number with up to six decimals: measured over millions of them, from 0 to 10¹²
+    /// (one for two decimals, two for three, three for four to six).
+    static let missedSteps = 3
 
     /// Whether the steps of `value` (its `ulp`) are small enough for `missedSteps` of them each
     /// way to reach one short number at most: compared exactly with the Double nearest 10⁻ᵈ, as

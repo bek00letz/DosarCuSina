@@ -68,14 +68,19 @@ object DecimalDoublesStep : DataRepairStep {
     /** [asset] with its numbers put back by their fields, or null when they stand. */
     private fun corrected(asset: Asset, fields: List<FieldDefinition>): Asset? {
         val kept = asset.keptValues
-        var values = kept.value
-        for ((key, stored) in kept.value.storage) {
-            val number = (stored as? FieldValue.Number)?.value ?: continue
-            val field = fields.firstOrNull { it.key == key } ?: continue
-            val value = RomanianNumber.correction(number, numberKind(field)) ?: continue
-            values = values.with(key, FieldValue.Number(value))
+        val corrections = kept.value.storage.mapNotNull { (key, stored) ->
+            corrected(key, stored, fields)?.let { key to it }
         }
-        return if (values == kept.value) null else asset.withKeptValues(kept.replacingValue(values))
+        if (corrections.isEmpty()) return null
+        val values = corrections.fold(kept.value) { values, (key, value) -> values.with(key, FieldValue.Number(value)) }
+        return asset.withKeptValues(kept.replacingValue(values))
+    }
+
+    /** The number [stored] under [key] is put back on, by its field among [fields]; null when it stands. */
+    private fun corrected(key: String, stored: FieldValue, fields: List<FieldDefinition>): Double? {
+        val number = (stored as? FieldValue.Number)?.value
+        val field = fields.firstOrNull { it.key == key }
+        return if (number == null || field == null) null else RomanianNumber.correction(number, numberKind(field))
     }
 
     private const val YEAR = "year"

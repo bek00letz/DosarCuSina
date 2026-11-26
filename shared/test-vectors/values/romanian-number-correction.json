@@ -479,7 +479,7 @@
     {
       "count" : null,
       "kilometres" : null,
-      "meterIndex" : null,
+      "meterIndex" : "98765.4321",
       "money" : null,
       "stored" : "98765.43209999999"
     },
@@ -598,13 +598,13 @@
     {
       "count" : null,
       "kilometres" : null,
-      "meterIndex" : null,
+      "meterIndex" : "0.0005",
       "money" : null,
       "stored" : "0.0005000000000000001"
     }
   ],
   "rule" : "RomanianNumber.correction(of:as:), the rule DecimalDoublesStep puts a number kept a step off back by",
-  "shape" : "stored: a Double as stored, as Swift writes it (its shortest text). For each kind (money, count, meterIndex, kilometres, with 2, 0, 3 and 0 decimals): the Double it is put back on, as Swift writes it, or null when it stands.",
+  "shape" : "stored: a Double as stored, as Swift writes it (its shortest text). For each kind (money, count, meterIndex, kilometres, with 2, 0, 6 and 0 decimals): the Double it is put back on, as Swift writes it, or null when it stands.",
   "source" : "ios/DosarCuSina/Models/Values/RomanianNumber.swift",
   "writtenBy" : "ios/DosarCuSinaTests/ValueVectorsTests.swift"
 }

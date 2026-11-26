@@ -206,8 +206,8 @@ struct RomanianNumberTests {
         }
     }
 
-    /// The repair's rule: a Double a step or two off a short number's (up to the kind's decimals)
-    /// is put back on it; every other Double stands.
+    /// The repair's rule: a Double up to three steps off a short number's (up to the kind's
+    /// decimals) is put back on it; every other Double stands.
     @Test func aNumberKeptAStepOffIsPutBack() {
         for (text, old, right) in Self.missedBefore {
             #expect(RomanianNumber.correction(of: old, as: .meterIndex) == right, "\(text) kept as \(old)")
@@ -218,18 +218,23 @@ struct RomanianNumberTests {
         #expect(RomanianNumber.correction(of: 1250.55.nextUp, as: .money) == 1250.55)
         #expect(RomanianNumber.correction(of: 1250.555.nextUp, as: .money) == nil)
         #expect(RomanianNumber.correction(of: 1250.555.nextUp, as: .meterIndex) == 1250.555)
-        // Four decimals are no meter index's short number: 98765.4321 kept a step off stands.
-        #expect(RomanianNumber.correction(of: 98765.43209999999, as: .meterIndex) == nil)
+        // A meter index keeps up to six decimals: 98765.4321 kept a step off is put back.
+        #expect(RomanianNumber.correction(of: 98765.43209999999, as: .meterIndex) == 98765.4321)
+        #expect(RomanianNumber.correction(of: 98765.4321, as: .meterIndex) == nil)
+        #expect(RomanianNumber.correction(of: 1.234_567_8.nextUp, as: .meterIndex) == nil, "Seven decimals are no short number")
         // Whole kinds: only a whole number's neighbour is put back.
         #expect(RomanianNumber.correction(of: 45_724.0.nextUp, as: .kilometres) == 45_724)
         #expect(RomanianNumber.correction(of: 45_724.0.nextDown, as: .count) == 45_724)
         #expect(RomanianNumber.correction(of: 45_724.5, as: .kilometres) == nil)
-        // Two steps off is the old conversion's rarer miss; three is none of its.
+        // Up to three steps off, the old conversion's largest miss; four is none of its.
         #expect(RomanianNumber.correction(of: 1250.55.nextUp.nextUp, as: .money) == 1250.55)
         #expect(RomanianNumber.correction(of: 1250.55.nextDown.nextDown, as: .money) == 1250.55)
-        #expect(RomanianNumber.correction(of: 1250.55.nextUp.nextUp.nextUp, as: .money) == nil)
+        #expect(RomanianNumber.correction(of: 1250.55.nextUp.nextUp.nextUp, as: .money) == 1250.55)
+        #expect(RomanianNumber.correction(of: 1250.55.nextUp.nextUp.nextUp.nextUp, as: .money) == nil)
         // Where a step is too large for the decimals to be told apart, nothing changes.
         #expect(RomanianNumber.correction(of: 4_000_000_000_000.125.nextUp, as: .meterIndex) == nil)
+        #expect(RomanianNumber.correction(of: 2_147_483_648.5.nextUp, as: .meterIndex) == nil, "From 2³⁰, six decimals are out of reach")
+        #expect(RomanianNumber.correction(of: 2_147_483_648.5.nextUp, as: .money) == 2_147_483_648.5, "Money's two still are")
         #expect(RomanianNumber.correction(of: 9_007_199_254_740_992, as: .kilometres) == nil)
         for stands in [0, -0.0, .infinity, -.infinity, .nan, 5e-324, 45_724, 0.125] as [Double] {
             #expect(RomanianNumber.correction(of: stands, as: .meterIndex) == nil, "\(stands)")

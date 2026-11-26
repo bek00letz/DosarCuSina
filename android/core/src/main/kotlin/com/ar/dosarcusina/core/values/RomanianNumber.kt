@@ -24,13 +24,14 @@ enum class NumberKind(val key: String) {
     val isWhole: Boolean get() = this == COUNT || this == KILOMETRES
 
     /**
-     * The most decimals the app writes a number of this kind with: two for money, three for a meter index or another
-     * measured value, none for kilometres and counts (the iOS app's `NumberKind.decimals`). What
-     * [RomanianNumber.correction] takes a stored number's short decimal to have.
+     * The most decimals a stored number of this kind is taken to have, by [RomanianNumber.correction]: two for money,
+     * none for kilometres and counts, and six for a meter index or another measured value, which the reader takes
+     * with any decimals: six is as far as the correction reaches safely for the values a meter shows (up to 2³⁰,
+     * about 1.07 × 10⁹). The iOS app's `NumberKind.decimals`.
      */
     val decimals: Int get() = when (this) {
         MONEY -> 2
-        METER_INDEX -> 3
+        METER_INDEX -> 6
         COUNT, KILOMETRES -> 0
     }
 
@@ -148,25 +149,27 @@ object RomanianNumber {
     // As a Double
 
     /**
-     * The Double an earlier iOS version meant to store, when [stored] is a step or two off it, or null when [stored]
+     * The Double an earlier iOS version meant to store, when [stored] is a few steps off it, or null when [stored]
      * stands: the iOS app's `RomanianNumber.correction(of:as:)`, the rule its `DecimalDoublesStep` (and this
      * app's, in the store) puts a number back by. Earlier iOS versions turned a number into a Double through
      * Foundation's `NSDecimalNumber.doubleValue`, which misses the nearest Double for about a third of the numbers
-     * with two or three decimals, by one step (one ULP) or, rarely, two: a meter index printed 98765.4321 was kept as
-     * 98765.43209999999, where [BigDecimal.toDouble] gives 98765.4321. Such a value reaches this app in a backup.
+     * with two decimals or more, by one step (one ULP), two, or for four to six decimals three: a meter index
+     * printed 98765.4321 was kept as 98765.43209999999, where [BigDecimal.toDouble] gives 98765.4321. Such a value
+     * reaches this app in a backup.
      *
      * - a number of [kind] is short when it has at most [NumberKind.decimals] decimals; a Double is a short number's
      *   when it is that number correctly rounded ([BigDecimal.toDouble]);
      * - [stored] is corrected when it isn't a short number's, and a Double at most [MISSED_STEPS] steps above or
      *   below it is: it becomes the nearest such one (below first, at the same distance);
      * - only while the steps around [stored] are small enough that one short number at most lies within reach
-     *   ([Math.ulp] × 2 × [MISSED_STEPS] below 10⁻ᵈ); a number past that stands, as does zero, an infinity or what
-     *   isn't a number. Zero is never what it becomes: the old conversion wrote it exactly.
+     *   ([Math.ulp] × 2 × [MISSED_STEPS] below 10⁻ᵈ); a number past that (from 2³⁰, about 1.07 × 10⁹, for a meter
+     *   index's six decimals) stands, as does zero, an infinity or what isn't a number. Zero is never what it
+     *   becomes: the old conversion wrote it exactly.
      */
     fun correction(stored: Double, kind: NumberKind): Double? {
         val decimals = kind.decimals
-        val stands = !stored.isFinite() || stored == 0.0 || !hasSmallSteps(stored, decimals) || isShort(stored, decimals)
-        if (stands) return null
+        val outOfReach = !stored.isFinite() || stored == 0.0 || !hasSmallSteps(stored, decimals)
+        if (outOfReach || isShort(stored, decimals)) return null
         // The Doubles within reach, nearest first.
         val near = ArrayList<Double>()
         var below = stored
@@ -181,7 +184,7 @@ object RomanianNumber {
     }
 
     /** How many steps the iOS app's old conversion missed the nearest Double by, at most (`missedSteps`). */
-    const val MISSED_STEPS = 2
+    const val MISSED_STEPS = 3
 
     /** Whether the steps of [value] are small enough for [MISSED_STEPS] of them each way to reach one short number. */
     private fun hasSmallSteps(value: Double, decimals: Int): Boolean =
