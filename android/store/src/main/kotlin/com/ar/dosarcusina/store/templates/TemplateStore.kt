@@ -29,9 +29,9 @@ import com.ar.dosarcusina.store.schema.CategoryTemplate
 import com.ar.dosarcusina.store.schema.Obligation
 import com.ar.dosarcusina.store.schema.StoredMoment
 import com.ar.dosarcusina.store.schema.keptRecurrence
+import kotlinx.coroutines.runBlocking
 import java.time.Instant
 import java.util.UUID
-import kotlinx.coroutines.runBlocking
 
 /** Why a category action was refused, as kinds: the screens word them (Phase 4). */
 sealed class TemplateStoreError(message: String) : Exception(message) {
