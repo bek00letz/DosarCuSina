@@ -15,6 +15,9 @@ import com.ar.dosarcusina.catalog.PlannedObligation
 import com.ar.dosarcusina.catalog.RecurrenceEngine
 import com.ar.dosarcusina.catalog.Role
 import com.ar.dosarcusina.catalog.SubscriptionFields
+import com.ar.dosarcusina.catalog.drivingField
+import com.ar.dosarcusina.catalog.isWorthScheduling
+import com.ar.dosarcusina.catalog.recurrenceRule
 import com.ar.dosarcusina.core.readings.LowerReadingAnswer
 import com.ar.dosarcusina.core.readings.MeasurementKind
 import com.ar.dosarcusina.core.readings.ReadingSource
@@ -36,6 +39,8 @@ import com.ar.dosarcusina.store.UndoReceipt
 import com.ar.dosarcusina.store.Undoable
 import com.ar.dosarcusina.store.UnitOfWork
 import com.ar.dosarcusina.store.examples.ExampleOwnership
+import com.ar.dosarcusina.store.obligations.DeadlineMutations
+import com.ar.dosarcusina.store.obligations.DeadlineReminders
 import com.ar.dosarcusina.store.obligations.ObligationActions
 import com.ar.dosarcusina.store.readings.HeroMetric
 import com.ar.dosarcusina.store.readings.HouseholdReadings
@@ -215,7 +220,7 @@ class AssetActions(
     /**
      * Saves an edit. Deadlines first due by a field (a document's renewal by its expiry) move with it,
      * a field that drives a deadline the section hasn't got makes it, and their reminders follow a
-     * changed value they read ([SectionDeadlines.followReminders]). A changed hero value (the kilometres) is a
+     * changed value they read ([DeadlineReminders.follow]). A changed hero value (the kilometres) is a
      * new reading, dated [readingDate] or now; a lower counter asks until [lowerReading] answers it. A
      * subscription whose direct debit changed pauses or resumes its bill reminder ([BillReminders]).
      *
@@ -477,7 +482,7 @@ class AssetActions(
         if (template != null) {
             val blueprints = template.keptBlueprints.items
             // A value the deadlines' reminders read changed: they remind as it asks, unless the person set them.
-            SectionDeadlines.followReminders(step, edit.asset, blueprints, edit.previous, edit.values)
+            DeadlineReminders.follow(step, fresh(step, edit.asset), blueprints, edit.previous)
             moveDueDays(step, edit, blueprints)
             makeDrivenDeadlines(step, edit, blueprints)
             edit.reading?.let { HouseholdReadings.recordReading(step, it, lowerReading) }
@@ -493,16 +498,21 @@ class AssetActions(
             ObligationStatus.stored(it.statusRaw) == ObligationStatus.ACTIVE
         }
         for (obligation in active) {
-            val blueprint = obligation.blueprintKey?.let(byKey::get)?.takeUnless(SectionDeadlines::repeats)
-            val due = blueprint?.let(SectionDeadlines::firstDueField)?.let { movedDay(edit, it) } ?: continue
+            val blueprint = obligation.blueprintKey?.let(byKey::get)?.takeUnless { it.recurrenceRule.repeats }
+            val due = blueprint?.let { movedDay(edit, it) } ?: continue
             step.update(obligation.copy(dueDayISO = StoredDay.text(due)))
         }
     }
 
-    /** The day a deadline first due by [field] moves to, when the edit changed that field to a day. */
-    private fun movedDay(edit: Edit, field: SectionDeadlines.FieldDay): CalendarDay? {
-        if (edit.previous[field.field] == edit.values[field.field]) return null
-        return (edit.values[field.field] as? FieldValue.Day)?.value?.addingDays(field.offsetDays)
+    /**
+     * The day a deadline from [blueprint] moves to, when the edit changed the field it is first due by
+     * ([drivingField]) to a day: that day by its rule ([RecurrenceEngine.firstDue], with its offset).
+     */
+    private fun movedDay(edit: Edit, blueprint: ObligationBlueprint): CalendarDay? {
+        val field = blueprint.drivingField ?: return null
+        if (edit.previous[field] == edit.values[field]) return null
+        val today = CalendarDay.of(StoredMoment.kept(now()), zone())
+        return RecurrenceEngine.firstDue(blueprint, edit.values, today)
     }
 
     /**
@@ -517,14 +527,14 @@ class AssetActions(
             .mapNotNull { it.blueprintKey }.toSet()
         for (blueprint in blueprints.filter { it.key !in kept && drives(edit, it) }) {
             val day = RecurrenceEngine.firstDue(blueprint, edit.values, today)
-                ?.takeIf { SectionDeadlines.isWorthScheduling(blueprint, it, today, edit.values) } ?: continue
-            SectionDeadlines.make(step, blueprint, fresh(step, edit.asset), day, today, moment, catalog)
+                ?.takeIf { blueprint.isWorthScheduling(it, today, edit.values) } ?: continue
+            DeadlineMutations.makeObligation(step, blueprint, fresh(step, edit.asset), day, today, moment, catalog)
         }
     }
 
     /** Whether the edit gave [blueprint]'s field a day it didn't have, for a deadline that applies. */
     private fun drives(edit: Edit, blueprint: ObligationBlueprint): Boolean {
-        val field = SectionDeadlines.firstDueField(blueprint)?.field ?: return false
+        val field = blueprint.drivingField ?: return false
         val changed = edit.previous[field] != edit.values[field]
         return changed && edit.values[field] is FieldValue.Day && BlueprintRules.applies(blueprint, edit.values)
     }

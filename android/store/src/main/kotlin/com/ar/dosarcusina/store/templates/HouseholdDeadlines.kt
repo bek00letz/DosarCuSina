@@ -1,23 +1,19 @@
 package com.ar.dosarcusina.store.templates
 
 import com.ar.dosarcusina.archive.v3.FieldValues
-import com.ar.dosarcusina.archive.v3.RecurrenceRule
-import com.ar.dosarcusina.archive.v3.ReminderProfile
 import com.ar.dosarcusina.catalog.BuiltInTemplates
 import com.ar.dosarcusina.catalog.Catalog
 import com.ar.dosarcusina.catalog.HouseholdRules
 import com.ar.dosarcusina.catalog.RecurrenceEngine
 import com.ar.dosarcusina.core.values.CalendarDay
-import com.ar.dosarcusina.core.values.KeptObject
 import com.ar.dosarcusina.core.values.ObligationStatus
-import com.ar.dosarcusina.core.values.StoredDay
 import com.ar.dosarcusina.store.Step
 import com.ar.dosarcusina.store.Tables
+import com.ar.dosarcusina.store.obligations.DeadlineMutations
 import com.ar.dosarcusina.store.obligations.status
 import com.ar.dosarcusina.store.schema.Obligation
 import com.ar.dosarcusina.store.schema.dueDay
 import com.ar.dosarcusina.store.schema.keptReminders
-import com.ar.dosarcusina.store.schema.withKeptRecurrence
 import com.ar.dosarcusina.store.schema.withKeptReminders
 import java.time.Instant
 import java.time.ZoneId
@@ -60,7 +56,7 @@ class HouseholdDeadlines(
             kept != null -> keepOne(step, existing, kept, isExample, binderIsWhole)
             // The person's declaration may still be on its way: one made now would be a second copy.
             !binderIsWhole -> false
-            else -> declaration(today, now, isExample)?.also(step::insert) != null
+            else -> declare(step, today, now, isExample)
         }
     }
 
@@ -107,23 +103,16 @@ class HouseholdDeadlines(
         return changed
     }
 
-    /** A new rental income declaration, first due by its blueprint's rule on [today]. */
-    private fun declaration(today: CalendarDay, now: Instant, isExample: Boolean): Obligation? {
+    /**
+     * A new rental income declaration, first due by its blueprint's rule on [today], made the one way a
+     * deadline is made from a blueprint ([DeadlineMutations.makeHouseholdObligation]); none when its rule
+     * gives no day.
+     */
+    private fun declare(step: Step, today: CalendarDay, now: Instant, isExample: Boolean): Boolean {
         val blueprint = rules.rentalDeclaration
-        val due = RecurrenceEngine.firstDue(blueprint, FieldValues(), today) ?: return null
-        val recurrence = blueprint.recurrence?.let(RecurrenceRule.codec::decode) ?: RecurrenceRule.None
-        val reminders = blueprint.reminders?.let(ReminderProfile.codec::decode) ?: return null
-        return Obligation(
-            title = blueprint.title,
-            kindRaw = blueprint.kind,
-            dueDayISO = StoredDay.text(due),
-            blueprintKey = blueprint.key,
-            notes = blueprint.note,
-            isExample = isExample,
-            createdAt = now,
-            updatedAt = now,
-        ).withKeptRecurrence(KeptObject.made(recurrence, RecurrenceRule.codec))
-            .withKeptReminders(KeptObject.made(reminders, ReminderProfile.codec))
+        val due = RecurrenceEngine.firstDue(blueprint, FieldValues(), today) ?: return false
+        DeadlineMutations.makeHouseholdObligation(step, blueprint, due, now, isExample)
+        return true
     }
 
     /**

@@ -119,6 +119,9 @@ sealed interface RecurrenceRule {
 
     data class Unreadable(val raw: JsonElement) : RecurrenceRule
 
+    /** Whether it repeats (`RecurrenceRule.repeats`): one-off doesn't, nor a rule this build can't read. */
+    val repeats: Boolean get() = this != None && this !is Unreadable
+
     fun toJson(): JsonElement = when (this) {
         None -> jsonObject { put("type", "none") }
         is Interval -> jsonObject {
