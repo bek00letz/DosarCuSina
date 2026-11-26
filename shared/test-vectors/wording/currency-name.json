@@ -1,0 +1,28 @@
+{
+  "cases" : [
+    {
+      "code" : "RON",
+      "name" : "lei"
+    },
+    {
+      "code" : "ron",
+      "name" : "lei"
+    },
+    {
+      "code" : "EUR",
+      "name" : "EUR"
+    },
+    {
+      "code" : "usd",
+      "name" : "USD"
+    },
+    {
+      "code" : "XYZ",
+      "name" : "XYZ"
+    }
+  ],
+  "rule" : "Money.currencyName(_:)",
+  "shape" : "code: as given; name: what a currency menu shows.",
+  "source" : "ios/DosarCuSina/Models/Values/Money.swift",
+  "writtenBy" : "ios/DosarCuSinaTests/WordingVectorsTests.swift"
+}
