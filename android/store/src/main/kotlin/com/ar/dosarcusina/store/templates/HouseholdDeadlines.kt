@@ -9,10 +9,10 @@ import com.ar.dosarcusina.catalog.HouseholdRules
 import com.ar.dosarcusina.catalog.RecurrenceEngine
 import com.ar.dosarcusina.core.values.CalendarDay
 import com.ar.dosarcusina.core.values.KeptObject
+import com.ar.dosarcusina.core.values.ObligationStatus
 import com.ar.dosarcusina.core.values.StoredDay
 import com.ar.dosarcusina.store.Step
 import com.ar.dosarcusina.store.Tables
-import com.ar.dosarcusina.store.obligations.ObligationStatus
 import com.ar.dosarcusina.store.obligations.status
 import com.ar.dosarcusina.store.schema.Obligation
 import com.ar.dosarcusina.store.schema.dueDay
