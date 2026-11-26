@@ -23,7 +23,7 @@ class RomanianWordsTest {
         assertEquals("o zi", Word.shared("%lld zile", Word.count(1)).written())
         assertEquals("1.250 de zile", Word.shared("%lld zile", Word.count(1250)).written())
         assertEquals("în 5 zile", Word.shared("în %@", Word.text("5 zile")).written())
-        assertEquals("12\u00A0de\u00A0lei", MoneyWording.wholeLei("12", 12))
+        assertEquals("20\u00A0de\u00A0lei", MoneyWording.wholeLei("20", 20))
     }
 
     @Test
