@@ -60,6 +60,9 @@ tasks.test {
     }
     inputs.dir(shared).withPathSensitivity(PathSensitivity.RELATIVE).withPropertyName("shared")
     inputs.files(iosShape).withPathSensitivity(PathSensitivity.RELATIVE).withPropertyName("iosShape")
+    // The repair list's registry, which this one follows step for step (DataRepairRegistryTest).
+    inputs.dir(ios.resolve("Services/Repairs")).withPathSensitivity(PathSensitivity.RELATIVE)
+        .withPropertyName("iosRepairs")
     inputs.dir("schemas").withPathSensitivity(PathSensitivity.RELATIVE).withPropertyName("schemas")
     systemProperty("dosar.shared", shared.canonicalPath)
     systemProperty("dosar.ios", ios.canonicalPath)

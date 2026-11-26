@@ -60,6 +60,9 @@ class CategoryLocks(
     override fun locked(templates: List<CategoryTemplate>): Map<String, Boolean> =
         templates.groupBy { it.key }.mapValues { (_, copies) -> copies.any(::isSensitive) }
 
+    override fun binder(templates: List<CategoryTemplate>, naming: Iterable<String>): BinderLocks =
+        BinderLocks.of(templates, naming, this)
+
     /**
      * Locks or opens [template] on this phone, as chosen at [now], and gives its row to save.
      * Opening one that is locked now takes the person's confirmation, every time ([lowering]);
