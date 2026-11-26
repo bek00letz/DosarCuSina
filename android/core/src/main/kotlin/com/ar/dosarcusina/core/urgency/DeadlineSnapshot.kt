@@ -1,19 +1,21 @@
 package com.ar.dosarcusina.core.urgency
 
 import com.ar.dosarcusina.core.values.CalendarDay
+import com.ar.dosarcusina.core.values.Money
 import com.ar.dosarcusina.core.values.ObligationStatus
 import java.time.Instant
 import java.time.ZoneId
 import java.util.UUID
 
 /**
- * A plain copy of one deadline with what urgency, the reminder plan and the badge read, as the
- * part of the iOS app's `ObligationSnapshot` (ios/DosarCuSina/Services/SideEffects/ObligationSnapshot.swift)
- * these rules use. Built once per pass, so the rules never touch the database. No words: what a
- * reminder says comes from the strings, with the deadline's title, where it is shown.
+ * A plain copy of one deadline with what urgency, the reminder plan, the badge, the attention list
+ * behind Urmează and the binder's box lines read, as the part of the iOS app's `ObligationSnapshot`
+ * (ios/DosarCuSina/Services/SideEffects/ObligationSnapshot.swift) these rules use. Built once per
+ * pass, so the rules never touch the database. None of the app's words: what a reminder or a line
+ * says comes from the strings, with the deadline's [title], where it is shown.
  *
- * The store fills it (Phase 4's side effects, from every deadline that isn't archived, examples
- * left out of everything that leaves the app).
+ * The store fills it (Phase 4's side effects and screens, from every deadline that isn't archived,
+ * examples left out of everything that leaves the app).
  */
 data class DeadlineSnapshot(
     val id: UUID,
@@ -44,6 +46,17 @@ data class DeadlineSnapshot(
      * (`CompletionShape.closesOutsideTheApp` is false): its reminder's „Am rezolvat” opens the app.
      */
     val closesInTheApp: Boolean = false,
+    /**
+     * Its name as the person sees it („ITP”), the person's own words: the attention list orders two
+     * deadlines that tie on everything else by it ([com.ar.dosarcusina.core.text.StandardOrder]).
+     */
+    val title: String = "",
+    /** What it is expected to cost, when known: a nudge in the ranking and „Mai târziu”'s total. */
+    val estimatedCost: Money? = null,
+    /** The section it belongs to; null for one of the household's own (local taxes). */
+    val sectionId: UUID? = null,
+    /** That section's name, which orders the groups of „Curând”; null with no section. */
+    val sectionName: String? = null,
 ) {
     /** How urgent it is on every surface: its cycle's reminders' rule. */
     val urgencyRule: UrgencyRule get() = reminders.urgencyRule
@@ -62,8 +75,8 @@ data class DeadlineSnapshot(
 /**
  * How many deadlines need doing now: active, not snoozed, and late past their grace or due today
  * ([AttentionUrgency.isAlarming]). The app's one count, as the iOS app's
- * `AttentionModel.digest(…).needsActionCount`: the badge, and the attention list's count when it
- * is ported, read it here.
+ * `AttentionModel.digest(…).needsActionCount`: the badge and the attention list's count
+ * ([com.ar.dosarcusina.core.attention.AttentionDigest.needsActionCount]) read it here.
  */
 object NeedsAction {
     /** The count on [today]. */
