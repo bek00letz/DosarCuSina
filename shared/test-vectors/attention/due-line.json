@@ -1,0 +1,1139 @@
+{
+  "cases" : [
+    {
+      "due" : "2026-11-26",
+      "kind" : "legal",
+      "line" : {
+        "daysRemaining" : 0,
+        "isLate" : false,
+        "showsYear" : false,
+        "verb" : "expires",
+        "when" : "today"
+      },
+      "text" : "Expiră azi · 26 noiembrie",
+      "today" : "2026-11-26"
+    },
+    {
+      "due" : "2026-11-27",
+      "kind" : "legal",
+      "line" : {
+        "daysRemaining" : 1,
+        "isLate" : false,
+        "showsYear" : false,
+        "verb" : "expires",
+        "when" : "tomorrow"
+      },
+      "text" : "Expiră mâine · 27 noiembrie",
+      "today" : "2026-11-26"
+    },
+    {
+      "due" : "2026-11-25",
+      "kind" : "legal",
+      "line" : {
+        "daysRemaining" : -1,
+        "isLate" : true,
+        "showsYear" : false,
+        "verb" : "expires",
+        "when" : "yesterday"
+      },
+      "text" : "A expirat ieri · 25 noiembrie",
+      "today" : "2026-11-26"
+    },
+    {
+      "due" : "2026-12-01",
+      "kind" : "legal",
+      "line" : {
+        "daysRemaining" : 5,
+        "isLate" : false,
+        "showsYear" : false,
+        "verb" : "expires",
+        "when" : "inside"
+      },
+      "text" : "Expiră în 5 zile · 1 decembrie",
+      "today" : "2026-11-26"
+    },
+    {
+      "due" : "2026-11-20",
+      "kind" : "legal",
+      "line" : {
+        "daysRemaining" : -6,
+        "isLate" : true,
+        "showsYear" : false,
+        "verb" : "expires",
+        "when" : "ago"
+      },
+      "text" : "A expirat acum 6 zile · 20 noiembrie",
+      "today" : "2026-11-26"
+    },
+    {
+      "due" : "2027-02-14",
+      "kind" : "legal",
+      "line" : {
+        "daysRemaining" : 80,
+        "isLate" : false,
+        "showsYear" : true,
+        "verb" : "expires",
+        "when" : "inside"
+      },
+      "text" : "Expiră în 2 luni și 2 săptămâni · 14 februarie 2027",
+      "today" : "2026-11-26"
+    },
+    {
+      "due" : "2025-12-31",
+      "kind" : "legal",
+      "line" : {
+        "daysRemaining" : -330,
+        "isLate" : true,
+        "showsYear" : true,
+        "verb" : "expires",
+        "when" : "ago"
+      },
+      "text" : "A expirat acum 10 luni și 3 săptămâni · 31 decembrie 2025",
+      "today" : "2026-11-26"
+    },
+    {
+      "due" : "2027-01-01",
+      "kind" : "legal",
+      "line" : {
+        "daysRemaining" : 1,
+        "isLate" : false,
+        "showsYear" : true,
+        "verb" : "expires",
+        "when" : "tomorrow"
+      },
+      "text" : "Expiră mâine · 1 ianuarie 2027",
+      "today" : "2026-12-31"
+    },
+    {
+      "due" : "2026-12-31",
+      "kind" : "legal",
+      "line" : {
+        "daysRemaining" : -1,
+        "isLate" : true,
+        "showsYear" : true,
+        "verb" : "expires",
+        "when" : "yesterday"
+      },
+      "text" : "A expirat ieri · 31 decembrie 2026",
+      "today" : "2027-01-01"
+    },
+    {
+      "due" : "2026-11-26",
+      "kind" : "tax",
+      "line" : {
+        "daysRemaining" : 0,
+        "isLate" : false,
+        "showsYear" : false,
+        "verb" : "pay",
+        "when" : "today"
+      },
+      "text" : "De plătit azi · 26 noiembrie",
+      "today" : "2026-11-26"
+    },
+    {
+      "due" : "2026-11-27",
+      "kind" : "tax",
+      "line" : {
+        "daysRemaining" : 1,
+        "isLate" : false,
+        "showsYear" : false,
+        "verb" : "pay",
+        "when" : "tomorrow"
+      },
+      "text" : "De plătit mâine · 27 noiembrie",
+      "today" : "2026-11-26"
+    },
+    {
+      "due" : "2026-11-25",
+      "kind" : "tax",
+      "line" : {
+        "daysRemaining" : -1,
+        "isLate" : true,
+        "showsYear" : false,
+        "verb" : "pay",
+        "when" : "yesterday"
+      },
+      "text" : "Trebuia plătit ieri · 25 noiembrie",
+      "today" : "2026-11-26"
+    },
+    {
+      "due" : "2026-12-01",
+      "kind" : "tax",
+      "line" : {
+        "daysRemaining" : 5,
+        "isLate" : false,
+        "showsYear" : false,
+        "verb" : "pay",
+        "when" : "inside"
+      },
+      "text" : "De plătit în 5 zile · 1 decembrie",
+      "today" : "2026-11-26"
+    },
+    {
+      "due" : "2026-11-20",
+      "kind" : "tax",
+      "line" : {
+        "daysRemaining" : -6,
+        "isLate" : true,
+        "showsYear" : false,
+        "verb" : "pay",
+        "when" : "ago"
+      },
+      "text" : "Trebuia plătit acum 6 zile · 20 noiembrie",
+      "today" : "2026-11-26"
+    },
+    {
+      "due" : "2027-02-14",
+      "kind" : "tax",
+      "line" : {
+        "daysRemaining" : 80,
+        "isLate" : false,
+        "showsYear" : true,
+        "verb" : "pay",
+        "when" : "inside"
+      },
+      "text" : "De plătit în 2 luni și 2 săptămâni · 14 februarie 2027",
+      "today" : "2026-11-26"
+    },
+    {
+      "due" : "2025-12-31",
+      "kind" : "tax",
+      "line" : {
+        "daysRemaining" : -330,
+        "isLate" : true,
+        "showsYear" : true,
+        "verb" : "pay",
+        "when" : "ago"
+      },
+      "text" : "Trebuia plătit acum 10 luni și 3 săptămâni · 31 decembrie 2025",
+      "today" : "2026-11-26"
+    },
+    {
+      "due" : "2027-01-01",
+      "kind" : "tax",
+      "line" : {
+        "daysRemaining" : 1,
+        "isLate" : false,
+        "showsYear" : true,
+        "verb" : "pay",
+        "when" : "tomorrow"
+      },
+      "text" : "De plătit mâine · 1 ianuarie 2027",
+      "today" : "2026-12-31"
+    },
+    {
+      "due" : "2026-12-31",
+      "kind" : "tax",
+      "line" : {
+        "daysRemaining" : -1,
+        "isLate" : true,
+        "showsYear" : true,
+        "verb" : "pay",
+        "when" : "yesterday"
+      },
+      "text" : "Trebuia plătit ieri · 31 decembrie 2026",
+      "today" : "2027-01-01"
+    },
+    {
+      "due" : "2026-11-26",
+      "kind" : "insurance",
+      "line" : {
+        "daysRemaining" : 0,
+        "isLate" : false,
+        "showsYear" : false,
+        "verb" : "expires",
+        "when" : "today"
+      },
+      "text" : "Expiră azi · 26 noiembrie",
+      "today" : "2026-11-26"
+    },
+    {
+      "due" : "2026-11-27",
+      "kind" : "insurance",
+      "line" : {
+        "daysRemaining" : 1,
+        "isLate" : false,
+        "showsYear" : false,
+        "verb" : "expires",
+        "when" : "tomorrow"
+      },
+      "text" : "Expiră mâine · 27 noiembrie",
+      "today" : "2026-11-26"
+    },
+    {
+      "due" : "2026-11-25",
+      "kind" : "insurance",
+      "line" : {
+        "daysRemaining" : -1,
+        "isLate" : true,
+        "showsYear" : false,
+        "verb" : "expires",
+        "when" : "yesterday"
+      },
+      "text" : "A expirat ieri · 25 noiembrie",
+      "today" : "2026-11-26"
+    },
+    {
+      "due" : "2026-12-01",
+      "kind" : "insurance",
+      "line" : {
+        "daysRemaining" : 5,
+        "isLate" : false,
+        "showsYear" : false,
+        "verb" : "expires",
+        "when" : "inside"
+      },
+      "text" : "Expiră în 5 zile · 1 decembrie",
+      "today" : "2026-11-26"
+    },
+    {
+      "due" : "2026-11-20",
+      "kind" : "insurance",
+      "line" : {
+        "daysRemaining" : -6,
+        "isLate" : true,
+        "showsYear" : false,
+        "verb" : "expires",
+        "when" : "ago"
+      },
+      "text" : "A expirat acum 6 zile · 20 noiembrie",
+      "today" : "2026-11-26"
+    },
+    {
+      "due" : "2027-02-14",
+      "kind" : "insurance",
+      "line" : {
+        "daysRemaining" : 80,
+        "isLate" : false,
+        "showsYear" : true,
+        "verb" : "expires",
+        "when" : "inside"
+      },
+      "text" : "Expiră în 2 luni și 2 săptămâni · 14 februarie 2027",
+      "today" : "2026-11-26"
+    },
+    {
+      "due" : "2025-12-31",
+      "kind" : "insurance",
+      "line" : {
+        "daysRemaining" : -330,
+        "isLate" : true,
+        "showsYear" : true,
+        "verb" : "expires",
+        "when" : "ago"
+      },
+      "text" : "A expirat acum 10 luni și 3 săptămâni · 31 decembrie 2025",
+      "today" : "2026-11-26"
+    },
+    {
+      "due" : "2027-01-01",
+      "kind" : "insurance",
+      "line" : {
+        "daysRemaining" : 1,
+        "isLate" : false,
+        "showsYear" : true,
+        "verb" : "expires",
+        "when" : "tomorrow"
+      },
+      "text" : "Expiră mâine · 1 ianuarie 2027",
+      "today" : "2026-12-31"
+    },
+    {
+      "due" : "2026-12-31",
+      "kind" : "insurance",
+      "line" : {
+        "daysRemaining" : -1,
+        "isLate" : true,
+        "showsYear" : true,
+        "verb" : "expires",
+        "when" : "yesterday"
+      },
+      "text" : "A expirat ieri · 31 decembrie 2026",
+      "today" : "2027-01-01"
+    },
+    {
+      "due" : "2026-11-26",
+      "kind" : "health",
+      "line" : {
+        "daysRemaining" : 0,
+        "isLate" : false,
+        "showsYear" : false,
+        "verb" : "do",
+        "when" : "today"
+      },
+      "text" : "De făcut azi · 26 noiembrie",
+      "today" : "2026-11-26"
+    },
+    {
+      "due" : "2026-11-27",
+      "kind" : "health",
+      "line" : {
+        "daysRemaining" : 1,
+        "isLate" : false,
+        "showsYear" : false,
+        "verb" : "do",
+        "when" : "tomorrow"
+      },
+      "text" : "De făcut mâine · 27 noiembrie",
+      "today" : "2026-11-26"
+    },
+    {
+      "due" : "2026-11-25",
+      "kind" : "health",
+      "line" : {
+        "daysRemaining" : -1,
+        "isLate" : true,
+        "showsYear" : false,
+        "verb" : "do",
+        "when" : "yesterday"
+      },
+      "text" : "Trebuia făcut ieri · 25 noiembrie",
+      "today" : "2026-11-26"
+    },
+    {
+      "due" : "2026-12-01",
+      "kind" : "health",
+      "line" : {
+        "daysRemaining" : 5,
+        "isLate" : false,
+        "showsYear" : false,
+        "verb" : "do",
+        "when" : "inside"
+      },
+      "text" : "De făcut în 5 zile · 1 decembrie",
+      "today" : "2026-11-26"
+    },
+    {
+      "due" : "2026-11-20",
+      "kind" : "health",
+      "line" : {
+        "daysRemaining" : -6,
+        "isLate" : true,
+        "showsYear" : false,
+        "verb" : "do",
+        "when" : "ago"
+      },
+      "text" : "Trebuia făcut acum 6 zile · 20 noiembrie",
+      "today" : "2026-11-26"
+    },
+    {
+      "due" : "2027-02-14",
+      "kind" : "health",
+      "line" : {
+        "daysRemaining" : 80,
+        "isLate" : false,
+        "showsYear" : true,
+        "verb" : "do",
+        "when" : "inside"
+      },
+      "text" : "De făcut în 2 luni și 2 săptămâni · 14 februarie 2027",
+      "today" : "2026-11-26"
+    },
+    {
+      "due" : "2025-12-31",
+      "kind" : "health",
+      "line" : {
+        "daysRemaining" : -330,
+        "isLate" : true,
+        "showsYear" : true,
+        "verb" : "do",
+        "when" : "ago"
+      },
+      "text" : "Trebuia făcut acum 10 luni și 3 săptămâni · 31 decembrie 2025",
+      "today" : "2026-11-26"
+    },
+    {
+      "due" : "2027-01-01",
+      "kind" : "health",
+      "line" : {
+        "daysRemaining" : 1,
+        "isLate" : false,
+        "showsYear" : true,
+        "verb" : "do",
+        "when" : "tomorrow"
+      },
+      "text" : "De făcut mâine · 1 ianuarie 2027",
+      "today" : "2026-12-31"
+    },
+    {
+      "due" : "2026-12-31",
+      "kind" : "health",
+      "line" : {
+        "daysRemaining" : -1,
+        "isLate" : true,
+        "showsYear" : true,
+        "verb" : "do",
+        "when" : "yesterday"
+      },
+      "text" : "Trebuia făcut ieri · 31 decembrie 2026",
+      "today" : "2027-01-01"
+    },
+    {
+      "due" : "2026-11-26",
+      "kind" : "renewal",
+      "line" : {
+        "daysRemaining" : 0,
+        "isLate" : false,
+        "showsYear" : false,
+        "verb" : "expires",
+        "when" : "today"
+      },
+      "text" : "Expiră azi · 26 noiembrie",
+      "today" : "2026-11-26"
+    },
+    {
+      "due" : "2026-11-27",
+      "kind" : "renewal",
+      "line" : {
+        "daysRemaining" : 1,
+        "isLate" : false,
+        "showsYear" : false,
+        "verb" : "expires",
+        "when" : "tomorrow"
+      },
+      "text" : "Expiră mâine · 27 noiembrie",
+      "today" : "2026-11-26"
+    },
+    {
+      "due" : "2026-11-25",
+      "kind" : "renewal",
+      "line" : {
+        "daysRemaining" : -1,
+        "isLate" : true,
+        "showsYear" : false,
+        "verb" : "expires",
+        "when" : "yesterday"
+      },
+      "text" : "A expirat ieri · 25 noiembrie",
+      "today" : "2026-11-26"
+    },
+    {
+      "due" : "2026-12-01",
+      "kind" : "renewal",
+      "line" : {
+        "daysRemaining" : 5,
+        "isLate" : false,
+        "showsYear" : false,
+        "verb" : "expires",
+        "when" : "inside"
+      },
+      "text" : "Expiră în 5 zile · 1 decembrie",
+      "today" : "2026-11-26"
+    },
+    {
+      "due" : "2026-11-20",
+      "kind" : "renewal",
+      "line" : {
+        "daysRemaining" : -6,
+        "isLate" : true,
+        "showsYear" : false,
+        "verb" : "expires",
+        "when" : "ago"
+      },
+      "text" : "A expirat acum 6 zile · 20 noiembrie",
+      "today" : "2026-11-26"
+    },
+    {
+      "due" : "2027-02-14",
+      "kind" : "renewal",
+      "line" : {
+        "daysRemaining" : 80,
+        "isLate" : false,
+        "showsYear" : true,
+        "verb" : "expires",
+        "when" : "inside"
+      },
+      "text" : "Expiră în 2 luni și 2 săptămâni · 14 februarie 2027",
+      "today" : "2026-11-26"
+    },
+    {
+      "due" : "2025-12-31",
+      "kind" : "renewal",
+      "line" : {
+        "daysRemaining" : -330,
+        "isLate" : true,
+        "showsYear" : true,
+        "verb" : "expires",
+        "when" : "ago"
+      },
+      "text" : "A expirat acum 10 luni și 3 săptămâni · 31 decembrie 2025",
+      "today" : "2026-11-26"
+    },
+    {
+      "due" : "2027-01-01",
+      "kind" : "renewal",
+      "line" : {
+        "daysRemaining" : 1,
+        "isLate" : false,
+        "showsYear" : true,
+        "verb" : "expires",
+        "when" : "tomorrow"
+      },
+      "text" : "Expiră mâine · 1 ianuarie 2027",
+      "today" : "2026-12-31"
+    },
+    {
+      "due" : "2026-12-31",
+      "kind" : "renewal",
+      "line" : {
+        "daysRemaining" : -1,
+        "isLate" : true,
+        "showsYear" : true,
+        "verb" : "expires",
+        "when" : "yesterday"
+      },
+      "text" : "A expirat ieri · 31 decembrie 2026",
+      "today" : "2027-01-01"
+    },
+    {
+      "due" : "2026-11-26",
+      "kind" : "payment",
+      "line" : {
+        "daysRemaining" : 0,
+        "isLate" : false,
+        "showsYear" : false,
+        "verb" : "pay",
+        "when" : "today"
+      },
+      "text" : "De plătit azi · 26 noiembrie",
+      "today" : "2026-11-26"
+    },
+    {
+      "due" : "2026-11-27",
+      "kind" : "payment",
+      "line" : {
+        "daysRemaining" : 1,
+        "isLate" : false,
+        "showsYear" : false,
+        "verb" : "pay",
+        "when" : "tomorrow"
+      },
+      "text" : "De plătit mâine · 27 noiembrie",
+      "today" : "2026-11-26"
+    },
+    {
+      "due" : "2026-11-25",
+      "kind" : "payment",
+      "line" : {
+        "daysRemaining" : -1,
+        "isLate" : true,
+        "showsYear" : false,
+        "verb" : "pay",
+        "when" : "yesterday"
+      },
+      "text" : "Trebuia plătit ieri · 25 noiembrie",
+      "today" : "2026-11-26"
+    },
+    {
+      "due" : "2026-12-01",
+      "kind" : "payment",
+      "line" : {
+        "daysRemaining" : 5,
+        "isLate" : false,
+        "showsYear" : false,
+        "verb" : "pay",
+        "when" : "inside"
+      },
+      "text" : "De plătit în 5 zile · 1 decembrie",
+      "today" : "2026-11-26"
+    },
+    {
+      "due" : "2026-11-20",
+      "kind" : "payment",
+      "line" : {
+        "daysRemaining" : -6,
+        "isLate" : true,
+        "showsYear" : false,
+        "verb" : "pay",
+        "when" : "ago"
+      },
+      "text" : "Trebuia plătit acum 6 zile · 20 noiembrie",
+      "today" : "2026-11-26"
+    },
+    {
+      "due" : "2027-02-14",
+      "kind" : "payment",
+      "line" : {
+        "daysRemaining" : 80,
+        "isLate" : false,
+        "showsYear" : true,
+        "verb" : "pay",
+        "when" : "inside"
+      },
+      "text" : "De plătit în 2 luni și 2 săptămâni · 14 februarie 2027",
+      "today" : "2026-11-26"
+    },
+    {
+      "due" : "2025-12-31",
+      "kind" : "payment",
+      "line" : {
+        "daysRemaining" : -330,
+        "isLate" : true,
+        "showsYear" : true,
+        "verb" : "pay",
+        "when" : "ago"
+      },
+      "text" : "Trebuia plătit acum 10 luni și 3 săptămâni · 31 decembrie 2025",
+      "today" : "2026-11-26"
+    },
+    {
+      "due" : "2027-01-01",
+      "kind" : "payment",
+      "line" : {
+        "daysRemaining" : 1,
+        "isLate" : false,
+        "showsYear" : true,
+        "verb" : "pay",
+        "when" : "tomorrow"
+      },
+      "text" : "De plătit mâine · 1 ianuarie 2027",
+      "today" : "2026-12-31"
+    },
+    {
+      "due" : "2026-12-31",
+      "kind" : "payment",
+      "line" : {
+        "daysRemaining" : -1,
+        "isLate" : true,
+        "showsYear" : true,
+        "verb" : "pay",
+        "when" : "yesterday"
+      },
+      "text" : "Trebuia plătit ieri · 31 decembrie 2026",
+      "today" : "2027-01-01"
+    },
+    {
+      "due" : "2026-11-26",
+      "kind" : "maintenance",
+      "line" : {
+        "daysRemaining" : 0,
+        "isLate" : false,
+        "showsYear" : false,
+        "verb" : "do",
+        "when" : "today"
+      },
+      "text" : "De făcut azi · 26 noiembrie",
+      "today" : "2026-11-26"
+    },
+    {
+      "due" : "2026-11-27",
+      "kind" : "maintenance",
+      "line" : {
+        "daysRemaining" : 1,
+        "isLate" : false,
+        "showsYear" : false,
+        "verb" : "do",
+        "when" : "tomorrow"
+      },
+      "text" : "De făcut mâine · 27 noiembrie",
+      "today" : "2026-11-26"
+    },
+    {
+      "due" : "2026-11-25",
+      "kind" : "maintenance",
+      "line" : {
+        "daysRemaining" : -1,
+        "isLate" : true,
+        "showsYear" : false,
+        "verb" : "do",
+        "when" : "yesterday"
+      },
+      "text" : "Trebuia făcut ieri · 25 noiembrie",
+      "today" : "2026-11-26"
+    },
+    {
+      "due" : "2026-12-01",
+      "kind" : "maintenance",
+      "line" : {
+        "daysRemaining" : 5,
+        "isLate" : false,
+        "showsYear" : false,
+        "verb" : "do",
+        "when" : "inside"
+      },
+      "text" : "De făcut în 5 zile · 1 decembrie",
+      "today" : "2026-11-26"
+    },
+    {
+      "due" : "2026-11-20",
+      "kind" : "maintenance",
+      "line" : {
+        "daysRemaining" : -6,
+        "isLate" : true,
+        "showsYear" : false,
+        "verb" : "do",
+        "when" : "ago"
+      },
+      "text" : "Trebuia făcut acum 6 zile · 20 noiembrie",
+      "today" : "2026-11-26"
+    },
+    {
+      "due" : "2027-02-14",
+      "kind" : "maintenance",
+      "line" : {
+        "daysRemaining" : 80,
+        "isLate" : false,
+        "showsYear" : true,
+        "verb" : "do",
+        "when" : "inside"
+      },
+      "text" : "De făcut în 2 luni și 2 săptămâni · 14 februarie 2027",
+      "today" : "2026-11-26"
+    },
+    {
+      "due" : "2025-12-31",
+      "kind" : "maintenance",
+      "line" : {
+        "daysRemaining" : -330,
+        "isLate" : true,
+        "showsYear" : true,
+        "verb" : "do",
+        "when" : "ago"
+      },
+      "text" : "Trebuia făcut acum 10 luni și 3 săptămâni · 31 decembrie 2025",
+      "today" : "2026-11-26"
+    },
+    {
+      "due" : "2027-01-01",
+      "kind" : "maintenance",
+      "line" : {
+        "daysRemaining" : 1,
+        "isLate" : false,
+        "showsYear" : true,
+        "verb" : "do",
+        "when" : "tomorrow"
+      },
+      "text" : "De făcut mâine · 1 ianuarie 2027",
+      "today" : "2026-12-31"
+    },
+    {
+      "due" : "2026-12-31",
+      "kind" : "maintenance",
+      "line" : {
+        "daysRemaining" : -1,
+        "isLate" : true,
+        "showsYear" : true,
+        "verb" : "do",
+        "when" : "yesterday"
+      },
+      "text" : "Trebuia făcut ieri · 31 decembrie 2026",
+      "today" : "2027-01-01"
+    },
+    {
+      "due" : "2026-11-26",
+      "kind" : "routine",
+      "line" : {
+        "daysRemaining" : 0,
+        "isLate" : false,
+        "showsYear" : false,
+        "verb" : "do",
+        "when" : "today"
+      },
+      "text" : "De făcut azi · 26 noiembrie",
+      "today" : "2026-11-26"
+    },
+    {
+      "due" : "2026-11-27",
+      "kind" : "routine",
+      "line" : {
+        "daysRemaining" : 1,
+        "isLate" : false,
+        "showsYear" : false,
+        "verb" : "do",
+        "when" : "tomorrow"
+      },
+      "text" : "De făcut mâine · 27 noiembrie",
+      "today" : "2026-11-26"
+    },
+    {
+      "due" : "2026-11-25",
+      "kind" : "routine",
+      "line" : {
+        "daysRemaining" : -1,
+        "isLate" : true,
+        "showsYear" : false,
+        "verb" : "do",
+        "when" : "yesterday"
+      },
+      "text" : "Trebuia făcut ieri · 25 noiembrie",
+      "today" : "2026-11-26"
+    },
+    {
+      "due" : "2026-12-01",
+      "kind" : "routine",
+      "line" : {
+        "daysRemaining" : 5,
+        "isLate" : false,
+        "showsYear" : false,
+        "verb" : "do",
+        "when" : "inside"
+      },
+      "text" : "De făcut în 5 zile · 1 decembrie",
+      "today" : "2026-11-26"
+    },
+    {
+      "due" : "2026-11-20",
+      "kind" : "routine",
+      "line" : {
+        "daysRemaining" : -6,
+        "isLate" : true,
+        "showsYear" : false,
+        "verb" : "do",
+        "when" : "ago"
+      },
+      "text" : "Trebuia făcut acum 6 zile · 20 noiembrie",
+      "today" : "2026-11-26"
+    },
+    {
+      "due" : "2027-02-14",
+      "kind" : "routine",
+      "line" : {
+        "daysRemaining" : 80,
+        "isLate" : false,
+        "showsYear" : true,
+        "verb" : "do",
+        "when" : "inside"
+      },
+      "text" : "De făcut în 2 luni și 2 săptămâni · 14 februarie 2027",
+      "today" : "2026-11-26"
+    },
+    {
+      "due" : "2025-12-31",
+      "kind" : "routine",
+      "line" : {
+        "daysRemaining" : -330,
+        "isLate" : true,
+        "showsYear" : true,
+        "verb" : "do",
+        "when" : "ago"
+      },
+      "text" : "Trebuia făcut acum 10 luni și 3 săptămâni · 31 decembrie 2025",
+      "today" : "2026-11-26"
+    },
+    {
+      "due" : "2027-01-01",
+      "kind" : "routine",
+      "line" : {
+        "daysRemaining" : 1,
+        "isLate" : false,
+        "showsYear" : true,
+        "verb" : "do",
+        "when" : "tomorrow"
+      },
+      "text" : "De făcut mâine · 1 ianuarie 2027",
+      "today" : "2026-12-31"
+    },
+    {
+      "due" : "2026-12-31",
+      "kind" : "routine",
+      "line" : {
+        "daysRemaining" : -1,
+        "isLate" : true,
+        "showsYear" : true,
+        "verb" : "do",
+        "when" : "yesterday"
+      },
+      "text" : "Trebuia făcut ieri · 31 decembrie 2026",
+      "today" : "2027-01-01"
+    },
+    {
+      "due" : "2027-08-12",
+      "reminders" : {
+        "consequence" : "legal",
+        "followUpAfterLapse" : null,
+        "graceDays" : 0,
+        "leadDays" : [
+          30,
+          7
+        ],
+        "travelMarginDays" : 180
+      },
+      "texts" : [
+        "Expiră pe 12 august 2027",
+        "Bun de călătorit până pe 12 februarie 2027"
+      ],
+      "today" : "2026-11-26",
+      "travel" : {
+        "valid" : {
+          "expiry" : {
+            "day" : "2027-08-12",
+            "showsYear" : true
+          },
+          "goodForTravelUntil" : {
+            "day" : "2027-02-12",
+            "showsYear" : true
+          },
+          "stillGoodForTravel" : true
+        }
+      }
+    },
+    {
+      "due" : "2027-08-12",
+      "reminders" : {
+        "consequence" : "legal",
+        "followUpAfterLapse" : null,
+        "graceDays" : 0,
+        "leadDays" : [
+          30,
+          7
+        ],
+        "travelMarginDays" : 180
+      },
+      "texts" : [
+        "Expiră pe 12 august",
+        "Bun de călătorit până pe 12 februarie"
+      ],
+      "today" : "2027-02-12",
+      "travel" : {
+        "valid" : {
+          "expiry" : {
+            "day" : "2027-08-12",
+            "showsYear" : false
+          },
+          "goodForTravelUntil" : {
+            "day" : "2027-02-12",
+            "showsYear" : false
+          },
+          "stillGoodForTravel" : true
+        }
+      }
+    },
+    {
+      "due" : "2027-08-12",
+      "reminders" : {
+        "consequence" : "legal",
+        "followUpAfterLapse" : null,
+        "graceDays" : 0,
+        "leadDays" : [
+          30,
+          7
+        ],
+        "travelMarginDays" : 180
+      },
+      "texts" : [
+        "Expiră pe 12 august",
+        "A fost bun de călătorit până pe 12 februarie"
+      ],
+      "today" : "2027-02-13",
+      "travel" : {
+        "valid" : {
+          "expiry" : {
+            "day" : "2027-08-12",
+            "showsYear" : false
+          },
+          "goodForTravelUntil" : {
+            "day" : "2027-02-12",
+            "showsYear" : false
+          },
+          "stillGoodForTravel" : false
+        }
+      }
+    },
+    {
+      "due" : "2027-08-12",
+      "reminders" : {
+        "consequence" : "legal",
+        "followUpAfterLapse" : null,
+        "graceDays" : 0,
+        "leadDays" : [
+          30,
+          7
+        ],
+        "travelMarginDays" : 180
+      },
+      "texts" : [
+        "Expiră pe 12 august",
+        "A fost bun de călătorit până pe 12 februarie"
+      ],
+      "today" : "2027-08-12",
+      "travel" : {
+        "valid" : {
+          "expiry" : {
+            "day" : "2027-08-12",
+            "showsYear" : false
+          },
+          "goodForTravelUntil" : {
+            "day" : "2027-02-12",
+            "showsYear" : false
+          },
+          "stillGoodForTravel" : false
+        }
+      }
+    },
+    {
+      "due" : "2027-08-12",
+      "reminders" : {
+        "consequence" : "legal",
+        "followUpAfterLapse" : null,
+        "graceDays" : 0,
+        "leadDays" : [
+          30,
+          7
+        ],
+        "travelMarginDays" : 180
+      },
+      "texts" : [
+        "A expirat pe 12 august"
+      ],
+      "today" : "2027-08-13",
+      "travel" : {
+        "expired" : {
+          "day" : "2027-08-12",
+          "showsYear" : false
+        }
+      }
+    },
+    {
+      "due" : "2028-03-01",
+      "reminders" : {
+        "consequence" : "legal",
+        "followUpAfterLapse" : null,
+        "graceDays" : 0,
+        "leadDays" : [
+          30,
+          7
+        ],
+        "travelMarginDays" : 180
+      },
+      "texts" : [
+        "Expiră pe 1 martie 2028",
+        "Bun de călătorit până pe 1 septembrie 2027"
+      ],
+      "today" : "2026-11-26",
+      "travel" : {
+        "valid" : {
+          "expiry" : {
+            "day" : "2028-03-01",
+            "showsYear" : true
+          },
+          "goodForTravelUntil" : {
+            "day" : "2027-09-01",
+            "showsYear" : true
+          },
+          "stillGoodForTravel" : true
+        }
+      }
+    },
+    {
+      "due" : "2027-08-12",
+      "reminders" : {
+        "consequence" : "legal",
+        "followUpAfterLapse" : null,
+        "graceDays" : 0,
+        "leadDays" : [
+          30,
+          7,
+          0
+        ],
+        "travelMarginDays" : 0
+      },
+      "texts" : null,
+      "today" : "2026-11-26",
+      "travel" : null
+    }
+  ],
+  "rule" : "DueWording.verbKind(for:), when(daysRemaining:), showsYear(_:today:), line(kind:due:today:calendar:), travel(due:rule:today:calendar:) and travelLines",
+  "shape" : "A due line: kind, today and due; line: the verb (expires, pay, do), whether it is late, how far it is said (yesterday, ago, today, tomorrow, inside), daysRemaining and whether its date shows the year; text: its words. A passport's lines: today, due and its reminders (as in the urgency vectors' reminder-profile, a travel margin in days); travel: null without a cut-off, else expired with its day, or valid with its expiry, its last day good for travel (each a day and whether it shows the year) and whether it still is; texts: their words, or null.",
+  "source" : "ios/DosarCuSina/Services/Attention/DueWording.swift",
+  "writtenBy" : "ios/DosarCuSinaTests/AttentionVectorsTests.swift"
+}

@@ -1,0 +1,1027 @@
+{
+  "cases" : [
+    {
+      "addBoxLine" : "Acte, Garanții, Abonamente, Mașini…",
+      "addBoxNames" : {
+        "more" : true,
+        "names" : [
+          "Acte",
+          "Garanții",
+          "Abonamente",
+          "Mașini"
+        ]
+      },
+      "categories" : [
+        {
+          "addedOnlyUnderParent" : false,
+          "box" : "perSection",
+          "createdAt" : 1790000000,
+          "groupsSections" : false,
+          "homeOrder" : 0,
+          "isOnHome" : true,
+          "key" : "vehicle",
+          "name" : "Mașini",
+          "role" : "vehicle",
+          "shortlistOrder" : 1
+        },
+        {
+          "addedOnlyUnderParent" : false,
+          "box" : "perSection",
+          "createdAt" : 1790000001,
+          "groupsSections" : false,
+          "homeOrder" : 1,
+          "isOnHome" : true,
+          "key" : "home",
+          "name" : "Locuințe",
+          "role" : "home",
+          "shortlistOrder" : 2
+        },
+        {
+          "addedOnlyUnderParent" : false,
+          "box" : "wholeCategory",
+          "createdAt" : 1790000002,
+          "groupsSections" : false,
+          "homeOrder" : 2,
+          "isOnHome" : true,
+          "key" : "documents",
+          "name" : "Acte",
+          "role" : "personalDocument",
+          "shortlistOrder" : null
+        },
+        {
+          "addedOnlyUnderParent" : false,
+          "box" : "perSection",
+          "createdAt" : 1790000003,
+          "groupsSections" : false,
+          "homeOrder" : 3,
+          "isOnHome" : true,
+          "key" : "pet",
+          "name" : "Animale",
+          "role" : null,
+          "shortlistOrder" : 3
+        },
+        {
+          "addedOnlyUnderParent" : false,
+          "box" : "perSection",
+          "createdAt" : 1790000004,
+          "groupsSections" : false,
+          "homeOrder" : 4,
+          "isOnHome" : true,
+          "key" : "health",
+          "name" : "Sănătate",
+          "role" : null,
+          "shortlistOrder" : null
+        },
+        {
+          "addedOnlyUnderParent" : false,
+          "box" : "wholeCategory",
+          "createdAt" : 1790000005,
+          "groupsSections" : false,
+          "homeOrder" : 5,
+          "isOnHome" : true,
+          "key" : "purchase",
+          "name" : "Garanții",
+          "role" : null,
+          "shortlistOrder" : 5
+        },
+        {
+          "addedOnlyUnderParent" : false,
+          "box" : "wholeCategory",
+          "createdAt" : 1790000006,
+          "groupsSections" : false,
+          "homeOrder" : 6,
+          "isOnHome" : true,
+          "key" : "subscription",
+          "name" : "Abonamente",
+          "role" : "subscription",
+          "shortlistOrder" : 6
+        },
+        {
+          "addedOnlyUnderParent" : false,
+          "box" : "perSection",
+          "createdAt" : 1790000007,
+          "groupsSections" : false,
+          "homeOrder" : 7,
+          "isOnHome" : true,
+          "key" : "other",
+          "name" : "Altele",
+          "role" : null,
+          "shortlistOrder" : null
+        },
+        {
+          "addedOnlyUnderParent" : false,
+          "box" : "perSection",
+          "createdAt" : 1790000008,
+          "groupsSections" : false,
+          "homeOrder" : 8,
+          "isOnHome" : false,
+          "key" : "bike",
+          "name" : "Biciclete",
+          "role" : null,
+          "shortlistOrder" : null
+        },
+        {
+          "addedOnlyUnderParent" : false,
+          "box" : "perSection",
+          "createdAt" : 1790000009,
+          "groupsSections" : true,
+          "homeOrder" : 9,
+          "isOnHome" : false,
+          "key" : "plants",
+          "name" : "Plante",
+          "role" : null,
+          "shortlistOrder" : null
+        },
+        {
+          "addedOnlyUnderParent" : true,
+          "box" : "insideOther",
+          "createdAt" : 1790000010,
+          "groupsSections" : false,
+          "homeOrder" : 10,
+          "isOnHome" : false,
+          "key" : "tenancy",
+          "name" : "Chiriași",
+          "role" : null,
+          "shortlistOrder" : null
+        },
+        {
+          "addedOnlyUnderParent" : false,
+          "box" : "insideOther",
+          "createdAt" : 1790000011,
+          "groupsSections" : false,
+          "homeOrder" : 11,
+          "isOnHome" : false,
+          "key" : "member",
+          "name" : "Membri ai familiei",
+          "role" : "holder",
+          "shortlistOrder" : 4
+        },
+        {
+          "addedOnlyUnderParent" : false,
+          "box" : "perSection",
+          "createdAt" : 1790000012,
+          "groupsSections" : false,
+          "homeOrder" : 12,
+          "isOnHome" : false,
+          "key" : "espresso",
+          "name" : "Espressoare",
+          "role" : null,
+          "shortlistOrder" : null
+        }
+      ],
+      "defaultOrder" : [
+
+      ],
+      "hasContacts" : false,
+      "holdsAnything" : [
+
+      ],
+      "name" : "an empty binder",
+      "offered" : [
+        "vehicle",
+        "home",
+        "pet",
+        "member",
+        "purchase",
+        "subscription",
+        "documents",
+        "health",
+        "other",
+        "bike",
+        "plants",
+        "espresso"
+      ],
+      "sections" : [
+
+      ]
+    },
+    {
+      "addBoxLine" : "Acte, Garanții, Abonamente, Locuințe…",
+      "addBoxNames" : {
+        "more" : true,
+        "names" : [
+          "Acte",
+          "Garanții",
+          "Abonamente",
+          "Locuințe"
+        ]
+      },
+      "categories" : [
+        {
+          "addedOnlyUnderParent" : false,
+          "box" : "perSection",
+          "createdAt" : 1790000000,
+          "groupsSections" : false,
+          "homeOrder" : 0,
+          "isOnHome" : true,
+          "key" : "vehicle",
+          "name" : "Mașini",
+          "role" : "vehicle",
+          "shortlistOrder" : 1
+        },
+        {
+          "addedOnlyUnderParent" : false,
+          "box" : "perSection",
+          "createdAt" : 1790000001,
+          "groupsSections" : false,
+          "homeOrder" : 1,
+          "isOnHome" : true,
+          "key" : "home",
+          "name" : "Locuințe",
+          "role" : "home",
+          "shortlistOrder" : 2
+        },
+        {
+          "addedOnlyUnderParent" : false,
+          "box" : "wholeCategory",
+          "createdAt" : 1790000002,
+          "groupsSections" : false,
+          "homeOrder" : 2,
+          "isOnHome" : true,
+          "key" : "documents",
+          "name" : "Acte",
+          "role" : "personalDocument",
+          "shortlistOrder" : null
+        },
+        {
+          "addedOnlyUnderParent" : false,
+          "box" : "perSection",
+          "createdAt" : 1790000003,
+          "groupsSections" : false,
+          "homeOrder" : 3,
+          "isOnHome" : true,
+          "key" : "pet",
+          "name" : "Animale",
+          "role" : null,
+          "shortlistOrder" : 3
+        },
+        {
+          "addedOnlyUnderParent" : false,
+          "box" : "perSection",
+          "createdAt" : 1790000004,
+          "groupsSections" : false,
+          "homeOrder" : 4,
+          "isOnHome" : true,
+          "key" : "health",
+          "name" : "Sănătate",
+          "role" : null,
+          "shortlistOrder" : null
+        },
+        {
+          "addedOnlyUnderParent" : false,
+          "box" : "wholeCategory",
+          "createdAt" : 1790000005,
+          "groupsSections" : false,
+          "homeOrder" : 5,
+          "isOnHome" : true,
+          "key" : "purchase",
+          "name" : "Garanții",
+          "role" : null,
+          "shortlistOrder" : 5
+        },
+        {
+          "addedOnlyUnderParent" : false,
+          "box" : "wholeCategory",
+          "createdAt" : 1790000006,
+          "groupsSections" : false,
+          "homeOrder" : 6,
+          "isOnHome" : true,
+          "key" : "subscription",
+          "name" : "Abonamente",
+          "role" : "subscription",
+          "shortlistOrder" : 6
+        },
+        {
+          "addedOnlyUnderParent" : false,
+          "box" : "perSection",
+          "createdAt" : 1790000007,
+          "groupsSections" : false,
+          "homeOrder" : 7,
+          "isOnHome" : true,
+          "key" : "other",
+          "name" : "Altele",
+          "role" : null,
+          "shortlistOrder" : null
+        },
+        {
+          "addedOnlyUnderParent" : false,
+          "box" : "perSection",
+          "createdAt" : 1790000008,
+          "groupsSections" : false,
+          "homeOrder" : 8,
+          "isOnHome" : false,
+          "key" : "bike",
+          "name" : "Biciclete",
+          "role" : null,
+          "shortlistOrder" : null
+        },
+        {
+          "addedOnlyUnderParent" : false,
+          "box" : "perSection",
+          "createdAt" : 1790000009,
+          "groupsSections" : true,
+          "homeOrder" : 9,
+          "isOnHome" : false,
+          "key" : "plants",
+          "name" : "Plante",
+          "role" : null,
+          "shortlistOrder" : null
+        },
+        {
+          "addedOnlyUnderParent" : true,
+          "box" : "insideOther",
+          "createdAt" : 1790000010,
+          "groupsSections" : false,
+          "homeOrder" : 10,
+          "isOnHome" : false,
+          "key" : "tenancy",
+          "name" : "Chiriași",
+          "role" : null,
+          "shortlistOrder" : null
+        },
+        {
+          "addedOnlyUnderParent" : false,
+          "box" : "insideOther",
+          "createdAt" : 1790000011,
+          "groupsSections" : false,
+          "homeOrder" : 11,
+          "isOnHome" : false,
+          "key" : "member",
+          "name" : "Membri ai familiei",
+          "role" : "holder",
+          "shortlistOrder" : 4
+        },
+        {
+          "addedOnlyUnderParent" : false,
+          "box" : "perSection",
+          "createdAt" : 1790000012,
+          "groupsSections" : false,
+          "homeOrder" : 12,
+          "isOnHome" : false,
+          "key" : "espresso",
+          "name" : "Espressoare",
+          "role" : null,
+          "shortlistOrder" : null
+        }
+      ],
+      "defaultOrder" : [
+        "asset:bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbb0001"
+      ],
+      "hasContacts" : false,
+      "holdsAnything" : [
+        "vehicle"
+      ],
+      "name" : "one car",
+      "offered" : [
+        "vehicle",
+        "home",
+        "pet",
+        "member",
+        "purchase",
+        "subscription",
+        "documents",
+        "health",
+        "other",
+        "bike",
+        "plants",
+        "espresso"
+      ],
+      "sections" : [
+        {
+          "createdAt" : 1790000001,
+          "id" : "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbb0001",
+          "isTopLevel" : true,
+          "templateKey" : "vehicle"
+        }
+      ]
+    },
+    {
+      "addBoxLine" : "Abonamente, Animale, Sănătate, Altele",
+      "addBoxNames" : {
+        "more" : false,
+        "names" : [
+          "Abonamente",
+          "Animale",
+          "Sănătate",
+          "Altele"
+        ]
+      },
+      "categories" : [
+        {
+          "addedOnlyUnderParent" : false,
+          "box" : "perSection",
+          "createdAt" : 1790000000,
+          "groupsSections" : false,
+          "homeOrder" : 0,
+          "isOnHome" : true,
+          "key" : "vehicle",
+          "name" : "Mașini",
+          "role" : "vehicle",
+          "shortlistOrder" : 1
+        },
+        {
+          "addedOnlyUnderParent" : false,
+          "box" : "perSection",
+          "createdAt" : 1790000001,
+          "groupsSections" : false,
+          "homeOrder" : 1,
+          "isOnHome" : true,
+          "key" : "home",
+          "name" : "Locuințe",
+          "role" : "home",
+          "shortlistOrder" : 2
+        },
+        {
+          "addedOnlyUnderParent" : false,
+          "box" : "wholeCategory",
+          "createdAt" : 1790000002,
+          "groupsSections" : false,
+          "homeOrder" : 2,
+          "isOnHome" : true,
+          "key" : "documents",
+          "name" : "Acte",
+          "role" : "personalDocument",
+          "shortlistOrder" : null
+        },
+        {
+          "addedOnlyUnderParent" : false,
+          "box" : "perSection",
+          "createdAt" : 1790000003,
+          "groupsSections" : false,
+          "homeOrder" : 3,
+          "isOnHome" : true,
+          "key" : "pet",
+          "name" : "Animale",
+          "role" : null,
+          "shortlistOrder" : 3
+        },
+        {
+          "addedOnlyUnderParent" : false,
+          "box" : "perSection",
+          "createdAt" : 1790000004,
+          "groupsSections" : false,
+          "homeOrder" : 4,
+          "isOnHome" : true,
+          "key" : "health",
+          "name" : "Sănătate",
+          "role" : null,
+          "shortlistOrder" : null
+        },
+        {
+          "addedOnlyUnderParent" : false,
+          "box" : "wholeCategory",
+          "createdAt" : 1790000005,
+          "groupsSections" : false,
+          "homeOrder" : 5,
+          "isOnHome" : true,
+          "key" : "purchase",
+          "name" : "Garanții",
+          "role" : null,
+          "shortlistOrder" : 5
+        },
+        {
+          "addedOnlyUnderParent" : false,
+          "box" : "wholeCategory",
+          "createdAt" : 1790000006,
+          "groupsSections" : false,
+          "homeOrder" : 6,
+          "isOnHome" : true,
+          "key" : "subscription",
+          "name" : "Abonamente",
+          "role" : "subscription",
+          "shortlistOrder" : 6
+        },
+        {
+          "addedOnlyUnderParent" : false,
+          "box" : "perSection",
+          "createdAt" : 1790000007,
+          "groupsSections" : false,
+          "homeOrder" : 7,
+          "isOnHome" : true,
+          "key" : "other",
+          "name" : "Altele",
+          "role" : null,
+          "shortlistOrder" : null
+        },
+        {
+          "addedOnlyUnderParent" : false,
+          "box" : "perSection",
+          "createdAt" : 1790000008,
+          "groupsSections" : false,
+          "homeOrder" : 8,
+          "isOnHome" : false,
+          "key" : "bike",
+          "name" : "Biciclete",
+          "role" : null,
+          "shortlistOrder" : null
+        },
+        {
+          "addedOnlyUnderParent" : false,
+          "box" : "perSection",
+          "createdAt" : 1790000009,
+          "groupsSections" : true,
+          "homeOrder" : 9,
+          "isOnHome" : false,
+          "key" : "plants",
+          "name" : "Plante",
+          "role" : null,
+          "shortlistOrder" : null
+        },
+        {
+          "addedOnlyUnderParent" : true,
+          "box" : "insideOther",
+          "createdAt" : 1790000010,
+          "groupsSections" : false,
+          "homeOrder" : 10,
+          "isOnHome" : false,
+          "key" : "tenancy",
+          "name" : "Chiriași",
+          "role" : null,
+          "shortlistOrder" : null
+        },
+        {
+          "addedOnlyUnderParent" : false,
+          "box" : "insideOther",
+          "createdAt" : 1790000011,
+          "groupsSections" : false,
+          "homeOrder" : 11,
+          "isOnHome" : false,
+          "key" : "member",
+          "name" : "Membri ai familiei",
+          "role" : "holder",
+          "shortlistOrder" : 4
+        },
+        {
+          "addedOnlyUnderParent" : false,
+          "box" : "perSection",
+          "createdAt" : 1790000012,
+          "groupsSections" : false,
+          "homeOrder" : 12,
+          "isOnHome" : false,
+          "key" : "espresso",
+          "name" : "Espressoare",
+          "role" : null,
+          "shortlistOrder" : null
+        }
+      ],
+      "defaultOrder" : [
+        "asset:bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbb0009",
+        "asset:bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbb0001",
+        "asset:bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbb0002",
+        "category:documents",
+        "category:purchase",
+        "agenda"
+      ],
+      "hasContacts" : true,
+      "holdsAnything" : [
+        "vehicle",
+        "home",
+        "documents",
+        "purchase",
+        "plants",
+        "tenancy",
+        "member"
+      ],
+      "name" : "a household",
+      "offered" : [
+        "vehicle",
+        "home",
+        "pet",
+        "member",
+        "purchase",
+        "subscription",
+        "documents",
+        "health",
+        "other",
+        "bike",
+        "plants",
+        "espresso"
+      ],
+      "sections" : [
+        {
+          "createdAt" : 1790000001,
+          "id" : "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbb0001",
+          "isTopLevel" : true,
+          "templateKey" : "vehicle"
+        },
+        {
+          "createdAt" : 1790000002,
+          "id" : "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbb0002",
+          "isTopLevel" : true,
+          "templateKey" : "home"
+        },
+        {
+          "createdAt" : 1790000003,
+          "id" : "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbb0003",
+          "isTopLevel" : false,
+          "templateKey" : "tenancy"
+        },
+        {
+          "createdAt" : 1790000004,
+          "id" : "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbb0004",
+          "isTopLevel" : true,
+          "templateKey" : "purchase"
+        },
+        {
+          "createdAt" : 1790000005,
+          "id" : "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbb0005",
+          "isTopLevel" : true,
+          "templateKey" : "member"
+        },
+        {
+          "createdAt" : 1790000006,
+          "id" : "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbb0006",
+          "isTopLevel" : true,
+          "templateKey" : "plants"
+        },
+        {
+          "createdAt" : 1790000007,
+          "id" : "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbb0007",
+          "isTopLevel" : false,
+          "templateKey" : "plants"
+        },
+        {
+          "createdAt" : 1790000008,
+          "id" : "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbb0008",
+          "isTopLevel" : true,
+          "templateKey" : "plants"
+        },
+        {
+          "createdAt" : 1790000000,
+          "id" : "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbb0009",
+          "isTopLevel" : true,
+          "templateKey" : "vehicle"
+        }
+      ]
+    },
+    {
+      "addBoxLine" : "Garanții, Acte, Mașini, Animale…",
+      "addBoxNames" : {
+        "more" : true,
+        "names" : [
+          "Garanții",
+          "Acte",
+          "Mașini",
+          "Animale"
+        ]
+      },
+      "categories" : [
+        {
+          "addedOnlyUnderParent" : false,
+          "box" : "perSection",
+          "createdAt" : 1790000000,
+          "groupsSections" : false,
+          "homeOrder" : 0,
+          "isOnHome" : true,
+          "key" : "a",
+          "name" : "Mașini",
+          "role" : null,
+          "shortlistOrder" : null
+        },
+        {
+          "addedOnlyUnderParent" : false,
+          "box" : "wholeCategory",
+          "createdAt" : 1790000000,
+          "groupsSections" : false,
+          "homeOrder" : 1,
+          "isOnHome" : true,
+          "key" : "b",
+          "name" : "Garanții",
+          "role" : null,
+          "shortlistOrder" : null
+        },
+        {
+          "addedOnlyUnderParent" : false,
+          "box" : "insideOther",
+          "createdAt" : 1790000000,
+          "groupsSections" : false,
+          "homeOrder" : 2,
+          "isOnHome" : true,
+          "key" : "c",
+          "name" : "Chiriași",
+          "role" : null,
+          "shortlistOrder" : null
+        },
+        {
+          "addedOnlyUnderParent" : false,
+          "box" : "perSection",
+          "createdAt" : 1790000000,
+          "groupsSections" : false,
+          "homeOrder" : 3,
+          "isOnHome" : false,
+          "key" : "d",
+          "name" : "Biciclete",
+          "role" : null,
+          "shortlistOrder" : null
+        },
+        {
+          "addedOnlyUnderParent" : false,
+          "box" : "perSection",
+          "createdAt" : 1790000000,
+          "groupsSections" : false,
+          "homeOrder" : 4,
+          "isOnHome" : true,
+          "key" : "e",
+          "name" : "Animale",
+          "role" : null,
+          "shortlistOrder" : null
+        },
+        {
+          "addedOnlyUnderParent" : false,
+          "box" : "perSection",
+          "createdAt" : 1790000000,
+          "groupsSections" : true,
+          "homeOrder" : 5,
+          "isOnHome" : true,
+          "key" : "f",
+          "name" : "Plante",
+          "role" : null,
+          "shortlistOrder" : null
+        },
+        {
+          "addedOnlyUnderParent" : false,
+          "box" : "perSection",
+          "createdAt" : 1790000000,
+          "groupsSections" : false,
+          "homeOrder" : 6,
+          "isOnHome" : true,
+          "key" : "g",
+          "name" : "Espressoare",
+          "role" : null,
+          "shortlistOrder" : null
+        },
+        {
+          "addedOnlyUnderParent" : false,
+          "box" : "perSection",
+          "createdAt" : 1790000000,
+          "groupsSections" : false,
+          "homeOrder" : 7,
+          "isOnHome" : true,
+          "key" : "h",
+          "name" : "Altele",
+          "role" : null,
+          "shortlistOrder" : null
+        },
+        {
+          "addedOnlyUnderParent" : false,
+          "box" : "wholeCategory",
+          "createdAt" : 1790000000,
+          "groupsSections" : false,
+          "homeOrder" : 8,
+          "isOnHome" : true,
+          "key" : "i",
+          "name" : "Acte",
+          "role" : "personalDocument",
+          "shortlistOrder" : null
+        },
+        {
+          "addedOnlyUnderParent" : false,
+          "box" : "insideOther",
+          "createdAt" : 1790000000,
+          "groupsSections" : false,
+          "homeOrder" : 9,
+          "isOnHome" : true,
+          "key" : "j",
+          "name" : "Persoane",
+          "role" : "holder",
+          "shortlistOrder" : null
+        }
+      ],
+      "defaultOrder" : [
+
+      ],
+      "hasContacts" : false,
+      "holdsAnything" : [
+
+      ],
+      "name" : "categories of one's own, nothing in them",
+      "offered" : [
+        "a",
+        "b",
+        "c",
+        "d",
+        "e",
+        "f",
+        "g",
+        "h",
+        "i",
+        "j"
+      ],
+      "sections" : [
+
+      ]
+    },
+    {
+      "addBoxLine" : "Garanții, Animale, Espressoare, Altele",
+      "addBoxNames" : {
+        "more" : false,
+        "names" : [
+          "Garanții",
+          "Animale",
+          "Espressoare",
+          "Altele"
+        ]
+      },
+      "categories" : [
+        {
+          "addedOnlyUnderParent" : false,
+          "box" : "perSection",
+          "createdAt" : 1790000000,
+          "groupsSections" : false,
+          "homeOrder" : 0,
+          "isOnHome" : true,
+          "key" : "a",
+          "name" : "Mașini",
+          "role" : null,
+          "shortlistOrder" : null
+        },
+        {
+          "addedOnlyUnderParent" : false,
+          "box" : "wholeCategory",
+          "createdAt" : 1790000000,
+          "groupsSections" : false,
+          "homeOrder" : 1,
+          "isOnHome" : true,
+          "key" : "b",
+          "name" : "Garanții",
+          "role" : null,
+          "shortlistOrder" : null
+        },
+        {
+          "addedOnlyUnderParent" : false,
+          "box" : "insideOther",
+          "createdAt" : 1790000000,
+          "groupsSections" : false,
+          "homeOrder" : 2,
+          "isOnHome" : true,
+          "key" : "c",
+          "name" : "Chiriași",
+          "role" : null,
+          "shortlistOrder" : null
+        },
+        {
+          "addedOnlyUnderParent" : false,
+          "box" : "perSection",
+          "createdAt" : 1790000000,
+          "groupsSections" : false,
+          "homeOrder" : 3,
+          "isOnHome" : false,
+          "key" : "d",
+          "name" : "Biciclete",
+          "role" : null,
+          "shortlistOrder" : null
+        },
+        {
+          "addedOnlyUnderParent" : false,
+          "box" : "perSection",
+          "createdAt" : 1790000000,
+          "groupsSections" : false,
+          "homeOrder" : 4,
+          "isOnHome" : true,
+          "key" : "e",
+          "name" : "Animale",
+          "role" : null,
+          "shortlistOrder" : null
+        },
+        {
+          "addedOnlyUnderParent" : false,
+          "box" : "perSection",
+          "createdAt" : 1790000000,
+          "groupsSections" : true,
+          "homeOrder" : 5,
+          "isOnHome" : true,
+          "key" : "f",
+          "name" : "Plante",
+          "role" : null,
+          "shortlistOrder" : null
+        },
+        {
+          "addedOnlyUnderParent" : false,
+          "box" : "perSection",
+          "createdAt" : 1790000000,
+          "groupsSections" : false,
+          "homeOrder" : 6,
+          "isOnHome" : true,
+          "key" : "g",
+          "name" : "Espressoare",
+          "role" : null,
+          "shortlistOrder" : null
+        },
+        {
+          "addedOnlyUnderParent" : false,
+          "box" : "perSection",
+          "createdAt" : 1790000000,
+          "groupsSections" : false,
+          "homeOrder" : 7,
+          "isOnHome" : true,
+          "key" : "h",
+          "name" : "Altele",
+          "role" : null,
+          "shortlistOrder" : null
+        },
+        {
+          "addedOnlyUnderParent" : false,
+          "box" : "wholeCategory",
+          "createdAt" : 1790000000,
+          "groupsSections" : false,
+          "homeOrder" : 8,
+          "isOnHome" : true,
+          "key" : "i",
+          "name" : "Acte",
+          "role" : "personalDocument",
+          "shortlistOrder" : null
+        },
+        {
+          "addedOnlyUnderParent" : false,
+          "box" : "insideOther",
+          "createdAt" : 1790000000,
+          "groupsSections" : false,
+          "homeOrder" : 9,
+          "isOnHome" : true,
+          "key" : "j",
+          "name" : "Persoane",
+          "role" : "holder",
+          "shortlistOrder" : null
+        }
+      ],
+      "defaultOrder" : [
+        "asset:bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbb0002",
+        "asset:bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbb0001",
+        "category:f",
+        "category:i",
+        "asset:bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbb0005",
+        "agenda"
+      ],
+      "hasContacts" : true,
+      "holdsAnything" : [
+        "a",
+        "c",
+        "d",
+        "f",
+        "i",
+        "j"
+      ],
+      "name" : "categories of one's own, some filled",
+      "offered" : [
+        "a",
+        "b",
+        "c",
+        "d",
+        "e",
+        "f",
+        "g",
+        "h",
+        "i",
+        "j"
+      ],
+      "sections" : [
+        {
+          "createdAt" : 1790000002,
+          "id" : "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbb0001",
+          "isTopLevel" : true,
+          "templateKey" : "a"
+        },
+        {
+          "createdAt" : 1790000001,
+          "id" : "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbb0002",
+          "isTopLevel" : true,
+          "templateKey" : "a"
+        },
+        {
+          "createdAt" : 1790000003,
+          "id" : "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbb0003",
+          "isTopLevel" : false,
+          "templateKey" : "f"
+        },
+        {
+          "createdAt" : 1790000004,
+          "id" : "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbb0004",
+          "isTopLevel" : true,
+          "templateKey" : "j"
+        },
+        {
+          "createdAt" : 1790000005,
+          "id" : "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbb0005",
+          "isTopLevel" : true,
+          "templateKey" : "zz"
+        },
+        {
+          "createdAt" : 1790000006,
+          "id" : "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbb0006",
+          "isTopLevel" : false,
+          "templateKey" : "c"
+        },
+        {
+          "createdAt" : 1790000007,
+          "id" : "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbb0007",
+          "isTopLevel" : true,
+          "templateKey" : "d"
+        }
+      ]
+    }
+  ],
+  "rule" : "BinderLayout.holdsAnything(_:templates:assets:) over holds, defaultOrder(templates:assets:hasContacts:) and addBoxNames(offered:templates:assets:)",
+  "shape" : "categories (as in section-offers), the binder's sections (each its id, its category's key, whether it is top-level and createdAt, seconds since 1970), hasContacts and offered (the keys „Adaugă o secțiune” offers, in order: section-offers' inOrder for the built-in catalog); holdsAnything: the keys of the categories that hold something; defaultOrder: the boxes before the person rearranges them, as their saved order writes them; addBoxNames: what the add box names, at most four, and whether there are more; addBoxLine: its words.",
+  "source" : "ios/DosarCuSina/Views/Dosar/BinderLayout.swift",
+  "writtenBy" : "ios/DosarCuSinaTests/AttentionVectorsTests.swift"
+}
