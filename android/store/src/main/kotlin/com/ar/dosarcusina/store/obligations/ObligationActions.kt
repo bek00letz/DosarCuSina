@@ -1,6 +1,7 @@
 package com.ar.dosarcusina.store.obligations
 
 import com.ar.dosarcusina.archive.v3.RecurrenceRule
+import com.ar.dosarcusina.core.values.ObligationStatus
 import com.ar.dosarcusina.core.values.ThreeWay
 import com.ar.dosarcusina.store.Step
 import com.ar.dosarcusina.store.Tables
@@ -10,22 +11,6 @@ import com.ar.dosarcusina.store.schema.Obligation
 import com.ar.dosarcusina.store.schema.keptRecurrence
 import com.ar.dosarcusina.store.schema.withKeptRecurrence
 import java.time.Instant
-
-/** Where a deadline stands (`ObligationStatus`); a status a newer build wrote reads as the loudest, active. */
-enum class ObligationStatus(val raw: String) {
-    ACTIVE("active"),
-    PAUSED("paused"),
-    DONE("done"),
-    ARCHIVED("archived"),
-    ;
-
-    companion object {
-        /** The status that hides nothing. */
-        val LOUDEST: ObligationStatus = ACTIVE
-
-        fun stored(raw: String?): ObligationStatus = entries.firstOrNull { it.raw == raw } ?: LOUDEST
-    }
-}
 
 /** Where the deadline stands, as stored. */
 val Obligation.status: ObligationStatus get() = ObligationStatus.stored(statusRaw)
