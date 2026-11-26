@@ -1,0 +1,641 @@
+{
+  "built" : "A token in a case's text is a number that passes its check, built when the test runs so the repository never holds one. {luhn:DIGITS}: DIGITS as written with the Luhn check digit after them. {iban:CC:BBAN}: CC, the two ISO 13616 check digits (98 minus BBAN + CC + \"00\" mod 97, letters as A=10 … Z=35), then BBAN. {iban4:CC:BBAN}: the same, in groups of four with a space between. {fours:DIGITS}: DIGITS in groups of four with a space between. Answers name the same tokens.",
+  "cases" : [
+    {
+      "contains" : true,
+      "lastFour" : "1111",
+      "lastFourStrict" : "1111",
+      "redacted" : "Card •••• 1111 Visa",
+      "strict" : "Card •••• 1111 Visa",
+      "text" : "Card 4111 1111 1111 1111 Visa"
+    },
+    {
+      "contains" : true,
+      "lastFour" : "4444",
+      "lastFourStrict" : "4444",
+      "redacted" : "•••• 4444",
+      "strict" : "•••• 4444",
+      "text" : "5555-5555-5555-4444"
+    },
+    {
+      "contains" : true,
+      "lastFour" : "4444",
+      "lastFourStrict" : "4444",
+      "redacted" : "•••• 4444",
+      "strict" : "•••• 4444",
+      "text" : "5555555555554444"
+    },
+    {
+      "contains" : true,
+      "lastFour" : "1112",
+      "lastFourStrict" : "1112",
+      "redacted" : "•••• 1112",
+      "strict" : "•••• 1112",
+      "text" : "4111 1111 1111 1112"
+    },
+    {
+      "contains" : true,
+      "lastFour" : "0005",
+      "lastFourStrict" : "0005",
+      "redacted" : "•••• 0005",
+      "strict" : "•••• 0005",
+      "text" : "378282246310005"
+    },
+    {
+      "contains" : true,
+      "lastFour" : "0005",
+      "lastFourStrict" : "0005",
+      "redacted" : "•••• 0005",
+      "strict" : "•••• 0005",
+      "text" : "3782 822463 10005"
+    },
+    {
+      "contains" : true,
+      "lastFour" : "5904",
+      "lastFourStrict" : "5904",
+      "redacted" : "•••• 5904",
+      "strict" : "•••• 5904",
+      "text" : "30569309025904"
+    },
+    {
+      "contains" : true,
+      "lastFour" : "5904",
+      "lastFourStrict" : "5904",
+      "redacted" : "•••• 5904",
+      "strict" : "•••• 5904",
+      "text" : "3056 930902 5904"
+    },
+    {
+      "contains" : true,
+      "lastFour" : "1117",
+      "lastFourStrict" : "1117",
+      "redacted" : "•••• 1117",
+      "strict" : "•••• 1117",
+      "text" : "6011111111111117"
+    },
+    {
+      "contains" : true,
+      "lastFour" : "0505",
+      "lastFourStrict" : "0505",
+      "redacted" : "•••• 0505",
+      "strict" : "•••• 0505",
+      "text" : "3566002020360505"
+    },
+    {
+      "contains" : true,
+      "lastFour" : "3222",
+      "lastFourStrict" : "3222",
+      "redacted" : "•••• 3222",
+      "strict" : "•••• 3222",
+      "text" : "2223003122003222"
+    },
+    {
+      "contains" : true,
+      "lastFour" : "1110",
+      "lastFourStrict" : "1110",
+      "redacted" : "•••• 1110",
+      "strict" : "•••• 1110",
+      "text" : "{luhn:4111 1111 1111 1111 11}"
+    },
+    {
+      "contains" : true,
+      "lastFour" : "0005",
+      "lastFourStrict" : "0005",
+      "redacted" : "•••• 0005",
+      "strict" : "•••• 0005",
+      "text" : "{luhn:500000000000000000}"
+    },
+    {
+      "contains" : false,
+      "lastFour" : null,
+      "lastFourStrict" : "0006",
+      "redacted" : "CNP 1800101990006",
+      "strict" : "CNP •••• 0006",
+      "text" : "CNP 1800101990006"
+    },
+    {
+      "contains" : false,
+      "lastFour" : null,
+      "lastFourStrict" : "1853",
+      "redacted" : "IMEI {luhn:99000086247185}",
+      "strict" : "IMEI •••• 1853",
+      "text" : "IMEI {luhn:99000086247185}"
+    },
+    {
+      "contains" : false,
+      "lastFour" : null,
+      "lastFourStrict" : "0001",
+      "redacted" : "80642000000000000001",
+      "strict" : "•••• 0001",
+      "text" : "80642000000000000001"
+    },
+    {
+      "contains" : false,
+      "lastFour" : null,
+      "lastFourStrict" : "5678",
+      "redacted" : "1234567890123456789012345678",
+      "strict" : "•••• 5678",
+      "text" : "1234567890123456789012345678"
+    },
+    {
+      "contains" : false,
+      "lastFour" : null,
+      "lastFourStrict" : null,
+      "redacted" : "Factura 1234567",
+      "strict" : "Factura 1234567",
+      "text" : "Factura 1234567"
+    },
+    {
+      "contains" : false,
+      "lastFour" : null,
+      "lastFourStrict" : "2222",
+      "redacted" : "Visa veche {luhn:422222222222}",
+      "strict" : "Visa veche •••• 2222",
+      "text" : "Visa veche {luhn:422222222222}"
+    },
+    {
+      "contains" : false,
+      "lastFour" : null,
+      "lastFourStrict" : null,
+      "redacted" : "Telefon 0722 123 456",
+      "strict" : "Telefon ••••",
+      "text" : "Telefon 0722 123 456"
+    },
+    {
+      "contains" : false,
+      "lastFour" : null,
+      "lastFourStrict" : null,
+      "redacted" : "Suma 1 250 000 lei",
+      "strict" : "Suma 1 250 000 lei",
+      "text" : "Suma 1 250 000 lei"
+    },
+    {
+      "contains" : true,
+      "lastFour" : "1111",
+      "lastFourStrict" : "1111",
+      "redacted" : "Nr. 12 •••• 1111",
+      "strict" : "Nr. •••• 1111",
+      "text" : "Nr. 12 4111 1111 1111 1111"
+    },
+    {
+      "contains" : true,
+      "lastFour" : "4444",
+      "lastFourStrict" : "4444",
+      "redacted" : "Ref 3-•••• 4444",
+      "strict" : "Ref •••• 4444",
+      "text" : "Ref 3-5555555555554444"
+    },
+    {
+      "contains" : true,
+      "lastFour" : "1111",
+      "lastFourStrict" : "1111",
+      "redacted" : "•••• 1111-27 lei",
+      "strict" : "•••• 1127 lei",
+      "text" : "4111-1111-1111-1111-27 lei"
+    },
+    {
+      "contains" : true,
+      "lastFour" : "1111",
+      "lastFourStrict" : "1111",
+      "redacted" : "Rând 2 150 •••• 1111",
+      "strict" : "Rând •••• 1111",
+      "text" : "Rând 2 150 4111 1111 1111 1111"
+    },
+    {
+      "contains" : true,
+      "lastFour" : "1111",
+      "lastFourStrict" : "1111",
+      "redacted" : "•••• 1111 0828",
+      "strict" : "•••• 0828",
+      "text" : "4111 1111 1111 1111 0828"
+    },
+    {
+      "contains" : true,
+      "lastFour" : "0005",
+      "lastFourStrict" : "0005",
+      "redacted" : "Plată 7 •••• 0005",
+      "strict" : "Plată •••• 0005",
+      "text" : "Plată 7 3782 822463 10005"
+    },
+    {
+      "contains" : true,
+      "lastFour" : "1111",
+      "lastFourStrict" : "1111",
+      "redacted" : "CNP 1800101990006 •••• 1111",
+      "strict" : "CNP •••• 1111",
+      "text" : "CNP 1800101990006 4111111111111111"
+    },
+    {
+      "contains" : true,
+      "lastFour" : "1111",
+      "lastFourStrict" : "1111",
+      "redacted" : "80642000000000000001 •••• 1111",
+      "strict" : "•••• 1111",
+      "text" : "80642000000000000001 4111111111111111"
+    },
+    {
+      "contains" : true,
+      "lastFour" : "1111",
+      "lastFourStrict" : "1111",
+      "redacted" : "•••• 1111-•••• 4444",
+      "strict" : "•••• 4444",
+      "text" : "4111 1111 1111 1111-5555555555554444"
+    },
+    {
+      "contains" : true,
+      "lastFour" : "1111",
+      "lastFourStrict" : "1111",
+      "redacted" : "•••• 1111 •••• 4444",
+      "strict" : "•••• 4444",
+      "text" : "4111 1111 1111 1111 {fours:5555555555554444}"
+    },
+    {
+      "contains" : false,
+      "lastFour" : null,
+      "lastFourStrict" : "0000",
+      "redacted" : "Index 41111111111111110000",
+      "strict" : "Index •••• 0000",
+      "text" : "Index 41111111111111110000"
+    },
+    {
+      "contains" : false,
+      "lastFour" : null,
+      "lastFourStrict" : "1111",
+      "redacted" : "Contract 124111111111111111",
+      "strict" : "Contract •••• 1111",
+      "text" : "Contract 124111111111111111"
+    },
+    {
+      "contains" : false,
+      "lastFour" : null,
+      "lastFourStrict" : "0000",
+      "redacted" : "Cod 4111 1111 1111 1112 0000",
+      "strict" : "Cod •••• 0000",
+      "text" : "Cod 4111 1111 1111 1112 0000"
+    },
+    {
+      "contains" : false,
+      "lastFour" : null,
+      "lastFourStrict" : "1820",
+      "redacted" : "2 4 6 8 10 12 14 16 18 20",
+      "strict" : "•••• 1820",
+      "text" : "2 4 6 8 10 12 14 16 18 20"
+    },
+    {
+      "contains" : false,
+      "lastFour" : null,
+      "lastFourStrict" : "0108",
+      "redacted" : "8064 {luhn:2221 0000 0000 010}",
+      "strict" : "•••• 0108",
+      "text" : "8064 {luhn:2221 0000 0000 010}"
+    },
+    {
+      "contains" : false,
+      "lastFour" : null,
+      "lastFourStrict" : "1111",
+      "redacted" : "AB4111111111111111",
+      "strict" : "AB•••• 1111",
+      "text" : "AB4111111111111111"
+    },
+    {
+      "contains" : false,
+      "lastFour" : null,
+      "lastFourStrict" : "1111",
+      "redacted" : "4111111111111111RON",
+      "strict" : "•••• 1111RON",
+      "text" : "4111111111111111RON"
+    },
+    {
+      "contains" : false,
+      "lastFour" : null,
+      "lastFourStrict" : "1111",
+      "redacted" : "Cod4111111111111111X",
+      "strict" : "Cod•••• 1111X",
+      "text" : "Cod4111111111111111X"
+    },
+    {
+      "contains" : true,
+      "lastFour" : "1111",
+      "lastFourStrict" : "1111",
+      "redacted" : "Cod XY-•••• 1111",
+      "strict" : "Cod XY-•••• 1111",
+      "text" : "Cod XY-4111111111111111"
+    },
+    {
+      "contains" : false,
+      "lastFour" : null,
+      "lastFourStrict" : "1111",
+      "redacted" : "NR4111111111111111",
+      "strict" : "NR•••• 1111",
+      "text" : "NR4111111111111111"
+    },
+    {
+      "contains" : true,
+      "lastFour" : "1111",
+      "lastFourStrict" : "1111",
+      "redacted" : "Contract X12 •••• 1111",
+      "strict" : "Contract X•••• 1111",
+      "text" : "Contract X12 4111 1111 1111 1111"
+    },
+    {
+      "contains" : true,
+      "lastFour" : "1111",
+      "lastFourStrict" : "1111",
+      "redacted" : "AB12 •••• 1111",
+      "strict" : "AB•••• 1111",
+      "text" : "AB12 4111 1111 1111 1111"
+    },
+    {
+      "contains" : false,
+      "lastFour" : null,
+      "lastFourStrict" : "0000",
+      "redacted" : "RO49 AAAA 1B31 0075 9384 0000",
+      "strict" : "RO49 AAAA 1B•••• 0000",
+      "text" : "RO49 AAAA 1B31 0075 9384 0000"
+    },
+    {
+      "contains" : false,
+      "lastFour" : null,
+      "lastFourStrict" : "0000",
+      "redacted" : "RO49AAAA1B31007593840000",
+      "strict" : "RO49AAAA1B•••• 0000",
+      "text" : "RO49AAAA1B31007593840000"
+    },
+    {
+      "contains" : false,
+      "lastFour" : null,
+      "lastFourStrict" : "0000",
+      "redacted" : "ro49 aaaa 1b31 0075 9384 0000",
+      "strict" : "ro49 aaaa 1b•••• 0000",
+      "text" : "ro49 aaaa 1b31 0075 9384 0000"
+    },
+    {
+      "contains" : false,
+      "lastFour" : null,
+      "lastFourStrict" : "5432",
+      "redacted" : "GB82-WEST-1234-5698-7654-32",
+      "strict" : "GB82-WEST-•••• 5432",
+      "text" : "GB82-WEST-1234-5698-7654-32"
+    },
+    {
+      "contains" : false,
+      "lastFour" : null,
+      "lastFourStrict" : "3000",
+      "redacted" : "IBAN: DE89 3704 0044 0532 0130 00.",
+      "strict" : "IBAN: DE•••• 3000.",
+      "text" : "IBAN: DE89 3704 0044 0532 0130 00."
+    },
+    {
+      "contains" : false,
+      "lastFour" : null,
+      "lastFourStrict" : "5432",
+      "redacted" : "Cont GB82WEST12345698765432, deschis la ghișeu",
+      "strict" : "Cont GB82WEST•••• 5432, deschis la ghișeu",
+      "text" : "Cont GB82WEST12345698765432, deschis la ghișeu"
+    },
+    {
+      "contains" : false,
+      "lastFour" : null,
+      "lastFourStrict" : "0013",
+      "redacted" : "FR14 2004 1010 0505 0001 3M02 606",
+      "strict" : "FR•••• 0013M02 606",
+      "text" : "FR14 2004 1010 0505 0001 3M02 606"
+    },
+    {
+      "contains" : false,
+      "lastFour" : null,
+      "lastFourStrict" : "0001",
+      "redacted" : "RO49 AAAA 1B31 0075 9384 0001",
+      "strict" : "RO49 AAAA 1B•••• 0001",
+      "text" : "RO49 AAAA 1B31 0075 9384 0001"
+    },
+    {
+      "contains" : false,
+      "lastFour" : null,
+      "lastFourStrict" : "5433",
+      "redacted" : "IBAN GB82 WEST 1234 5698 7654 33",
+      "strict" : "IBAN GB82 WEST •••• 5433",
+      "text" : "IBAN GB82 WEST 1234 5698 7654 33"
+    },
+    {
+      "contains" : false,
+      "lastFour" : null,
+      "lastFourStrict" : "1111",
+      "redacted" : "{iban:RO:AAAA4111111111111111}",
+      "strict" : "RO20AAAA•••• 1111",
+      "text" : "{iban:RO:AAAA4111111111111111}"
+    },
+    {
+      "contains" : false,
+      "lastFour" : null,
+      "lastFourStrict" : "1111",
+      "redacted" : "{iban4:RO:AAAA4111111111111111}",
+      "strict" : "RO20 AAAA •••• 1111",
+      "text" : "{iban4:RO:AAAA4111111111111111}"
+    },
+    {
+      "contains" : false,
+      "lastFour" : null,
+      "lastFourStrict" : "1111",
+      "redacted" : "RO00 AAAA 4111 1111 1111 1111",
+      "strict" : "RO00 AAAA •••• 1111",
+      "text" : "RO00 AAAA 4111 1111 1111 1111"
+    },
+    {
+      "contains" : true,
+      "lastFour" : "1111",
+      "lastFourStrict" : "1111",
+      "redacted" : "RO49AAAA1B31007593840000 •••• 1111",
+      "strict" : "RO49AAAA1B•••• 1111",
+      "text" : "RO49AAAA1B31007593840000 4111111111111111"
+    },
+    {
+      "contains" : true,
+      "lastFour" : "1111",
+      "lastFourStrict" : "1111",
+      "redacted" : "IBAN RO49 AAAA 1B31 0075 9384 0000, card •••• 1111",
+      "strict" : "IBAN RO49 AAAA 1B•••• 0000, card •••• 1111",
+      "text" : "IBAN RO49 AAAA 1B31 0075 9384 0000, card 4111 1111 1111 1111"
+    },
+    {
+      "contains" : true,
+      "lastFour" : "1111",
+      "lastFourStrict" : "1111",
+      "redacted" : "RO49 AAAA 1B31 0075 9384 0000 •••• 1111",
+      "strict" : "RO49 AAAA 1B•••• 1111",
+      "text" : "RO49 AAAA 1B31 0075 9384 0000 4111 1111 1111 1111"
+    },
+    {
+      "contains" : true,
+      "lastFour" : "1111",
+      "lastFourStrict" : "1111",
+      "redacted" : "•••• 1111 GB82WEST12345698765432",
+      "strict" : "•••• 1111 GB82WEST•••• 5432",
+      "text" : "4111 1111 1111 1111 GB82WEST12345698765432"
+    },
+    {
+      "contains" : true,
+      "lastFour" : "1234",
+      "lastFourStrict" : "1234",
+      "redacted" : "Microcip •••• 1234",
+      "strict" : "Microcip •••• 1234",
+      "text" : "Microcip {luhn:64200000000123}"
+    },
+    {
+      "contains" : false,
+      "lastFour" : null,
+      "lastFourStrict" : "2345",
+      "redacted" : "Microcip 642093400012345",
+      "strict" : "Microcip •••• 2345",
+      "text" : "Microcip 642093400012345"
+    },
+    {
+      "contains" : true,
+      "lastFour" : "1111",
+      "lastFourStrict" : "1111",
+      "redacted" : "Plătită cu cardul •••• 1111 în ședința de vineri; țânțarii știu",
+      "strict" : "Plătită cu cardul •••• 1111 în ședința de vineri; țânțarii știu",
+      "text" : "Plătită cu cardul 4111 1111 1111 1111 în ședința de vineri; țânțarii știu"
+    },
+    {
+      "contains" : true,
+      "lastFour" : "4444",
+      "lastFourStrict" : "4444",
+      "redacted" : "Șofer: •••• 4444, țară România",
+      "strict" : "Șofer: •••• 4444, țară România",
+      "text" : "Șofer: 5555 5555 5555 4444, țară România"
+    },
+    {
+      "contains" : true,
+      "lastFour" : "1111",
+      "lastFourStrict" : "1111",
+      "redacted" : "Nr. 12.•••• 1111",
+      "strict" : "Nr. 12.•••• 1111",
+      "text" : "Nr. 12.4111 1111 1111 1111"
+    },
+    {
+      "contains" : true,
+      "lastFour" : "1111",
+      "lastFourStrict" : "1111",
+      "redacted" : "Total 1.250,00 lei, card •••• 1111",
+      "strict" : "Total 1.250,00 lei, card •••• 1111",
+      "text" : "Total 1.250,00 lei, card 4111-1111-1111-1111"
+    },
+    {
+      "contains" : true,
+      "lastFour" : "1111",
+      "lastFourStrict" : "1111",
+      "redacted" : "Plătit cu •••• 1111 azi",
+      "strict" : "Plătit cu •••• 1111 azi",
+      "text" : "Plătit cu 4111 1111 1111 1111 azi"
+    },
+    {
+      "contains" : true,
+      "lastFour" : "1112",
+      "lastFourStrict" : "1112",
+      "redacted" : "VISA •••• 1112",
+      "strict" : "VISA •••• 1112",
+      "text" : "VISA 4111 1111 1111 1112"
+    },
+    {
+      "contains" : true,
+      "lastFour" : "1111",
+      "lastFourStrict" : "1111",
+      "redacted" : "nr. •••• 1111",
+      "strict" : "nr. •••• 1111",
+      "text" : "nr. 4111 1111 1111 1111"
+    },
+    {
+      "contains" : true,
+      "lastFour" : "1111",
+      "lastFourStrict" : "1111",
+      "redacted" : "Card: •••• 1111",
+      "strict" : "Card: •••• 1111",
+      "text" : "Card: 4111111111111111"
+    },
+    {
+      "contains" : false,
+      "lastFour" : "4444",
+      "lastFourStrict" : "4444",
+      "redacted" : "•••• 4444",
+      "strict" : "•••• 4444",
+      "text" : "•••• 4444"
+    },
+    {
+      "contains" : false,
+      "lastFour" : "4821",
+      "lastFourStrict" : "4821",
+      "redacted" : "**** **** **** 4821",
+      "strict" : "**** **** **** 4821",
+      "text" : "**** **** **** 4821"
+    },
+    {
+      "contains" : false,
+      "lastFour" : "4821",
+      "lastFourStrict" : "4821",
+      "redacted" : "XXXX-XXXX-XXXX-4821",
+      "strict" : "XXXX-XXXX-XXXX-4821",
+      "text" : "XXXX-XXXX-XXXX-4821"
+    },
+    {
+      "contains" : false,
+      "lastFour" : "1111",
+      "lastFourStrict" : "1111",
+      "redacted" : "•••• 1111 •••• 4444",
+      "strict" : "•••• 1111 •••• 4444",
+      "text" : "•••• 1111 •••• 4444"
+    },
+    {
+      "contains" : false,
+      "lastFour" : null,
+      "lastFourStrict" : "3456",
+      "redacted" : "1234 5678 9012 3456",
+      "strict" : "•••• 3456",
+      "text" : "1234 5678 9012 3456"
+    },
+    {
+      "contains" : false,
+      "lastFour" : null,
+      "lastFourStrict" : null,
+      "redacted" : "1234 5678",
+      "strict" : "••••",
+      "text" : "1234 5678"
+    },
+    {
+      "contains" : false,
+      "lastFour" : null,
+      "lastFourStrict" : null,
+      "redacted" : "VALID THRU 08/28",
+      "strict" : "VALID THRU 08/28",
+      "text" : "VALID THRU 08/28"
+    },
+    {
+      "contains" : false,
+      "lastFour" : null,
+      "lastFourStrict" : null,
+      "redacted" : "Cod ١٢٣٤٥٦٧٨٩٠١٢",
+      "strict" : "Cod ••••",
+      "text" : "Cod ١٢٣٤٥٦٧٨٩٠١٢"
+    },
+    {
+      "contains" : false,
+      "lastFour" : null,
+      "lastFourStrict" : null,
+      "redacted" : "",
+      "strict" : "",
+      "text" : ""
+    },
+    {
+      "contains" : false,
+      "lastFour" : null,
+      "lastFourStrict" : null,
+      "redacted" : "fără cifre",
+      "strict" : "fără cifre",
+      "text" : "fără cifre"
+    }
+  ],
+  "rule" : "PaymentCardNumbers.redact(_:strict:), containsCardNumber(_:) and lastFour(in:strict:): a bank card's number masked wherever text is kept",
+  "shape" : "text: a text (with built tokens). redacted: masked by the \"anywhere\" rule; strict: masked as on a bank card. contains: whether it holds a card number by the anywhere rule. lastFour, lastFourStrict: the last four digits of the card number in it, by each rule, else null.",
+  "source" : "ios/Shared/CardNumberRule.swift",
+  "writtenBy" : "ios/DosarCuSinaTests/TextVectorsTests.swift"
+}

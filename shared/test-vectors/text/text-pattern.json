@@ -1,0 +1,244 @@
+{
+  "built" : "A token in a case's text is a number that passes its check, built when the test runs so the repository never holds one. {luhn:DIGITS}: DIGITS as written with the Luhn check digit after them. {iban:CC:BBAN}: CC, the two ISO 13616 check digits (98 minus BBAN + CC + \"00\" mod 97, letters as A=10 … Z=35), then BBAN. {iban4:CC:BBAN}: the same, in groups of four with a space between. {fours:DIGITS}: DIGITS in groups of four with a space between. Answers name the same tokens.",
+  "cases" : [
+    {
+      "caseInsensitive" : false,
+      "matches" : [
+        {
+          "at" : 4,
+          "groups" : [
+            "١٢٣٤",
+            "١٢٣٤"
+          ],
+          "length" : 4
+        },
+        {
+          "at" : 9,
+          "groups" : [
+            "5678",
+            "5678"
+          ],
+          "length" : 4
+        }
+      ],
+      "pattern" : "(\\d{4})",
+      "text" : "Cod ١٢٣٤ 5678"
+    },
+    {
+      "caseInsensitive" : true,
+      "matches" : [
+        {
+          "at" : 1,
+          "groups" : [
+            "TEFAN"
+          ],
+          "length" : 5
+        },
+        {
+          "at" : 7,
+          "groups" : [
+            "abc"
+          ],
+          "length" : 3
+        },
+        {
+          "at" : 11,
+          "groups" : [
+            "DEF"
+          ],
+          "length" : 3
+        }
+      ],
+      "pattern" : "[a-z]+",
+      "text" : "ȘTEFAN abc DEF"
+    },
+    {
+      "caseInsensitive" : false,
+      "matches" : [
+        {
+          "at" : 7,
+          "groups" : [
+            "abc"
+          ],
+          "length" : 3
+        }
+      ],
+      "pattern" : "[a-z]+",
+      "text" : "ȘTEFAN abc DEF"
+    },
+    {
+      "caseInsensitive" : true,
+      "matches" : [
+        {
+          "at" : 0,
+          "groups" : [
+            "RO49",
+            "RO",
+            "49"
+          ],
+          "length" : 4
+        },
+        {
+          "at" : 5,
+          "groups" : [
+            "ro",
+            "ro",
+            null
+          ],
+          "length" : 2
+        }
+      ],
+      "pattern" : "(ro)(\\d{2})?",
+      "text" : "RO49 ro"
+    },
+    {
+      "caseInsensitive" : false,
+      "matches" : [
+        {
+          "at" : 0,
+          "groups" : [
+            "de"
+          ],
+          "length" : 2
+        },
+        {
+          "at" : 10,
+          "groups" : [
+            "de"
+          ],
+          "length" : 2
+        }
+      ],
+      "pattern" : "\\bde\\b",
+      "text" : "de, deci, de-a"
+    },
+    {
+      "caseInsensitive" : true,
+      "matches" : [
+        {
+          "at" : 0,
+          "groups" : [
+            "Șș"
+          ],
+          "length" : 2
+        }
+      ],
+      "pattern" : "ș+",
+      "text" : "Șș ş"
+    },
+    {
+      "caseInsensitive" : false,
+      "matches" : [
+        {
+          "at" : 4,
+          "groups" : [
+            "12 4111 1111 1111 1111"
+          ],
+          "length" : 22
+        }
+      ],
+      "pattern" : "(?<!\\d[ -]?)\\d(?:[ -]?\\d){11,}(?![ -]?\\d)",
+      "text" : "Nr. 12 4111 1111 1111 1111, 0722 123 456"
+    },
+    {
+      "caseInsensitive" : false,
+      "matches" : [
+        {
+          "at" : 0,
+          "groups" : [
+            "Total: 120",
+            "Total",
+            "120"
+          ],
+          "length" : 10
+        },
+        {
+          "at" : 16,
+          "groups" : [
+            "Data:12.03",
+            "Data",
+            "12.03"
+          ],
+          "length" : 10
+        }
+      ],
+      "pattern" : "(\\p{L}+)\\s*:\\s*(\\S+)",
+      "text" : "Total: 120 lei; Data:12.03"
+    },
+    {
+      "caseInsensitive" : false,
+      "matches" : [
+        {
+          "at" : 0,
+          "groups" : [
+            "**** **** **** 4821",
+            "4821"
+          ],
+          "length" : 19
+        }
+      ],
+      "pattern" : "[•*xX]{4}[ -]?(?:[•*xX]{4}[ -]?){0,3}(\\d{4})(?!\\d)",
+      "text" : "**** **** **** 4821 și •••• 44445"
+    },
+    {
+      "caseInsensitive" : false,
+      "matches" : [
+        {
+          "at" : 0,
+          "groups" : [
+            "café"
+          ],
+          "length" : 4
+        },
+        {
+          "at" : 5,
+          "groups" : [
+            "é"
+          ],
+          "length" : 2
+        },
+        {
+          "at" : 8,
+          "groups" : [
+            "naïve_x"
+          ],
+          "length" : 7
+        }
+      ],
+      "pattern" : "\\w+",
+      "text" : "café é naïve_x"
+    },
+    {
+      "caseInsensitive" : false,
+      "matches" : [
+        {
+          "at" : 1,
+          "groups" : [
+            " "
+          ],
+          "length" : 1
+        },
+        {
+          "at" : 3,
+          "groups" : [
+            " "
+          ],
+          "length" : 1
+        },
+        {
+          "at" : 5,
+          "groups" : [
+            "\t"
+          ],
+          "length" : 1
+        }
+      ],
+      "pattern" : "\\s+",
+      "text" : "a b c\td"
+    }
+  ],
+  "rule" : "TextPattern.matches(_:in:caseInsensitive:): the regular expressions the text rules are written in (ICU's, as NSRegularExpression runs them)",
+  "shape" : "pattern, text, caseInsensitive: what is asked. matches: each match in order: where it starts and how long it is (in UTF-16 code units), and its groups, the whole match first, null for a group that took no part.",
+  "source" : "ios/Shared/TextPattern.swift",
+  "writtenBy" : "ios/DosarCuSinaTests/TextVectorsTests.swift"
+}

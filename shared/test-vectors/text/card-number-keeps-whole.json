@@ -1,0 +1,104 @@
+{
+  "built" : "A token in a case's text is a number that passes its check, built when the test runs so the repository never holds one. {luhn:DIGITS}: DIGITS as written with the Luhn check digit after them. {iban:CC:BBAN}: CC, the two ISO 13616 check digits (98 minus BBAN + CC + \"00\" mod 97, letters as A=10 … Z=35), then BBAN. {iban4:CC:BBAN}: the same, in groups of four with a space between. {fours:DIGITS}: DIGITS in groups of four with a space between. Answers name the same tokens.",
+  "cases" : [
+    {
+      "keepsWhole" : true,
+      "text" : "RO49 AAAA 1B31 0075 9384 0000",
+      "type" : "iban"
+    },
+    {
+      "keepsWhole" : true,
+      "text" : "RO49AAAA1B31007593840000",
+      "type" : "iban"
+    },
+    {
+      "keepsWhole" : true,
+      "text" : "  GB82 WEST 1234 5698 7654 32 ",
+      "type" : "iban"
+    },
+    {
+      "keepsWhole" : false,
+      "text" : "RO49 AAAA 1B31 0075 9384 0001",
+      "type" : "iban"
+    },
+    {
+      "keepsWhole" : false,
+      "text" : "4111 1111 1111 1111",
+      "type" : "iban"
+    },
+    {
+      "keepsWhole" : true,
+      "text" : "{iban4:RO:AAAA4111111111111111}",
+      "type" : "iban"
+    },
+    {
+      "keepsWhole" : true,
+      "text" : "{luhn:64200000000123}",
+      "type" : "microchip"
+    },
+    {
+      "keepsWhole" : true,
+      "text" : "{luhn:642 000 000 001 23}",
+      "type" : "microchip"
+    },
+    {
+      "keepsWhole" : true,
+      "text" : "{luhn:642-000-000-001-23}",
+      "type" : "microchip"
+    },
+    {
+      "keepsWhole" : true,
+      "text" : "642093400012345",
+      "type" : "microchip"
+    },
+    {
+      "keepsWhole" : false,
+      "text" : "4111 1111 1111 1111",
+      "type" : "microchip"
+    },
+    {
+      "keepsWhole" : false,
+      "text" : "64200000000012A",
+      "type" : "microchip"
+    },
+    {
+      "keepsWhole" : false,
+      "text" : "",
+      "type" : "microchip"
+    },
+    {
+      "keepsWhole" : false,
+      "text" : "   ",
+      "type" : "iban"
+    },
+    {
+      "keepsWhole" : false,
+      "text" : "{luhn:64200000000123}",
+      "type" : "text"
+    },
+    {
+      "keepsWhole" : false,
+      "text" : "{luhn:64200000000123}",
+      "type" : "phone"
+    },
+    {
+      "keepsWhole" : false,
+      "text" : "{luhn:64200000000123}",
+      "type" : null
+    },
+    {
+      "keepsWhole" : false,
+      "text" : "RO49 AAAA 1B31 0075 9384 0000",
+      "type" : "text"
+    },
+    {
+      "keepsWhole" : false,
+      "text" : "WVWZZZ1KZAW000000",
+      "type" : "vin"
+    }
+  ],
+  "rule" : "PaymentCardNumbers.keepsWhole(_:as:): a field's value its type tells apart from a card number (an IBAN, a microchip) and that passes that type's own check",
+  "shape" : "text: a field's value (with built tokens). type: its field's type as stored (FieldType's raw value), or null for no field. keepsWhole: whether it stays whole, never masked.",
+  "source" : "ios/DosarCuSina/Services/Security/PaymentCardNumbers.swift",
+  "writtenBy" : "ios/DosarCuSinaTests/TextVectorsTests.swift"
+}

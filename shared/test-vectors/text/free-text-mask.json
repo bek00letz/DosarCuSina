@@ -1,0 +1,79 @@
+{
+  "built" : "A token in a case's text is a number that passes its check, built when the test runs so the repository never holds one. {luhn:DIGITS}: DIGITS as written with the Luhn check digit after them. {iban:CC:BBAN}: CC, the two ISO 13616 check digits (98 minus BBAN + CC + \"00\" mod 97, letters as A=10 … Z=35), then BBAN. {iban4:CC:BBAN}: the same, in groups of four with a space between. {fours:DIGITS}: DIGITS in groups of four with a space between. Answers name the same tokens.",
+  "cases" : [
+    {
+      "before" : "Card 4111 1111 1111 1111",
+      "kind" : "text",
+      "masked" : "Card •••• 1111"
+    },
+    {
+      "before" : "Fără card",
+      "kind" : "text",
+      "masked" : null
+    },
+    {
+      "before" : "RO49 AAAA 1B31 0075 9384 0000",
+      "kind" : "text",
+      "masked" : null
+    },
+    {
+      "before" : "Microcip {luhn:64200000000123}",
+      "kind" : "text",
+      "masked" : "Microcip •••• 1234"
+    },
+    {
+      "before" : "•••• 1111",
+      "kind" : "text",
+      "masked" : null
+    },
+    {
+      "before" : "Nr. 12 4111 1111 1111 1111 și 5555-5555-5555-4444",
+      "kind" : "text",
+      "masked" : "Nr. 12 •••• 1111 și •••• 4444"
+    },
+    {
+      "before" : "",
+      "kind" : "text",
+      "masked" : null
+    },
+    {
+      "before" : [
+        "Mecanic",
+        "Card 4111 1111 1111 1111"
+      ],
+      "kind" : "texts",
+      "masked" : [
+        "Mecanic",
+        "Card •••• 1111"
+      ]
+    },
+    {
+      "before" : [
+        "Electrician",
+        "Instalator"
+      ],
+      "kind" : "texts",
+      "masked" : null
+    },
+    {
+      "before" : [
+
+      ],
+      "kind" : "texts",
+      "masked" : null
+    },
+    {
+      "before" : [
+        "5555555555554444"
+      ],
+      "kind" : "texts",
+      "masked" : [
+        "•••• 4444"
+      ]
+    }
+  ],
+  "rule" : "FreeText.mask(_:write:): the unit of work's rule for a record's words (a text, a list of words), here on a firm's notes and trades, whose section keeps nothing whole",
+  "shape" : "kind: text (one text) or texts (a list of words). before: what the record held (with built tokens). masked: what it holds after the unit masks it, or null when nothing in it was masked and it is left as it was.",
+  "source" : "ios/DosarCuSina/Services/Persistence/FreeText.swift",
+  "writtenBy" : "ios/DosarCuSinaTests/TextVectorsTests.swift"
+}
