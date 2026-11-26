@@ -222,10 +222,19 @@ final class SectionLocks: Observable, @unchecked Sendable {
     /// Whether this device's choices were set aside with none written after them: by a change that
     /// set an unread file aside and then couldn't write its own ("<file>.unread-<id>"), or by an
     /// older build's "Începe din nou" ("unreadable-<when>-<file>"). Read only while `file` isn't
-    /// there: the first file written after them says what is chosen.
+    /// there: the first file written after them says what is chosen. A folder that can't be listed
+    /// may hold one, so it counts as set aside (locks fail closed); a folder that isn't there holds
+    /// nothing.
     static func wasSetAside(_ file: URL) -> Bool {
         let name = file.lastPathComponent
-        let names = (try? FileManager.default.contentsOfDirectory(atPath: file.deletingLastPathComponent().path(percentEncoded: false))) ?? []
+        let names: [String]
+        do {
+            names = try FileManager.default.contentsOfDirectory(atPath: file.deletingLastPathComponent().path(percentEncoded: false))
+        } catch let error as CocoaError where error.code == .fileReadNoSuchFile || error.code == .fileNoSuchFile {
+            return false
+        } catch {
+            return true
+        }
         return names.contains {
             $0.hasPrefix(name + setAsideMark) || ($0.hasPrefix(movedAsideMark) && $0.hasSuffix("-" + name))
         }

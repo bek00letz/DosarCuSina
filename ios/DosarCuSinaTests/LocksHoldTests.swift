@@ -225,6 +225,39 @@ struct LocksHoldTests {
         #expect(SectionLocks(file: file).needsChoosingAgain, "The file written then remembers the wait")
     }
 
+    @Test func locksBesideAFolderThatCantBeListedKeepEveryCategoryLocked() throws {
+        let folder = try folder()
+        defer {
+            try? FileManager.default.setAttributes([.posixPermissions: 0o755], ofItemAtPath: folder.path(percentEncoded: false))
+            try? FileManager.default.removeItem(at: folder)
+        }
+        let file = folder.appending(path: "Dosar.store.section-locks.json")
+        // Written into and searched, never listed: nothing tells whether locks were set aside there.
+        try FileManager.default.setAttributes([.posixPermissions: 0o300], ofItemAtPath: folder.path(percentEncoded: false))
+
+        let locks = SectionLocks(file: file)
+        #expect(locks.needsChoosingAgain)
+        for key in [vehicle, home, notebook, documents, fromAnotherDevice] {
+            #expect(locked(locks, key), "Every category is locked until chosen again: \(key)")
+        }
+
+        // Kept: the file written then says what is chosen.
+        try locks.chooseAgain([vehicle: true, home: true])
+        try FileManager.default.setAttributes([.posixPermissions: 0o755], ofItemAtPath: folder.path(percentEncoded: false))
+        let chosen = SectionLocks(file: file)
+        #expect(!chosen.needsChoosingAgain)
+        #expect(locked(chosen, vehicle))
+        #expect(!locked(chosen, fromAnotherDevice))
+    }
+
+    @Test func locksInAFolderThatIsntThereYetStartAsTheCatalogSays() throws {
+        let file = URL.temporaryDirectory.appending(path: "locks-\(UUID().uuidString)", directoryHint: .isDirectory).appending(path: "Dosar.store.section-locks.json")
+        let locks = SectionLocks(file: file)
+        #expect(!locks.needsChoosingAgain, "Nothing can have been set aside where there is no folder")
+        #expect(locked(locks, documents))
+        #expect(!locked(locks, vehicle))
+    }
+
     // MARK: "Începe din nou" keeps this device's locks
 
     @Test func startingFreshKeepsThisDevicesLocks() async throws {
