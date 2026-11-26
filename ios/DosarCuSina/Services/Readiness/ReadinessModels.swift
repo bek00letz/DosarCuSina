@@ -225,7 +225,9 @@ public struct TripCandidates: Hashable, Sendable {
 
     public struct Traveller: Hashable, Sendable, Identifiable {
         public var traveller: TripTraveller
-        public var name: String
+        /// The member's name, or „Acte fără titular”.
+        public var words: ReadinessWords
+        public var name: String { words.text }
         public var id: String { traveller.key }
     }
 
@@ -296,17 +298,21 @@ public struct ReadinessItem: Hashable, Sendable, Identifiable {
     /// found, so its tone is neutral and it is never counted as missing.
     public var status: ReadinessStatus
     public var need: ReadinessNeed
-    public var title: String
+    public var titleWords: ReadinessWords
     /// Why, in plain words. An optional check that isn't ready says what it would add.
-    public var detail: String
+    public var detailWords: ReadinessWords
     public var action: ReadinessAction?
 
-    public init(id: String, status: ReadinessStatus, need: ReadinessNeed = .required, title: String, detail: String, action: ReadinessAction? = nil) {
+    public var title: String { titleWords.text }
+    public var detail: String { detailWords.text }
+
+    public init(id: String, status: ReadinessStatus, need: ReadinessNeed = .required, title: ReadinessWords, detail: ReadinessWords,
+                action: ReadinessAction? = nil) {
         self.id = id
         self.status = Self.status(status, need: need)
         self.need = need
-        self.title = title
-        self.detail = detail
+        self.titleWords = title
+        self.detailWords = detail
         self.action = action
     }
 
@@ -321,13 +327,15 @@ public struct ReadinessItem: Hashable, Sendable, Identifiable {
 /// The checks about one thing: a person, the car, a pet, what to photograph.
 public struct ReadinessGroup: Hashable, Sendable, Identifiable {
     public var id: String
-    public var title: String
+    public var titleWords: ReadinessWords
     public var symbol: String
     public var items: [ReadinessItem]
 
-    public init(id: String, title: String, symbol: String, items: [ReadinessItem]) {
+    public var title: String { titleWords.text }
+
+    public init(id: String, title: ReadinessWords, symbol: String, items: [ReadinessItem]) {
         self.id = id
-        self.title = title
+        self.titleWords = title
         self.symbol = symbol
         // Problems first; otherwise the order the checks were written in.
         self.items = items.enumerated().sorted { ($0.element.status, $0.offset) < ($1.element.status, $1.offset) }.map(\.element)
@@ -340,7 +348,7 @@ public struct ReadinessPolicy: Hashable, Sendable, Identifiable {
     /// The deadline's title: "RCA", "CASCO", "Asigurare obligatorie (PAD)".
     public var title: String
     /// When this policy is the one to call, in a few words.
-    public var whenToUse: String?
+    public var whenToUseWords: ReadinessWords?
     public var insurer: String?
     public var policyNumber: String?
     public var claimsPhone: String?
@@ -351,6 +359,7 @@ public struct ReadinessPolicy: Hashable, Sendable, Identifiable {
     public var policyholderClass: String? = nil
 
     public var id: String { blueprintKey }
+    public var whenToUse: String? { whenToUseWords?.text }
 }
 
 /// What a situation's screen shows: groups of checks, and for a claim the policy to call.
