@@ -11,6 +11,8 @@ import com.ar.dosarcusina.core.readings.MeasurementKind
 import com.ar.dosarcusina.core.values.CalendarDay
 import com.ar.dosarcusina.core.values.KeptObject
 import com.ar.dosarcusina.core.values.MeasurementUnit
+import com.ar.dosarcusina.core.urgency.Consequence
+import com.ar.dosarcusina.core.values.ObligationKind
 import com.ar.dosarcusina.core.values.ObligationStatus
 import com.ar.dosarcusina.core.values.StoredDay
 import com.ar.dosarcusina.store.BinderView
@@ -18,7 +20,6 @@ import com.ar.dosarcusina.store.Step
 import com.ar.dosarcusina.store.Tables
 import com.ar.dosarcusina.store.readings.HeroMetric
 import com.ar.dosarcusina.store.readings.HouseholdReadings
-import com.ar.dosarcusina.store.repairs.StoredKinds
 import com.ar.dosarcusina.store.schema.Asset
 import com.ar.dosarcusina.store.schema.Obligation
 import com.ar.dosarcusina.store.schema.keptReminders
@@ -49,7 +50,6 @@ class MissingFirstDueDate(val blueprintKey: String) :
 // One function per rule the section actions read of a deadline.
 @Suppress("TooManyFunctions")
 internal object SectionDeadlines {
-    private const val RENEWAL = "renewal"
     private const val LEGAL = "legal"
 
     /**
@@ -77,7 +77,7 @@ internal object SectionDeadlines {
         }
         val obligation = Obligation(
             title = blueprint.title,
-            kindRaw = StoredKinds.kind(blueprint.kind),
+            kindRaw = ObligationKind.stored(blueprint.kind).raw,
             dueDayISO = StoredDay.text(due),
             dueMetric = dueMetric,
             estimatedCostAmount = blueprint.estimatedCost?.amount,
@@ -130,15 +130,15 @@ internal object SectionDeadlines {
      * a kind a newer build wrote reads as the loudest, legal.
      */
     @Suppress("MagicNumber") // The iOS kinds' profiles, as data.
-    fun defaultProfile(kind: String): ReminderProfile = when (kind) {
-        "tax" -> ReminderProfile(listOf(14, 1), "financial")
-        "insurance" -> ReminderProfile(listOf(30, 7, 0), LEGAL)
-        "health" -> ReminderProfile(listOf(7, 1), "health", graceDays = 7)
-        RENEWAL -> ReminderProfile(listOf(60, 30), LEGAL)
-        "payment" -> ReminderProfile(listOf(2, 0), "financial")
-        "maintenance" -> ReminderProfile(listOf(14, 1), "comfort", graceDays = 14)
-        "routine" -> ReminderProfile(listOf(0), "comfort", graceDays = 3)
-        else -> ReminderProfile(listOf(30, 7, 0), LEGAL)
+    fun defaultProfile(kind: String): ReminderProfile = when (ObligationKind.stored(kind)) {
+        ObligationKind.LEGAL -> ReminderProfile(listOf(30, 7, 0), LEGAL)
+        ObligationKind.TAX -> ReminderProfile(listOf(14, 1), "financial")
+        ObligationKind.INSURANCE -> ReminderProfile(listOf(30, 7, 0), LEGAL)
+        ObligationKind.HEALTH -> ReminderProfile(listOf(7, 1), "health", graceDays = 7)
+        ObligationKind.RENEWAL -> ReminderProfile(listOf(60, 30), LEGAL)
+        ObligationKind.PAYMENT -> ReminderProfile(listOf(2, 0), "financial")
+        ObligationKind.MAINTENANCE -> ReminderProfile(listOf(14, 1), "comfort", graceDays = 14)
+        ObligationKind.ROUTINE -> ReminderProfile(listOf(0), "comfort", graceDays = 3)
     }
 
     /**
@@ -147,7 +147,10 @@ internal object SectionDeadlines {
      * worth knowing about even once it has passed (an expired identity card).
      */
     fun isWorthScheduling(blueprint: ObligationBlueprint, day: CalendarDay, today: CalendarDay, values: FieldValues) =
-        day >= today || (blueprint.kind == RENEWAL && reminders(blueprint, values).consequence == LEGAL)
+        day >= today || (
+            ObligationKind.stored(blueprint.kind) == ObligationKind.RENEWAL &&
+                Consequence.stored(reminders(blueprint, values).consequence) == Consequence.LEGAL
+            )
 
     /** The note a deadline starts with (`deadlineNote`): its own, except a service's of a category of one's own. */
     fun deadlineNote(blueprint: ObligationBlueprint): String? =
