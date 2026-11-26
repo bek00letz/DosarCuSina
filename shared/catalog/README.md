@@ -15,7 +15,7 @@ The categories that ship with the app (Mașini, Locuințe, Acte and the rest), d
 | [`household.json`](household.json) | The household's own deadlines, which belong to no section. |
 | [`subscriptions/subscriptions.json`](subscriptions/subscriptions.json) | What a subscription can be: its services, codes, groups and billing cycles. Written by [`SubscriptionCatalogExportTests`](../../ios/DosarCuSinaTests/SubscriptionCatalogExportTests.swift) (see below). |
 
-All five are machine JSON, written by `MachineText` with their keys sorted, so a diff shows only what changed.
+All six are machine JSON, written by `MachineText` with their keys sorted, so a diff shows only what changed.
 
 ### `templates.json`
 
