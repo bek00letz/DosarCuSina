@@ -1,0 +1,2833 @@
+{
+  "freeMovement" : [
+    "AT",
+    "BE",
+    "BG",
+    "CH",
+    "CY",
+    "CZ",
+    "DE",
+    "DK",
+    "EE",
+    "ES",
+    "FI",
+    "FR",
+    "GR",
+    "HR",
+    "HU",
+    "IE",
+    "IS",
+    "IT",
+    "LI",
+    "LT",
+    "LU",
+    "LV",
+    "MT",
+    "NL",
+    "NO",
+    "PL",
+    "PT",
+    "RO",
+    "SE",
+    "SI",
+    "SK"
+  ],
+  "keyPrefix" : "country.",
+  "options" : [
+    {
+      "aliases" : [
+        "AF",
+        "AFG"
+      ],
+      "code" : "AF",
+      "key" : "country.AF",
+      "label" : "Afganistan",
+      "movesFreely" : false,
+      "otherCodes" : [
+
+      ],
+      "printedCode" : "AFG"
+    },
+    {
+      "aliases" : [
+        "ZA",
+        "ZAF"
+      ],
+      "code" : "ZA",
+      "key" : "country.ZA",
+      "label" : "Africa de Sud",
+      "movesFreely" : false,
+      "otherCodes" : [
+
+      ],
+      "printedCode" : "ZAF"
+    },
+    {
+      "aliases" : [
+        "AL",
+        "ALB"
+      ],
+      "code" : "AL",
+      "key" : "country.AL",
+      "label" : "Albania",
+      "movesFreely" : false,
+      "otherCodes" : [
+
+      ],
+      "printedCode" : "ALB"
+    },
+    {
+      "aliases" : [
+        "DZ",
+        "DZA"
+      ],
+      "code" : "DZ",
+      "key" : "country.DZ",
+      "label" : "Algeria",
+      "movesFreely" : false,
+      "otherCodes" : [
+
+      ],
+      "printedCode" : "DZA"
+    },
+    {
+      "aliases" : [
+        "AD",
+        "AND"
+      ],
+      "code" : "AD",
+      "key" : "country.AD",
+      "label" : "Andorra",
+      "movesFreely" : false,
+      "otherCodes" : [
+
+      ],
+      "printedCode" : "AND"
+    },
+    {
+      "aliases" : [
+        "AO",
+        "AGO"
+      ],
+      "code" : "AO",
+      "key" : "country.AO",
+      "label" : "Angola",
+      "movesFreely" : false,
+      "otherCodes" : [
+
+      ],
+      "printedCode" : "AGO"
+    },
+    {
+      "aliases" : [
+        "AG",
+        "ATG"
+      ],
+      "code" : "AG",
+      "key" : "country.AG",
+      "label" : "Antigua și Barbuda",
+      "movesFreely" : false,
+      "otherCodes" : [
+
+      ],
+      "printedCode" : "ATG"
+    },
+    {
+      "aliases" : [
+        "SA",
+        "SAU"
+      ],
+      "code" : "SA",
+      "key" : "country.SA",
+      "label" : "Arabia Saudită",
+      "movesFreely" : false,
+      "otherCodes" : [
+
+      ],
+      "printedCode" : "SAU"
+    },
+    {
+      "aliases" : [
+        "AR",
+        "ARG"
+      ],
+      "code" : "AR",
+      "key" : "country.AR",
+      "label" : "Argentina",
+      "movesFreely" : false,
+      "otherCodes" : [
+
+      ],
+      "printedCode" : "ARG"
+    },
+    {
+      "aliases" : [
+        "AM",
+        "ARM"
+      ],
+      "code" : "AM",
+      "key" : "country.AM",
+      "label" : "Armenia",
+      "movesFreely" : false,
+      "otherCodes" : [
+
+      ],
+      "printedCode" : "ARM"
+    },
+    {
+      "aliases" : [
+        "AU",
+        "AUS"
+      ],
+      "code" : "AU",
+      "key" : "country.AU",
+      "label" : "Australia",
+      "movesFreely" : false,
+      "otherCodes" : [
+
+      ],
+      "printedCode" : "AUS"
+    },
+    {
+      "aliases" : [
+        "AT",
+        "AUT"
+      ],
+      "code" : "AT",
+      "key" : "country.AT",
+      "label" : "Austria",
+      "movesFreely" : true,
+      "otherCodes" : [
+
+      ],
+      "printedCode" : "AUT"
+    },
+    {
+      "aliases" : [
+        "AZ",
+        "AZE"
+      ],
+      "code" : "AZ",
+      "key" : "country.AZ",
+      "label" : "Azerbaidjan",
+      "movesFreely" : false,
+      "otherCodes" : [
+
+      ],
+      "printedCode" : "AZE"
+    },
+    {
+      "aliases" : [
+        "BS",
+        "BHS"
+      ],
+      "code" : "BS",
+      "key" : "country.BS",
+      "label" : "Bahamas",
+      "movesFreely" : false,
+      "otherCodes" : [
+
+      ],
+      "printedCode" : "BHS"
+    },
+    {
+      "aliases" : [
+        "BH",
+        "BHR"
+      ],
+      "code" : "BH",
+      "key" : "country.BH",
+      "label" : "Bahrain",
+      "movesFreely" : false,
+      "otherCodes" : [
+
+      ],
+      "printedCode" : "BHR"
+    },
+    {
+      "aliases" : [
+        "BD",
+        "BGD"
+      ],
+      "code" : "BD",
+      "key" : "country.BD",
+      "label" : "Bangladesh",
+      "movesFreely" : false,
+      "otherCodes" : [
+
+      ],
+      "printedCode" : "BGD"
+    },
+    {
+      "aliases" : [
+        "BB",
+        "BRB"
+      ],
+      "code" : "BB",
+      "key" : "country.BB",
+      "label" : "Barbados",
+      "movesFreely" : false,
+      "otherCodes" : [
+
+      ],
+      "printedCode" : "BRB"
+    },
+    {
+      "aliases" : [
+        "BY",
+        "BLR"
+      ],
+      "code" : "BY",
+      "key" : "country.BY",
+      "label" : "Belarus",
+      "movesFreely" : false,
+      "otherCodes" : [
+
+      ],
+      "printedCode" : "BLR"
+    },
+    {
+      "aliases" : [
+        "BE",
+        "BEL"
+      ],
+      "code" : "BE",
+      "key" : "country.BE",
+      "label" : "Belgia",
+      "movesFreely" : true,
+      "otherCodes" : [
+
+      ],
+      "printedCode" : "BEL"
+    },
+    {
+      "aliases" : [
+        "BZ",
+        "BLZ"
+      ],
+      "code" : "BZ",
+      "key" : "country.BZ",
+      "label" : "Belize",
+      "movesFreely" : false,
+      "otherCodes" : [
+
+      ],
+      "printedCode" : "BLZ"
+    },
+    {
+      "aliases" : [
+        "BJ",
+        "BEN"
+      ],
+      "code" : "BJ",
+      "key" : "country.BJ",
+      "label" : "Benin",
+      "movesFreely" : false,
+      "otherCodes" : [
+
+      ],
+      "printedCode" : "BEN"
+    },
+    {
+      "aliases" : [
+        "BT",
+        "BTN"
+      ],
+      "code" : "BT",
+      "key" : "country.BT",
+      "label" : "Bhutan",
+      "movesFreely" : false,
+      "otherCodes" : [
+
+      ],
+      "printedCode" : "BTN"
+    },
+    {
+      "aliases" : [
+        "BO",
+        "BOL"
+      ],
+      "code" : "BO",
+      "key" : "country.BO",
+      "label" : "Bolivia",
+      "movesFreely" : false,
+      "otherCodes" : [
+
+      ],
+      "printedCode" : "BOL"
+    },
+    {
+      "aliases" : [
+        "BA",
+        "BIH"
+      ],
+      "code" : "BA",
+      "key" : "country.BA",
+      "label" : "Bosnia și Herțegovina",
+      "movesFreely" : false,
+      "otherCodes" : [
+
+      ],
+      "printedCode" : "BIH"
+    },
+    {
+      "aliases" : [
+        "BW",
+        "BWA"
+      ],
+      "code" : "BW",
+      "key" : "country.BW",
+      "label" : "Botswana",
+      "movesFreely" : false,
+      "otherCodes" : [
+
+      ],
+      "printedCode" : "BWA"
+    },
+    {
+      "aliases" : [
+        "BR",
+        "BRA"
+      ],
+      "code" : "BR",
+      "key" : "country.BR",
+      "label" : "Brazilia",
+      "movesFreely" : false,
+      "otherCodes" : [
+
+      ],
+      "printedCode" : "BRA"
+    },
+    {
+      "aliases" : [
+        "BN",
+        "BRN"
+      ],
+      "code" : "BN",
+      "key" : "country.BN",
+      "label" : "Brunei",
+      "movesFreely" : false,
+      "otherCodes" : [
+
+      ],
+      "printedCode" : "BRN"
+    },
+    {
+      "aliases" : [
+        "BG",
+        "BGR"
+      ],
+      "code" : "BG",
+      "key" : "country.BG",
+      "label" : "Bulgaria",
+      "movesFreely" : true,
+      "otherCodes" : [
+
+      ],
+      "printedCode" : "BGR"
+    },
+    {
+      "aliases" : [
+        "BF",
+        "BFA"
+      ],
+      "code" : "BF",
+      "key" : "country.BF",
+      "label" : "Burkina Faso",
+      "movesFreely" : false,
+      "otherCodes" : [
+
+      ],
+      "printedCode" : "BFA"
+    },
+    {
+      "aliases" : [
+        "BI",
+        "BDI"
+      ],
+      "code" : "BI",
+      "key" : "country.BI",
+      "label" : "Burundi",
+      "movesFreely" : false,
+      "otherCodes" : [
+
+      ],
+      "printedCode" : "BDI"
+    },
+    {
+      "aliases" : [
+        "KH",
+        "KHM"
+      ],
+      "code" : "KH",
+      "key" : "country.KH",
+      "label" : "Cambodgia",
+      "movesFreely" : false,
+      "otherCodes" : [
+
+      ],
+      "printedCode" : "KHM"
+    },
+    {
+      "aliases" : [
+        "CM",
+        "CMR"
+      ],
+      "code" : "CM",
+      "key" : "country.CM",
+      "label" : "Camerun",
+      "movesFreely" : false,
+      "otherCodes" : [
+
+      ],
+      "printedCode" : "CMR"
+    },
+    {
+      "aliases" : [
+        "CA",
+        "CAN"
+      ],
+      "code" : "CA",
+      "key" : "country.CA",
+      "label" : "Canada",
+      "movesFreely" : false,
+      "otherCodes" : [
+
+      ],
+      "printedCode" : "CAN"
+    },
+    {
+      "aliases" : [
+        "CV",
+        "CPV"
+      ],
+      "code" : "CV",
+      "key" : "country.CV",
+      "label" : "Capul Verde",
+      "movesFreely" : false,
+      "otherCodes" : [
+
+      ],
+      "printedCode" : "CPV"
+    },
+    {
+      "aliases" : [
+        "CZ",
+        "CZE"
+      ],
+      "code" : "CZ",
+      "key" : "country.CZ",
+      "label" : "Cehia",
+      "movesFreely" : true,
+      "otherCodes" : [
+
+      ],
+      "printedCode" : "CZE"
+    },
+    {
+      "aliases" : [
+        "CL",
+        "CHL"
+      ],
+      "code" : "CL",
+      "key" : "country.CL",
+      "label" : "Chile",
+      "movesFreely" : false,
+      "otherCodes" : [
+
+      ],
+      "printedCode" : "CHL"
+    },
+    {
+      "aliases" : [
+        "CN",
+        "CHN"
+      ],
+      "code" : "CN",
+      "key" : "country.CN",
+      "label" : "China",
+      "movesFreely" : false,
+      "otherCodes" : [
+
+      ],
+      "printedCode" : "CHN"
+    },
+    {
+      "aliases" : [
+        "TD",
+        "TCD"
+      ],
+      "code" : "TD",
+      "key" : "country.TD",
+      "label" : "Ciad",
+      "movesFreely" : false,
+      "otherCodes" : [
+
+      ],
+      "printedCode" : "TCD"
+    },
+    {
+      "aliases" : [
+        "CY",
+        "CYP"
+      ],
+      "code" : "CY",
+      "key" : "country.CY",
+      "label" : "Cipru",
+      "movesFreely" : true,
+      "otherCodes" : [
+
+      ],
+      "printedCode" : "CYP"
+    },
+    {
+      "aliases" : [
+        "CO",
+        "COL"
+      ],
+      "code" : "CO",
+      "key" : "country.CO",
+      "label" : "Columbia",
+      "movesFreely" : false,
+      "otherCodes" : [
+
+      ],
+      "printedCode" : "COL"
+    },
+    {
+      "aliases" : [
+        "KM",
+        "COM"
+      ],
+      "code" : "KM",
+      "key" : "country.KM",
+      "label" : "Comore",
+      "movesFreely" : false,
+      "otherCodes" : [
+
+      ],
+      "printedCode" : "COM"
+    },
+    {
+      "aliases" : [
+        "KP",
+        "PRK"
+      ],
+      "code" : "KP",
+      "key" : "country.KP",
+      "label" : "Coreea de Nord",
+      "movesFreely" : false,
+      "otherCodes" : [
+
+      ],
+      "printedCode" : "PRK"
+    },
+    {
+      "aliases" : [
+        "KR",
+        "KOR"
+      ],
+      "code" : "KR",
+      "key" : "country.KR",
+      "label" : "Coreea de Sud",
+      "movesFreely" : false,
+      "otherCodes" : [
+
+      ],
+      "printedCode" : "KOR"
+    },
+    {
+      "aliases" : [
+        "CR",
+        "CRI"
+      ],
+      "code" : "CR",
+      "key" : "country.CR",
+      "label" : "Costa Rica",
+      "movesFreely" : false,
+      "otherCodes" : [
+
+      ],
+      "printedCode" : "CRI"
+    },
+    {
+      "aliases" : [
+        "CI",
+        "CIV"
+      ],
+      "code" : "CI",
+      "key" : "country.CI",
+      "label" : "Côte d’Ivoire",
+      "movesFreely" : false,
+      "otherCodes" : [
+
+      ],
+      "printedCode" : "CIV"
+    },
+    {
+      "aliases" : [
+        "HR",
+        "HRV"
+      ],
+      "code" : "HR",
+      "key" : "country.HR",
+      "label" : "Croația",
+      "movesFreely" : true,
+      "otherCodes" : [
+
+      ],
+      "printedCode" : "HRV"
+    },
+    {
+      "aliases" : [
+        "CU",
+        "CUB"
+      ],
+      "code" : "CU",
+      "key" : "country.CU",
+      "label" : "Cuba",
+      "movesFreely" : false,
+      "otherCodes" : [
+
+      ],
+      "printedCode" : "CUB"
+    },
+    {
+      "aliases" : [
+        "DK",
+        "DNK"
+      ],
+      "code" : "DK",
+      "key" : "country.DK",
+      "label" : "Danemarca",
+      "movesFreely" : true,
+      "otherCodes" : [
+
+      ],
+      "printedCode" : "DNK"
+    },
+    {
+      "aliases" : [
+        "DJ",
+        "DJI"
+      ],
+      "code" : "DJ",
+      "key" : "country.DJ",
+      "label" : "Djibouti",
+      "movesFreely" : false,
+      "otherCodes" : [
+
+      ],
+      "printedCode" : "DJI"
+    },
+    {
+      "aliases" : [
+        "DM",
+        "DMA"
+      ],
+      "code" : "DM",
+      "key" : "country.DM",
+      "label" : "Dominica",
+      "movesFreely" : false,
+      "otherCodes" : [
+
+      ],
+      "printedCode" : "DMA"
+    },
+    {
+      "aliases" : [
+        "EC",
+        "ECU"
+      ],
+      "code" : "EC",
+      "key" : "country.EC",
+      "label" : "Ecuador",
+      "movesFreely" : false,
+      "otherCodes" : [
+
+      ],
+      "printedCode" : "ECU"
+    },
+    {
+      "aliases" : [
+        "EG",
+        "EGY"
+      ],
+      "code" : "EG",
+      "key" : "country.EG",
+      "label" : "Egipt",
+      "movesFreely" : false,
+      "otherCodes" : [
+
+      ],
+      "printedCode" : "EGY"
+    },
+    {
+      "aliases" : [
+        "SV",
+        "SLV"
+      ],
+      "code" : "SV",
+      "key" : "country.SV",
+      "label" : "El Salvador",
+      "movesFreely" : false,
+      "otherCodes" : [
+
+      ],
+      "printedCode" : "SLV"
+    },
+    {
+      "aliases" : [
+        "CH",
+        "CHE"
+      ],
+      "code" : "CH",
+      "key" : "country.CH",
+      "label" : "Elveția",
+      "movesFreely" : true,
+      "otherCodes" : [
+
+      ],
+      "printedCode" : "CHE"
+    },
+    {
+      "aliases" : [
+        "AE",
+        "ARE"
+      ],
+      "code" : "AE",
+      "key" : "country.AE",
+      "label" : "Emiratele Arabe Unite",
+      "movesFreely" : false,
+      "otherCodes" : [
+
+      ],
+      "printedCode" : "ARE"
+    },
+    {
+      "aliases" : [
+        "ER",
+        "ERI"
+      ],
+      "code" : "ER",
+      "key" : "country.ER",
+      "label" : "Eritreea",
+      "movesFreely" : false,
+      "otherCodes" : [
+
+      ],
+      "printedCode" : "ERI"
+    },
+    {
+      "aliases" : [
+        "EE",
+        "EST"
+      ],
+      "code" : "EE",
+      "key" : "country.EE",
+      "label" : "Estonia",
+      "movesFreely" : true,
+      "otherCodes" : [
+
+      ],
+      "printedCode" : "EST"
+    },
+    {
+      "aliases" : [
+        "SZ",
+        "SWZ"
+      ],
+      "code" : "SZ",
+      "key" : "country.SZ",
+      "label" : "Eswatini",
+      "movesFreely" : false,
+      "otherCodes" : [
+
+      ],
+      "printedCode" : "SWZ"
+    },
+    {
+      "aliases" : [
+        "ET",
+        "ETH"
+      ],
+      "code" : "ET",
+      "key" : "country.ET",
+      "label" : "Etiopia",
+      "movesFreely" : false,
+      "otherCodes" : [
+
+      ],
+      "printedCode" : "ETH"
+    },
+    {
+      "aliases" : [
+        "FJ",
+        "FJI"
+      ],
+      "code" : "FJ",
+      "key" : "country.FJ",
+      "label" : "Fiji",
+      "movesFreely" : false,
+      "otherCodes" : [
+
+      ],
+      "printedCode" : "FJI"
+    },
+    {
+      "aliases" : [
+        "PH",
+        "PHL"
+      ],
+      "code" : "PH",
+      "key" : "country.PH",
+      "label" : "Filipine",
+      "movesFreely" : false,
+      "otherCodes" : [
+
+      ],
+      "printedCode" : "PHL"
+    },
+    {
+      "aliases" : [
+        "FI",
+        "FIN"
+      ],
+      "code" : "FI",
+      "key" : "country.FI",
+      "label" : "Finlanda",
+      "movesFreely" : true,
+      "otherCodes" : [
+
+      ],
+      "printedCode" : "FIN"
+    },
+    {
+      "aliases" : [
+        "FR",
+        "FRA"
+      ],
+      "code" : "FR",
+      "key" : "country.FR",
+      "label" : "Franța",
+      "movesFreely" : true,
+      "otherCodes" : [
+
+      ],
+      "printedCode" : "FRA"
+    },
+    {
+      "aliases" : [
+        "GA",
+        "GAB"
+      ],
+      "code" : "GA",
+      "key" : "country.GA",
+      "label" : "Gabon",
+      "movesFreely" : false,
+      "otherCodes" : [
+
+      ],
+      "printedCode" : "GAB"
+    },
+    {
+      "aliases" : [
+        "GM",
+        "GMB"
+      ],
+      "code" : "GM",
+      "key" : "country.GM",
+      "label" : "Gambia",
+      "movesFreely" : false,
+      "otherCodes" : [
+
+      ],
+      "printedCode" : "GMB"
+    },
+    {
+      "aliases" : [
+        "GE",
+        "GEO"
+      ],
+      "code" : "GE",
+      "key" : "country.GE",
+      "label" : "Georgia",
+      "movesFreely" : false,
+      "otherCodes" : [
+
+      ],
+      "printedCode" : "GEO"
+    },
+    {
+      "aliases" : [
+        "DE",
+        "DEU",
+        "D"
+      ],
+      "code" : "DE",
+      "key" : "country.DE",
+      "label" : "Germania",
+      "movesFreely" : true,
+      "otherCodes" : [
+        "D"
+      ],
+      "printedCode" : "DEU"
+    },
+    {
+      "aliases" : [
+        "GH",
+        "GHA"
+      ],
+      "code" : "GH",
+      "key" : "country.GH",
+      "label" : "Ghana",
+      "movesFreely" : false,
+      "otherCodes" : [
+
+      ],
+      "printedCode" : "GHA"
+    },
+    {
+      "aliases" : [
+        "GR",
+        "GRC"
+      ],
+      "code" : "GR",
+      "key" : "country.GR",
+      "label" : "Grecia",
+      "movesFreely" : true,
+      "otherCodes" : [
+
+      ],
+      "printedCode" : "GRC"
+    },
+    {
+      "aliases" : [
+        "GD",
+        "GRD"
+      ],
+      "code" : "GD",
+      "key" : "country.GD",
+      "label" : "Grenada",
+      "movesFreely" : false,
+      "otherCodes" : [
+
+      ],
+      "printedCode" : "GRD"
+    },
+    {
+      "aliases" : [
+        "GT",
+        "GTM"
+      ],
+      "code" : "GT",
+      "key" : "country.GT",
+      "label" : "Guatemala",
+      "movesFreely" : false,
+      "otherCodes" : [
+
+      ],
+      "printedCode" : "GTM"
+    },
+    {
+      "aliases" : [
+        "GN",
+        "GIN"
+      ],
+      "code" : "GN",
+      "key" : "country.GN",
+      "label" : "Guineea",
+      "movesFreely" : false,
+      "otherCodes" : [
+
+      ],
+      "printedCode" : "GIN"
+    },
+    {
+      "aliases" : [
+        "GQ",
+        "GNQ"
+      ],
+      "code" : "GQ",
+      "key" : "country.GQ",
+      "label" : "Guineea Ecuatorială",
+      "movesFreely" : false,
+      "otherCodes" : [
+
+      ],
+      "printedCode" : "GNQ"
+    },
+    {
+      "aliases" : [
+        "GW",
+        "GNB"
+      ],
+      "code" : "GW",
+      "key" : "country.GW",
+      "label" : "Guineea-Bissau",
+      "movesFreely" : false,
+      "otherCodes" : [
+
+      ],
+      "printedCode" : "GNB"
+    },
+    {
+      "aliases" : [
+        "GY",
+        "GUY"
+      ],
+      "code" : "GY",
+      "key" : "country.GY",
+      "label" : "Guyana",
+      "movesFreely" : false,
+      "otherCodes" : [
+
+      ],
+      "printedCode" : "GUY"
+    },
+    {
+      "aliases" : [
+        "HT",
+        "HTI"
+      ],
+      "code" : "HT",
+      "key" : "country.HT",
+      "label" : "Haiti",
+      "movesFreely" : false,
+      "otherCodes" : [
+
+      ],
+      "printedCode" : "HTI"
+    },
+    {
+      "aliases" : [
+        "HN",
+        "HND"
+      ],
+      "code" : "HN",
+      "key" : "country.HN",
+      "label" : "Honduras",
+      "movesFreely" : false,
+      "otherCodes" : [
+
+      ],
+      "printedCode" : "HND"
+    },
+    {
+      "aliases" : [
+        "IN",
+        "IND"
+      ],
+      "code" : "IN",
+      "key" : "country.IN",
+      "label" : "India",
+      "movesFreely" : false,
+      "otherCodes" : [
+
+      ],
+      "printedCode" : "IND"
+    },
+    {
+      "aliases" : [
+        "ID",
+        "IDN"
+      ],
+      "code" : "ID",
+      "key" : "country.ID",
+      "label" : "Indonezia",
+      "movesFreely" : false,
+      "otherCodes" : [
+
+      ],
+      "printedCode" : "IDN"
+    },
+    {
+      "aliases" : [
+        "MH",
+        "MHL"
+      ],
+      "code" : "MH",
+      "key" : "country.MH",
+      "label" : "Insulele Marshall",
+      "movesFreely" : false,
+      "otherCodes" : [
+
+      ],
+      "printedCode" : "MHL"
+    },
+    {
+      "aliases" : [
+        "SB",
+        "SLB"
+      ],
+      "code" : "SB",
+      "key" : "country.SB",
+      "label" : "Insulele Solomon",
+      "movesFreely" : false,
+      "otherCodes" : [
+
+      ],
+      "printedCode" : "SLB"
+    },
+    {
+      "aliases" : [
+        "JO",
+        "JOR"
+      ],
+      "code" : "JO",
+      "key" : "country.JO",
+      "label" : "Iordania",
+      "movesFreely" : false,
+      "otherCodes" : [
+
+      ],
+      "printedCode" : "JOR"
+    },
+    {
+      "aliases" : [
+        "IQ",
+        "IRQ"
+      ],
+      "code" : "IQ",
+      "key" : "country.IQ",
+      "label" : "Irak",
+      "movesFreely" : false,
+      "otherCodes" : [
+
+      ],
+      "printedCode" : "IRQ"
+    },
+    {
+      "aliases" : [
+        "IR",
+        "IRN"
+      ],
+      "code" : "IR",
+      "key" : "country.IR",
+      "label" : "Iran",
+      "movesFreely" : false,
+      "otherCodes" : [
+
+      ],
+      "printedCode" : "IRN"
+    },
+    {
+      "aliases" : [
+        "IE",
+        "IRL"
+      ],
+      "code" : "IE",
+      "key" : "country.IE",
+      "label" : "Irlanda",
+      "movesFreely" : true,
+      "otherCodes" : [
+
+      ],
+      "printedCode" : "IRL"
+    },
+    {
+      "aliases" : [
+        "IS",
+        "ISL"
+      ],
+      "code" : "IS",
+      "key" : "country.IS",
+      "label" : "Islanda",
+      "movesFreely" : true,
+      "otherCodes" : [
+
+      ],
+      "printedCode" : "ISL"
+    },
+    {
+      "aliases" : [
+        "IL",
+        "ISR"
+      ],
+      "code" : "IL",
+      "key" : "country.IL",
+      "label" : "Israel",
+      "movesFreely" : false,
+      "otherCodes" : [
+
+      ],
+      "printedCode" : "ISR"
+    },
+    {
+      "aliases" : [
+        "IT",
+        "ITA"
+      ],
+      "code" : "IT",
+      "key" : "country.IT",
+      "label" : "Italia",
+      "movesFreely" : true,
+      "otherCodes" : [
+
+      ],
+      "printedCode" : "ITA"
+    },
+    {
+      "aliases" : [
+        "JM",
+        "JAM"
+      ],
+      "code" : "JM",
+      "key" : "country.JM",
+      "label" : "Jamaica",
+      "movesFreely" : false,
+      "otherCodes" : [
+
+      ],
+      "printedCode" : "JAM"
+    },
+    {
+      "aliases" : [
+        "JP",
+        "JPN"
+      ],
+      "code" : "JP",
+      "key" : "country.JP",
+      "label" : "Japonia",
+      "movesFreely" : false,
+      "otherCodes" : [
+
+      ],
+      "printedCode" : "JPN"
+    },
+    {
+      "aliases" : [
+        "KZ",
+        "KAZ"
+      ],
+      "code" : "KZ",
+      "key" : "country.KZ",
+      "label" : "Kazahstan",
+      "movesFreely" : false,
+      "otherCodes" : [
+
+      ],
+      "printedCode" : "KAZ"
+    },
+    {
+      "aliases" : [
+        "KG",
+        "KGZ"
+      ],
+      "code" : "KG",
+      "key" : "country.KG",
+      "label" : "Kârgâzstan",
+      "movesFreely" : false,
+      "otherCodes" : [
+
+      ],
+      "printedCode" : "KGZ"
+    },
+    {
+      "aliases" : [
+        "KE",
+        "KEN"
+      ],
+      "code" : "KE",
+      "key" : "country.KE",
+      "label" : "Kenya",
+      "movesFreely" : false,
+      "otherCodes" : [
+
+      ],
+      "printedCode" : "KEN"
+    },
+    {
+      "aliases" : [
+        "KI",
+        "KIR"
+      ],
+      "code" : "KI",
+      "key" : "country.KI",
+      "label" : "Kiribati",
+      "movesFreely" : false,
+      "otherCodes" : [
+
+      ],
+      "printedCode" : "KIR"
+    },
+    {
+      "aliases" : [
+        "XK",
+        "RKS",
+        "XKK"
+      ],
+      "code" : "XK",
+      "key" : "country.XK",
+      "label" : "Kosovo",
+      "movesFreely" : false,
+      "otherCodes" : [
+        "XKK"
+      ],
+      "printedCode" : "RKS"
+    },
+    {
+      "aliases" : [
+        "KW",
+        "KWT"
+      ],
+      "code" : "KW",
+      "key" : "country.KW",
+      "label" : "Kuweit",
+      "movesFreely" : false,
+      "otherCodes" : [
+
+      ],
+      "printedCode" : "KWT"
+    },
+    {
+      "aliases" : [
+        "LA",
+        "LAO"
+      ],
+      "code" : "LA",
+      "key" : "country.LA",
+      "label" : "Laos",
+      "movesFreely" : false,
+      "otherCodes" : [
+
+      ],
+      "printedCode" : "LAO"
+    },
+    {
+      "aliases" : [
+        "LS",
+        "LSO"
+      ],
+      "code" : "LS",
+      "key" : "country.LS",
+      "label" : "Lesotho",
+      "movesFreely" : false,
+      "otherCodes" : [
+
+      ],
+      "printedCode" : "LSO"
+    },
+    {
+      "aliases" : [
+        "LV",
+        "LVA"
+      ],
+      "code" : "LV",
+      "key" : "country.LV",
+      "label" : "Letonia",
+      "movesFreely" : true,
+      "otherCodes" : [
+
+      ],
+      "printedCode" : "LVA"
+    },
+    {
+      "aliases" : [
+        "LB",
+        "LBN"
+      ],
+      "code" : "LB",
+      "key" : "country.LB",
+      "label" : "Liban",
+      "movesFreely" : false,
+      "otherCodes" : [
+
+      ],
+      "printedCode" : "LBN"
+    },
+    {
+      "aliases" : [
+        "LR",
+        "LBR"
+      ],
+      "code" : "LR",
+      "key" : "country.LR",
+      "label" : "Liberia",
+      "movesFreely" : false,
+      "otherCodes" : [
+
+      ],
+      "printedCode" : "LBR"
+    },
+    {
+      "aliases" : [
+        "LY",
+        "LBY"
+      ],
+      "code" : "LY",
+      "key" : "country.LY",
+      "label" : "Libia",
+      "movesFreely" : false,
+      "otherCodes" : [
+
+      ],
+      "printedCode" : "LBY"
+    },
+    {
+      "aliases" : [
+        "LI",
+        "LIE"
+      ],
+      "code" : "LI",
+      "key" : "country.LI",
+      "label" : "Liechtenstein",
+      "movesFreely" : true,
+      "otherCodes" : [
+
+      ],
+      "printedCode" : "LIE"
+    },
+    {
+      "aliases" : [
+        "LT",
+        "LTU"
+      ],
+      "code" : "LT",
+      "key" : "country.LT",
+      "label" : "Lituania",
+      "movesFreely" : true,
+      "otherCodes" : [
+
+      ],
+      "printedCode" : "LTU"
+    },
+    {
+      "aliases" : [
+        "LU",
+        "LUX"
+      ],
+      "code" : "LU",
+      "key" : "country.LU",
+      "label" : "Luxemburg",
+      "movesFreely" : true,
+      "otherCodes" : [
+
+      ],
+      "printedCode" : "LUX"
+    },
+    {
+      "aliases" : [
+        "MK",
+        "MKD"
+      ],
+      "code" : "MK",
+      "key" : "country.MK",
+      "label" : "Macedonia de Nord",
+      "movesFreely" : false,
+      "otherCodes" : [
+
+      ],
+      "printedCode" : "MKD"
+    },
+    {
+      "aliases" : [
+        "MG",
+        "MDG"
+      ],
+      "code" : "MG",
+      "key" : "country.MG",
+      "label" : "Madagascar",
+      "movesFreely" : false,
+      "otherCodes" : [
+
+      ],
+      "printedCode" : "MDG"
+    },
+    {
+      "aliases" : [
+        "MW",
+        "MWI"
+      ],
+      "code" : "MW",
+      "key" : "country.MW",
+      "label" : "Malawi",
+      "movesFreely" : false,
+      "otherCodes" : [
+
+      ],
+      "printedCode" : "MWI"
+    },
+    {
+      "aliases" : [
+        "MY",
+        "MYS"
+      ],
+      "code" : "MY",
+      "key" : "country.MY",
+      "label" : "Malaysia",
+      "movesFreely" : false,
+      "otherCodes" : [
+
+      ],
+      "printedCode" : "MYS"
+    },
+    {
+      "aliases" : [
+        "MV",
+        "MDV"
+      ],
+      "code" : "MV",
+      "key" : "country.MV",
+      "label" : "Maldive",
+      "movesFreely" : false,
+      "otherCodes" : [
+
+      ],
+      "printedCode" : "MDV"
+    },
+    {
+      "aliases" : [
+        "ML",
+        "MLI"
+      ],
+      "code" : "ML",
+      "key" : "country.ML",
+      "label" : "Mali",
+      "movesFreely" : false,
+      "otherCodes" : [
+
+      ],
+      "printedCode" : "MLI"
+    },
+    {
+      "aliases" : [
+        "MT",
+        "MLT"
+      ],
+      "code" : "MT",
+      "key" : "country.MT",
+      "label" : "Malta",
+      "movesFreely" : true,
+      "otherCodes" : [
+
+      ],
+      "printedCode" : "MLT"
+    },
+    {
+      "aliases" : [
+        "MA",
+        "MAR"
+      ],
+      "code" : "MA",
+      "key" : "country.MA",
+      "label" : "Maroc",
+      "movesFreely" : false,
+      "otherCodes" : [
+
+      ],
+      "printedCode" : "MAR"
+    },
+    {
+      "aliases" : [
+        "MR",
+        "MRT"
+      ],
+      "code" : "MR",
+      "key" : "country.MR",
+      "label" : "Mauritania",
+      "movesFreely" : false,
+      "otherCodes" : [
+
+      ],
+      "printedCode" : "MRT"
+    },
+    {
+      "aliases" : [
+        "MU",
+        "MUS"
+      ],
+      "code" : "MU",
+      "key" : "country.MU",
+      "label" : "Mauritius",
+      "movesFreely" : false,
+      "otherCodes" : [
+
+      ],
+      "printedCode" : "MUS"
+    },
+    {
+      "aliases" : [
+        "MX",
+        "MEX"
+      ],
+      "code" : "MX",
+      "key" : "country.MX",
+      "label" : "Mexic",
+      "movesFreely" : false,
+      "otherCodes" : [
+
+      ],
+      "printedCode" : "MEX"
+    },
+    {
+      "aliases" : [
+        "FM",
+        "FSM"
+      ],
+      "code" : "FM",
+      "key" : "country.FM",
+      "label" : "Micronezia",
+      "movesFreely" : false,
+      "otherCodes" : [
+
+      ],
+      "printedCode" : "FSM"
+    },
+    {
+      "aliases" : [
+        "MC",
+        "MCO"
+      ],
+      "code" : "MC",
+      "key" : "country.MC",
+      "label" : "Monaco",
+      "movesFreely" : false,
+      "otherCodes" : [
+
+      ],
+      "printedCode" : "MCO"
+    },
+    {
+      "aliases" : [
+        "MN",
+        "MNG"
+      ],
+      "code" : "MN",
+      "key" : "country.MN",
+      "label" : "Mongolia",
+      "movesFreely" : false,
+      "otherCodes" : [
+
+      ],
+      "printedCode" : "MNG"
+    },
+    {
+      "aliases" : [
+        "MZ",
+        "MOZ"
+      ],
+      "code" : "MZ",
+      "key" : "country.MZ",
+      "label" : "Mozambic",
+      "movesFreely" : false,
+      "otherCodes" : [
+
+      ],
+      "printedCode" : "MOZ"
+    },
+    {
+      "aliases" : [
+        "ME",
+        "MNE"
+      ],
+      "code" : "ME",
+      "key" : "country.ME",
+      "label" : "Muntenegru",
+      "movesFreely" : false,
+      "otherCodes" : [
+
+      ],
+      "printedCode" : "MNE"
+    },
+    {
+      "aliases" : [
+        "MM",
+        "MMR"
+      ],
+      "code" : "MM",
+      "key" : "country.MM",
+      "label" : "Myanmar (Birmania)",
+      "movesFreely" : false,
+      "otherCodes" : [
+
+      ],
+      "printedCode" : "MMR"
+    },
+    {
+      "aliases" : [
+        "NA",
+        "NAM"
+      ],
+      "code" : "NA",
+      "key" : "country.NA",
+      "label" : "Namibia",
+      "movesFreely" : false,
+      "otherCodes" : [
+
+      ],
+      "printedCode" : "NAM"
+    },
+    {
+      "aliases" : [
+        "NR",
+        "NRU"
+      ],
+      "code" : "NR",
+      "key" : "country.NR",
+      "label" : "Nauru",
+      "movesFreely" : false,
+      "otherCodes" : [
+
+      ],
+      "printedCode" : "NRU"
+    },
+    {
+      "aliases" : [
+        "NP",
+        "NPL"
+      ],
+      "code" : "NP",
+      "key" : "country.NP",
+      "label" : "Nepal",
+      "movesFreely" : false,
+      "otherCodes" : [
+
+      ],
+      "printedCode" : "NPL"
+    },
+    {
+      "aliases" : [
+        "NI",
+        "NIC"
+      ],
+      "code" : "NI",
+      "key" : "country.NI",
+      "label" : "Nicaragua",
+      "movesFreely" : false,
+      "otherCodes" : [
+
+      ],
+      "printedCode" : "NIC"
+    },
+    {
+      "aliases" : [
+        "NE",
+        "NER"
+      ],
+      "code" : "NE",
+      "key" : "country.NE",
+      "label" : "Niger",
+      "movesFreely" : false,
+      "otherCodes" : [
+
+      ],
+      "printedCode" : "NER"
+    },
+    {
+      "aliases" : [
+        "NG",
+        "NGA"
+      ],
+      "code" : "NG",
+      "key" : "country.NG",
+      "label" : "Nigeria",
+      "movesFreely" : false,
+      "otherCodes" : [
+
+      ],
+      "printedCode" : "NGA"
+    },
+    {
+      "aliases" : [
+        "NO",
+        "NOR"
+      ],
+      "code" : "NO",
+      "key" : "country.NO",
+      "label" : "Norvegia",
+      "movesFreely" : true,
+      "otherCodes" : [
+
+      ],
+      "printedCode" : "NOR"
+    },
+    {
+      "aliases" : [
+        "NZ",
+        "NZL"
+      ],
+      "code" : "NZ",
+      "key" : "country.NZ",
+      "label" : "Noua Zeelandă",
+      "movesFreely" : false,
+      "otherCodes" : [
+
+      ],
+      "printedCode" : "NZL"
+    },
+    {
+      "aliases" : [
+        "OM",
+        "OMN"
+      ],
+      "code" : "OM",
+      "key" : "country.OM",
+      "label" : "Oman",
+      "movesFreely" : false,
+      "otherCodes" : [
+
+      ],
+      "printedCode" : "OMN"
+    },
+    {
+      "aliases" : [
+        "PK",
+        "PAK"
+      ],
+      "code" : "PK",
+      "key" : "country.PK",
+      "label" : "Pakistan",
+      "movesFreely" : false,
+      "otherCodes" : [
+
+      ],
+      "printedCode" : "PAK"
+    },
+    {
+      "aliases" : [
+        "PW",
+        "PLW"
+      ],
+      "code" : "PW",
+      "key" : "country.PW",
+      "label" : "Palau",
+      "movesFreely" : false,
+      "otherCodes" : [
+
+      ],
+      "printedCode" : "PLW"
+    },
+    {
+      "aliases" : [
+        "PS",
+        "PSE"
+      ],
+      "code" : "PS",
+      "key" : "country.PS",
+      "label" : "Palestina",
+      "movesFreely" : false,
+      "otherCodes" : [
+
+      ],
+      "printedCode" : "PSE"
+    },
+    {
+      "aliases" : [
+        "PA",
+        "PAN"
+      ],
+      "code" : "PA",
+      "key" : "country.PA",
+      "label" : "Panama",
+      "movesFreely" : false,
+      "otherCodes" : [
+
+      ],
+      "printedCode" : "PAN"
+    },
+    {
+      "aliases" : [
+        "PG",
+        "PNG"
+      ],
+      "code" : "PG",
+      "key" : "country.PG",
+      "label" : "Papua-Noua Guinee",
+      "movesFreely" : false,
+      "otherCodes" : [
+
+      ],
+      "printedCode" : "PNG"
+    },
+    {
+      "aliases" : [
+        "PY",
+        "PRY"
+      ],
+      "code" : "PY",
+      "key" : "country.PY",
+      "label" : "Paraguay",
+      "movesFreely" : false,
+      "otherCodes" : [
+
+      ],
+      "printedCode" : "PRY"
+    },
+    {
+      "aliases" : [
+        "PE",
+        "PER"
+      ],
+      "code" : "PE",
+      "key" : "country.PE",
+      "label" : "Peru",
+      "movesFreely" : false,
+      "otherCodes" : [
+
+      ],
+      "printedCode" : "PER"
+    },
+    {
+      "aliases" : [
+        "PL",
+        "POL"
+      ],
+      "code" : "PL",
+      "key" : "country.PL",
+      "label" : "Polonia",
+      "movesFreely" : true,
+      "otherCodes" : [
+
+      ],
+      "printedCode" : "POL"
+    },
+    {
+      "aliases" : [
+        "PT",
+        "PRT"
+      ],
+      "code" : "PT",
+      "key" : "country.PT",
+      "label" : "Portugalia",
+      "movesFreely" : true,
+      "otherCodes" : [
+
+      ],
+      "printedCode" : "PRT"
+    },
+    {
+      "aliases" : [
+        "QA",
+        "QAT"
+      ],
+      "code" : "QA",
+      "key" : "country.QA",
+      "label" : "Qatar",
+      "movesFreely" : false,
+      "otherCodes" : [
+
+      ],
+      "printedCode" : "QAT"
+    },
+    {
+      "aliases" : [
+        "GB",
+        "GBR",
+        "GBD",
+        "GBN",
+        "GBO",
+        "GBP",
+        "GBS"
+      ],
+      "code" : "GB",
+      "key" : "country.GB",
+      "label" : "Regatul Unit",
+      "movesFreely" : false,
+      "otherCodes" : [
+        "GBD",
+        "GBN",
+        "GBO",
+        "GBP",
+        "GBS"
+      ],
+      "printedCode" : "GBR"
+    },
+    {
+      "aliases" : [
+        "CF",
+        "CAF"
+      ],
+      "code" : "CF",
+      "key" : "country.CF",
+      "label" : "Republica Centrafricană",
+      "movesFreely" : false,
+      "otherCodes" : [
+
+      ],
+      "printedCode" : "CAF"
+    },
+    {
+      "aliases" : [
+        "CG",
+        "COG"
+      ],
+      "code" : "CG",
+      "key" : "country.CG",
+      "label" : "Republica Congo",
+      "movesFreely" : false,
+      "otherCodes" : [
+
+      ],
+      "printedCode" : "COG"
+    },
+    {
+      "aliases" : [
+        "CD",
+        "COD"
+      ],
+      "code" : "CD",
+      "key" : "country.CD",
+      "label" : "Republica Democratică Congo",
+      "movesFreely" : false,
+      "otherCodes" : [
+
+      ],
+      "printedCode" : "COD"
+    },
+    {
+      "aliases" : [
+        "DO",
+        "DOM"
+      ],
+      "code" : "DO",
+      "key" : "country.DO",
+      "label" : "Republica Dominicană",
+      "movesFreely" : false,
+      "otherCodes" : [
+
+      ],
+      "printedCode" : "DOM"
+    },
+    {
+      "aliases" : [
+        "MD",
+        "MDA",
+        "Moldoveană",
+        "Moldovean",
+        "Moldovan"
+      ],
+      "code" : "MD",
+      "key" : "country.MD",
+      "label" : "Republica Moldova",
+      "movesFreely" : false,
+      "otherCodes" : [
+
+      ],
+      "printedCode" : "MDA"
+    },
+    {
+      "aliases" : [
+        "RO",
+        "ROU",
+        "Română",
+        "Român",
+        "Romana",
+        "Roman",
+        "Romanian"
+      ],
+      "code" : "RO",
+      "key" : "country.RO",
+      "label" : "România",
+      "movesFreely" : true,
+      "otherCodes" : [
+
+      ],
+      "printedCode" : "ROU"
+    },
+    {
+      "aliases" : [
+        "RU",
+        "RUS"
+      ],
+      "code" : "RU",
+      "key" : "country.RU",
+      "label" : "Rusia",
+      "movesFreely" : false,
+      "otherCodes" : [
+
+      ],
+      "printedCode" : "RUS"
+    },
+    {
+      "aliases" : [
+        "RW",
+        "RWA"
+      ],
+      "code" : "RW",
+      "key" : "country.RW",
+      "label" : "Rwanda",
+      "movesFreely" : false,
+      "otherCodes" : [
+
+      ],
+      "printedCode" : "RWA"
+    },
+    {
+      "aliases" : [
+        "KN",
+        "KNA"
+      ],
+      "code" : "KN",
+      "key" : "country.KN",
+      "label" : "Saint Kitts și Nevis",
+      "movesFreely" : false,
+      "otherCodes" : [
+
+      ],
+      "printedCode" : "KNA"
+    },
+    {
+      "aliases" : [
+        "VC",
+        "VCT"
+      ],
+      "code" : "VC",
+      "key" : "country.VC",
+      "label" : "Saint Vincent și Grenadinele",
+      "movesFreely" : false,
+      "otherCodes" : [
+
+      ],
+      "printedCode" : "VCT"
+    },
+    {
+      "aliases" : [
+        "WS",
+        "WSM"
+      ],
+      "code" : "WS",
+      "key" : "country.WS",
+      "label" : "Samoa",
+      "movesFreely" : false,
+      "otherCodes" : [
+
+      ],
+      "printedCode" : "WSM"
+    },
+    {
+      "aliases" : [
+        "SM",
+        "SMR"
+      ],
+      "code" : "SM",
+      "key" : "country.SM",
+      "label" : "San Marino",
+      "movesFreely" : false,
+      "otherCodes" : [
+
+      ],
+      "printedCode" : "SMR"
+    },
+    {
+      "aliases" : [
+        "ST",
+        "STP"
+      ],
+      "code" : "ST",
+      "key" : "country.ST",
+      "label" : "São Tomé și Príncipe",
+      "movesFreely" : false,
+      "otherCodes" : [
+
+      ],
+      "printedCode" : "STP"
+    },
+    {
+      "aliases" : [
+        "SN",
+        "SEN"
+      ],
+      "code" : "SN",
+      "key" : "country.SN",
+      "label" : "Senegal",
+      "movesFreely" : false,
+      "otherCodes" : [
+
+      ],
+      "printedCode" : "SEN"
+    },
+    {
+      "aliases" : [
+        "RS",
+        "SRB"
+      ],
+      "code" : "RS",
+      "key" : "country.RS",
+      "label" : "Serbia",
+      "movesFreely" : false,
+      "otherCodes" : [
+
+      ],
+      "printedCode" : "SRB"
+    },
+    {
+      "aliases" : [
+        "SC",
+        "SYC"
+      ],
+      "code" : "SC",
+      "key" : "country.SC",
+      "label" : "Seychelles",
+      "movesFreely" : false,
+      "otherCodes" : [
+
+      ],
+      "printedCode" : "SYC"
+    },
+    {
+      "aliases" : [
+        "LC",
+        "LCA"
+      ],
+      "code" : "LC",
+      "key" : "country.LC",
+      "label" : "Sfânta Lucia",
+      "movesFreely" : false,
+      "otherCodes" : [
+
+      ],
+      "printedCode" : "LCA"
+    },
+    {
+      "aliases" : [
+        "SL",
+        "SLE"
+      ],
+      "code" : "SL",
+      "key" : "country.SL",
+      "label" : "Sierra Leone",
+      "movesFreely" : false,
+      "otherCodes" : [
+
+      ],
+      "printedCode" : "SLE"
+    },
+    {
+      "aliases" : [
+        "SG",
+        "SGP"
+      ],
+      "code" : "SG",
+      "key" : "country.SG",
+      "label" : "Singapore",
+      "movesFreely" : false,
+      "otherCodes" : [
+
+      ],
+      "printedCode" : "SGP"
+    },
+    {
+      "aliases" : [
+        "SY",
+        "SYR"
+      ],
+      "code" : "SY",
+      "key" : "country.SY",
+      "label" : "Siria",
+      "movesFreely" : false,
+      "otherCodes" : [
+
+      ],
+      "printedCode" : "SYR"
+    },
+    {
+      "aliases" : [
+        "SK",
+        "SVK"
+      ],
+      "code" : "SK",
+      "key" : "country.SK",
+      "label" : "Slovacia",
+      "movesFreely" : true,
+      "otherCodes" : [
+
+      ],
+      "printedCode" : "SVK"
+    },
+    {
+      "aliases" : [
+        "SI",
+        "SVN"
+      ],
+      "code" : "SI",
+      "key" : "country.SI",
+      "label" : "Slovenia",
+      "movesFreely" : true,
+      "otherCodes" : [
+
+      ],
+      "printedCode" : "SVN"
+    },
+    {
+      "aliases" : [
+        "SO",
+        "SOM"
+      ],
+      "code" : "SO",
+      "key" : "country.SO",
+      "label" : "Somalia",
+      "movesFreely" : false,
+      "otherCodes" : [
+
+      ],
+      "printedCode" : "SOM"
+    },
+    {
+      "aliases" : [
+        "ES",
+        "ESP"
+      ],
+      "code" : "ES",
+      "key" : "country.ES",
+      "label" : "Spania",
+      "movesFreely" : true,
+      "otherCodes" : [
+
+      ],
+      "printedCode" : "ESP"
+    },
+    {
+      "aliases" : [
+        "LK",
+        "LKA"
+      ],
+      "code" : "LK",
+      "key" : "country.LK",
+      "label" : "Sri Lanka",
+      "movesFreely" : false,
+      "otherCodes" : [
+
+      ],
+      "printedCode" : "LKA"
+    },
+    {
+      "aliases" : [
+        "US",
+        "USA"
+      ],
+      "code" : "US",
+      "key" : "country.US",
+      "label" : "Statele Unite ale Americii",
+      "movesFreely" : false,
+      "otherCodes" : [
+
+      ],
+      "printedCode" : "USA"
+    },
+    {
+      "aliases" : [
+        "VA",
+        "VAT"
+      ],
+      "code" : "VA",
+      "key" : "country.VA",
+      "label" : "Statul Cetății Vaticanului",
+      "movesFreely" : false,
+      "otherCodes" : [
+
+      ],
+      "printedCode" : "VAT"
+    },
+    {
+      "aliases" : [
+        "SD",
+        "SDN"
+      ],
+      "code" : "SD",
+      "key" : "country.SD",
+      "label" : "Sudan",
+      "movesFreely" : false,
+      "otherCodes" : [
+
+      ],
+      "printedCode" : "SDN"
+    },
+    {
+      "aliases" : [
+        "SS",
+        "SSD"
+      ],
+      "code" : "SS",
+      "key" : "country.SS",
+      "label" : "Sudanul de Sud",
+      "movesFreely" : false,
+      "otherCodes" : [
+
+      ],
+      "printedCode" : "SSD"
+    },
+    {
+      "aliases" : [
+        "SE",
+        "SWE"
+      ],
+      "code" : "SE",
+      "key" : "country.SE",
+      "label" : "Suedia",
+      "movesFreely" : true,
+      "otherCodes" : [
+
+      ],
+      "printedCode" : "SWE"
+    },
+    {
+      "aliases" : [
+        "SR",
+        "SUR"
+      ],
+      "code" : "SR",
+      "key" : "country.SR",
+      "label" : "Suriname",
+      "movesFreely" : false,
+      "otherCodes" : [
+
+      ],
+      "printedCode" : "SUR"
+    },
+    {
+      "aliases" : [
+        "TJ",
+        "TJK"
+      ],
+      "code" : "TJ",
+      "key" : "country.TJ",
+      "label" : "Tadjikistan",
+      "movesFreely" : false,
+      "otherCodes" : [
+
+      ],
+      "printedCode" : "TJK"
+    },
+    {
+      "aliases" : [
+        "TW",
+        "TWN"
+      ],
+      "code" : "TW",
+      "key" : "country.TW",
+      "label" : "Taiwan",
+      "movesFreely" : false,
+      "otherCodes" : [
+
+      ],
+      "printedCode" : "TWN"
+    },
+    {
+      "aliases" : [
+        "TZ",
+        "TZA"
+      ],
+      "code" : "TZ",
+      "key" : "country.TZ",
+      "label" : "Tanzania",
+      "movesFreely" : false,
+      "otherCodes" : [
+
+      ],
+      "printedCode" : "TZA"
+    },
+    {
+      "aliases" : [
+        "TH",
+        "THA"
+      ],
+      "code" : "TH",
+      "key" : "country.TH",
+      "label" : "Thailanda",
+      "movesFreely" : false,
+      "otherCodes" : [
+
+      ],
+      "printedCode" : "THA"
+    },
+    {
+      "aliases" : [
+        "TL",
+        "TLS"
+      ],
+      "code" : "TL",
+      "key" : "country.TL",
+      "label" : "Timor-Leste",
+      "movesFreely" : false,
+      "otherCodes" : [
+
+      ],
+      "printedCode" : "TLS"
+    },
+    {
+      "aliases" : [
+        "TG",
+        "TGO"
+      ],
+      "code" : "TG",
+      "key" : "country.TG",
+      "label" : "Togo",
+      "movesFreely" : false,
+      "otherCodes" : [
+
+      ],
+      "printedCode" : "TGO"
+    },
+    {
+      "aliases" : [
+        "TO",
+        "TON"
+      ],
+      "code" : "TO",
+      "key" : "country.TO",
+      "label" : "Tonga",
+      "movesFreely" : false,
+      "otherCodes" : [
+
+      ],
+      "printedCode" : "TON"
+    },
+    {
+      "aliases" : [
+        "TT",
+        "TTO"
+      ],
+      "code" : "TT",
+      "key" : "country.TT",
+      "label" : "Trinidad și Tobago",
+      "movesFreely" : false,
+      "otherCodes" : [
+
+      ],
+      "printedCode" : "TTO"
+    },
+    {
+      "aliases" : [
+        "TN",
+        "TUN"
+      ],
+      "code" : "TN",
+      "key" : "country.TN",
+      "label" : "Tunisia",
+      "movesFreely" : false,
+      "otherCodes" : [
+
+      ],
+      "printedCode" : "TUN"
+    },
+    {
+      "aliases" : [
+        "TR",
+        "TUR"
+      ],
+      "code" : "TR",
+      "key" : "country.TR",
+      "label" : "Turcia",
+      "movesFreely" : false,
+      "otherCodes" : [
+
+      ],
+      "printedCode" : "TUR"
+    },
+    {
+      "aliases" : [
+        "TM",
+        "TKM"
+      ],
+      "code" : "TM",
+      "key" : "country.TM",
+      "label" : "Turkmenistan",
+      "movesFreely" : false,
+      "otherCodes" : [
+
+      ],
+      "printedCode" : "TKM"
+    },
+    {
+      "aliases" : [
+        "TV",
+        "TUV"
+      ],
+      "code" : "TV",
+      "key" : "country.TV",
+      "label" : "Tuvalu",
+      "movesFreely" : false,
+      "otherCodes" : [
+
+      ],
+      "printedCode" : "TUV"
+    },
+    {
+      "aliases" : [
+        "NL",
+        "NLD"
+      ],
+      "code" : "NL",
+      "key" : "country.NL",
+      "label" : "Țările de Jos",
+      "movesFreely" : true,
+      "otherCodes" : [
+
+      ],
+      "printedCode" : "NLD"
+    },
+    {
+      "aliases" : [
+        "UA",
+        "UKR"
+      ],
+      "code" : "UA",
+      "key" : "country.UA",
+      "label" : "Ucraina",
+      "movesFreely" : false,
+      "otherCodes" : [
+
+      ],
+      "printedCode" : "UKR"
+    },
+    {
+      "aliases" : [
+        "UG",
+        "UGA"
+      ],
+      "code" : "UG",
+      "key" : "country.UG",
+      "label" : "Uganda",
+      "movesFreely" : false,
+      "otherCodes" : [
+
+      ],
+      "printedCode" : "UGA"
+    },
+    {
+      "aliases" : [
+        "HU",
+        "HUN"
+      ],
+      "code" : "HU",
+      "key" : "country.HU",
+      "label" : "Ungaria",
+      "movesFreely" : true,
+      "otherCodes" : [
+
+      ],
+      "printedCode" : "HUN"
+    },
+    {
+      "aliases" : [
+        "UY",
+        "URY"
+      ],
+      "code" : "UY",
+      "key" : "country.UY",
+      "label" : "Uruguay",
+      "movesFreely" : false,
+      "otherCodes" : [
+
+      ],
+      "printedCode" : "URY"
+    },
+    {
+      "aliases" : [
+        "UZ",
+        "UZB"
+      ],
+      "code" : "UZ",
+      "key" : "country.UZ",
+      "label" : "Uzbekistan",
+      "movesFreely" : false,
+      "otherCodes" : [
+
+      ],
+      "printedCode" : "UZB"
+    },
+    {
+      "aliases" : [
+        "VU",
+        "VUT"
+      ],
+      "code" : "VU",
+      "key" : "country.VU",
+      "label" : "Vanuatu",
+      "movesFreely" : false,
+      "otherCodes" : [
+
+      ],
+      "printedCode" : "VUT"
+    },
+    {
+      "aliases" : [
+        "VE",
+        "VEN"
+      ],
+      "code" : "VE",
+      "key" : "country.VE",
+      "label" : "Venezuela",
+      "movesFreely" : false,
+      "otherCodes" : [
+
+      ],
+      "printedCode" : "VEN"
+    },
+    {
+      "aliases" : [
+        "VN",
+        "VNM"
+      ],
+      "code" : "VN",
+      "key" : "country.VN",
+      "label" : "Vietnam",
+      "movesFreely" : false,
+      "otherCodes" : [
+
+      ],
+      "printedCode" : "VNM"
+    },
+    {
+      "aliases" : [
+        "YE",
+        "YEM"
+      ],
+      "code" : "YE",
+      "key" : "country.YE",
+      "label" : "Yemen",
+      "movesFreely" : false,
+      "otherCodes" : [
+
+      ],
+      "printedCode" : "YEM"
+    },
+    {
+      "aliases" : [
+        "ZM",
+        "ZMB"
+      ],
+      "code" : "ZM",
+      "key" : "country.ZM",
+      "label" : "Zambia",
+      "movesFreely" : false,
+      "otherCodes" : [
+
+      ],
+      "printedCode" : "ZMB"
+    },
+    {
+      "aliases" : [
+        "ZW",
+        "ZWE"
+      ],
+      "code" : "ZW",
+      "key" : "country.ZW",
+      "label" : "Zimbabwe",
+      "movesFreely" : false,
+      "otherCodes" : [
+
+      ],
+      "printedCode" : "ZWE"
+    },
+    {
+      "aliases" : [
+        "XXA",
+        "XXB",
+        "XXC",
+        "Apatrid",
+        "Stateless"
+      ],
+      "key" : "country.stateless",
+      "label" : "Fără cetățenie (apatrid)"
+    }
+  ],
+  "stateless" : "country.stateless",
+  "statelessCodes" : [
+    "XXA",
+    "XXB",
+    "XXC"
+  ],
+  "writtenBy" : "ios/DosarCuSinaTests/TravelExportTests.swift"
+}

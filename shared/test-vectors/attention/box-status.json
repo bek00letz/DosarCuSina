@@ -1,0 +1,878 @@
+{
+  "cases" : [
+    {
+      "deadlines" : [
+        {
+          "dueDay" : "2026-11-20",
+          "estimatedCost" : {
+            "amount" : "1250",
+            "currency" : "RON"
+          },
+          "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0001",
+          "isSensitive" : false,
+          "kind" : "insurance",
+          "reminders" : {
+            "consequence" : "legal",
+            "followUpAfterLapse" : null,
+            "graceDays" : 0,
+            "leadDays" : [
+              30,
+              7,
+              1
+            ],
+            "travelMarginDays" : 0
+          },
+          "sectionId" : "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbb0001",
+          "sectionName" : "VW Golf 2018",
+          "snoozedUntil" : null,
+          "status" : "active",
+          "title" : "RCA"
+        },
+        {
+          "dueDay" : "2026-12-03",
+          "estimatedCost" : null,
+          "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0004",
+          "isSensitive" : false,
+          "kind" : "legal",
+          "reminders" : {
+            "consequence" : "legal",
+            "followUpAfterLapse" : null,
+            "graceDays" : 0,
+            "leadDays" : [
+              30,
+              7,
+              0
+            ],
+            "travelMarginDays" : 0
+          },
+          "sectionId" : "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbb0001",
+          "sectionName" : "VW Golf 2018",
+          "snoozedUntil" : null,
+          "status" : "active",
+          "title" : "ITP"
+        },
+        {
+          "dueDay" : "2026-12-15",
+          "estimatedCost" : {
+            "amount" : "900",
+            "currency" : "RON"
+          },
+          "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0005",
+          "isSensitive" : false,
+          "kind" : "maintenance",
+          "reminders" : {
+            "consequence" : "comfort",
+            "followUpAfterLapse" : null,
+            "graceDays" : 0,
+            "leadDays" : [
+              14
+            ],
+            "travelMarginDays" : 0
+          },
+          "sectionId" : "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbb0001",
+          "sectionName" : "VW Golf 2018",
+          "snoozedUntil" : null,
+          "status" : "active",
+          "title" : "Revizie"
+        },
+        {
+          "dueDay" : "2027-03-01",
+          "estimatedCost" : {
+            "amount" : "28",
+            "currency" : "EUR"
+          },
+          "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0006",
+          "isSensitive" : false,
+          "kind" : "legal",
+          "reminders" : {
+            "consequence" : "legal",
+            "followUpAfterLapse" : null,
+            "graceDays" : 0,
+            "leadDays" : [
+              30,
+              7,
+              0
+            ],
+            "travelMarginDays" : 0
+          },
+          "sectionId" : "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbb0001",
+          "sectionName" : "VW Golf 2018",
+          "snoozedUntil" : null,
+          "status" : "active",
+          "title" : "Rovinietă"
+        },
+        {
+          "dueDay" : "2026-11-23",
+          "estimatedCost" : null,
+          "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0002",
+          "isSensitive" : false,
+          "kind" : "health",
+          "reminders" : {
+            "consequence" : "health",
+            "followUpAfterLapse" : null,
+            "graceDays" : 7,
+            "leadDays" : [
+              7,
+              0
+            ],
+            "travelMarginDays" : 0
+          },
+          "sectionId" : "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbb0002",
+          "sectionName" : "PawPaw",
+          "snoozedUntil" : null,
+          "status" : "active",
+          "title" : "Vaccin antirabic"
+        }
+      ],
+      "entry" : {
+        "daysRemaining" : -6,
+        "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0001",
+        "score" : 1415,
+        "urgency" : "overdue"
+      },
+      "isAlarming" : true,
+      "lines" : [
+        {
+          "isSensitive" : false,
+          "lockedSectionsClosed" : true,
+          "showsTitle" : true,
+          "text" : "RCA · depășit de 6 zile"
+        },
+        {
+          "isSensitive" : false,
+          "lockedSectionsClosed" : false,
+          "showsTitle" : true,
+          "text" : "RCA · depășit de 6 zile"
+        },
+        {
+          "isSensitive" : true,
+          "lockedSectionsClosed" : true,
+          "showsTitle" : false,
+          "text" : "Un termen · depășit de 6 zile"
+        },
+        {
+          "isSensitive" : true,
+          "lockedSectionsClosed" : false,
+          "showsTitle" : false,
+          "text" : "Un termen · depășit de 6 zile"
+        }
+      ],
+      "name" : "a car's box, the most pressing of its deadlines",
+      "sections" : [
+        "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbb0001"
+      ],
+      "today" : "2026-11-26",
+      "urgencyTone" : "overdue"
+    },
+    {
+      "deadlines" : [
+        {
+          "dueDay" : "2027-03-01",
+          "estimatedCost" : {
+            "amount" : "28",
+            "currency" : "EUR"
+          },
+          "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0006",
+          "isSensitive" : false,
+          "kind" : "legal",
+          "reminders" : {
+            "consequence" : "legal",
+            "followUpAfterLapse" : null,
+            "graceDays" : 0,
+            "leadDays" : [
+              30,
+              7,
+              0
+            ],
+            "travelMarginDays" : 0
+          },
+          "sectionId" : "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbb0001",
+          "sectionName" : "VW Golf 2018",
+          "snoozedUntil" : null,
+          "status" : "active",
+          "title" : "Rovinietă"
+        }
+      ],
+      "entry" : null,
+      "isAlarming" : false,
+      "lines" : [
+        {
+          "isSensitive" : false,
+          "lockedSectionsClosed" : true,
+          "showsTitle" : false,
+          "text" : "Totul e în regulă"
+        },
+        {
+          "isSensitive" : false,
+          "lockedSectionsClosed" : false,
+          "showsTitle" : false,
+          "text" : "Totul e în regulă"
+        },
+        {
+          "isSensitive" : true,
+          "lockedSectionsClosed" : true,
+          "showsTitle" : false,
+          "text" : "Totul e în regulă"
+        },
+        {
+          "isSensitive" : true,
+          "lockedSectionsClosed" : false,
+          "showsTitle" : false,
+          "text" : "Totul e în regulă"
+        }
+      ],
+      "name" : "all good: nothing in its window",
+      "sections" : [
+        "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbb0001"
+      ],
+      "today" : "2026-11-26",
+      "urgencyTone" : "calm"
+    },
+    {
+      "deadlines" : [
+
+      ],
+      "entry" : null,
+      "isAlarming" : false,
+      "lines" : [
+        {
+          "isSensitive" : false,
+          "lockedSectionsClosed" : true,
+          "showsTitle" : false,
+          "text" : "Totul e în regulă"
+        },
+        {
+          "isSensitive" : false,
+          "lockedSectionsClosed" : false,
+          "showsTitle" : false,
+          "text" : "Totul e în regulă"
+        },
+        {
+          "isSensitive" : true,
+          "lockedSectionsClosed" : true,
+          "showsTitle" : false,
+          "text" : "Totul e în regulă"
+        },
+        {
+          "isSensitive" : true,
+          "lockedSectionsClosed" : false,
+          "showsTitle" : false,
+          "text" : "Totul e în regulă"
+        }
+      ],
+      "name" : "empty",
+      "sections" : [
+        "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbb0001"
+      ],
+      "today" : "2026-11-26",
+      "urgencyTone" : "calm"
+    },
+    {
+      "deadlines" : [
+        {
+          "dueDay" : "2026-11-20",
+          "estimatedCost" : {
+            "amount" : "1250",
+            "currency" : "RON"
+          },
+          "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0001",
+          "isSensitive" : false,
+          "kind" : "insurance",
+          "reminders" : {
+            "consequence" : "legal",
+            "followUpAfterLapse" : null,
+            "graceDays" : 0,
+            "leadDays" : [
+              30,
+              7,
+              1
+            ],
+            "travelMarginDays" : 0
+          },
+          "sectionId" : "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbb0001",
+          "sectionName" : "VW Golf 2018",
+          "snoozedUntil" : null,
+          "status" : "active",
+          "title" : "RCA"
+        },
+        {
+          "dueDay" : "2026-12-03",
+          "estimatedCost" : null,
+          "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0004",
+          "isSensitive" : false,
+          "kind" : "legal",
+          "reminders" : {
+            "consequence" : "legal",
+            "followUpAfterLapse" : null,
+            "graceDays" : 0,
+            "leadDays" : [
+              30,
+              7,
+              0
+            ],
+            "travelMarginDays" : 0
+          },
+          "sectionId" : "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbb0001",
+          "sectionName" : "VW Golf 2018",
+          "snoozedUntil" : null,
+          "status" : "active",
+          "title" : "ITP"
+        },
+        {
+          "dueDay" : "2026-12-15",
+          "estimatedCost" : {
+            "amount" : "900",
+            "currency" : "RON"
+          },
+          "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0005",
+          "isSensitive" : false,
+          "kind" : "maintenance",
+          "reminders" : {
+            "consequence" : "comfort",
+            "followUpAfterLapse" : null,
+            "graceDays" : 0,
+            "leadDays" : [
+              14
+            ],
+            "travelMarginDays" : 0
+          },
+          "sectionId" : "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbb0001",
+          "sectionName" : "VW Golf 2018",
+          "snoozedUntil" : null,
+          "status" : "active",
+          "title" : "Revizie"
+        },
+        {
+          "dueDay" : "2027-03-01",
+          "estimatedCost" : {
+            "amount" : "28",
+            "currency" : "EUR"
+          },
+          "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0006",
+          "isSensitive" : false,
+          "kind" : "legal",
+          "reminders" : {
+            "consequence" : "legal",
+            "followUpAfterLapse" : null,
+            "graceDays" : 0,
+            "leadDays" : [
+              30,
+              7,
+              0
+            ],
+            "travelMarginDays" : 0
+          },
+          "sectionId" : "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbb0001",
+          "sectionName" : "VW Golf 2018",
+          "snoozedUntil" : null,
+          "status" : "active",
+          "title" : "Rovinietă"
+        }
+      ],
+      "entry" : {
+        "daysRemaining" : -13,
+        "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0001",
+        "score" : 1422,
+        "urgency" : "overdue"
+      },
+      "isAlarming" : true,
+      "lines" : [
+        {
+          "isSensitive" : false,
+          "lockedSectionsClosed" : true,
+          "showsTitle" : true,
+          "text" : "RCA · depășit de 13 zile"
+        },
+        {
+          "isSensitive" : false,
+          "lockedSectionsClosed" : false,
+          "showsTitle" : true,
+          "text" : "RCA · depășit de 13 zile"
+        },
+        {
+          "isSensitive" : true,
+          "lockedSectionsClosed" : true,
+          "showsTitle" : false,
+          "text" : "Un termen · depășit de 13 zile"
+        },
+        {
+          "isSensitive" : true,
+          "lockedSectionsClosed" : false,
+          "showsTitle" : false,
+          "text" : "Un termen · depășit de 13 zile"
+        }
+      ],
+      "name" : "due today counts on the badge",
+      "sections" : [
+        "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbb0001"
+      ],
+      "today" : "2026-12-03",
+      "urgencyTone" : "overdue"
+    },
+    {
+      "deadlines" : [
+        {
+          "dueDay" : "2026-11-23",
+          "estimatedCost" : null,
+          "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0002",
+          "isSensitive" : false,
+          "kind" : "health",
+          "reminders" : {
+            "consequence" : "health",
+            "followUpAfterLapse" : null,
+            "graceDays" : 7,
+            "leadDays" : [
+              7,
+              0
+            ],
+            "travelMarginDays" : 0
+          },
+          "sectionId" : "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbb0002",
+          "sectionName" : "PawPaw",
+          "snoozedUntil" : null,
+          "status" : "active",
+          "title" : "Vaccin antirabic"
+        }
+      ],
+      "entry" : {
+        "daysRemaining" : -3,
+        "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0002",
+        "score" : 800,
+        "urgency" : "withinGrace"
+      },
+      "isAlarming" : false,
+      "lines" : [
+        {
+          "isSensitive" : false,
+          "lockedSectionsClosed" : true,
+          "showsTitle" : true,
+          "text" : "Vaccin antirabic · întârziat cu 3 zile"
+        },
+        {
+          "isSensitive" : false,
+          "lockedSectionsClosed" : false,
+          "showsTitle" : true,
+          "text" : "Vaccin antirabic · întârziat cu 3 zile"
+        },
+        {
+          "isSensitive" : true,
+          "lockedSectionsClosed" : true,
+          "showsTitle" : false,
+          "text" : "Un termen · întârziat cu 3 zile"
+        },
+        {
+          "isSensitive" : true,
+          "lockedSectionsClosed" : false,
+          "showsTitle" : false,
+          "text" : "Un termen · întârziat cu 3 zile"
+        }
+      ],
+      "name" : "late within its grace",
+      "sections" : [
+        "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbb0002"
+      ],
+      "today" : "2026-11-26",
+      "urgencyTone" : "soon"
+    },
+    {
+      "deadlines" : [
+        {
+          "dueDay" : "2026-12-01",
+          "estimatedCost" : null,
+          "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0060",
+          "isSensitive" : true,
+          "kind" : "renewal",
+          "reminders" : {
+            "consequence" : "legal",
+            "followUpAfterLapse" : null,
+            "graceDays" : 0,
+            "leadDays" : [
+              30,
+              7,
+              0
+            ],
+            "travelMarginDays" : 0
+          },
+          "sectionId" : "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbb0021",
+          "sectionName" : "Carte de identitate",
+          "snoozedUntil" : null,
+          "status" : "active",
+          "title" : "Carte de identitate"
+        },
+        {
+          "dueDay" : "2026-12-20",
+          "estimatedCost" : null,
+          "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0061",
+          "isSensitive" : false,
+          "kind" : "health",
+          "reminders" : {
+            "consequence" : "health",
+            "followUpAfterLapse" : null,
+            "graceDays" : 0,
+            "leadDays" : [
+              7
+            ],
+            "travelMarginDays" : 0
+          },
+          "sectionId" : "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbb0020",
+          "sectionName" : "Persoană Exemplu",
+          "snoozedUntil" : null,
+          "status" : "active",
+          "title" : "Analize"
+        }
+      ],
+      "entry" : {
+        "daysRemaining" : 5,
+        "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0060",
+        "score" : 1233,
+        "urgency" : "soon"
+      },
+      "isAlarming" : false,
+      "lines" : [
+        {
+          "isSensitive" : false,
+          "lockedSectionsClosed" : true,
+          "showsTitle" : false,
+          "text" : "Un termen · în 5 zile"
+        },
+        {
+          "isSensitive" : false,
+          "lockedSectionsClosed" : false,
+          "showsTitle" : true,
+          "text" : "Carte de identitate · în 5 zile"
+        },
+        {
+          "isSensitive" : true,
+          "lockedSectionsClosed" : true,
+          "showsTitle" : false,
+          "text" : "Un termen · în 5 zile"
+        },
+        {
+          "isSensitive" : true,
+          "lockedSectionsClosed" : false,
+          "showsTitle" : false,
+          "text" : "Un termen · în 5 zile"
+        }
+      ],
+      "name" : "a person's box with a locked identity card filed under it",
+      "sections" : [
+        "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbb0020",
+        "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbb0021"
+      ],
+      "today" : "2026-11-26",
+      "urgencyTone" : "soon"
+    },
+    {
+      "counting" : {
+        "count" : 3,
+        "noun" : "plant",
+        "text" : "3 plante · Udat · mâine"
+      },
+      "deadlines" : [
+        {
+          "dueDay" : "2026-11-27",
+          "estimatedCost" : null,
+          "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0008",
+          "isSensitive" : false,
+          "kind" : "routine",
+          "reminders" : {
+            "consequence" : "comfort",
+            "followUpAfterLapse" : null,
+            "graceDays" : 2,
+            "leadDays" : [
+              0
+            ],
+            "travelMarginDays" : 0
+          },
+          "sectionId" : "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbb0005",
+          "sectionName" : "Monstera",
+          "snoozedUntil" : null,
+          "status" : "active",
+          "title" : "Udat"
+        },
+        {
+          "dueDay" : "2026-12-20",
+          "estimatedCost" : null,
+          "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0062",
+          "isSensitive" : false,
+          "kind" : "routine",
+          "reminders" : {
+            "consequence" : "comfort",
+            "followUpAfterLapse" : null,
+            "graceDays" : 2,
+            "leadDays" : [
+              0
+            ],
+            "travelMarginDays" : 0
+          },
+          "sectionId" : "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbb0030",
+          "sectionName" : "Ficus",
+          "snoozedUntil" : null,
+          "status" : "active",
+          "title" : "Fertilizat"
+        }
+      ],
+      "entry" : {
+        "daysRemaining" : 1,
+        "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0008",
+        "score" : 100,
+        "urgency" : "soon"
+      },
+      "isAlarming" : false,
+      "lines" : [
+        {
+          "isSensitive" : false,
+          "lockedSectionsClosed" : true,
+          "showsTitle" : true,
+          "text" : "Udat · mâine"
+        },
+        {
+          "isSensitive" : false,
+          "lockedSectionsClosed" : false,
+          "showsTitle" : true,
+          "text" : "Udat · mâine"
+        },
+        {
+          "isSensitive" : true,
+          "lockedSectionsClosed" : true,
+          "showsTitle" : false,
+          "text" : "Un termen · mâine"
+        },
+        {
+          "isSensitive" : true,
+          "lockedSectionsClosed" : false,
+          "showsTitle" : false,
+          "text" : "Un termen · mâine"
+        }
+      ],
+      "name" : "three plants grouped into one box",
+      "sections" : [
+        "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbb0005",
+        "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbb0030",
+        "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbb0031"
+      ],
+      "today" : "2026-11-26",
+      "urgencyTone" : "soon"
+    },
+    {
+      "counting" : {
+        "count" : 2,
+        "noun" : null,
+        "text" : "2 secțiuni · totul e în regulă"
+      },
+      "deadlines" : [
+
+      ],
+      "entry" : null,
+      "isAlarming" : false,
+      "lines" : [
+        {
+          "isSensitive" : false,
+          "lockedSectionsClosed" : true,
+          "showsTitle" : false,
+          "text" : "Totul e în regulă"
+        },
+        {
+          "isSensitive" : false,
+          "lockedSectionsClosed" : false,
+          "showsTitle" : false,
+          "text" : "Totul e în regulă"
+        },
+        {
+          "isSensitive" : true,
+          "lockedSectionsClosed" : true,
+          "showsTitle" : false,
+          "text" : "Totul e în regulă"
+        },
+        {
+          "isSensitive" : true,
+          "lockedSectionsClosed" : false,
+          "showsTitle" : false,
+          "text" : "Totul e în regulă"
+        }
+      ],
+      "name" : "a grouped box of a category of one's own, all good",
+      "sections" : [
+        "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbb0040",
+        "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbb0041"
+      ],
+      "today" : "2026-11-26",
+      "urgencyTone" : "calm"
+    },
+    {
+      "counting" : {
+        "count" : 2,
+        "noun" : "car",
+        "text" : "2 mașini · RCA · depășit de 3 săptămâni"
+      },
+      "deadlines" : [
+        {
+          "dueDay" : "2026-11-20",
+          "estimatedCost" : {
+            "amount" : "1250",
+            "currency" : "RON"
+          },
+          "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0001",
+          "isSensitive" : false,
+          "kind" : "insurance",
+          "reminders" : {
+            "consequence" : "legal",
+            "followUpAfterLapse" : null,
+            "graceDays" : 0,
+            "leadDays" : [
+              30,
+              7,
+              1
+            ],
+            "travelMarginDays" : 0
+          },
+          "sectionId" : "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbb0001",
+          "sectionName" : "VW Golf 2018",
+          "snoozedUntil" : null,
+          "status" : "active",
+          "title" : "RCA"
+        },
+        {
+          "dueDay" : "2026-12-03",
+          "estimatedCost" : null,
+          "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0004",
+          "isSensitive" : false,
+          "kind" : "legal",
+          "reminders" : {
+            "consequence" : "legal",
+            "followUpAfterLapse" : null,
+            "graceDays" : 0,
+            "leadDays" : [
+              30,
+              7,
+              0
+            ],
+            "travelMarginDays" : 0
+          },
+          "sectionId" : "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbb0001",
+          "sectionName" : "VW Golf 2018",
+          "snoozedUntil" : null,
+          "status" : "active",
+          "title" : "ITP"
+        },
+        {
+          "dueDay" : "2026-12-15",
+          "estimatedCost" : {
+            "amount" : "900",
+            "currency" : "RON"
+          },
+          "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0005",
+          "isSensitive" : false,
+          "kind" : "maintenance",
+          "reminders" : {
+            "consequence" : "comfort",
+            "followUpAfterLapse" : null,
+            "graceDays" : 0,
+            "leadDays" : [
+              14
+            ],
+            "travelMarginDays" : 0
+          },
+          "sectionId" : "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbb0001",
+          "sectionName" : "VW Golf 2018",
+          "snoozedUntil" : null,
+          "status" : "active",
+          "title" : "Revizie"
+        },
+        {
+          "dueDay" : "2027-03-01",
+          "estimatedCost" : {
+            "amount" : "28",
+            "currency" : "EUR"
+          },
+          "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0006",
+          "isSensitive" : false,
+          "kind" : "legal",
+          "reminders" : {
+            "consequence" : "legal",
+            "followUpAfterLapse" : null,
+            "graceDays" : 0,
+            "leadDays" : [
+              30,
+              7,
+              0
+            ],
+            "travelMarginDays" : 0
+          },
+          "sectionId" : "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbb0001",
+          "sectionName" : "VW Golf 2018",
+          "snoozedUntil" : null,
+          "status" : "active",
+          "title" : "Rovinietă"
+        },
+        {
+          "dueDay" : "2026-11-01",
+          "estimatedCost" : null,
+          "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0063",
+          "isSensitive" : false,
+          "kind" : "insurance",
+          "reminders" : {
+            "consequence" : "legal",
+            "followUpAfterLapse" : null,
+            "graceDays" : 0,
+            "leadDays" : [
+              30,
+              7,
+              1
+            ],
+            "travelMarginDays" : 0
+          },
+          "sectionId" : "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbb0050",
+          "sectionName" : "Dacia Logan 2020",
+          "snoozedUntil" : null,
+          "status" : "active",
+          "title" : "RCA"
+        }
+      ],
+      "entry" : {
+        "daysRemaining" : -25,
+        "id" : "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaa0063",
+        "score" : 1425,
+        "urgency" : "overdue"
+      },
+      "isAlarming" : true,
+      "lines" : [
+        {
+          "isSensitive" : false,
+          "lockedSectionsClosed" : true,
+          "showsTitle" : true,
+          "text" : "RCA · depășit de 3 săptămâni"
+        },
+        {
+          "isSensitive" : false,
+          "lockedSectionsClosed" : false,
+          "showsTitle" : true,
+          "text" : "RCA · depășit de 3 săptămâni"
+        },
+        {
+          "isSensitive" : true,
+          "lockedSectionsClosed" : true,
+          "showsTitle" : false,
+          "text" : "Un termen · depășit de 3 săptămâni"
+        },
+        {
+          "isSensitive" : true,
+          "lockedSectionsClosed" : false,
+          "showsTitle" : false,
+          "text" : "Un termen · depășit de 3 săptămâni"
+        }
+      ],
+      "name" : "two cars grouped, one late",
+      "sections" : [
+        "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbb0001",
+        "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbb0050"
+      ],
+      "today" : "2026-11-26",
+      "urgencyTone" : "overdue"
+    }
+  ],
+  "rule" : "BoxStatus.make(forAssets:in:now:calendar:), showsTitle(isSensitive:isLocked:), line(isSensitive:isLocked:) and line(counting:of:isSensitive:isLocked:)",
+  "shape" : "today, the box's sections (its own and what is filed under it) and the deadlines, each as in attention-entry; entry: the deadline its line shows (as in attention-entry) or null when all is good; isAlarming and urgencyTone; lines: for the box locked or not (isSensitive; false is also a section's hero) and the locked sections filed in it closed or open right now, whether the line names its deadline (showsTitle) and its words (text); counting, for a box holding a category's sections grouped into one: how many, the category's noun (null: sections) and the words.",
+  "source" : "ios/DosarCuSina/Services/Attention/BoxStatus.swift",
+  "writtenBy" : "ios/DosarCuSinaTests/AttentionVectorsTests.swift"
+}
