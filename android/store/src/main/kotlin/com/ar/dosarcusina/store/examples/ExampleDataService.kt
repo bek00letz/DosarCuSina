@@ -13,6 +13,7 @@ import com.ar.dosarcusina.store.history.HistoryActions
 import com.ar.dosarcusina.store.history.HistoryWording
 import com.ar.dosarcusina.store.obligations.ObligationActions
 import com.ar.dosarcusina.store.providers.ProviderActions
+import com.ar.dosarcusina.store.schema.Asset
 import com.ar.dosarcusina.store.sections.AssetActions
 import com.ar.dosarcusina.store.templates.HouseholdDeadlines
 import com.ar.dosarcusina.store.view
@@ -96,12 +97,16 @@ class ExampleDataService(
         val kept = ArrayList<String>()
         for (row in step.all(Tables.assets).filter { it.isExample }.map { it.pk }) {
             // Read again: keeping one above it may have made it the person's already.
-            val asset = step.row(Tables.assets, row)?.takeIf { it.isExample } ?: continue
-            val parentIsExample = asset.parent?.let { step.row(Tables.assets, it) }?.isExample == true
-            if (parentIsExample || !ExampleTree.holdsSomethingReal(step, asset)) continue
+            val asset = step.row(Tables.assets, row)?.takeIf { isTopHoldingSomethingReal(step, it) } ?: continue
             kept += asset.name
             ExampleTree.makeReal(step, asset)
         }
         return kept
+    }
+
+    /** An example not filed under another example, with something of the person's in it or under it. */
+    private fun isTopHoldingSomethingReal(step: Step, asset: Asset): Boolean {
+        val parentIsExample = asset.parent?.let { step.row(Tables.assets, it) }?.isExample == true
+        return asset.isExample && !parentIsExample && ExampleTree.holdsSomethingReal(step, asset)
     }
 }

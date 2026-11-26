@@ -18,8 +18,7 @@ internal object ExampleTree {
         val seen = HashSet<Long>()
         while (queue.isNotEmpty()) {
             val row = queue.removeAt(queue.lastIndex)
-            if (!seen.add(row)) continue
-            val node = view.row(Tables.assets, row) ?: continue
+            val node = view.row(Tables.assets, row)?.takeIf { seen.add(row) } ?: continue
             found += node
             queue += view.pointingAt(Tables.assets, "parent", row)
         }
