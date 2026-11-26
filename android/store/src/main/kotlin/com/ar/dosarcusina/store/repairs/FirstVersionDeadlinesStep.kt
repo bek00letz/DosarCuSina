@@ -2,6 +2,7 @@ package com.ar.dosarcusina.store.repairs
 
 import com.ar.dosarcusina.archive.v3.ObligationBlueprint
 import com.ar.dosarcusina.archive.v3.RecurrenceRule
+import com.ar.dosarcusina.core.values.ObligationStatus
 import com.ar.dosarcusina.core.values.RomanianText
 import com.ar.dosarcusina.store.BinderView
 import com.ar.dosarcusina.store.Step
@@ -65,7 +66,7 @@ object FirstVersionDeadlinesStep : DataRepairStep {
         categories: Map<String, CategoryTemplate>,
     ): ObligationBlueprint? {
         if (obligation.blueprintKey != null || obligation.isExample) return null
-        if (StoredKinds.status(obligation.statusRaw) !in StoredKinds.running) return null
+        if (ObligationStatus.stored(obligation.statusRaw) !in StoredKinds.running) return null
         val section = obligation.asset?.let { view.row(Tables.assets, it) } ?: return null
         val template = categories[section.templateKey] ?: return null
         val title = normalized(obligation.title)
@@ -82,18 +83,16 @@ object FirstVersionDeadlinesStep : DataRepairStep {
 }
 
 /**
- * A deadline's kind and status as stored, read as the iOS app reads them (`ObligationKind(stored:)`,
- * `ObligationStatus(stored:)`): a value a newer build wrote that this one doesn't know reads as the
- * loudest case, never written back. What the repair list reads until the deadlines' own types come.
+ * A deadline's kind as stored, read as the iOS app reads it (`ObligationKind(stored:)`): a value a
+ * newer build wrote that this one doesn't know reads as the loudest kind, never written back. What
+ * the repair list reads until the deadlines' own kind type comes; their status is
+ * [ObligationStatus], the one status type.
  */
 internal object StoredKinds {
     private val kinds = setOf("legal", "tax", "insurance", "health", "renewal", "payment", "maintenance", "routine")
-    private val statuses = setOf("active", "paused", "done", "archived")
 
     /** The statuses of a deadline still running. */
-    val running: Set<String> = setOf("active", "paused")
+    val running: Set<ObligationStatus> = setOf(ObligationStatus.ACTIVE, ObligationStatus.PAUSED)
 
     fun kind(raw: String): String = raw.takeIf { it in kinds } ?: "legal"
-
-    fun status(raw: String): String = raw.takeIf { it in statuses } ?: "active"
 }

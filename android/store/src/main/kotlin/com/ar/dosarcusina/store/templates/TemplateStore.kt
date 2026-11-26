@@ -14,6 +14,7 @@ import com.ar.dosarcusina.catalog.CategoryParts
 import com.ar.dosarcusina.catalog.CategorySwitches
 import com.ar.dosarcusina.catalog.Role
 import com.ar.dosarcusina.catalog.SectionPocket
+import com.ar.dosarcusina.core.values.ObligationStatus
 import com.ar.dosarcusina.store.BinderView
 import com.ar.dosarcusina.store.ChangeOrigin
 import com.ar.dosarcusina.store.Step
@@ -23,7 +24,6 @@ import com.ar.dosarcusina.store.UnitOfWork
 import com.ar.dosarcusina.store.locks.CategoryLocks
 import com.ar.dosarcusina.store.locks.LockLowering
 import com.ar.dosarcusina.store.obligations.ObligationActions
-import com.ar.dosarcusina.store.obligations.ObligationStatus
 import com.ar.dosarcusina.store.obligations.status
 import com.ar.dosarcusina.store.schema.CategoryTemplate
 import com.ar.dosarcusina.store.schema.Obligation

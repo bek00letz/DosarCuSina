@@ -88,7 +88,7 @@ public final class AttachmentActions {
         let isExample = try ExampleOwnership.requireReal(asset ?? obligation?.asset ?? historyEntry?.asset)
         let attachment = Self.insert(draft, asset: asset, obligation: obligation, historyEntry: historyEntry, provider: provider, isExample: isExample, calendar: calendar, in: context)
         try save()
-        if let storeURL = context.container.configurations.first?.url, storeURL.isFileURL, storeURL.path() != "/dev/null" {
+        if let storeURL = context.container.configurations.first?.url, storeURL.isFileURL, storeURL.path(percentEncoded: false) != "/dev/null" {
             DocumentFileProtection.apply(toStoreAt: storeURL)
         }
         return attachment

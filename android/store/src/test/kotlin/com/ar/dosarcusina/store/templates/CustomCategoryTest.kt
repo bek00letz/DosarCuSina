@@ -12,9 +12,9 @@ import com.ar.dosarcusina.catalog.Listing
 import com.ar.dosarcusina.catalog.Role
 import com.ar.dosarcusina.catalog.VisitKind
 import com.ar.dosarcusina.core.values.KeptObject
+import com.ar.dosarcusina.core.values.ObligationStatus
 import com.ar.dosarcusina.store.Tables
 import com.ar.dosarcusina.store.obligations.ObligationActions
-import com.ar.dosarcusina.store.obligations.ObligationStatus
 import com.ar.dosarcusina.store.obligations.status
 import com.ar.dosarcusina.store.schema.Asset
 import com.ar.dosarcusina.store.schema.CategoryTemplate
