@@ -1,6 +1,7 @@
 package com.ar.dosarcusina.core.search
 
 import com.ar.dosarcusina.core.text.PaymentCardNumbers.KeptWhole
+import com.ar.dosarcusina.core.text.SealedText
 import com.ar.dosarcusina.core.values.CalendarDay
 import com.ar.dosarcusina.core.values.TextRules
 import java.time.Instant
@@ -77,7 +78,7 @@ class SearchEntries(private val wording: SearchWording, private val zone: ZoneId
         record.keptWhole,
     )
 
-    /** A firm is never behind a lock, and keeps nothing whole. */
+    /** A firm is never behind a lock, keeps nothing whole and names only the open sections it looks after. */
     fun firm(firm: SearchFirm): SearchDocument {
         val trades = firm.trades.map(wording::trade)
         return redacted(
@@ -102,8 +103,8 @@ class SearchEntries(private val wording: SearchWording, private val zone: ZoneId
 
     fun paper(paper: SearchPaper): SearchDocument {
         val title = paper.title ?: paper.fileName
-        // Text read off an identity document, or off anything filed in a locked section, holds
-        // personal numbers: never indexed, whatever its kind says.
+        // Text read off an identity document, or off anything that belongs to a locked section,
+        // holds personal numbers: never indexed, whatever its kind says.
         val readText = if (paper.isLocked || paper.isIdentity) null else paper.extractedText
         return redacted(
             SearchDocument(
@@ -146,8 +147,7 @@ class SearchEntries(private val wording: SearchWording, private val zone: ZoneId
             fields += SearchField("${fact.label} ${fact.value}", SearchField.Weight.VALUE)
         }
         fields += SearchField.of(section.notes, SearchField.Weight.NOTE)
-        val shown = section.values.filter { it.role == SearchValue.Roles.SUBTITLE }.joinToString(" ") { it.shown }
-        val line = shown.takeIf { section.categoryName != null && it.isNotEmpty() } ?: section.categoryName
+        val line = subtitle(section.values).takeIf { section.categoryName != null } ?: section.categoryName
         return SearchDocument(
             id = id(SearchResultKind.ASSET, section.id),
             kind = SearchResultKind.ASSET,
@@ -193,6 +193,19 @@ class SearchEntries(private val wording: SearchWording, private val zone: ZoneId
         }
 
     private fun day(moment: Instant): CalendarDay = CalendarDay.of(moment, zone)
+
+    /**
+     * A section's line as its page says it, the iOS app's `HeroFacts.subtitle`: the subtitle values
+     * in order, words together, then numbers (a year) after a dot ("Volkswagen Golf · 2018"); away
+     * from the page, a value search never keeps (sensitive or secret) as a mask. Null when there is none.
+     */
+    private fun subtitle(values: List<SearchValue>): String? {
+        val shown = values.filter { it.role == SearchValue.Roles.SUBTITLE }
+        fun said(value: SearchValue) = if (value.isIndexable) value.shown else SealedText.MASK
+        val words = shown.filterNot { it.isNumber }.joinToString(" ", transform = ::said)
+        val parts = listOf(words).filter { it.isNotEmpty() } + shown.filter { it.isNumber }.map(::said)
+        return parts.takeIf { it.isNotEmpty() }?.joinToString(" · ")
+    }
 
     /** Noon on [day], twelve hours after it starts, as the iOS app's `CalendarDay.noonDate()`. */
     private fun noon(day: CalendarDay): Instant = day.noon(zone)

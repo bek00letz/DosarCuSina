@@ -97,6 +97,10 @@
               "weight" : 6
             },
             {
+              "text" : "Anul nașterii 2020",
+              "weight" : 6
+            },
+            {
               "text" : "Microcip {luhn:64200000000123} citit la vaccin",
               "weight" : 3
             }
@@ -108,7 +112,7 @@
             "id" : "5E000000-AB00-4C00-8D00-E00000001002",
             "kind" : "asset"
           },
-          "subtitle" : "Europeană tărcată",
+          "subtitle" : "Europeană tărcată •••• · 2020",
           "title" : "Rex"
         },
         {
@@ -483,12 +487,12 @@
               "weight" : 6
             },
             {
-              "text" : "Pagina 1",
+              "text" : "",
               "weight" : 1
             }
           ],
           "id" : "document:5E000000-AB00-4C00-8D00-E00000001059",
-          "isSensitive" : false,
+          "isSensitive" : true,
           "kind" : "document",
           "route" : {
             "id" : "5E000000-AB00-4C00-8D00-E00000001059",
@@ -496,6 +500,36 @@
           },
           "subtitle" : "",
           "title" : "scan.pdf"
+        },
+        {
+          "date" : "2026-06-01T09:00:00Z",
+          "fields" : [
+            {
+              "text" : "Chitanță taxă pașaport",
+              "weight" : 10
+            },
+            {
+              "text" : "chitanta.pdf",
+              "weight" : 6
+            },
+            {
+              "text" : "VW Golf",
+              "weight" : 6
+            },
+            {
+              "text" : "",
+              "weight" : 1
+            }
+          ],
+          "id" : "document:5E000000-AB00-4C00-8D00-E00000001061",
+          "isSensitive" : true,
+          "kind" : "document",
+          "route" : {
+            "id" : "5E000000-AB00-4C00-8D00-E00000001061",
+            "kind" : "document"
+          },
+          "subtitle" : "VW Golf",
+          "title" : "Chitanță taxă pașaport"
         },
         {
           "date" : "2026-03-03T10:00:00Z",
@@ -1129,6 +1163,13 @@
             "templateKey" : "search.pet",
             "updatedAt" : "2026-02-02T10:00:00Z",
             "values" : {
+              "pet.born" : {
+                "shown" : "2020",
+                "value" : {
+                  "type" : "number",
+                  "value" : 2020
+                }
+              },
               "pet.breed" : {
                 "shown" : "Europeană tărcată",
                 "value" : {
@@ -1141,6 +1182,13 @@
                 "value" : {
                   "type" : "text",
                   "value" : "{luhn:64200000000123}"
+                }
+              },
+              "pet.passport" : {
+                "shown" : "RO-000000",
+                "value" : {
+                  "type" : "text",
+                  "value" : "RO-000000"
                 }
               },
               "pet.vet" : {
@@ -1318,6 +1366,20 @@
             "obligationId" : null,
             "serviceItemId" : null,
             "title" : null
+          },
+          {
+            "assetId" : "5E000000-AB00-4C00-8D00-E00000001001",
+            "createdAt" : "2026-06-01T09:00:00Z",
+            "documentDay" : null,
+            "extractedText" : "Taxă pașaport achitată",
+            "fileName" : "chitanta.pdf",
+            "historyEntryId" : null,
+            "id" : "5E000000-AB00-4C00-8D00-E00000001061",
+            "isArchived" : false,
+            "kind" : "receipt",
+            "obligationId" : "5E000000-AB00-4C00-8D00-E00000001023",
+            "serviceItemId" : null,
+            "title" : "Chitanță taxă pașaport"
           }
         ],
         "historyEntries" : [
@@ -1487,7 +1549,8 @@
           {
             "address" : "Str. Exemplu 1, București",
             "assetIds" : [
-              "5E000000-AB00-4C00-8D00-E00000001001"
+              "5E000000-AB00-4C00-8D00-E00000001001",
+              "5E000000-AB00-4C00-8D00-E00000001003"
             ],
             "id" : "5E000000-AB00-4C00-8D00-E00000001011",
             "name" : "Service Exemplu S.R.L.",
@@ -1674,6 +1737,26 @@
                 ],
                 "role" : "issuer",
                 "type" : "text"
+              },
+              {
+                "isSensitive" : true,
+                "key" : "pet.passport",
+                "label" : "Pașaport animal",
+                "options" : [
+
+                ],
+                "role" : "subtitle",
+                "type" : "text"
+              },
+              {
+                "isSensitive" : false,
+                "key" : "pet.born",
+                "label" : "Anul nașterii",
+                "options" : [
+
+                ],
+                "role" : "subtitle",
+                "type" : "year"
               }
             ],
             "isLocked" : false,
@@ -1752,7 +1835,7 @@
       }
     }
   ],
-  "rule" : "SearchIndexBuilder.buildByRecord(): what each record of a binder gives the index, secrets and what a category keeps out of search left out, CNP-shaped numbers, card numbers and sealed values taken out, a section's own typed values kept whole",
+  "rule" : "SearchIndexBuilder.buildByRecord(): what each record of a binder gives the index, secrets and what a category keeps out of search left out, CNP-shaped numbers, card numbers and sealed values taken out, a section's own typed values kept whole; a document locked by every section it belongs to (Attachment.isSensitive(among:binder:)), a firm naming only the open sections it looks after, a section's line as its page says it (HeroFacts.subtitle) with what search never keeps masked",
   "shape" : "One case: household (its categories with their fields and components, and whether each is locked here; its sections with each value as stored and as shown; deadlines, records of history with their parts, firms and documents, linked by id), words (the time zone days were counted in, each day and trade as the rows say it, and the word for an archived document) and documents: every document the index holds, by id, with its route.",
   "source" : "ios/DosarCuSina/Services/Search/SearchIndexBuilder.swift",
   "writtenBy" : "ios/DosarCuSinaTests/SearchVectorsTests.swift"

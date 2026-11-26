@@ -359,6 +359,19 @@ extension Attachment {
         let belongsToTheHousehold = obligation != nil || historyEntry != nil
         return belongsToTheHousehold ? .open : .unknownSection
     }
+
+    /// Whether the document is behind Face ID on this device where it is named away from its page
+    /// (Caută, the iPhone's search), by the lock its page is drawn behind (`lock(among:)`): locked
+    /// when any section it belongs to is; one of the whole household's is open; one that names
+    /// nothing that can be found is locked while anything of the binder is (`binder`, read only
+    /// then: locks fail closed).
+    func isSensitive(among templates: [String: CategoryTemplate], binder: () -> BinderLocks) -> Bool {
+        switch lock(among: templates) {
+        case .open, .drawnByItsScreen: false
+        case .section(let id): sections.first { $0.id == id }?.isSensitive(among: templates) ?? true
+        case .unknownSection: binder().anySectionLocked
+        }
+    }
 }
 
 // MARK: - The whole binder
