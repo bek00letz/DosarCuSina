@@ -1,0 +1,424 @@
+{
+  "cases" : [
+    {
+      "citizenship" : null,
+      "group" : "unknown",
+      "regions" : {
+        "europeanUnion" : [
+
+        ],
+        "moldovaAndWesternBalkans" : [
+          {
+            "accepted" : [
+              "documentType.passport"
+            ],
+            "countsTravelCutoff" : true,
+            "monthsValidAfterReturn" : 0,
+            "need" : "passport"
+          }
+        ],
+        "outsideEU" : [
+          {
+            "accepted" : [
+              "documentType.passport"
+            ],
+            "countsTravelCutoff" : true,
+            "monthsValidAfterReturn" : 0,
+            "need" : "passport"
+          }
+        ]
+      }
+    },
+    {
+      "citizenship" : "country.RO",
+      "group" : "freeMovement",
+      "regions" : {
+        "europeanUnion" : [
+          {
+            "accepted" : [
+              "documentType.idCard",
+              "documentType.passport"
+            ],
+            "countsTravelCutoff" : false,
+            "monthsValidAfterReturn" : 0,
+            "need" : "identity"
+          }
+        ],
+        "moldovaAndWesternBalkans" : [
+          {
+            "accepted" : [
+              "documentType.idCard",
+              "documentType.passport"
+            ],
+            "countsTravelCutoff" : false,
+            "monthsValidAfterReturn" : 3,
+            "need" : "identity"
+          }
+        ],
+        "outsideEU" : [
+          {
+            "accepted" : [
+              "documentType.passport"
+            ],
+            "countsTravelCutoff" : true,
+            "monthsValidAfterReturn" : 0,
+            "need" : "passport"
+          }
+        ]
+      }
+    },
+    {
+      "citizenship" : "country.MD",
+      "group" : "thirdCountry",
+      "regions" : {
+        "europeanUnion" : [
+          {
+            "accepted" : [
+              "documentType.passport"
+            ],
+            "countsTravelCutoff" : false,
+            "monthsValidAfterReturn" : 0,
+            "need" : "passport"
+          },
+          {
+            "accepted" : [
+              "documentType.residencePermit"
+            ],
+            "countsTravelCutoff" : false,
+            "monthsValidAfterReturn" : 0,
+            "need" : "residencePermit"
+          }
+        ],
+        "moldovaAndWesternBalkans" : [
+          {
+            "accepted" : [
+              "documentType.passport"
+            ],
+            "countsTravelCutoff" : true,
+            "monthsValidAfterReturn" : 0,
+            "need" : "passport"
+          },
+          {
+            "accepted" : [
+              "documentType.residencePermit"
+            ],
+            "countsTravelCutoff" : false,
+            "monthsValidAfterReturn" : 0,
+            "need" : "residencePermit"
+          }
+        ],
+        "outsideEU" : [
+          {
+            "accepted" : [
+              "documentType.passport"
+            ],
+            "countsTravelCutoff" : true,
+            "monthsValidAfterReturn" : 0,
+            "need" : "passport"
+          },
+          {
+            "accepted" : [
+              "documentType.residencePermit"
+            ],
+            "countsTravelCutoff" : false,
+            "monthsValidAfterReturn" : 0,
+            "need" : "residencePermit"
+          }
+        ]
+      }
+    },
+    {
+      "citizenship" : "country.DE",
+      "group" : "freeMovement",
+      "regions" : {
+        "europeanUnion" : [
+          {
+            "accepted" : [
+              "documentType.idCard",
+              "documentType.passport"
+            ],
+            "countsTravelCutoff" : false,
+            "monthsValidAfterReturn" : 0,
+            "need" : "identity"
+          }
+        ],
+        "moldovaAndWesternBalkans" : [
+          {
+            "accepted" : [
+              "documentType.passport"
+            ],
+            "countsTravelCutoff" : true,
+            "monthsValidAfterReturn" : 0,
+            "need" : "passport"
+          }
+        ],
+        "outsideEU" : [
+          {
+            "accepted" : [
+              "documentType.passport"
+            ],
+            "countsTravelCutoff" : true,
+            "monthsValidAfterReturn" : 0,
+            "need" : "passport"
+          }
+        ]
+      }
+    },
+    {
+      "citizenship" : "country.CH",
+      "group" : "freeMovement",
+      "regions" : {
+        "europeanUnion" : [
+          {
+            "accepted" : [
+              "documentType.idCard",
+              "documentType.passport"
+            ],
+            "countsTravelCutoff" : false,
+            "monthsValidAfterReturn" : 0,
+            "need" : "identity"
+          }
+        ],
+        "moldovaAndWesternBalkans" : [
+          {
+            "accepted" : [
+              "documentType.passport"
+            ],
+            "countsTravelCutoff" : true,
+            "monthsValidAfterReturn" : 0,
+            "need" : "passport"
+          }
+        ],
+        "outsideEU" : [
+          {
+            "accepted" : [
+              "documentType.passport"
+            ],
+            "countsTravelCutoff" : true,
+            "monthsValidAfterReturn" : 0,
+            "need" : "passport"
+          }
+        ]
+      }
+    },
+    {
+      "citizenship" : "country.NO",
+      "group" : "freeMovement",
+      "regions" : {
+        "europeanUnion" : [
+          {
+            "accepted" : [
+              "documentType.idCard",
+              "documentType.passport"
+            ],
+            "countsTravelCutoff" : false,
+            "monthsValidAfterReturn" : 0,
+            "need" : "identity"
+          }
+        ],
+        "moldovaAndWesternBalkans" : [
+          {
+            "accepted" : [
+              "documentType.passport"
+            ],
+            "countsTravelCutoff" : true,
+            "monthsValidAfterReturn" : 0,
+            "need" : "passport"
+          }
+        ],
+        "outsideEU" : [
+          {
+            "accepted" : [
+              "documentType.passport"
+            ],
+            "countsTravelCutoff" : true,
+            "monthsValidAfterReturn" : 0,
+            "need" : "passport"
+          }
+        ]
+      }
+    },
+    {
+      "citizenship" : "country.GB",
+      "group" : "thirdCountry",
+      "regions" : {
+        "europeanUnion" : [
+          {
+            "accepted" : [
+              "documentType.passport"
+            ],
+            "countsTravelCutoff" : false,
+            "monthsValidAfterReturn" : 0,
+            "need" : "passport"
+          },
+          {
+            "accepted" : [
+              "documentType.residencePermit"
+            ],
+            "countsTravelCutoff" : false,
+            "monthsValidAfterReturn" : 0,
+            "need" : "residencePermit"
+          }
+        ],
+        "moldovaAndWesternBalkans" : [
+          {
+            "accepted" : [
+              "documentType.passport"
+            ],
+            "countsTravelCutoff" : true,
+            "monthsValidAfterReturn" : 0,
+            "need" : "passport"
+          },
+          {
+            "accepted" : [
+              "documentType.residencePermit"
+            ],
+            "countsTravelCutoff" : false,
+            "monthsValidAfterReturn" : 0,
+            "need" : "residencePermit"
+          }
+        ],
+        "outsideEU" : [
+          {
+            "accepted" : [
+              "documentType.passport"
+            ],
+            "countsTravelCutoff" : true,
+            "monthsValidAfterReturn" : 0,
+            "need" : "passport"
+          },
+          {
+            "accepted" : [
+              "documentType.residencePermit"
+            ],
+            "countsTravelCutoff" : false,
+            "monthsValidAfterReturn" : 0,
+            "need" : "residencePermit"
+          }
+        ]
+      }
+    },
+    {
+      "citizenship" : "country.stateless",
+      "group" : "thirdCountry",
+      "regions" : {
+        "europeanUnion" : [
+          {
+            "accepted" : [
+              "documentType.passport"
+            ],
+            "countsTravelCutoff" : false,
+            "monthsValidAfterReturn" : 0,
+            "need" : "passport"
+          },
+          {
+            "accepted" : [
+              "documentType.residencePermit"
+            ],
+            "countsTravelCutoff" : false,
+            "monthsValidAfterReturn" : 0,
+            "need" : "residencePermit"
+          }
+        ],
+        "moldovaAndWesternBalkans" : [
+          {
+            "accepted" : [
+              "documentType.passport"
+            ],
+            "countsTravelCutoff" : true,
+            "monthsValidAfterReturn" : 0,
+            "need" : "passport"
+          },
+          {
+            "accepted" : [
+              "documentType.residencePermit"
+            ],
+            "countsTravelCutoff" : false,
+            "monthsValidAfterReturn" : 0,
+            "need" : "residencePermit"
+          }
+        ],
+        "outsideEU" : [
+          {
+            "accepted" : [
+              "documentType.passport"
+            ],
+            "countsTravelCutoff" : true,
+            "monthsValidAfterReturn" : 0,
+            "need" : "passport"
+          },
+          {
+            "accepted" : [
+              "documentType.residencePermit"
+            ],
+            "countsTravelCutoff" : false,
+            "monthsValidAfterReturn" : 0,
+            "need" : "residencePermit"
+          }
+        ]
+      }
+    },
+    {
+      "citizenship" : "country.ZZ",
+      "group" : "unknown",
+      "regions" : {
+        "europeanUnion" : [
+
+        ],
+        "moldovaAndWesternBalkans" : [
+          {
+            "accepted" : [
+              "documentType.passport"
+            ],
+            "countsTravelCutoff" : true,
+            "monthsValidAfterReturn" : 0,
+            "need" : "passport"
+          }
+        ],
+        "outsideEU" : [
+          {
+            "accepted" : [
+              "documentType.passport"
+            ],
+            "countsTravelCutoff" : true,
+            "monthsValidAfterReturn" : 0,
+            "need" : "passport"
+          }
+        ]
+      }
+    },
+    {
+      "citizenship" : "Română",
+      "group" : "unknown",
+      "regions" : {
+        "europeanUnion" : [
+
+        ],
+        "moldovaAndWesternBalkans" : [
+          {
+            "accepted" : [
+              "documentType.passport"
+            ],
+            "countsTravelCutoff" : true,
+            "monthsValidAfterReturn" : 0,
+            "need" : "passport"
+          }
+        ],
+        "outsideEU" : [
+          {
+            "accepted" : [
+              "documentType.passport"
+            ],
+            "countsTravelCutoff" : true,
+            "monthsValidAfterReturn" : 0,
+            "need" : "passport"
+          }
+        ]
+      }
+    }
+  ],
+  "rule" : "TravelRules.requirements(forCitizenship:in:)",
+  "shape" : "cases[].citizenship (a stored key, or null when not known) is read into its group, and in each region the requirements a traveller of it carries, each as shared/travel/rules.json writes one",
+  "source" : "ios/DosarCuSina/Services/Readiness/TravelRules.swift",
+  "writtenBy" : "ios/DosarCuSinaTests/ReadinessVectorsTests.swift"
+}
