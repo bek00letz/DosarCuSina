@@ -17,7 +17,7 @@ import java.math.BigDecimal
  * ([RomanianNumber.format], „1.250”), never `String.format` with the machine's locale.
  */
 object RomanianWords {
-    private const val RESOURCE = "words.json"
+    private const val RESOURCE = "/com/ar/dosarcusina/core/wording/words.json"
 
     /** `%1$s`, `%2$,d`: the only specifiers the generated words carry. */
     private val SPECIFIER = Regex("%(\\d+)\\$(,?)([sd])")

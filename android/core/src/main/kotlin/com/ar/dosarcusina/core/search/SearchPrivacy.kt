@@ -67,7 +67,7 @@ object SearchPrivacy {
         val result = takingOut(characters, keeping, masked = false)
         if (result == text) return text
         return TextRules.trimming(words(result).joinToString(" ")) {
-            TextRules.isWhitespace(it) || Character.toString(it) == MIDDLE_DOT
+            TextRules.isWhitespace(it) || String(Character.toChars(it)) == MIDDLE_DOT
         }
     }
 
@@ -130,7 +130,9 @@ object SearchPrivacy {
             result = replacing(pattern, result, " ", caseInsensitive = true)
         }
         result = words(result).joinToString(" ")
-        result = TextRules.trimming(result) { TextRules.isWhitespace(it) || DANGLING.contains(Character.toString(it)) }
+        result = TextRules.trimming(result) {
+            TextRules.isWhitespace(it) || DANGLING.contains(String(Character.toChars(it)))
+        }
         val worthShowing = TextRules.characters(result).any { TextRules.isLetter(it) || TextRules.isNumber(it) }
         return result.takeIf { worthShowing }
     }

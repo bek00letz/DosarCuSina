@@ -3,7 +3,6 @@ package com.ar.dosarcusina.core.values
 import java.time.Clock
 import java.time.DayOfWeek
 import java.time.Instant
-import java.time.LocalDate
 import java.time.ZoneId
 import java.time.temporal.WeekFields
 import java.util.Locale
@@ -37,7 +36,7 @@ object DosarCalendar {
 
     /** The day [instant] falls on in [zone]. */
     fun day(instant: Instant, zone: ZoneId = DosarCalendar.zone()): CalendarDay =
-        CalendarDay.of(LocalDate.ofInstant(instant, zone))
+        CalendarDay.of(instant, zone)
 
     /** Today where the phone is, by [clock]. */
     fun today(clock: Clock = Clock.systemUTC(), zone: ZoneId = DosarCalendar.zone()): CalendarDay =

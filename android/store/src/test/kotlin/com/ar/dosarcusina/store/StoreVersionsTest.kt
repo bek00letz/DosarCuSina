@@ -34,7 +34,7 @@ class StoreVersionsTest {
             val folder = Files.createTempDirectory(storeScratch.toPath(), "version-${schema.version}-").toFile()
             val file = File(folder, "binder.sqlite")
             make(schema, file)
-            val database = BinderStore.database(file.path)
+            val database = BinderStore.database(file.path, DatabaseBuilders.JVM)
             try {
                 runBlocking {
                     val keys = database.templates().all().map { it.key }

@@ -5,7 +5,6 @@ import com.ar.dosarcusina.archive.v3.StoredFile
 import com.ar.dosarcusina.core.values.MachineText
 import java.io.File
 import java.io.InputStream
-import java.lang.ref.Cleaner
 import java.nio.file.Files
 import java.nio.file.StandardCopyOption
 import java.util.UUID
@@ -31,7 +30,7 @@ class UndoFiles(root: File) {
         private set
 
     // The folder goes with the receipt that holds this, whenever it goes.
-    private val cleanup = cleaner.register(this, Removal(folder))
+    private val cleanup = WhenGone.register(this, Removal(folder))
 
     /** Removes every copy and the folder now: the step was taken back, or its receipt let go. */
     fun removeAll() {
@@ -98,7 +97,6 @@ class UndoFiles(root: File) {
 
     companion object {
         private const val BUFFER = 64 * 1024
-        private val cleaner: Cleaner = Cleaner.create()
 
         /** This run's folder under a root: removing an earlier run's leftovers never touches it. */
         val run: String = UUID.randomUUID().toString()

@@ -71,7 +71,7 @@ class DossierArchiveWriter(
         }
 
         // The documents' and photos' files, each read when it is written and let go after.
-        for ((path, stored) in contents.files) add(path, stored.open().use { it.readAllBytes() })
+        for ((path, stored) in contents.files) add(path, stored.open().use { it.readBytes() })
 
         fun data(path: String, records: List<JsonObject>) =
             add(path, MachineText.json(JsonArray(records), MachineText.JsonLayout.READABLE).encodeToByteArray())
