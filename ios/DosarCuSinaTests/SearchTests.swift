@@ -170,3 +170,92 @@ struct SearchIndexerTests {
         #expect(captured.changes.contains { $0.changed.contains(car.persistentModelID) })
     }
 }
+
+/// What Caută says of a locked section away from its page: only that it is locked, by the one
+/// answer for each record it reaches.
+@MainActor
+@Suite("Search and locked sections")
+struct SearchLockedSectionsTests {
+    /// A car (open here) and a person's passport, its category locked.
+    private func household() throws -> (context: ModelContext, car: Asset, passport: Asset) {
+        let context = try makeContext()
+        let store = TemplateStore(context: context)
+        let vehicles = try #require(try store.template(forKey: BuiltInTemplates.Key.vehicle))
+        let documents = try #require(try store.template(forKey: BuiltInTemplates.Key.documents))
+        try store.setSensitive(documents, true)
+        let assets = AssetActions(context: context, calendar: .bucharest, now: { noon("2026-11-03") })
+        let car = try assets.create(name: "VW Golf", template: vehicles, values: FieldValues())
+        let passport = try assets.create(name: "Pașaport Ana", template: documents, values: FieldValues())
+        #expect(!car.isSensitive(template: vehicles) && passport.isSensitive(template: documents))
+        return (context, car, passport)
+    }
+
+    private func index(_ context: ModelContext) throws -> SearchIndex {
+        try SearchIndexBuilder(context: PersistenceController.context(in: context.container)).build()
+    }
+
+    @Test("A firm's result never names a locked section")
+    func aFirmNamesOnlyOpenSections() throws {
+        let (context, car, passport) = try household()
+        let firm = Provider(name: "Service Exemplu S.R.L.", trades: [.mechanic])
+        context.insert(firm)
+        firm.assets = [car, passport]
+        try UnitOfWork.save(context)
+
+        let index = try index(context)
+        let result = try #require(index.documents.first { $0.kind == .provider })
+        #expect(!result.fields.contains { $0.text.contains("Pașaport") }, "The locked section isn't kept with the firm")
+        #expect(result.fields.contains { $0.text.contains("VW Golf") }, "The open one is")
+        #expect(!index.search("pasaport ana").contains { $0.document.kind == .provider })
+        #expect(index.search("golf").contains { $0.document.kind == .provider })
+    }
+
+    @Test("A document is locked in Caută by every section it belongs to")
+    func aDocumentIsLockedByEverySection() throws {
+        let (context, car, passport) = try household()
+        let renewal = Obligation(title: "Reînnoire pașaport", kind: .legal, dueDay: CalendarDay("2028-05-05"))
+        context.insert(renewal)
+        renewal.asset = passport
+        let receipt = DosarCuSina.Attachment(fileName: "chitanta.pdf", contentType: "com.adobe.pdf", data: nil, kind: .receipt)
+        context.insert(receipt)
+        receipt.title = "Chitanță taxă"
+        receipt.extractedText = "Taxă pașaport achitată"
+        receipt.asset = car
+        receipt.obligation = renewal
+        try UnitOfWork.save(context)
+
+        let index = try index(context)
+        let result = try #require(index.documents.first { $0.kind == .document })
+        #expect(result.isSensitive, "Its own section is open, its deadline's is locked")
+        #expect(!result.fields.contains { $0.text.contains("achitată") }, "What was read off it isn't kept")
+        #expect(index.search("achitata").isEmpty)
+        #expect(index.search("chitanta").first?.document.isSensitive == true, "Its title still finds it")
+        // Nor does the iPhone's search show it.
+        let outside = try SpotlightCatalog.entries(obligations: [], in: context)
+        #expect(!outside.contains { $0.kind == .document })
+    }
+
+    @Test("A section's subtitle shows as its page shows it, with what search never keeps masked")
+    func aSensitiveSubtitleShowsMasked() throws {
+        let context = try makeContext()
+        let definition = TemplateDefinition(
+            key: "search.gear", name: "Echipamente", symbol: "wrench", tint: .gray,
+            sections: [FieldSection(key: "main", title: "Date", fields: [
+                FieldDefinition(key: "gear.brand", label: "Marcă", type: .text, role: .subtitle),
+                FieldDefinition(key: "gear.code", label: "Cod", type: .text, role: .subtitle, isSensitive: true),
+                FieldDefinition(key: "gear.year", label: "An", type: .year, role: .subtitle),
+            ])],
+            behavior: CategoryBehavior(visit: .none, singular: nil)
+        )
+        let template = CategoryTemplate(definition: definition, isBuiltIn: false, homeOrder: 0)
+        context.insert(template)
+        let values = FieldValues(["gear.brand": .text("Exemplu"), "gear.code": .text("AB-000000"), "gear.year": .number(2020)])
+        context.insert(Asset(name: "Drujbă", templateKey: definition.key, values: values))
+        try UnitOfWork.save(context)
+
+        #expect(HeroFacts.subtitle(values, definition: definition) == "Exemplu AB-000000 · 2020", "Its page shows it")
+        let result = try #require(try index(context).documents.first { $0.kind == .asset && $0.title == "Drujbă" })
+        #expect(result.subtitle == "Exemplu \(SecretFields.mask) · 2020")
+        #expect(!result.fields.contains { $0.text.contains("000000") })
+    }
+}

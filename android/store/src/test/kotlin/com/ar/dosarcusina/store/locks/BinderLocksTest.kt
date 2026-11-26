@@ -147,5 +147,15 @@ class BinderLocksTest {
         assertEquals(DocumentLock.Open, lockOf(Attachment(obligation = chore.pk)))
         assertEquals(DocumentLock.UnknownSection, lockOf(Attachment()))
         assertEquals(DocumentLock.UnknownSection, lockOf(Attachment(asset = 99)), "A section that can't be found")
+
+        // Away from its page (search), the same lock, read from the whole binder's answer.
+        val binder = BinderLocks.of(templates.values.toList(), listOf(VEHICLE, HOME, DOCUMENTS), locks)
+        assertEquals(lockOf(both), binder.lock(both, sections))
+        val ownOpenAnotherLocked = Attachment(asset = car.pk, measurement = reading.pk)
+        assertTrue(binder.isLocked(ownOpenAnotherLocked, sections), "Its own section open, another locked")
+        val everyOneOpen = Attachment(asset = flat.pk, obligation = itp.pk)
+        assertFalse(binder.isLocked(everyOneOpen, sections), "Every section it belongs to open")
+        assertFalse(binder.isLocked(Attachment(obligation = chore.pk), sections), "The whole household's paper")
+        assertTrue(binder.isLocked(Attachment(), sections), "Naming nothing, locked while anything is")
     }
 }

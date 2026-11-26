@@ -335,13 +335,15 @@ struct ExpiryLine: View {
 /// Facts the heroes read from field roles, so templates stay data.
 enum HeroFacts {
     /// The subtitle fields in order: "Volkswagen Golf · 2018". Words run
-    /// together; numbers (a year) follow after a dot.
-    static func subtitle(_ values: FieldValues, definition: TemplateDefinition, locale: Locale = .dosarDefault) -> String? {
+    /// together; numbers (a year) follow after a dot. Away from the section's own page
+    /// (`awayFromThePage`: a result in Caută), a value search never keeps, sensitive or secret
+    /// (`FieldDefinition.isIndexable`), shows as a mask.
+    static func subtitle(_ values: FieldValues, definition: TemplateDefinition, locale: Locale = .dosarDefault, awayFromThePage: Bool = false) -> String? {
         var words: [String] = []
         var numbers: [String] = []
         for field in definition.fields(withRole: .subtitle) {
             guard let value = values[field.key] else { continue }
-            let text = FieldFormatter.display(value, field: field, locale: locale)
+            let text = awayFromThePage && !field.isIndexable ? SecretFields.mask : FieldFormatter.display(value, field: field, locale: locale)
             if case .number = value { numbers.append(text) } else { words.append(text) }
         }
         let parts = [words.joined(separator: " ")].filter { !$0.isEmpty } + numbers
