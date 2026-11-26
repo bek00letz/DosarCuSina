@@ -14,10 +14,10 @@ extension CopyMatrixTests {
     static var tripSamplePast: CalendarDay { CalendarDay("2027-03-01") }
 
     static func tripRow(_ requirements: [TravelRequirement], region: TripPlan.Region, asksCitizenship: Bool = false) -> String {
-        var words = requirements.map { "\(TravelWording.title(of: $0)) — \(TravelWording.missing($0))" }
-        if asksCitizenship { words.insert("\(TravelWording.citizenshipTitle) — \(TravelWording.citizenshipAsked)", at: 0) }
+        var words = requirements.map { "\(TravelWording.title(of: $0).text) — \(TravelWording.missing($0).text)" }
+        if asksCitizenship { words.insert("\(ReadinessWords.citizenshipTitle.text) — \(ReadinessWords.citizenshipAsked.text)", at: 0) }
         if TravelRules.checksHealthCard(in: region) { words.append(DocumentType.label(for: DocumentType.euHealthCard) ?? "") }
-        if TravelRules.remindsOfVisa(in: region) { words.append("\(TravelWording.visaTitle) — \(TravelWording.visaDetail)") }
+        if TravelRules.remindsOfVisa(in: region) { words.append("\(ReadinessWords.visaTitle.text) — \(ReadinessWords.visaDetail.text)") }
         return words.joined(separator: " · ")
     }
 
@@ -46,15 +46,15 @@ extension CopyMatrixTests {
                 let extra = (requirement.countsTravelCutoff ? " (travel cut-off)" : "")
                     + (requirement.monthsValidAfterReturn > 0 ? " (\(requirement.monthsValidAfterReturn) months after return)" : "")
                 let name = "`\(requirement.need.rawValue)`\(extra) · \(DocumentType.label(for: type) ?? type)"
-                var words = [TravelWording.valid(requirement, type: type, until: day, instead: false)]
-                if type != requirement.accepted.first { words.append(TravelWording.valid(requirement, type: type, until: day, instead: true)) }
-                words.append(TravelWording.ends(requirement, type: type, expiry: day, goodUntil: day, today: tripSampleToday))
-                words.append(TravelWording.ends(requirement, type: type, expiry: tripSamplePast, goodUntil: tripSamplePast, today: tripSampleToday))
+                var words = [TravelWording.valid(requirement, type: type, until: day, instead: false).text]
+                if type != requirement.accepted.first { words.append(TravelWording.valid(requirement, type: type, until: day, instead: true).text) }
+                words.append(TravelWording.ends(requirement, type: type, expiry: day, goodUntil: day, today: tripSampleToday).text)
+                words.append(TravelWording.ends(requirement, type: type, expiry: tripSamplePast, goodUntil: tripSamplePast, today: tripSampleToday).text)
                 return (name, words.joined(separator: " / "))
             }
-        } + [("A document with no expiry", TravelWording.undated),
-             ("The simple identity card (CIS)", TravelWording.notATravelDocument),
-             ("Documents filed under no one, no citizenship", "\(TravelWording.citizenshipTitle) — \(TravelWording.citizenshipOfUnfiled)")]
+        } + [("A document with no expiry", ReadinessWords.undated.text),
+             ("The simple identity card (CIS)", ReadinessWords.notATravelDocument.text),
+             ("Documents filed under no one, no citizenship", "\(ReadinessWords.citizenshipTitle.text) — \(ReadinessWords.citizenshipOfUnfiled.text)")]
     }
 
     /// "## Pleci din țară" of `docs/COPY_MATRIX.md`.
@@ -73,10 +73,10 @@ extension CopyMatrixTests {
     @Test("Every need's words name the document they are about, and no two needs read alike")
     func tripWordsFitTheirNeed() {
         for requirement in TravelRules.allRequirements {
-            #expect(!TravelWording.title(of: requirement).isEmpty)
-            #expect(!TravelWording.missing(requirement).isEmpty)
+            #expect(!TravelWording.title(of: requirement).text.isEmpty)
+            #expect(!TravelWording.missing(requirement).text.isEmpty)
         }
-        let missing = TravelRules.allRequirements.map(TravelWording.missing)
+        let missing = TravelRules.allRequirements.map { TravelWording.missing($0).text }
         #expect(Set(missing).count == missing.count)
     }
 
@@ -84,7 +84,7 @@ extension CopyMatrixTests {
     func tripExpiredWordsArePast() {
         for requirement in TravelRules.allRequirements {
             for type in requirement.accepted {
-                let words = TravelWording.ends(requirement, type: type, expiry: Self.tripSamplePast, goodUntil: Self.tripSamplePast, today: Self.tripSampleToday)
+                let words = TravelWording.ends(requirement, type: type, expiry: Self.tripSamplePast, goodUntil: Self.tripSamplePast, today: Self.tripSampleToday).text
                 #expect(words.hasPrefix("A expirat pe"), "\(requirement.need) \(type): \(words)")
             }
         }

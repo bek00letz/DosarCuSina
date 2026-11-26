@@ -1,0 +1,212 @@
+{
+  "byGroup" : {
+    "freeMovement" : {
+      "europeanUnion" : [
+        {
+          "accepted" : [
+            "documentType.idCard",
+            "documentType.passport"
+          ],
+          "countsTravelCutoff" : false,
+          "monthsValidAfterReturn" : 0,
+          "need" : "identity"
+        }
+      ],
+      "moldovaAndWesternBalkans" : [
+        {
+          "accepted" : [
+            "documentType.passport"
+          ],
+          "countsTravelCutoff" : true,
+          "monthsValidAfterReturn" : 0,
+          "need" : "passport"
+        }
+      ],
+      "outsideEU" : [
+        {
+          "accepted" : [
+            "documentType.passport"
+          ],
+          "countsTravelCutoff" : true,
+          "monthsValidAfterReturn" : 0,
+          "need" : "passport"
+        }
+      ]
+    },
+    "thirdCountry" : {
+      "europeanUnion" : [
+        {
+          "accepted" : [
+            "documentType.passport"
+          ],
+          "countsTravelCutoff" : false,
+          "monthsValidAfterReturn" : 0,
+          "need" : "passport"
+        },
+        {
+          "accepted" : [
+            "documentType.residencePermit"
+          ],
+          "countsTravelCutoff" : false,
+          "monthsValidAfterReturn" : 0,
+          "need" : "residencePermit"
+        }
+      ],
+      "moldovaAndWesternBalkans" : [
+        {
+          "accepted" : [
+            "documentType.passport"
+          ],
+          "countsTravelCutoff" : true,
+          "monthsValidAfterReturn" : 0,
+          "need" : "passport"
+        },
+        {
+          "accepted" : [
+            "documentType.residencePermit"
+          ],
+          "countsTravelCutoff" : false,
+          "monthsValidAfterReturn" : 0,
+          "need" : "residencePermit"
+        }
+      ],
+      "outsideEU" : [
+        {
+          "accepted" : [
+            "documentType.passport"
+          ],
+          "countsTravelCutoff" : true,
+          "monthsValidAfterReturn" : 0,
+          "need" : "passport"
+        },
+        {
+          "accepted" : [
+            "documentType.residencePermit"
+          ],
+          "countsTravelCutoff" : false,
+          "monthsValidAfterReturn" : 0,
+          "need" : "residencePermit"
+        }
+      ]
+    },
+    "unknown" : {
+      "europeanUnion" : [
+
+      ],
+      "moldovaAndWesternBalkans" : [
+        {
+          "accepted" : [
+            "documentType.passport"
+          ],
+          "countsTravelCutoff" : true,
+          "monthsValidAfterReturn" : 0,
+          "need" : "passport"
+        }
+      ],
+      "outsideEU" : [
+        {
+          "accepted" : [
+            "documentType.passport"
+          ],
+          "countsTravelCutoff" : true,
+          "monthsValidAfterReturn" : 0,
+          "need" : "passport"
+        }
+      ]
+    }
+  },
+  "groups" : [
+    "freeMovement",
+    "thirdCountry",
+    "unknown"
+  ],
+  "healthCardRegions" : [
+    "europeanUnion"
+  ],
+  "identityCards" : [
+    {
+      "citizens" : [
+        "RO"
+      ],
+      "region" : "moldovaAndWesternBalkans",
+      "requirement" : {
+        "accepted" : [
+          "documentType.idCard",
+          "documentType.passport"
+        ],
+        "countsTravelCutoff" : false,
+        "monthsValidAfterReturn" : 3,
+        "need" : "identity"
+      },
+      "source" : "Romania's Ministry of Foreign Affairs, „Condiții de călătorie” (mae.ro/travel-conditions), read in November 2026: Republica Moldova (3739), Serbia (3742), Muntenegru (3728), Macedonia de Nord (3721), Albania (3664) and Bosnia și Herțegovina (3675) each let a Romanian citizen in with a valid identity card or passport."
+    }
+  ],
+  "petRabiesWaitDays" : 21,
+  "reads" : {
+    "BlueprintFactRole" : {
+      "claimsPhone" : "claimsPhone",
+      "insuredSum" : "insuredSum",
+      "insurer" : "insurer",
+      "policyNumber" : "policyNumber",
+      "policyholder" : "policyholder"
+    },
+    "BuiltInBlueprints" : {
+      "healthEUCard" : "health.euCard",
+      "homeInsurance" : "home.insurance",
+      "homePAD" : "home.pad",
+      "petRabies" : "pet.rabies",
+      "vehicleCASCO" : "vehicle.casco",
+      "vehicleITP" : "vehicle.itp",
+      "vehicleRCA" : "vehicle.rca",
+      "vehicleVignette" : "vehicle.vignette"
+    },
+    "BuiltInTemplates.Key" : {
+      "pet" : "pet",
+      "vehicle" : "vehicle"
+    },
+    "DocumentFields" : {
+      "expiry" : "document.expiry",
+      "nationality" : "document.nationality",
+      "personalNumber" : "document.personalNumber",
+      "vehiclePlate" : "document.vehiclePlate"
+    },
+    "DocumentKind" : {
+      "invoice" : "invoice",
+      "policy" : "policy"
+    },
+    "DocumentType" : {
+      "drivingLicence" : "documentType.drivingLicence",
+      "euHealthCard" : "documentType.euHealthCard",
+      "greenCard" : "documentType.greenCard",
+      "idCard" : "documentType.idCard",
+      "passport" : "documentType.passport",
+      "residencePermit" : "documentType.residencePermit"
+    },
+    "MemberFields" : {
+      "bonusMalus" : "member.bonusMalus",
+      "citizenship" : "member.citizenship"
+    },
+    "ObligationKind" : {
+      "insurance" : "insurance",
+      "payment" : "payment",
+      "tax" : "tax"
+    },
+    "PetFields" : {
+      "passport" : "pet.passport"
+    },
+    "VehicleFields" : {
+      "civ" : "vehicle.civ",
+      "plate" : "vehicle.plate",
+      "vin" : "vehicle.vin"
+    }
+  },
+  "regions" : [
+    "europeanUnion",
+    "moldovaAndWesternBalkans",
+    "outsideEU"
+  ],
+  "visaRegions" : [
+    "outsideEU"
+  ],
+  "writtenBy" : "ios/DosarCuSinaTests/TravelExportTests.swift"
+}
