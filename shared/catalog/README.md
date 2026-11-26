@@ -102,4 +102,4 @@ TEST_RUNNER_CATALOG_WRITE=1 xcodebuild test -project ios/DosarCuSina.xcodeproj -
 
 ## Left for later
 
-Words a shaped screen reads (`VisitShape`, `CompletionShape`, a pocket's words) are screen copy, not the catalog's data: they come with the screens in Phase 4, compared through the copy matrix ([COPY_MATRIX.md](../../docs/COPY_MATRIX.md)). So do capture's label tables (`CaptureKindProfile`), the travel rules and the countries, each in a folder of its own under `shared/` when its phase comes.
+Words a shaped screen reads (`VisitShape`, `CompletionShape`, a pocket's words) are screen copy, not the catalog's data: they come with the screens in Phase 4, compared through the copy matrix ([COPY_MATRIX.md](../../docs/COPY_MATRIX.md)). So do capture's label tables (`CaptureKindProfile`), in a folder of their own under `shared/` when their phase comes. The travel rules and the countries are in [`shared/travel/`](../travel/).
