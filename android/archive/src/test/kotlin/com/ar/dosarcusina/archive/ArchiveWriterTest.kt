@@ -23,7 +23,7 @@ class ArchiveWriterTest {
     private val bucharest: ZoneId = ZoneId.of("Europe/Bucharest")
     private val clock: Clock = Clock.fixed(moment("2026-11-26T10:00:00Z"), ZoneOffset.UTC)
 
-    private fun household(): InMemoryBinder = InMemoryBinder().also {
+    private fun household(): TestBinder = testBinder().also {
         DossierArchiveService(it, clock = clock, zone = { bucharest })
             .importArchive(
                 MemoryByteSource(fixtureArchive("dosar-v3/household")),
@@ -73,7 +73,7 @@ class ArchiveWriterTest {
             service.inspect(MemoryByteSource(bytes), "altă-parolă")
         })
 
-        val target = InMemoryBinder()
+        val target = testBinder()
         DossierArchiveService(target, clock = clock, zone = { bucharest })
             .importArchive(
                 MemoryByteSource(bytes),

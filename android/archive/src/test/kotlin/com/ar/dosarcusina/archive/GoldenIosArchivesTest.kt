@@ -38,7 +38,7 @@ class GoldenIosArchivesTest {
     @ValueSource(strings = ["household.dosar", "household-password.dosar"])
     fun bothIosGoldenArchivesComeInWithNothingLost(name: String) {
         val password = if (name.contains("password")) GoldenContents.PASSWORD else null
-        val binder = InMemoryBinder()
+        val binder = testBinder()
         val service = DossierArchiveService(
             binder,
             clock = Clock.fixed(moment("2026-11-26T10:00:00Z"), ZoneOffset.UTC),

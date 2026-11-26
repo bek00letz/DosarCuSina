@@ -48,7 +48,7 @@ class GoldenAndroidArchivesTest {
 
     /** The iOS golden household, brought into an empty binder. */
     private fun household(): Binder {
-        val binder = InMemoryBinder()
+        val binder = testBinder()
         DossierArchiveService(binder, clock = Clock.fixed(IMPORTED_AT, ZoneOffset.UTC), zone = { bucharest })
             .importArchive(
                 MemoryByteSource(File(golden, "ios/household.dosar").readBytes()),
@@ -115,7 +115,7 @@ class GoldenAndroidArchivesTest {
     @ValueSource(strings = ["household.dosar", "household-password.dosar"])
     fun bothAndroidGoldenArchivesComeBackWhole(name: String) {
         val password = if (name.contains("password")) GoldenContents.PASSWORD else null
-        val binder = InMemoryBinder()
+        val binder = testBinder()
         DossierArchiveService(binder, clock = Clock.fixed(IMPORTED_AT, ZoneOffset.UTC), zone = { bucharest })
             .importArchive(
                 MemoryByteSource(File(android, name).readBytes()),
