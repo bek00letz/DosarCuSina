@@ -3,6 +3,7 @@ package com.ar.dosarcusina.core.urgency
 import com.ar.dosarcusina.core.reminders.PlannedReminder
 import com.ar.dosarcusina.core.reminders.TriggerParts
 import com.ar.dosarcusina.core.values.CalendarDay
+import com.ar.dosarcusina.core.values.ObligationStatus
 import com.ar.dosarcusina.core.values.VectorFolder
 import com.ar.dosarcusina.core.values.bool
 import com.ar.dosarcusina.core.values.int
@@ -10,6 +11,9 @@ import com.ar.dosarcusina.core.values.ints
 import com.ar.dosarcusina.core.values.isNull
 import com.ar.dosarcusina.core.values.text
 import com.ar.dosarcusina.core.values.textOrNull
+import java.time.Instant
+import java.util.Locale
+import java.util.UUID
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.JsonObject
@@ -18,9 +22,6 @@ import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.put
-import java.time.Instant
-import java.util.Locale
-import java.util.UUID
 
 /**
  * The urgency and reminder rules' answers, in shared/test-vectors/urgency/, by
@@ -59,7 +60,7 @@ fun deadline(json: JsonObject): DeadlineSnapshot {
     val due = day(json.text("dueDay"))
     return DeadlineSnapshot(
         id = UUID.fromString(json.text("id")),
-        status = DeadlineStatus.stored(json.textOrNull("status")),
+        status = ObligationStatus.stored(json.textOrNull("status")),
         dueDay = due,
         snoozedUntil = json.dayOrNull("snoozedUntil"),
         reminders = profile(json.obj("reminders")).forCycle(json.dayOrNull("cycleStart"), due),
