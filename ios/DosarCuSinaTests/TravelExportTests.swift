@@ -13,9 +13,10 @@ import Testing
 /// - `countries.json`: the countries a person can be a citizen of (`Citizenship`), in the
 ///   choice's order, with their codes, their Romanian names, what documents print for them and
 ///   whether their citizens move freely in the EU;
-/// - `documents.json`: the document types (`DocumentType`) as the checks read them, with their
-///   travel data: the travel margin, the kinds that are no travel document, the last day a
-///   kind is good for travel.
+/// - `documents.json`: the document types' travel data (`DocumentType.travelMargins`,
+///   `TravelRules.notForTravel` and `travelEnds`): the travel margin, the kinds that are no travel
+///   document, the last day a kind is good for travel. What the types are (their names, variants
+///   and other rules) is the catalog's, in `shared/catalog/documents/` (`DocumentCatalogExportTests`).
 ///
 /// Fresh or failing, as `CatalogExportTests` keeps `shared/catalog/`: a run that finds the files
 /// out of date leaves them made afresh in `TEST_RUNNER_TRAVEL_OUT` (`tests/run_tests.sh` sets it
@@ -193,36 +194,25 @@ struct TravelExportTests {
         ])
     }
 
+    /// The document types' travel data only, keyed by the keys `shared/catalog/documents/documents.json`
+    /// (`DocumentCatalogExportTests`) gives every type and variant with its names and other rules.
     static func documents() -> JSONValue {
         let types = DocumentType.options.map { option -> JSONValue in
             .object([
-                "key": .string(option.key), "label": .string(option.label), "aliases": strings(option.aliases),
+                "key": .string(option.key),
                 "travelMarginDays": .int(DocumentType.travelMargins[option.key] ?? 0),
             ])
         }
         let variants = DocumentType.variants.map { spec -> JSONValue in
             .object([
-                "type": .string(spec.type),
                 "key": .string(spec.option.key),
-                "label": .string(spec.option.label),
                 "travels": .bool(!TravelRules.notForTravel.contains(spec.option.key)),
                 "travelEnds": TravelRules.travelEnds[spec.option.key].map { .string($0.isoString) } ?? .null,
-                // The name the document takes when it isn't its type's ("Cazier fiscal"), else null.
-                "documentName": spec.documentName.map { .string($0) } ?? .null,
             ])
         }
         return .object([
-            "typeField": .string(DocumentType.typeFieldKey),
-            "variantField": .string(DocumentType.variantFieldKey),
             "types": .array(types),
             "variants": .array(variants),
-            // What else the app declares on the types as data, read by the section actions
-            // (a document's name, its back, its validity after issue) as well as the checks.
-            "unnamed": .string(DocumentType.unnamed),
-            "keepsBackSide": strings(DocumentType.keepsBackSide.sorted()),
-            "validityMonthsAfterIssue": .object(DocumentType.validityMonthsAfterIssue.mapValues { .int($0) }),
-            "readOnPhoneOnly": strings(DocumentType.readOnPhoneOnly.sorted()),
-            "sharedWithCare": strings(DocumentType.sharedWithCare.sorted()),
             "writtenBy": .string(writtenBy),
         ])
     }

@@ -1,6 +1,6 @@
 # What a traveller carries
 
-The trip check's rules (*Pleci din țară*), the countries a person can be a citizen of and the document types' travel data, defined once in the iOS code ([`TravelRules`](../../ios/DosarCuSina/Services/Readiness/TravelRules.swift), [`Citizenship`](../../ios/DosarCuSina/Models/Fields/Citizenship.swift), [`DocumentType`](../../ios/DosarCuSina/Models/Fields/ChoiceOptions.swift)) and written here as data by an iOS test, so the Android app checks a trip by the same rules and never names a country, a document rule or a key of its own ([ANDROID_PLAN.md](../../docs/ANDROID_PLAN.md), "How parity is kept", item 1).
+The trip check's rules (*Pleci din țară*), the countries a person can be a citizen of and the document types' travel data, defined once in the iOS code ([`TravelRules`](../../ios/DosarCuSina/Services/Readiness/TravelRules.swift), [`Citizenship`](../../ios/DosarCuSina/Models/Fields/Citizenship.swift), [`DocumentType`](../../ios/DosarCuSina/Models/Fields/ChoiceOptions.swift)'s travel margins) and written here as data by an iOS test, so the Android app checks a trip by the same rules and never names a country, a document rule or a key of its own ([ANDROID_PLAN.md](../../docs/ANDROID_PLAN.md), "How parity is kept", item 1).
 
 **Never edit these files by hand.** They are written by [`TravelExportTests`](../../ios/DosarCuSinaTests/TravelExportTests.swift); change the rules in the iOS code and write them again.
 
@@ -26,14 +26,12 @@ All three are machine JSON, written by `MachineText` with their keys sorted, so 
 
 ### `documents.json`
 
-- **`typeField`** and **`variantField`:** the fields that hold a personal document's type and its variant.
-- **`types`:** each document type's key, name and other spellings (as the catalog's `document.type` options), and its `travelMarginDays` (a passport: 180, six calendar months before its expiry it stops being good for travel).
-- **`variants`:** each variant's type, key, `label` (how it is offered), whether it `travels` at all (the simple identity card doesn't), the last day it is good for travel whatever its printed expiry (`travelEnds`: an identity card without a chip, 2 August 2031), and the name a document of that variant takes when it isn't its type's (`documentName`: „Cazier fiscal”; null for the type's own).
-- **`unnamed`:** what a document of no type this build knows is called.
-- **`keepsBackSide`**, **`readOnPhoneOnly`** and **`sharedWithCare`:** the types each rule holds for (a back worth adding; read only on the phone; sent only to someone trusted).
-- **`validityMonthsAfterIssue`:** how long a type or a variant is valid after it is issued, in months (a cazier judiciar, six).
+Only what a trip asks of a document type. What the types are (their keys, names, other spellings and variants, and the app's other rules on them) is the catalog's, in [`shared/catalog/documents/`](../catalog/documents/), and this file lists exactly its types and variants, by the same keys.
 
-The document types are read here once for the whole app, by the checks and by the section actions (a document's name, its back, its validity after issue): Android's `core.readiness.DocumentTypes`.
+- **`types`:** each document type's `key` and its `travelMarginDays` (a passport: 180, six calendar months before its expiry it stops being good for travel; 0 for the others).
+- **`variants`:** each variant's `key`, whether it `travels` at all (the simple identity card doesn't), and the last day it is good for travel whatever its printed expiry (`travelEnds`: an identity card without a chip, 2 August 2031; null when none).
+
+Android's `core.readiness.DocumentTypes` reads it over the catalog's document types (`core.documents.DocumentTypeCatalog`), and fails to read when the two files don't list the same types and variants.
 
 ## Fresh or failing
 
@@ -49,7 +47,7 @@ TEST_RUNNER_TRAVEL_WRITE=1 xcodebuild test -project ios/DosarCuSina.xcodeproj -s
 
 ## Who reads them
 
-- **Android:** the `core` module copies the three files into its resources as it is built (the `travelResources` task) and reads them into `TravelData.builtIn` (`com.ar.dosarcusina.core.readiness`), which the readiness engine reads. Every part must read whole; a part the build can't read fails the build's tests, never the person's binder.
+- **Android:** the `core` module copies the three files into its resources as it is built (the `travelResources` task) and reads them into `TravelData.builtIn` (`com.ar.dosarcusina.core.readiness`), with the catalog's document types, which the readiness engine reads. Every part must read whole; a part the build can't read fails the build's tests, never the person's binder.
 - **iOS:** nothing reads them; the rules are the code.
 
 The checks' answers are pinned separately, in [`shared/test-vectors/readiness/`](../test-vectors/readiness/) (`ReadinessVectorsTests`).
