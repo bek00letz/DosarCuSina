@@ -192,18 +192,6 @@ object RomanianNumber {
     /** How many steps the iOS app's old conversion missed the nearest Double by, at most (`missedSteps`). */
     const val MISSED_STEPS = 3
 
-    /** Whether the steps of [value] are small enough for [MISSED_STEPS] of them each way to reach one short number. */
-    private fun hasSmallSteps(value: Double, decimals: Int): Boolean =
-        Math.ulp(value) * 2 * MISSED_STEPS < "1e-$decimals".toDouble()
-
-    /**
-     * Whether [value] is a short number's Double: its exact value rounded to [decimals] and made a Double again gives
-     * it. Only asked of a Double whose steps are small enough, so it is never a half-way case (the iOS app rounds its
-     * shortest text, which lands on the same short number).
-     */
-    private fun isShort(value: Double, decimals: Int): Boolean =
-        BigDecimal(value).setScale(decimals, RoundingMode.HALF_UP).toDouble() == value
-
     // Writing
 
     /**
@@ -270,6 +258,21 @@ object RomanianNumber {
         } ?: text
     }
 }
+
+/**
+ * Whether the steps of [value] are small enough for [RomanianNumber.MISSED_STEPS] of them each way to reach one
+ * short number.
+ */
+private fun hasSmallSteps(value: Double, decimals: Int): Boolean =
+    Math.ulp(value) * 2 * RomanianNumber.MISSED_STEPS < "1e-$decimals".toDouble()
+
+/**
+ * Whether [value] is a short number's Double: its exact value rounded to [decimals] and made a Double again gives
+ * it. Only asked of a Double whose steps are small enough, so it is never a half-way case (the iOS app rounds its
+ * shortest text, which lands on the same short number).
+ */
+private fun isShort(value: Double, decimals: Int): Boolean =
+    BigDecimal(value).setScale(decimals, RoundingMode.HALF_UP).toDouble() == value
 
 /**
  * Digits with dots, commas or spaces between them, read by [RomanianNumber]'s rule: which mark
