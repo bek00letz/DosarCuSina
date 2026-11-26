@@ -103,11 +103,10 @@ class AppGraphTest {
 
     @Test
     fun `a binder that can't be opened says so by its kind, and the log keeps no path`() {
-        val places = AppPlaces.under(files = File(root, "files"), cache = File(root, "cache"))
         // A file where the binder's folder should be.
-        places.binder.parentFile.mkdirs()
+        File(root, "files").mkdirs()
         places.binder.writeText("not a folder")
-        val graph = AppGraph(places, databases, PhoneLog(lines::add), direct, clock = { NOW })
+        val graph = graph()
         val state = assertInstanceOf(BinderState.CouldNotOpen::class.java, graph.open())
         assertNotEquals("", state.kind)
         assertEquals(1, lines.size)

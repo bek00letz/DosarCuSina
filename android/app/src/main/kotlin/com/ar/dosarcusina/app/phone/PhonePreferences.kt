@@ -74,7 +74,7 @@ class PhonePreferences(
     }
 
     private fun write(text: String) {
-        val folder = file.absoluteFile.parentFile
+        val folder = requireNotNull(file.absoluteFile.parentFile) { "The preferences' file sits in a folder" }
         folder.mkdirs()
         val partial = File.createTempFile(file.name + "-", ".part", folder)
         try {

@@ -130,7 +130,9 @@ object SearchPrivacy {
             result = replacing(pattern, result, " ", caseInsensitive = true)
         }
         result = words(result).joinToString(" ")
-        result = TextRules.trimming(result) { TextRules.isWhitespace(it) || DANGLING.contains(String(Character.toChars(it))) }
+        result = TextRules.trimming(result) {
+            TextRules.isWhitespace(it) || DANGLING.contains(String(Character.toChars(it)))
+        }
         val worthShowing = TextRules.characters(result).any { TextRules.isLetter(it) || TextRules.isNumber(it) }
         return result.takeIf { worthShowing }
     }
