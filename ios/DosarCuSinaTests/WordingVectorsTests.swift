@@ -247,12 +247,12 @@ struct WordingVectorsTests {
         let months = ["2025-01-14", "2025-02-14", "2025-03-14", "2025-04-14", "2025-05-14", "2025-06-14", "2025-07-14", "2025-08-14", "2025-09-14", "2025-10-14", "2025-11-14", "2025-12-14"]
         let others = ["2026-01-05", "2024-02-29", "2026-02-30", "1999-12-31", "2100-07-01", "2026-11-01"]
         let cases: [JSONValue] = (months + others).map { iso in
-            let day = day(iso)
+            let written = Self.day(iso)
             return .object([
-                "day": .string(iso), "isOnCalendar": .bool(day.isOnCalendar),
-                "dayText": .string(DosarFormat.day(day)), "longDay": .string(DosarFormat.longDay(day)),
-                "dayMonth": .string(DosarFormat.dayMonth(day)), "monthYear": .string(DosarFormat.monthYear(day)),
-                "cardExpiry": .string(DosarFormat.cardExpiry(day)),
+                "day": .string(iso), "isOnCalendar": .bool(written.isOnCalendar),
+                "dayText": .string(DosarFormat.day(written)), "longDay": .string(DosarFormat.longDay(written)),
+                "dayMonth": .string(DosarFormat.dayMonth(written)), "monthYear": .string(DosarFormat.monthYear(written)),
+                "cardExpiry": .string(DosarFormat.cardExpiry(written)),
             ])
         }
         return Vectors(
