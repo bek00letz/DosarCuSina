@@ -37,6 +37,21 @@
       "masked" : null
     },
     {
+      "before" : "Plătit cu 4111.1111.1111.1111 și 5555/5555/5555/4444",
+      "kind" : "text",
+      "masked" : "Plătit cu •••• 1111 și •••• 4444"
+    },
+    {
+      "before" : "Card ４１１１１１１１１１１１１１１１",
+      "kind" : "text",
+      "masked" : "Card •••• 1111"
+    },
+    {
+      "before" : "Revizie 01.02.2026, 1.250.000 km",
+      "kind" : "text",
+      "masked" : null
+    },
+    {
       "before" : [
         "Mecanic",
         "Card 4111 1111 1111 1111"

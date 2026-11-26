@@ -351,6 +351,69 @@ struct PersonalDocumentCaptureTests {
         #expect(PaymentCardNumbers.lastFour(in: "Ref 3-5555555555554444", strict: true) == "4444")
     }
 
+    @Test("A card number with its groups apart by dots, slashes or several spaces is masked, and dates and amounts stay")
+    func cardNumberApartByOtherSeparators() {
+        let found = [
+            "4111.1111.1111.1111": "•••• 1111",
+            "4111/1111/1111/1111": "•••• 1111",
+            "4111  1111  1111  1111": "•••• 1111",
+            "4111\u{00A0}1111\u{00A0}1111\u{00A0}1111": "•••• 1111",
+            "4111\t1111\t1111\t1111": "•••• 1111",
+            "4111 - 1111 - 1111 - 1111": "•••• 1111",
+            "Card: 5555.5555.5555.4444 azi": "Card: •••• 4444 azi",
+            "3782.822463.10005": "•••• 0005",
+            "Ref 12/4111/1111/1111/1111": "Ref 12/•••• 1111",
+            "4111.1111.1111.1111; 5555.5555.5555.4444": "•••• 1111; •••• 4444",
+            "Plată 4111/1111/1111/1111, 12.03.2026": "Plată •••• 1111, 12.03.2026",
+        ]
+        for (text, masked) in found {
+            #expect(PaymentCardNumbers.redact(text) == masked, "\(text)")
+            #expect(PaymentCardNumbers.containsCardNumber(text), "\(text)")
+            #expect(!PaymentCardNumbers.containsCardNumber(PaymentCardNumbers.redact(text, strict: true)), "\(text)")
+        }
+        let kept = [
+            // The check digit fails, or the groups are apart in more than one way.
+            "4111.1111.1111.1112", "4111  1111  1111  1112", "4111.1111 1111/1111",
+            // Dates, amounts, versions, addresses, phones, a plate, a table's columns, a health card's number.
+            "Perioada 01.02.2026 - 28.02.2026", "30.05.2026 31.05.2026", "30.05.2026-30.06.2026", "Data 31/12/2026",
+            "Suma 1.250.000 lei", "4.111.111.111.111.111", "Versiunea 4.1.1.1", "192.168.100.200", "Tel 0722.123.456",
+            "B-123-ABC", "4500   4600   4700   4800", "8064.2000.0000.0000.0001", "scan 2026-03-15 10.45.12.pdf",
+            // An IBAN printed with dots, its check passing or not.
+            "RO49.AAAA.1B31.0075.9384.0000", "RO00.AAAA.4111.1111.1111.1111",
+        ]
+        for text in kept {
+            #expect(PaymentCardNumbers.redact(text) == text, "\(text)")
+        }
+        // A date is a number of its own: a card right after it goes, a health card's number stays.
+        for date in ["01.02.2026", "01-02-2026", "01/02/2026", "2026-02-01", "01.02.2026 12:30"] {
+            #expect(PaymentCardNumbers.redact("\(date) 4111 1111 1111 1111") == "\(date) •••• 1111", "\(date)")
+            #expect(PaymentCardNumbers.redact("\(date) 8064 2000 0000 0000 0001") == "\(date) 8064 2000 0000 0000 0001", "\(date)")
+        }
+        // On a bank card the misread number goes too, and the card's own last four are read.
+        #expect(PaymentCardNumbers.redact("4111  1111  1111  1112", strict: true) == "•••• 1112")
+        #expect(PaymentCardNumbers.lastFour(in: "4111 1111 1111 1112  08/28", strict: true) == "1112")
+        #expect(PaymentCardNumbers.redact("4111 1111 1111 1112  08/28", strict: true) == "•••• 1112  08/28")
+    }
+
+    @Test("A card number written in another script's digits is masked like one in ASCII digits")
+    func cardNumberInOtherDigits() {
+        let fullWidth = "\u{FF14}\u{FF11}\u{FF11}\u{FF11} \u{FF11}\u{FF11}\u{FF11}\u{FF11} \u{FF11}\u{FF11}\u{FF11}\u{FF11} \u{FF11}\u{FF11}\u{FF11}\u{FF11}"
+        let arabicIndic = "\u{0664}\u{0661}\u{0661}\u{0661} \u{0661}\u{0661}\u{0661}\u{0661} \u{0661}\u{0661}\u{0661}\u{0661} \u{0661}\u{0661}\u{0661}\u{0661}"
+        let devanagari = "\u{096A}\u{0967}\u{0967}\u{0967}-\u{0967}\u{0967}\u{0967}\u{0967}-\u{0967}\u{0967}\u{0967}\u{0967}-\u{0967}\u{0967}\u{0967}\u{0967}"
+        let mathematical = "\u{1D7D3}\u{1D7D3}\u{1D7D3}\u{1D7D3} \u{1D7D3}\u{1D7D3}\u{1D7D3}\u{1D7D3} \u{1D7D3}\u{1D7D3}\u{1D7D3}\u{1D7D3} \u{1D7D2}\u{1D7D2}\u{1D7D2}\u{1D7D2}"
+        for text in [fullWidth, arabicIndic, devanagari, "4111 \u{0661}\u{0661}\u{0661}\u{0661} 1111 \u{FF11}\u{FF11}\u{FF11}\u{FF11}"] {
+            #expect(PaymentCardNumbers.redact("Card \(text)") == "Card •••• 1111", "\(text)")
+            #expect(PaymentCardNumbers.lastFour(in: text) == "1111", "\(text)")
+        }
+        #expect(PaymentCardNumbers.redact(mathematical) == "•••• 4444")
+        #expect(PaymentCardNumbers.network(ofNumber: PaymentCardNumbers.cardNumbers(in: arabicIndic).first?.digits ?? "") == PaymentCardNetwork.visa)
+        // What stays whole in ASCII digits stays whole in others: a CNP's 13 digits, digits glued to letters.
+        let cnp = "CNP \u{FF11}\u{FF18}\u{FF10}\u{FF10}\u{FF11}\u{FF10}\u{FF11}\u{FF19}\u{FF19}\u{FF10}\u{FF10}\u{FF10}\u{FF16}"
+        let glued = "AB\u{FF14}\u{FF11}\u{FF11}\u{FF11}\u{FF11}\u{FF11}\u{FF11}\u{FF11}\u{FF11}\u{FF11}\u{FF11}\u{FF11}\u{FF11}\u{FF11}\u{FF11}\u{FF11}"
+        #expect(PaymentCardNumbers.redact(cnp) == cnp)
+        #expect(PaymentCardNumbers.redact(glued) == glued)
+    }
+
     @Test("A long number stays as written: no part of it is taken unless it is printed apart like a card")
     func longNumbersStayWhole() {
         let kept = [
