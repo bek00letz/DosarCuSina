@@ -1,0 +1,252 @@
+{
+  "cases" : [
+    {
+      "highest" : 99999,
+      "readings" : [
+
+      ],
+      "size" : "large",
+      "value" : 0
+    },
+    {
+      "highest" : 10300,
+      "readings" : [
+        {
+          "at" : "2026-06-05T10:00:00Z",
+          "isEstimate" : false,
+          "metric" : 10000,
+          "startsCounter" : false
+        },
+        {
+          "at" : "2026-09-05T10:00:00Z",
+          "isEstimate" : false,
+          "metric" : 10300,
+          "startsCounter" : false
+        }
+      ],
+      "size" : "large",
+      "value" : 15
+    },
+    {
+      "highest" : 10300,
+      "readings" : [
+        {
+          "at" : "2026-06-05T10:00:00Z",
+          "isEstimate" : false,
+          "metric" : 10000,
+          "startsCounter" : false
+        },
+        {
+          "at" : "2026-09-05T10:00:00Z",
+          "isEstimate" : false,
+          "metric" : 10300,
+          "startsCounter" : false
+        }
+      ],
+      "size" : "large",
+      "value" : 103
+    },
+    {
+      "highest" : 10300,
+      "readings" : [
+        {
+          "at" : "2026-06-05T10:00:00Z",
+          "isEstimate" : false,
+          "metric" : 10000,
+          "startsCounter" : false
+        },
+        {
+          "at" : "2026-09-05T10:00:00Z",
+          "isEstimate" : false,
+          "metric" : 10300,
+          "startsCounter" : false
+        }
+      ],
+      "size" : "large",
+      "value" : 104
+    },
+    {
+      "highest" : 10300,
+      "readings" : [
+        {
+          "at" : "2026-06-05T10:00:00Z",
+          "isEstimate" : false,
+          "metric" : 10000,
+          "startsCounter" : false
+        },
+        {
+          "at" : "2026-09-05T10:00:00Z",
+          "isEstimate" : false,
+          "metric" : 10300,
+          "startsCounter" : false
+        }
+      ],
+      "size" : "small",
+      "value" : 10150
+    },
+    {
+      "highest" : 10300,
+      "readings" : [
+        {
+          "at" : "2026-06-05T10:00:00Z",
+          "isEstimate" : false,
+          "metric" : 10000,
+          "startsCounter" : false
+        },
+        {
+          "at" : "2026-09-05T10:00:00Z",
+          "isEstimate" : false,
+          "metric" : 10300,
+          "startsCounter" : false
+        }
+      ],
+      "size" : "small",
+      "value" : 10050
+    },
+    {
+      "highest" : 10300,
+      "readings" : [
+        {
+          "at" : "2026-06-05T10:00:00Z",
+          "isEstimate" : false,
+          "metric" : 10000,
+          "startsCounter" : false
+        },
+        {
+          "at" : "2026-09-05T10:00:00Z",
+          "isEstimate" : false,
+          "metric" : 10300,
+          "startsCounter" : false
+        }
+      ],
+      "size" : "unsure",
+      "value" : 9700
+    },
+    {
+      "highest" : 10300,
+      "readings" : [
+        {
+          "at" : "2026-06-05T10:00:00Z",
+          "isEstimate" : false,
+          "metric" : 10000,
+          "startsCounter" : false
+        },
+        {
+          "at" : "2026-09-05T10:00:00Z",
+          "isEstimate" : false,
+          "metric" : 10300,
+          "startsCounter" : false
+        }
+      ],
+      "size" : "large",
+      "value" : 8000
+    },
+    {
+      "highest" : 10300,
+      "readings" : [
+        {
+          "at" : "2026-06-05T10:00:00Z",
+          "isEstimate" : false,
+          "metric" : 10000,
+          "startsCounter" : false
+        },
+        {
+          "at" : "2026-09-05T10:00:00Z",
+          "isEstimate" : false,
+          "metric" : 10300,
+          "startsCounter" : false
+        }
+      ],
+      "size" : "large",
+      "value" : 9103
+    },
+    {
+      "highest" : 10300,
+      "readings" : [
+        {
+          "at" : "2026-06-05T10:00:00Z",
+          "isEstimate" : false,
+          "metric" : 10000,
+          "startsCounter" : false
+        },
+        {
+          "at" : "2026-07-05T10:00:00Z",
+          "isEstimate" : false,
+          "metric" : 10300,
+          "startsCounter" : false
+        }
+      ],
+      "size" : "unsure",
+      "value" : 10200
+    },
+    {
+      "highest" : 10000,
+      "readings" : [
+        {
+          "at" : "2026-01-05T10:00:00Z",
+          "isEstimate" : false,
+          "metric" : 10000,
+          "startsCounter" : false
+        },
+        {
+          "at" : "2026-06-05T10:00:00Z",
+          "isEstimate" : false,
+          "metric" : 10000,
+          "startsCounter" : false
+        }
+      ],
+      "size" : "unsure",
+      "value" : 9990
+    },
+    {
+      "highest" : 10300,
+      "readings" : [
+
+      ],
+      "size" : "unsure",
+      "value" : 10200
+    },
+    {
+      "highest" : 103000,
+      "readings" : [
+        {
+          "at" : "2026-01-10T10:00:00Z",
+          "isEstimate" : false,
+          "metric" : 100000,
+          "startsCounter" : false
+        },
+        {
+          "at" : "2026-04-10T10:00:00Z",
+          "isEstimate" : false,
+          "metric" : 103000,
+          "startsCounter" : false
+        }
+      ],
+      "size" : "small",
+      "value" : 102900
+    },
+    {
+      "highest" : 103000,
+      "readings" : [
+        {
+          "at" : "2026-01-10T10:00:00Z",
+          "isEstimate" : false,
+          "metric" : 100000,
+          "startsCounter" : false
+        },
+        {
+          "at" : "2026-04-10T10:00:00Z",
+          "isEstimate" : false,
+          "metric" : 103000,
+          "startsCounter" : false
+        }
+      ],
+      "size" : "large",
+      "value" : 80000
+    }
+  ],
+  "rule" : "ReadingDrop(from:to:series:).size",
+  "shape" : "highest: the highest reading before, value: the lower one, readings: the counter's readings the drop is measured against. size: small, unsure or large.",
+  "source" : "ios/DosarCuSina/Services/History/Readings.swift",
+  "writtenBy" : "ios/DosarCuSinaTests/ReadingVectorsTests.swift"
+}

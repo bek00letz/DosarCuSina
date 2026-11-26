@@ -1,0 +1,1450 @@
+{
+  "cases" : [
+    {
+      "corrected" : [
+
+      ],
+      "counted" : [
+        {
+          "at" : "2026-01-01T10:00:00Z",
+          "isEstimate" : false,
+          "metric" : 40000,
+          "startsCounter" : false
+        },
+        {
+          "at" : "2026-01-31T10:00:00Z",
+          "isEstimate" : false,
+          "metric" : 45724,
+          "startsCounter" : false
+        }
+      ],
+      "counterStarts" : [
+
+      ],
+      "counters" : [
+        [
+          {
+            "at" : "2026-01-01T10:00:00Z",
+            "isEstimate" : false,
+            "metric" : 40000,
+            "startsCounter" : false
+          },
+          {
+            "at" : "2026-01-31T10:00:00Z",
+            "isEstimate" : false,
+            "metric" : 45724,
+            "startsCounter" : false
+          }
+        ]
+      ],
+      "cumulative" : true,
+      "current" : 45724,
+      "madeAgain" : false,
+      "name" : "a typo is set aside",
+      "progress" : {
+        "days" : 30,
+        "distance" : 5724
+      },
+      "readings" : [
+        {
+          "at" : "2026-01-01T10:00:00Z",
+          "isEstimate" : false,
+          "metric" : 40000,
+          "startsCounter" : false
+        },
+        {
+          "at" : "2026-01-31T10:00:00Z",
+          "isEstimate" : false,
+          "metric" : 45724,
+          "startsCounter" : false
+        },
+        {
+          "at" : "2026-03-02T10:00:00Z",
+          "isEstimate" : false,
+          "metric" : 457,
+          "startsCounter" : false
+        }
+      ],
+      "setAside" : [
+        {
+          "at" : "2026-03-02T10:00:00Z",
+          "isEstimate" : false,
+          "metric" : 457,
+          "startsCounter" : false
+        }
+      ]
+    },
+    {
+      "corrected" : [
+
+      ],
+      "counted" : [
+        {
+          "at" : "2026-01-31T10:00:00Z",
+          "isEstimate" : false,
+          "metric" : 46000,
+          "startsCounter" : false
+        },
+        {
+          "at" : "2026-03-02T10:00:00Z",
+          "isEstimate" : false,
+          "metric" : 47000,
+          "startsCounter" : false
+        }
+      ],
+      "counterStarts" : [
+
+      ],
+      "counters" : [
+        [
+          {
+            "at" : "2026-01-31T10:00:00Z",
+            "isEstimate" : false,
+            "metric" : 46000,
+            "startsCounter" : false
+          },
+          {
+            "at" : "2026-03-02T10:00:00Z",
+            "isEstimate" : false,
+            "metric" : 47000,
+            "startsCounter" : false
+          }
+        ]
+      ],
+      "cumulative" : true,
+      "current" : 47000,
+      "madeAgain" : false,
+      "name" : "a first reading too high",
+      "progress" : {
+        "days" : 30,
+        "distance" : 1000
+      },
+      "readings" : [
+        {
+          "at" : "2026-01-01T10:00:00Z",
+          "isEstimate" : false,
+          "metric" : 450000,
+          "startsCounter" : false
+        },
+        {
+          "at" : "2026-01-31T10:00:00Z",
+          "isEstimate" : false,
+          "metric" : 46000,
+          "startsCounter" : false
+        },
+        {
+          "at" : "2026-03-02T10:00:00Z",
+          "isEstimate" : false,
+          "metric" : 47000,
+          "startsCounter" : false
+        }
+      ],
+      "setAside" : [
+        {
+          "at" : "2026-01-01T10:00:00Z",
+          "isEstimate" : false,
+          "metric" : 450000,
+          "startsCounter" : false
+        }
+      ]
+    },
+    {
+      "corrected" : [
+
+      ],
+      "counted" : [
+        {
+          "at" : "2026-01-01T10:00:00Z",
+          "isEstimate" : false,
+          "metric" : 10000,
+          "startsCounter" : false
+        }
+      ],
+      "counterStarts" : [
+
+      ],
+      "counters" : [
+        [
+          {
+            "at" : "2026-01-01T10:00:00Z",
+            "isEstimate" : false,
+            "metric" : 10000,
+            "startsCounter" : false
+          }
+        ]
+      ],
+      "cumulative" : true,
+      "current" : 10000,
+      "madeAgain" : false,
+      "name" : "on a tie the earlier wins",
+      "progress" : null,
+      "readings" : [
+        {
+          "at" : "2026-01-01T10:00:00Z",
+          "isEstimate" : false,
+          "metric" : 10000,
+          "startsCounter" : false
+        },
+        {
+          "at" : "2026-01-31T10:00:00Z",
+          "isEstimate" : false,
+          "metric" : 9000,
+          "startsCounter" : false
+        }
+      ],
+      "setAside" : [
+        {
+          "at" : "2026-01-31T10:00:00Z",
+          "isEstimate" : false,
+          "metric" : 9000,
+          "startsCounter" : false
+        }
+      ]
+    },
+    {
+      "corrected" : [
+
+      ],
+      "counted" : [
+        {
+          "at" : "2026-01-01T10:00:00Z",
+          "isEstimate" : false,
+          "metric" : 80,
+          "startsCounter" : false
+        },
+        {
+          "at" : "2026-01-31T10:00:00Z",
+          "isEstimate" : false,
+          "metric" : 75,
+          "startsCounter" : false
+        }
+      ],
+      "counterStarts" : [
+
+      ],
+      "counters" : [
+        [
+          {
+            "at" : "2026-01-01T10:00:00Z",
+            "isEstimate" : false,
+            "metric" : 80,
+            "startsCounter" : false
+          },
+          {
+            "at" : "2026-01-31T10:00:00Z",
+            "isEstimate" : false,
+            "metric" : 75,
+            "startsCounter" : false
+          }
+        ]
+      ],
+      "cumulative" : false,
+      "current" : 75,
+      "madeAgain" : true,
+      "name" : "a weight is the newest",
+      "progress" : {
+        "days" : 30,
+        "distance" : -5
+      },
+      "readings" : [
+        {
+          "at" : "2026-01-01T10:00:00Z",
+          "isEstimate" : false,
+          "metric" : 80,
+          "startsCounter" : false
+        },
+        {
+          "at" : "2026-01-31T10:00:00Z",
+          "isEstimate" : false,
+          "metric" : 75,
+          "startsCounter" : false
+        }
+      ],
+      "setAside" : [
+
+      ]
+    },
+    {
+      "corrected" : [
+
+      ],
+      "counted" : [
+        {
+          "at" : "2026-01-31T10:00:00Z",
+          "isEstimate" : false,
+          "metric" : 75,
+          "startsCounter" : false
+        },
+        {
+          "at" : "2026-02-15T10:00:00Z",
+          "isEstimate" : false,
+          "metric" : 78.2,
+          "startsCounter" : false
+        },
+        {
+          "at" : "2026-03-01T10:00:00Z",
+          "isEstimate" : false,
+          "metric" : 81.5,
+          "startsCounter" : false
+        }
+      ],
+      "counterStarts" : [
+
+      ],
+      "counters" : [
+        [
+          {
+            "at" : "2026-01-31T10:00:00Z",
+            "isEstimate" : false,
+            "metric" : 75,
+            "startsCounter" : false
+          },
+          {
+            "at" : "2026-02-15T10:00:00Z",
+            "isEstimate" : false,
+            "metric" : 78.2,
+            "startsCounter" : false
+          },
+          {
+            "at" : "2026-03-01T10:00:00Z",
+            "isEstimate" : false,
+            "metric" : 81.5,
+            "startsCounter" : false
+          }
+        ]
+      ],
+      "cumulative" : false,
+      "current" : 81.5,
+      "madeAgain" : true,
+      "name" : "a weight out of order",
+      "progress" : {
+        "days" : 29,
+        "distance" : 6.5
+      },
+      "readings" : [
+        {
+          "at" : "2026-03-01T10:00:00Z",
+          "isEstimate" : false,
+          "metric" : 81.5,
+          "startsCounter" : false
+        },
+        {
+          "at" : "2026-01-31T10:00:00Z",
+          "isEstimate" : false,
+          "metric" : 75,
+          "startsCounter" : false
+        },
+        {
+          "at" : "2026-02-15T10:00:00Z",
+          "isEstimate" : false,
+          "metric" : 78.2,
+          "startsCounter" : false
+        }
+      ],
+      "setAside" : [
+
+      ]
+    },
+    {
+      "corrected" : [
+
+      ],
+      "counted" : [
+        {
+          "at" : "2026-01-01T10:00:00Z",
+          "isEstimate" : false,
+          "metric" : 100000,
+          "startsCounter" : false
+        },
+        {
+          "at" : "2026-04-01T10:00:00Z",
+          "isEstimate" : false,
+          "metric" : 103000,
+          "startsCounter" : false
+        },
+        {
+          "at" : "2026-05-01T10:00:00Z",
+          "isEstimate" : false,
+          "metric" : 500,
+          "startsCounter" : true
+        },
+        {
+          "at" : "2026-06-01T10:00:00Z",
+          "isEstimate" : false,
+          "metric" : 1500,
+          "startsCounter" : false
+        }
+      ],
+      "counterStarts" : [
+        "2026-05-01T10:00:00Z"
+      ],
+      "counters" : [
+        [
+          {
+            "at" : "2026-01-01T10:00:00Z",
+            "isEstimate" : false,
+            "metric" : 100000,
+            "startsCounter" : false
+          },
+          {
+            "at" : "2026-04-01T10:00:00Z",
+            "isEstimate" : false,
+            "metric" : 103000,
+            "startsCounter" : false
+          }
+        ],
+        [
+          {
+            "at" : "2026-05-01T10:00:00Z",
+            "isEstimate" : false,
+            "metric" : 500,
+            "startsCounter" : true
+          },
+          {
+            "at" : "2026-06-01T10:00:00Z",
+            "isEstimate" : false,
+            "metric" : 1500,
+            "startsCounter" : false
+          }
+        ]
+      ],
+      "cumulative" : true,
+      "current" : 1500,
+      "madeAgain" : true,
+      "name" : "a replaced dashboard",
+      "progress" : {
+        "days" : 121,
+        "distance" : 4000
+      },
+      "readings" : [
+        {
+          "at" : "2026-01-01T10:00:00Z",
+          "isEstimate" : false,
+          "metric" : 100000,
+          "startsCounter" : false
+        },
+        {
+          "at" : "2026-04-01T10:00:00Z",
+          "isEstimate" : false,
+          "metric" : 103000,
+          "startsCounter" : false
+        },
+        {
+          "at" : "2026-05-01T10:00:00Z",
+          "isEstimate" : false,
+          "metric" : 500,
+          "startsCounter" : true
+        },
+        {
+          "at" : "2026-06-01T10:00:00Z",
+          "isEstimate" : false,
+          "metric" : 1500,
+          "startsCounter" : false
+        }
+      ],
+      "setAside" : [
+
+      ]
+    },
+    {
+      "corrected" : [
+
+      ],
+      "counted" : [
+        {
+          "at" : "2025-01-01T10:00:00Z",
+          "isEstimate" : false,
+          "metric" : 99000,
+          "startsCounter" : false
+        },
+        {
+          "at" : "2025-12-01T10:00:00Z",
+          "isEstimate" : false,
+          "metric" : 99990,
+          "startsCounter" : false
+        },
+        {
+          "at" : "2026-01-15T10:00:00Z",
+          "isEstimate" : false,
+          "metric" : 12,
+          "startsCounter" : true
+        },
+        {
+          "at" : "2026-03-15T10:00:00Z",
+          "isEstimate" : false,
+          "metric" : 410,
+          "startsCounter" : false
+        }
+      ],
+      "counterStarts" : [
+        "2026-01-15T10:00:00Z"
+      ],
+      "counters" : [
+        [
+          {
+            "at" : "2025-01-01T10:00:00Z",
+            "isEstimate" : false,
+            "metric" : 99000,
+            "startsCounter" : false
+          },
+          {
+            "at" : "2025-12-01T10:00:00Z",
+            "isEstimate" : false,
+            "metric" : 99990,
+            "startsCounter" : false
+          }
+        ],
+        [
+          {
+            "at" : "2026-01-15T10:00:00Z",
+            "isEstimate" : false,
+            "metric" : 12,
+            "startsCounter" : true
+          },
+          {
+            "at" : "2026-03-15T10:00:00Z",
+            "isEstimate" : false,
+            "metric" : 410,
+            "startsCounter" : false
+          }
+        ]
+      ],
+      "cumulative" : true,
+      "current" : 410,
+      "madeAgain" : true,
+      "name" : "a counter that went round",
+      "progress" : {
+        "days" : 393,
+        "distance" : 1388
+      },
+      "readings" : [
+        {
+          "at" : "2025-01-01T10:00:00Z",
+          "isEstimate" : false,
+          "metric" : 99000,
+          "startsCounter" : false
+        },
+        {
+          "at" : "2025-12-01T10:00:00Z",
+          "isEstimate" : false,
+          "metric" : 99990,
+          "startsCounter" : false
+        },
+        {
+          "at" : "2026-01-15T10:00:00Z",
+          "isEstimate" : false,
+          "metric" : 12,
+          "startsCounter" : true
+        },
+        {
+          "at" : "2026-03-15T10:00:00Z",
+          "isEstimate" : false,
+          "metric" : 410,
+          "startsCounter" : false
+        }
+      ],
+      "setAside" : [
+
+      ]
+    },
+    {
+      "corrected" : [
+
+      ],
+      "counted" : [
+        {
+          "at" : "2025-01-01T10:00:00Z",
+          "isEstimate" : false,
+          "metric" : 10000,
+          "startsCounter" : false
+        },
+        {
+          "at" : "2025-03-01T10:00:00Z",
+          "isEstimate" : false,
+          "metric" : 11000,
+          "startsCounter" : false
+        },
+        {
+          "at" : "2025-04-01T10:00:00Z",
+          "isEstimate" : false,
+          "metric" : 100,
+          "startsCounter" : true
+        },
+        {
+          "at" : "2025-06-01T10:00:00Z",
+          "isEstimate" : false,
+          "metric" : 900,
+          "startsCounter" : false
+        },
+        {
+          "at" : "2025-07-01T10:00:00Z",
+          "isEstimate" : false,
+          "metric" : 5,
+          "startsCounter" : true
+        },
+        {
+          "at" : "2025-09-01T10:00:00Z",
+          "isEstimate" : false,
+          "metric" : 505,
+          "startsCounter" : false
+        }
+      ],
+      "counterStarts" : [
+        "2025-04-01T10:00:00Z",
+        "2025-07-01T10:00:00Z"
+      ],
+      "counters" : [
+        [
+          {
+            "at" : "2025-01-01T10:00:00Z",
+            "isEstimate" : false,
+            "metric" : 10000,
+            "startsCounter" : false
+          },
+          {
+            "at" : "2025-03-01T10:00:00Z",
+            "isEstimate" : false,
+            "metric" : 11000,
+            "startsCounter" : false
+          }
+        ],
+        [
+          {
+            "at" : "2025-04-01T10:00:00Z",
+            "isEstimate" : false,
+            "metric" : 100,
+            "startsCounter" : true
+          },
+          {
+            "at" : "2025-06-01T10:00:00Z",
+            "isEstimate" : false,
+            "metric" : 900,
+            "startsCounter" : false
+          }
+        ],
+        [
+          {
+            "at" : "2025-07-01T10:00:00Z",
+            "isEstimate" : false,
+            "metric" : 5,
+            "startsCounter" : true
+          },
+          {
+            "at" : "2025-09-01T10:00:00Z",
+            "isEstimate" : false,
+            "metric" : 505,
+            "startsCounter" : false
+          }
+        ]
+      ],
+      "cumulative" : true,
+      "current" : 505,
+      "madeAgain" : true,
+      "name" : "three counters",
+      "progress" : {
+        "days" : 182,
+        "distance" : 2300
+      },
+      "readings" : [
+        {
+          "at" : "2025-01-01T10:00:00Z",
+          "isEstimate" : false,
+          "metric" : 10000,
+          "startsCounter" : false
+        },
+        {
+          "at" : "2025-03-01T10:00:00Z",
+          "isEstimate" : false,
+          "metric" : 11000,
+          "startsCounter" : false
+        },
+        {
+          "at" : "2025-04-01T10:00:00Z",
+          "isEstimate" : false,
+          "metric" : 100,
+          "startsCounter" : true
+        },
+        {
+          "at" : "2025-06-01T10:00:00Z",
+          "isEstimate" : false,
+          "metric" : 900,
+          "startsCounter" : false
+        },
+        {
+          "at" : "2025-07-01T10:00:00Z",
+          "isEstimate" : false,
+          "metric" : 5,
+          "startsCounter" : true
+        },
+        {
+          "at" : "2025-09-01T10:00:00Z",
+          "isEstimate" : false,
+          "metric" : 505,
+          "startsCounter" : false
+        }
+      ],
+      "setAside" : [
+
+      ]
+    },
+    {
+      "corrected" : [
+
+      ],
+      "counted" : [
+        {
+          "at" : "2026-06-05T10:00:00Z",
+          "isEstimate" : false,
+          "metric" : 10000,
+          "startsCounter" : false
+        },
+        {
+          "at" : "2026-07-05T10:00:00Z",
+          "isEstimate" : true,
+          "metric" : 10100,
+          "startsCounter" : false
+        },
+        {
+          "at" : "2026-08-05T10:00:00Z",
+          "isEstimate" : true,
+          "metric" : 10200,
+          "startsCounter" : false
+        }
+      ],
+      "counterStarts" : [
+
+      ],
+      "counters" : [
+        [
+          {
+            "at" : "2026-06-05T10:00:00Z",
+            "isEstimate" : false,
+            "metric" : 10000,
+            "startsCounter" : false
+          },
+          {
+            "at" : "2026-07-05T10:00:00Z",
+            "isEstimate" : true,
+            "metric" : 10100,
+            "startsCounter" : false
+          },
+          {
+            "at" : "2026-08-05T10:00:00Z",
+            "isEstimate" : true,
+            "metric" : 10200,
+            "startsCounter" : false
+          }
+        ]
+      ],
+      "cumulative" : true,
+      "current" : 10200,
+      "madeAgain" : true,
+      "name" : "an estimate counts until a lower reading",
+      "progress" : {
+        "days" : 61,
+        "distance" : 200
+      },
+      "readings" : [
+        {
+          "at" : "2026-06-05T10:00:00Z",
+          "isEstimate" : false,
+          "metric" : 10000,
+          "startsCounter" : false
+        },
+        {
+          "at" : "2026-07-05T10:00:00Z",
+          "isEstimate" : true,
+          "metric" : 10100,
+          "startsCounter" : false
+        },
+        {
+          "at" : "2026-08-05T10:00:00Z",
+          "isEstimate" : true,
+          "metric" : 10200,
+          "startsCounter" : false
+        }
+      ],
+      "setAside" : [
+
+      ]
+    },
+    {
+      "corrected" : [
+        {
+          "at" : "2026-08-05T10:00:00Z",
+          "isEstimate" : true,
+          "metric" : 10200,
+          "startsCounter" : false
+        },
+        {
+          "at" : "2026-09-05T10:00:00Z",
+          "isEstimate" : true,
+          "metric" : 10300,
+          "startsCounter" : false
+        }
+      ],
+      "counted" : [
+        {
+          "at" : "2026-06-05T10:00:00Z",
+          "isEstimate" : false,
+          "metric" : 10000,
+          "startsCounter" : false
+        },
+        {
+          "at" : "2026-07-05T10:00:00Z",
+          "isEstimate" : true,
+          "metric" : 10100,
+          "startsCounter" : false
+        },
+        {
+          "at" : "2026-10-05T10:00:00Z",
+          "isEstimate" : false,
+          "metric" : 10150,
+          "startsCounter" : false
+        }
+      ],
+      "counterStarts" : [
+
+      ],
+      "counters" : [
+        [
+          {
+            "at" : "2026-06-05T10:00:00Z",
+            "isEstimate" : false,
+            "metric" : 10000,
+            "startsCounter" : false
+          },
+          {
+            "at" : "2026-07-05T10:00:00Z",
+            "isEstimate" : true,
+            "metric" : 10100,
+            "startsCounter" : false
+          },
+          {
+            "at" : "2026-10-05T10:00:00Z",
+            "isEstimate" : false,
+            "metric" : 10150,
+            "startsCounter" : false
+          }
+        ]
+      ],
+      "cumulative" : true,
+      "current" : 10150,
+      "madeAgain" : false,
+      "name" : "a regularisation corrects the estimates",
+      "progress" : {
+        "days" : 122,
+        "distance" : 150
+      },
+      "readings" : [
+        {
+          "at" : "2026-06-05T10:00:00Z",
+          "isEstimate" : false,
+          "metric" : 10000,
+          "startsCounter" : false
+        },
+        {
+          "at" : "2026-07-05T10:00:00Z",
+          "isEstimate" : true,
+          "metric" : 10100,
+          "startsCounter" : false
+        },
+        {
+          "at" : "2026-08-05T10:00:00Z",
+          "isEstimate" : true,
+          "metric" : 10200,
+          "startsCounter" : false
+        },
+        {
+          "at" : "2026-09-05T10:00:00Z",
+          "isEstimate" : true,
+          "metric" : 10300,
+          "startsCounter" : false
+        },
+        {
+          "at" : "2026-10-05T10:00:00Z",
+          "isEstimate" : false,
+          "metric" : 10150,
+          "startsCounter" : false
+        }
+      ],
+      "setAside" : [
+
+      ]
+    },
+    {
+      "corrected" : [
+
+      ],
+      "counted" : [
+        {
+          "at" : "2026-06-05T10:00:00Z",
+          "isEstimate" : false,
+          "metric" : 10000,
+          "startsCounter" : false
+        },
+        {
+          "at" : "2026-07-05T10:00:00Z",
+          "isEstimate" : true,
+          "metric" : 10100,
+          "startsCounter" : false
+        },
+        {
+          "at" : "2026-08-05T10:00:00Z",
+          "isEstimate" : true,
+          "metric" : 10200,
+          "startsCounter" : false
+        },
+        {
+          "at" : "2026-09-05T10:00:00Z",
+          "isEstimate" : false,
+          "metric" : 5,
+          "startsCounter" : true
+        }
+      ],
+      "counterStarts" : [
+        "2026-09-05T10:00:00Z"
+      ],
+      "counters" : [
+        [
+          {
+            "at" : "2026-06-05T10:00:00Z",
+            "isEstimate" : false,
+            "metric" : 10000,
+            "startsCounter" : false
+          },
+          {
+            "at" : "2026-07-05T10:00:00Z",
+            "isEstimate" : true,
+            "metric" : 10100,
+            "startsCounter" : false
+          },
+          {
+            "at" : "2026-08-05T10:00:00Z",
+            "isEstimate" : true,
+            "metric" : 10200,
+            "startsCounter" : false
+          }
+        ],
+        [
+          {
+            "at" : "2026-09-05T10:00:00Z",
+            "isEstimate" : false,
+            "metric" : 5,
+            "startsCounter" : true
+          }
+        ]
+      ],
+      "cumulative" : true,
+      "current" : 5,
+      "madeAgain" : true,
+      "name" : "a new meter corrects nothing",
+      "progress" : {
+        "days" : 61,
+        "distance" : 200
+      },
+      "readings" : [
+        {
+          "at" : "2026-06-05T10:00:00Z",
+          "isEstimate" : false,
+          "metric" : 10000,
+          "startsCounter" : false
+        },
+        {
+          "at" : "2026-07-05T10:00:00Z",
+          "isEstimate" : true,
+          "metric" : 10100,
+          "startsCounter" : false
+        },
+        {
+          "at" : "2026-08-05T10:00:00Z",
+          "isEstimate" : true,
+          "metric" : 10200,
+          "startsCounter" : false
+        },
+        {
+          "at" : "2026-09-05T10:00:00Z",
+          "isEstimate" : false,
+          "metric" : 5,
+          "startsCounter" : true
+        }
+      ],
+      "setAside" : [
+
+      ]
+    },
+    {
+      "corrected" : [
+        {
+          "at" : "2026-02-05T10:00:00Z",
+          "isEstimate" : true,
+          "metric" : 190,
+          "startsCounter" : false
+        }
+      ],
+      "counted" : [
+        {
+          "at" : "2026-01-05T10:00:00Z",
+          "isEstimate" : false,
+          "metric" : 100,
+          "startsCounter" : false
+        },
+        {
+          "at" : "2026-03-05T10:00:00Z",
+          "isEstimate" : true,
+          "metric" : 160,
+          "startsCounter" : false
+        },
+        {
+          "at" : "2026-04-05T10:00:00Z",
+          "isEstimate" : false,
+          "metric" : 175,
+          "startsCounter" : false
+        }
+      ],
+      "counterStarts" : [
+
+      ],
+      "counters" : [
+        [
+          {
+            "at" : "2026-01-05T10:00:00Z",
+            "isEstimate" : false,
+            "metric" : 100,
+            "startsCounter" : false
+          },
+          {
+            "at" : "2026-03-05T10:00:00Z",
+            "isEstimate" : true,
+            "metric" : 160,
+            "startsCounter" : false
+          },
+          {
+            "at" : "2026-04-05T10:00:00Z",
+            "isEstimate" : false,
+            "metric" : 175,
+            "startsCounter" : false
+          }
+        ]
+      ],
+      "cumulative" : true,
+      "current" : 175,
+      "madeAgain" : false,
+      "name" : "an estimate lowered by a later estimate",
+      "progress" : {
+        "days" : 90,
+        "distance" : 75
+      },
+      "readings" : [
+        {
+          "at" : "2026-01-05T10:00:00Z",
+          "isEstimate" : false,
+          "metric" : 100,
+          "startsCounter" : false
+        },
+        {
+          "at" : "2026-02-05T10:00:00Z",
+          "isEstimate" : true,
+          "metric" : 190,
+          "startsCounter" : false
+        },
+        {
+          "at" : "2026-03-05T10:00:00Z",
+          "isEstimate" : true,
+          "metric" : 160,
+          "startsCounter" : false
+        },
+        {
+          "at" : "2026-04-05T10:00:00Z",
+          "isEstimate" : false,
+          "metric" : 175,
+          "startsCounter" : false
+        }
+      ],
+      "setAside" : [
+
+      ]
+    },
+    {
+      "corrected" : [
+
+      ],
+      "counted" : [
+        {
+          "at" : "2026-03-01T10:00:00Z",
+          "isEstimate" : false,
+          "metric" : 10000,
+          "startsCounter" : false
+        },
+        {
+          "at" : "2026-03-01T10:00:00Z",
+          "isEstimate" : false,
+          "metric" : 10050,
+          "startsCounter" : false
+        },
+        {
+          "at" : "2026-03-02T10:00:00Z",
+          "isEstimate" : false,
+          "metric" : 10100,
+          "startsCounter" : false
+        }
+      ],
+      "counterStarts" : [
+
+      ],
+      "counters" : [
+        [
+          {
+            "at" : "2026-03-01T10:00:00Z",
+            "isEstimate" : false,
+            "metric" : 10000,
+            "startsCounter" : false
+          },
+          {
+            "at" : "2026-03-01T10:00:00Z",
+            "isEstimate" : false,
+            "metric" : 10050,
+            "startsCounter" : false
+          },
+          {
+            "at" : "2026-03-02T10:00:00Z",
+            "isEstimate" : false,
+            "metric" : 10100,
+            "startsCounter" : false
+          }
+        ]
+      ],
+      "cumulative" : true,
+      "current" : 10100,
+      "madeAgain" : true,
+      "name" : "readings at the same moment",
+      "progress" : {
+        "days" : 1,
+        "distance" : 100
+      },
+      "readings" : [
+        {
+          "at" : "2026-03-01T10:00:00Z",
+          "isEstimate" : false,
+          "metric" : 10050,
+          "startsCounter" : false
+        },
+        {
+          "at" : "2026-03-01T10:00:00Z",
+          "isEstimate" : false,
+          "metric" : 10000,
+          "startsCounter" : false
+        },
+        {
+          "at" : "2026-03-02T10:00:00Z",
+          "isEstimate" : false,
+          "metric" : 10100,
+          "startsCounter" : false
+        }
+      ],
+      "setAside" : [
+
+      ]
+    },
+    {
+      "corrected" : [
+
+      ],
+      "counted" : [
+        {
+          "at" : "2026-03-01T10:00:00Z",
+          "isEstimate" : false,
+          "metric" : 3,
+          "startsCounter" : false
+        },
+        {
+          "at" : "2026-03-01T10:00:00Z",
+          "isEstimate" : false,
+          "metric" : 99999,
+          "startsCounter" : false
+        }
+      ],
+      "counterStarts" : [
+
+      ],
+      "counters" : [
+        [
+          {
+            "at" : "2026-03-01T10:00:00Z",
+            "isEstimate" : false,
+            "metric" : 3,
+            "startsCounter" : true
+          },
+          {
+            "at" : "2026-03-01T10:00:00Z",
+            "isEstimate" : false,
+            "metric" : 99999,
+            "startsCounter" : false
+          }
+        ]
+      ],
+      "cumulative" : true,
+      "current" : 99999,
+      "madeAgain" : false,
+      "name" : "a new counter at the same moment as the old one's last",
+      "progress" : {
+        "days" : 0,
+        "distance" : 99996
+      },
+      "readings" : [
+        {
+          "at" : "2026-03-01T10:00:00Z",
+          "isEstimate" : false,
+          "metric" : 99999,
+          "startsCounter" : false
+        },
+        {
+          "at" : "2026-03-01T10:00:00Z",
+          "isEstimate" : false,
+          "metric" : 3,
+          "startsCounter" : true
+        },
+        {
+          "at" : "2026-04-01T10:00:00Z",
+          "isEstimate" : false,
+          "metric" : 300,
+          "startsCounter" : false
+        }
+      ],
+      "setAside" : [
+        {
+          "at" : "2026-04-01T10:00:00Z",
+          "isEstimate" : false,
+          "metric" : 300,
+          "startsCounter" : false
+        }
+      ]
+    },
+    {
+      "corrected" : [
+
+      ],
+      "counted" : [
+        {
+          "at" : "2026-03-01T10:00:00Z",
+          "isEstimate" : false,
+          "metric" : 1000,
+          "startsCounter" : false
+        },
+        {
+          "at" : "2026-04-01T09:00:00Z",
+          "isEstimate" : false,
+          "metric" : 1930,
+          "startsCounter" : false
+        },
+        {
+          "at" : "2026-10-26T10:30:00Z",
+          "isEstimate" : false,
+          "metric" : 8200,
+          "startsCounter" : false
+        }
+      ],
+      "counterStarts" : [
+
+      ],
+      "counters" : [
+        [
+          {
+            "at" : "2026-03-01T10:00:00Z",
+            "isEstimate" : false,
+            "metric" : 1000,
+            "startsCounter" : false
+          },
+          {
+            "at" : "2026-04-01T09:00:00Z",
+            "isEstimate" : false,
+            "metric" : 1930,
+            "startsCounter" : false
+          },
+          {
+            "at" : "2026-10-26T10:30:00Z",
+            "isEstimate" : false,
+            "metric" : 8200,
+            "startsCounter" : false
+          }
+        ]
+      ],
+      "cumulative" : true,
+      "current" : 8200,
+      "madeAgain" : true,
+      "name" : "across the clock change",
+      "progress" : {
+        "days" : 239.02083333333334,
+        "distance" : 7200
+      },
+      "readings" : [
+        {
+          "at" : "2026-03-01T10:00:00Z",
+          "isEstimate" : false,
+          "metric" : 1000,
+          "startsCounter" : false
+        },
+        {
+          "at" : "2026-04-01T09:00:00Z",
+          "isEstimate" : false,
+          "metric" : 1930,
+          "startsCounter" : false
+        },
+        {
+          "at" : "2026-10-26T10:30:00Z",
+          "isEstimate" : false,
+          "metric" : 8200,
+          "startsCounter" : false
+        }
+      ],
+      "setAside" : [
+
+      ]
+    },
+    {
+      "corrected" : [
+
+      ],
+      "counted" : [
+        {
+          "at" : "2026-01-01T10:00:00Z",
+          "isEstimate" : false,
+          "metric" : 312.5,
+          "startsCounter" : false
+        },
+        {
+          "at" : "2026-03-01T10:00:00Z",
+          "isEstimate" : false,
+          "metric" : 340.25,
+          "startsCounter" : false
+        }
+      ],
+      "counterStarts" : [
+
+      ],
+      "counters" : [
+        [
+          {
+            "at" : "2026-01-01T10:00:00Z",
+            "isEstimate" : false,
+            "metric" : 312.5,
+            "startsCounter" : false
+          },
+          {
+            "at" : "2026-03-01T10:00:00Z",
+            "isEstimate" : false,
+            "metric" : 340.25,
+            "startsCounter" : false
+          }
+        ]
+      ],
+      "cumulative" : true,
+      "current" : 340.25,
+      "madeAgain" : false,
+      "name" : "engine hours with a decimal",
+      "progress" : {
+        "days" : 59,
+        "distance" : 27.75
+      },
+      "readings" : [
+        {
+          "at" : "2026-01-01T10:00:00Z",
+          "isEstimate" : false,
+          "metric" : 312.5,
+          "startsCounter" : false
+        },
+        {
+          "at" : "2026-03-01T10:00:00Z",
+          "isEstimate" : false,
+          "metric" : 340.25,
+          "startsCounter" : false
+        },
+        {
+          "at" : "2026-04-01T10:00:00Z",
+          "isEstimate" : false,
+          "metric" : 340.1,
+          "startsCounter" : false
+        }
+      ],
+      "setAside" : [
+        {
+          "at" : "2026-04-01T10:00:00Z",
+          "isEstimate" : false,
+          "metric" : 340.1,
+          "startsCounter" : false
+        }
+      ]
+    },
+    {
+      "corrected" : [
+
+      ],
+      "counted" : [
+        {
+          "at" : "2026-01-01T10:00:00Z",
+          "isEstimate" : false,
+          "metric" : 45724,
+          "startsCounter" : false
+        }
+      ],
+      "counterStarts" : [
+
+      ],
+      "counters" : [
+        [
+          {
+            "at" : "2026-01-01T10:00:00Z",
+            "isEstimate" : false,
+            "metric" : 45724,
+            "startsCounter" : false
+          }
+        ]
+      ],
+      "cumulative" : true,
+      "current" : 45724,
+      "madeAgain" : true,
+      "name" : "one reading",
+      "progress" : null,
+      "readings" : [
+        {
+          "at" : "2026-01-01T10:00:00Z",
+          "isEstimate" : false,
+          "metric" : 45724,
+          "startsCounter" : false
+        }
+      ],
+      "setAside" : [
+
+      ]
+    },
+    {
+      "corrected" : [
+
+      ],
+      "counted" : [
+
+      ],
+      "counterStarts" : [
+
+      ],
+      "counters" : [
+
+      ],
+      "cumulative" : true,
+      "current" : null,
+      "madeAgain" : true,
+      "name" : "no readings",
+      "progress" : null,
+      "readings" : [
+
+      ],
+      "setAside" : [
+
+      ]
+    }
+  ],
+  "rule" : "ReadingSeries(_:cumulative:): counters, readings, setAside, corrected, counterStarts, current, progress()",
+  "shape" : "readings: a section's readings as kept (at, metric, startsCounter, isEstimate), cumulative whether they only go up. counters: each counter's readings that count; counted: all of them, the first of each later counter starting it; setAside, corrected: what is left out and the estimates a lower reading corrected; counterStarts: when each later counter starts; current: the value now; progress: distance and days counter by counter (days of 24 hours), or null. madeAgain: a series made again from its counted readings is the same.",
+  "source" : "ios/DosarCuSina/Services/History/Readings.swift",
+  "writtenBy" : "ios/DosarCuSinaTests/ReadingVectorsTests.swift"
+}

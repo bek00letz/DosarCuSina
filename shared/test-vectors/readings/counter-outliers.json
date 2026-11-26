@@ -1,0 +1,185 @@
+{
+  "cases" : [
+    {
+      "values" : [
+        45724,
+        457
+      ],
+      "verdicts" : [
+        {
+          "correctTo" : 45724,
+          "index" : 1
+        }
+      ]
+    },
+    {
+      "values" : [
+        45000,
+        4600000,
+        47000
+      ],
+      "verdicts" : [
+        {
+          "index" : 1,
+          "remove" : true
+        }
+      ]
+    },
+    {
+      "values" : [
+        100,
+        1000
+      ],
+      "verdicts" : [
+
+      ]
+    },
+    {
+      "values" : [
+        45724,
+        4572.4
+      ],
+      "verdicts" : [
+        {
+          "correctTo" : 45724,
+          "index" : 1
+        }
+      ]
+    },
+    {
+      "values" : [
+        12345,
+        123
+      ],
+      "verdicts" : [
+        {
+          "correctTo" : 12345,
+          "index" : 1
+        }
+      ]
+    },
+    {
+      "values" : [
+        12350,
+        124
+      ],
+      "verdicts" : [
+        {
+          "correctTo" : 12350,
+          "index" : 1
+        }
+      ]
+    },
+    {
+      "values" : [
+        12450,
+        125
+      ],
+      "verdicts" : [
+        {
+          "correctTo" : 12450,
+          "index" : 1
+        }
+      ]
+    },
+    {
+      "values" : [
+        12450,
+        124
+      ],
+      "verdicts" : [
+        {
+          "correctTo" : 12450,
+          "index" : 1
+        }
+      ]
+    },
+    {
+      "values" : [
+        10,
+        5
+      ],
+      "verdicts" : [
+
+      ]
+    },
+    {
+      "values" : [
+        47000,
+        470,
+        48000
+      ],
+      "verdicts" : [
+        {
+          "correctTo" : 47000,
+          "index" : 1
+        }
+      ]
+    },
+    {
+      "values" : [
+        1000,
+        100000,
+        1200
+      ],
+      "verdicts" : [
+        {
+          "index" : 1,
+          "remove" : true
+        }
+      ]
+    },
+    {
+      "values" : [
+        1000,
+        50,
+        1200
+      ],
+      "verdicts" : [
+        {
+          "index" : 1,
+          "remove" : true
+        }
+      ]
+    },
+    {
+      "values" : [
+        0,
+        0,
+        0
+      ],
+      "verdicts" : [
+
+      ]
+    },
+    {
+      "values" : [
+        500,
+        50000000
+      ],
+      "verdicts" : [
+
+      ]
+    },
+    {
+      "values" : [
+        45724
+      ],
+      "verdicts" : [
+
+      ]
+    },
+    {
+      "values" : [
+
+      ],
+      "verdicts" : [
+
+      ]
+    }
+  ],
+  "rule" : "CounterOutliersStep.verdicts(_:) and lostDigits(_:of:)",
+  "shape" : "values: one counter's readings, oldest first. verdicts: by place, a value to correct it to (it lost its last digits) or that it goes (ten times off both neighbours).",
+  "source" : "ios/DosarCuSina/Services/Repairs/DataRepairSteps.swift",
+  "writtenBy" : "ios/DosarCuSinaTests/ReadingVectorsTests.swift"
+}
