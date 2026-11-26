@@ -22,6 +22,8 @@ final class BackupRun: @unchecked Sendable {
     private var cancelled = false
     private var protectedDataAvailable: Bool
     private var locks = 0
+    /// How many steps are waiting at a checkpoint for the phone to be unlocked right now.
+    private var waitingForTheUnlock = 0
 
     init(protectedDataAvailable: Bool = true) {
         self.protectedDataAvailable = protectedDataAvailable
@@ -68,8 +70,28 @@ final class BackupRun: @unchecked Sendable {
     func checkpoint(needsProtectedData: Bool) throws {
         condition.lock()
         defer { condition.unlock() }
-        while needsProtectedData && !protectedDataAvailable && !cancelled && !progress.isCancelled { condition.wait() }
+        func mustWait() -> Bool { needsProtectedData && !protectedDataAvailable && !cancelled && !progress.isCancelled }
+        if mustWait() {
+            waitingForTheUnlock += 1
+            condition.broadcast()
+            while mustWait() { condition.wait() }
+            waitingForTheUnlock -= 1
+        }
         if cancelled || progress.isCancelled { throw CancellationError() }
+    }
+
+    /// Returns once a step is held at a checkpoint until the phone is unlocked: the event that
+    /// says the work is waiting, never a guessed pause. Waits on a thread of its own, since the
+    /// backup's own is the one held.
+    func heldUntilTheUnlock() async {
+        await withCheckedContinuation { (continuation: CheckedContinuation<Void, Never>) in
+            DispatchQueue.global(qos: .userInitiated).async {
+                self.condition.lock()
+                while self.waitingForTheUnlock == 0 { self.condition.wait() }
+                self.condition.unlock()
+                continuation.resume()
+            }
+        }
     }
 
     /// The work expects `units` more files.
