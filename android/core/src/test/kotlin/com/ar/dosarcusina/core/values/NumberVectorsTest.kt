@@ -29,6 +29,23 @@ class NumberVectorsTest {
         }
 
     @TestFactory
+    fun `a number becomes the Double the iPhone stores`(): List<DynamicTest> =
+        Vectors.tests("romanian-number-double", { label(it, "input") }) { case ->
+            val value = RomanianNumber.canonical(case.text("input"))
+            assertEquals(case.textOrNull("double")?.toDouble(), value?.toDouble())
+        }
+
+    @TestFactory
+    fun `a number kept a step off is put back as on the iPhone`(): List<DynamicTest> =
+        Vectors.tests("romanian-number-correction", { label(it, "stored") }) { case ->
+            val stored = case.text("stored").toDouble()
+            for (kind in NumberKind.entries) {
+                val corrected = RomanianNumber.correction(stored, kind)
+                assertEquals(case.textOrNull(kind.key)?.toDouble(), corrected, "${kind.key}: $stored")
+            }
+        }
+
+    @TestFactory
     fun `a number is written the Romanian way and reads back`(): List<DynamicTest> =
         Vectors.tests("romanian-number-format", { "${label(it, "value")} ${it.ints("fractionDigits")}" }) { case ->
             val value = requireNotNull(RomanianNumber.canonical(case.text("value")))
