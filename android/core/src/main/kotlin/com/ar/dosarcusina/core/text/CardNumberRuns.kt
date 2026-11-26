@@ -1,12 +1,17 @@
 package com.ar.dosarcusina.core.text
 
+import com.ar.dosarcusina.core.text.DigitGroups.DATE_GROUPS
+import com.ar.dosarcusina.core.text.DigitGroups.Gap
+import com.ar.dosarcusina.core.text.DigitGroups.overlaps
 import com.ar.dosarcusina.core.values.TextRules
 
 /**
  * How [PaymentCardNumbers] finds card numbers in text, as the iOS app's rule does
- * (ios/Shared/CardNumberRule.swift, "Runs of digits" and "Brands"): runs of digits with at most
- * one space or dash between them, the parts of a longer run that are printed like a card, what of
- * a run belongs to an IBAN or a code, the networks' issuer ranges and the Luhn check.
+ * (ios/Shared/CardNumberRule.swift, "Runs of digits" and "Brands"): runs of digits of any script
+ * with at most one space or dash between them, the parts of a longer run that are printed like a
+ * card, groups apart by anything else (a dot, a slash, several spaces) printed like a card with
+ * one kind of gap, what of a run belongs to an IBAN or a code, the networks' issuer ranges and the
+ * Luhn check.
  */
 internal object CardNumberRuns {
     private const val SHORTEST_CARD = 14
@@ -20,12 +25,58 @@ internal object CardNumberRuns {
     private const val DECIMAL = 10
     private const val LARGEST_DIGIT = 9
 
-    /** A run of digits found in a text, or a part of one: its groups, the pieces between single spaces or dashes. */
-    class Run(text: String, val groups: List<IntRange>, val isWhole: Boolean) {
+    /** A run of digits found in a text, or a part of one: its groups, the pieces between its gaps. */
+    class Run(private val text: String, val groups: List<IntRange>, val isWhole: Boolean) {
         val range: IntRange = groups.first().first..groups.last().last
-        private val pieces = groups.map { group -> text.substring(group).filter { it in '0'..'9' } }
+        private val pieces = groups.map { group ->
+            buildString {
+                text.substring(group).codePoints().forEach { codePoint -> DigitGroups.digit(codePoint)?.let(::append) }
+            }
+        }
+
+        /** The run's digits as ASCII digits, whatever script they are written in. */
         val digits: String = pieces.joinToString("")
         val groupSizes: List<Int> = pieces.map { it.length }
+
+        /** What stands between each group and the next. */
+        val gaps: List<Gap> = groups.zipWithNext { left, right -> Gap(text.substring(left.last + 1, right.first)) }
+
+        /** Some of its groups are apart by something else than one space or one dash. */
+        val isApartByOthers: Boolean
+            get() = gaps.any { !it.isNarrow }
+
+        /**
+         * Its stretches of groups apart by one space or one dash only, in order, each taken as a
+         * whole run: the run itself when nothing else stands between its groups. A date in it
+         * ([isDate]) is a stretch of its own, so its year never starts a card printed after it.
+         */
+        fun stretches(): List<Run> {
+            val dates = (0..groups.size - DATE_GROUPS).filter(::isDate)
+            val insideDates = dates.flatMap { listOf(it, it + 1) }.toSet()
+            val dateEdges = dates.flatMap { listOf(it - 1, it + DATE_GROUPS - 1) }.filter { it in gaps.indices }
+            val ends = (gaps.indices.filter { !gaps[it].isNarrow && it !in insideDates } + dateEdges).toSortedSet()
+            if (ends.isEmpty()) return listOf(this)
+            val stretches = mutableListOf<Run>()
+            var start = 0
+            for (index in ends) {
+                stretches.add(Run(text, groups.subList(start, index + 1), isWhole = true))
+                start = index + 1
+            }
+            stretches.add(Run(text, groups.subList(start, groups.size), isWhole = true))
+            return stretches
+        }
+
+        /**
+         * Whether the three groups from [start] are a date: a day, a month and a year of four digits
+         * ("01.02.2026", "2/1/2026", "2026-02-01"), apart twice by the same dot, slash or dash. A
+         * card never prints groups that short, so a date is never part of one.
+         */
+        private fun isDate(start: Int): Boolean {
+            val kind = gaps[start].kind
+            if (kind != gaps[start + 1].kind || kind == Gap.Kind.SPACE) return false
+            val values = pieces.subList(start, start + DATE_GROUPS).map { it.toIntOrNull() ?: 0 }
+            return DigitGroups.isDate(groupSizes.subList(start, start + DATE_GROUPS), values)
+        }
 
         /** Printed in groups of four ("4111 1111 1111 1111"). */
         private val groupedInFours: Boolean
@@ -45,12 +96,18 @@ internal object CardNumberRuns {
         /**
          * A card number by the "anywhere" rule. A whole run printed in groups of four counts even
          * when its check digit was misread; a part of a longer run must pass the check and be
-         * printed like a card, since inside a long number printed in fours every part is.
+         * printed like a card, since inside a long number printed in fours every part is. Groups
+         * apart by anything else (dots, slashes, several spaces, which dates, amounts and a table's
+         * columns give too) count only with one kind of gap throughout, printed like a card and
+         * passing the check.
          */
         val isCardNumber: Boolean
             get() {
                 val brand = brand(digits)
                 if (digits.length !in cardLengths || brand == null || digits.length !in brand.lengths) return false
+                if (isApartByOthers) {
+                    return gaps.all { it.kind == gaps.first().kind } && printedLikeACard && passesLuhn(digits)
+                }
                 if (!isWhole) return printedLikeACard && passesLuhn(digits)
                 return passesLuhn(digits) || (groupedInFours && digits.length == SIXTEEN)
             }
@@ -69,30 +126,80 @@ internal object CardNumberRuns {
     }
 
     /**
-     * Runs of digits with at most one space or dash between them, not part of a longer run:
-     * twelve digits or more, or ([strict]) eight or more.
+     * Runs of digits, of any script, whose groups are apart by what [DigitGroups.GAP] allows, not part of a
+     * longer run, with [least] digits or more.
      */
-    fun runs(text: String, strict: Boolean): List<Run> {
-        val least = if (strict) STRICT_LEAST else ANYWHERE_LEAST
-        val pattern = """(?<!\d[ -]?)\d(?:[ -]?\d){${least - 1},}(?![ -]?\d)"""
+    private fun spans(text: String, least: Int): List<Run> {
+        val pattern = """\d(?:${DigitGroups.GAP}?\d){${least - 1},}(?!${DigitGroups.GAP}?\d)"""
         return TextPattern.matches(pattern, text, caseInsensitive = false).map { match ->
-            Run(text, groups(text, match.range), isWhole = true)
+            Run(text, DigitGroups.groups(text, match.range), isWhole = true)
         }
     }
 
     /**
-     * The card numbers in the text by the "anywhere" rule, in order: a whole run of digits that is
-     * one, else the parts of a longer run that are ([parts]), looked for only in what of the run
-     * isn't a code ([pieces]).
+     * Runs of digits with at most one space or dash between them, not part of a longer run:
+     * twelve digits or more, or ([strict]) eight or more. On a bank card ([strict]), where a longer
+     * run's groups are apart by anything else (dots, slashes, several spaces), the card numbers the
+     * "anywhere" rule finds in it are runs, and so is what is left of it beside them, with eight
+     * digits or more.
      */
+    fun runs(text: String, strict: Boolean): List<Run> {
+        val least = if (strict) STRICT_LEAST else ANYWHERE_LEAST
+        val characters by lazy { Characters(text) }
+        val ibans by lazy { if (hasLetter(text)) IBAN.ranges(text) else emptyList() }
+        return spans(text, least).flatMap { span ->
+            val stretches = span.stretches()
+            if (!strict || !span.isApartByOthers) return@flatMap stretches.filter { it.digits.length >= least }
+            val cards = cardNumbers(span, text, characters, ibans)
+            val found = cards.toMutableList()
+            val rest = mutableListOf<IntRange>()
+            fun keepRest() {
+                if (rest.isNotEmpty()) {
+                    val run = Run(text, rest.toList(), isWhole = true)
+                    if (run.digits.length >= least) found.add(run)
+                }
+                rest.clear()
+            }
+            val inACard = { group: IntRange -> cards.any { overlaps(it.range, group) } }
+            for (stretch in stretches) {
+                if (stretch.digits.length >= least && stretch.groups.none(inACard)) {
+                    keepRest()
+                    found.add(stretch)
+                    continue
+                }
+                for (group in stretch.groups) if (inACard(group)) keepRest() else rest.add(group)
+            }
+            keepRest()
+            found.sortedBy { it.range.first }
+        }
+    }
+
+    /** The card numbers in the text by the "anywhere" rule, in order (the [cardNumbers] of each run). */
     fun cardNumbers(text: String): List<Run> {
         val characters = Characters(text)
         val ibans = if (hasLetter(text)) IBAN.ranges(text) else emptyList()
-        return runs(text, strict = false).flatMap { run ->
+        return spans(text, ANYWHERE_LEAST).flatMap { cardNumbers(it, text, characters, ibans) }
+    }
+
+    /**
+     * The card numbers in one run of the text ([spans]) by the "anywhere" rule, in order: in each of
+     * its stretches apart by one space or dash, a whole stretch that is one, else the parts of a
+     * longer one that are ([parts]), looked for only in what of it isn't a code ([pieces]); then,
+     * where something else stands between groups (dots, slashes, several spaces), the card numbers
+     * printed that way.
+     */
+    private fun cardNumbers(span: Run, text: String, characters: Characters, ibans: List<IntRange>): List<Run> {
+        fun cards(run: Run, accepts: (Run) -> Boolean): List<Run> =
             pieces(run, text, characters, ibans).flatMap { piece ->
-                if (piece.isCardNumber) listOf(piece) else parts(piece, text)
+                if (accepts(piece)) listOf(piece) else parts(piece, text, accepts)
             }
-        }
+        val found = span.stretches()
+            .filter { it.digits.length >= ANYWHERE_LEAST }
+            .flatMap { cards(it, Run::isCardNumber) }
+        if (!span.isApartByOthers) return found
+        val apart = cards(span) { it.isApartByOthers && it.isCardNumber }
+            .filter { card -> found.none { overlaps(it.range, card.range) } }
+        return (found + apart).sortedBy { it.range.first }
     }
 
     /** Whether any code point is a letter: a quicker form of Swift's check, which finds the same IBANs. */
@@ -134,13 +241,15 @@ internal object CardNumberRuns {
     /**
      * Whether the run carries on an IBAN printed in groups, its check passing or not: a country
      * that issues IBANs in capitals and two check digits, maybe groups of four letters or digits,
-     * then the run, one space or dash apart ("RO49 AAAA 1234 5678 9012 3456").
+     * then the run, each apart by spaces or by one dash, dot or slash ("RO49 AAAA 1234 5678 9012
+     * 3456", "RO49.AAAA.1234.5678…").
      */
     private fun continuesAnIBAN(run: Run, characters: Characters): Boolean {
         val last = characters.before(run.range.first)
-        if (last != " " && last != "-") return false
+        if (last == null || last.length != 1 || !DigitGroups.isGapCharacter(last[0])) return false
         val before = characters.suffix(run.range.first, IBAN_HEAD_REACH)
-        val head = """(?<![\p{L}\p{N}])([A-Z]{2})\d{2}(?:[ -][A-Z0-9]{4})*[ -]$"""
+        val apart = """(?:[-./]|[\t\p{Zs}]++)"""
+        val head = """(?<![\p{L}\p{N}])([A-Z]{2})\d{2}(?:$apart[A-Z0-9]{4})*$apart$"""
         val country = TextPattern.first(head, before, caseInsensitive = false)?.get(1) ?: return false
         return IBAN.lengths[country] != null
     }
@@ -149,11 +258,12 @@ internal object CardNumberRuns {
      * The card numbers inside a run that isn't one as a whole: a card number printed next to other
      * digits ("12 4111 1111 1111 1111", "4111-1111-1111-1111-27"). Only parts that begin and end
      * where the run's groups do are tried, from the left and the longest first at each place; a
-     * part is taken when it is a card number. Digits with nothing between them stay one number. In
-     * a run printed all in groups of four, a part is tried only at its start or right after a card
-     * found there: never the middle or the end of a long number (a 20-digit health card number).
+     * part is taken when [accepts] takes it (a card number). Digits with nothing between them stay
+     * one number. In a run printed all in groups of four, a part is tried only at its start or
+     * right after a card found there: never the middle or the end of a long number (a 20-digit
+     * health card number).
      */
-    private fun parts(run: Run, text: String): List<Run> {
+    private fun parts(run: Run, text: String, accepts: (Run) -> Boolean): List<Run> {
         val sizes = run.groupSizes
         if (sizes.size < 2) return emptyList()
         val startOnly = sizes.all { it == GROUP }
@@ -162,7 +272,7 @@ internal object CardNumberRuns {
         while (start < sizes.size) {
             val part = ends(sizes, start).asReversed().asSequence()
                 .map { end -> Run(text, run.groups.subList(start, end + 1), isWhole = false) }
-                .firstOrNull { it.isCardNumber }
+                .firstOrNull(accepts)
             if (part != null) {
                 found.add(part)
                 start += part.groups.size
@@ -187,23 +297,6 @@ internal object CardNumberRuns {
             if (length in cardLengths && !isWhole) ends.add(end)
         }
         return ends
-    }
-
-    /** The groups of digits in [range]: the pieces between its spaces and dashes. */
-    private fun groups(text: String, range: IntRange): List<IntRange> {
-        val groups = mutableListOf<IntRange>()
-        var groupStart: Int? = null
-        for (index in range) {
-            val separates = text[index] == ' ' || text[index] == '-'
-            if (separates) {
-                groupStart?.let { groups.add(it until index) }
-                groupStart = null
-            } else if (groupStart == null) {
-                groupStart = index
-            }
-        }
-        groupStart?.let { groups.add(it..range.last) }
-        return groups
     }
 
     // Brands

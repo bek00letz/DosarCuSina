@@ -554,6 +554,502 @@
       "text" : "Card: 4111111111111111"
     },
     {
+      "contains" : true,
+      "lastFour" : "1111",
+      "lastFourStrict" : "1111",
+      "redacted" : "•••• 1111",
+      "strict" : "•••• 1111",
+      "text" : "4111.1111.1111.1111"
+    },
+    {
+      "contains" : true,
+      "lastFour" : "1111",
+      "lastFourStrict" : "1111",
+      "redacted" : "•••• 1111",
+      "strict" : "•••• 1111",
+      "text" : "4111/1111/1111/1111"
+    },
+    {
+      "contains" : true,
+      "lastFour" : "1111",
+      "lastFourStrict" : "1111",
+      "redacted" : "•••• 1111",
+      "strict" : "•••• 1111",
+      "text" : "4111  1111  1111  1111"
+    },
+    {
+      "contains" : true,
+      "lastFour" : "1111",
+      "lastFourStrict" : "1111",
+      "redacted" : "•••• 1111",
+      "strict" : "•••• 1111",
+      "text" : "4111   1111 1111  1111"
+    },
+    {
+      "contains" : true,
+      "lastFour" : "1111",
+      "lastFourStrict" : "1111",
+      "redacted" : "•••• 1111",
+      "strict" : "•••• 1111",
+      "text" : "4111 1111 1111 1111"
+    },
+    {
+      "contains" : true,
+      "lastFour" : "1111",
+      "lastFourStrict" : "1111",
+      "redacted" : "•••• 1111",
+      "strict" : "•••• 1111",
+      "text" : "4111\t1111\t1111\t1111"
+    },
+    {
+      "contains" : true,
+      "lastFour" : "1111",
+      "lastFourStrict" : "1111",
+      "redacted" : "•••• 1111",
+      "strict" : "•••• 1111",
+      "text" : "4111 1111 1111 1111"
+    },
+    {
+      "contains" : true,
+      "lastFour" : "1111",
+      "lastFourStrict" : "1111",
+      "redacted" : "•••• 1111",
+      "strict" : "•••• 1111",
+      "text" : "4111 - 1111 - 1111 - 1111"
+    },
+    {
+      "contains" : true,
+      "lastFour" : "1111",
+      "lastFourStrict" : "1111",
+      "redacted" : "•••• 1111",
+      "strict" : "•••• 1111",
+      "text" : "4111 / 1111 / 1111 / 1111"
+    },
+    {
+      "contains" : true,
+      "lastFour" : "4444",
+      "lastFourStrict" : "4444",
+      "redacted" : "Card: •••• 4444 azi",
+      "strict" : "Card: •••• 4444 azi",
+      "text" : "Card: 5555.5555.5555.4444 azi"
+    },
+    {
+      "contains" : true,
+      "lastFour" : "0005",
+      "lastFourStrict" : "0005",
+      "redacted" : "•••• 0005",
+      "strict" : "•••• 0005",
+      "text" : "3782.822463.10005"
+    },
+    {
+      "contains" : true,
+      "lastFour" : "0002",
+      "lastFourStrict" : "0002",
+      "redacted" : "•••• 0002",
+      "strict" : "•••• 0002",
+      "text" : "{luhn:4000.0000.0000.000}"
+    },
+    {
+      "contains" : true,
+      "lastFour" : "1111",
+      "lastFourStrict" : "1111",
+      "redacted" : "Ref 12/•••• 1111",
+      "strict" : "Ref 12/•••• 1111",
+      "text" : "Ref 12/4111/1111/1111/1111"
+    },
+    {
+      "contains" : true,
+      "lastFour" : "1111",
+      "lastFourStrict" : "1111",
+      "redacted" : "Nr. 12.•••• 1111 lei",
+      "strict" : "Nr. 12.•••• 1111 lei",
+      "text" : "Nr. 12.4111.1111.1111.1111 lei"
+    },
+    {
+      "contains" : true,
+      "lastFour" : "1111",
+      "lastFourStrict" : "1111",
+      "redacted" : "•••• 1111.pdf",
+      "strict" : "•••• 1111.pdf",
+      "text" : "4111.1111.1111.1111.pdf"
+    },
+    {
+      "contains" : true,
+      "lastFour" : "1111",
+      "lastFourStrict" : "1111",
+      "redacted" : "•••• 1111; •••• 4444",
+      "strict" : "•••• 1111; •••• 4444",
+      "text" : "4111.1111.1111.1111; 5555.5555.5555.4444"
+    },
+    {
+      "contains" : true,
+      "lastFour" : "1111",
+      "lastFourStrict" : "1111",
+      "redacted" : "Plată •••• 1111, 12.03.2026",
+      "strict" : "Plată •••• 1111, ••••",
+      "text" : "Plată 4111/1111/1111/1111, 12.03.2026"
+    },
+    {
+      "contains" : false,
+      "lastFour" : null,
+      "lastFourStrict" : "1112",
+      "redacted" : "4111.1111.1111.1112",
+      "strict" : "•••• 1112",
+      "text" : "4111.1111.1111.1112"
+    },
+    {
+      "contains" : false,
+      "lastFour" : null,
+      "lastFourStrict" : "1112",
+      "redacted" : "4111  1111  1111  1112",
+      "strict" : "•••• 1112",
+      "text" : "4111  1111  1111  1112"
+    },
+    {
+      "contains" : false,
+      "lastFour" : null,
+      "lastFourStrict" : null,
+      "redacted" : "4111.1111 1111/1111",
+      "strict" : "4111.••••/1111",
+      "text" : "4111.1111 1111/1111"
+    },
+    {
+      "contains" : false,
+      "lastFour" : null,
+      "lastFourStrict" : null,
+      "redacted" : "4111.1111-1111.1111",
+      "strict" : "4111.••••.1111",
+      "text" : "4111.1111-1111.1111"
+    },
+    {
+      "contains" : false,
+      "lastFour" : null,
+      "lastFourStrict" : null,
+      "redacted" : "Perioada 01.02.2026 - 28.02.2026",
+      "strict" : "Perioada •••• - ••••",
+      "text" : "Perioada 01.02.2026 - 28.02.2026"
+    },
+    {
+      "contains" : false,
+      "lastFour" : null,
+      "lastFourStrict" : null,
+      "redacted" : "30.05.2026 31.05.2026",
+      "strict" : "•••• ••••",
+      "text" : "30.05.2026 31.05.2026"
+    },
+    {
+      "contains" : false,
+      "lastFour" : null,
+      "lastFourStrict" : null,
+      "redacted" : "30.05.2026-30.06.2026",
+      "strict" : "••••-••••",
+      "text" : "30.05.2026-30.06.2026"
+    },
+    {
+      "contains" : false,
+      "lastFour" : null,
+      "lastFourStrict" : null,
+      "redacted" : "Data 31/12/2026 12:30",
+      "strict" : "Data •••• 12:30",
+      "text" : "Data 31/12/2026 12:30"
+    },
+    {
+      "contains" : false,
+      "lastFour" : null,
+      "lastFourStrict" : null,
+      "redacted" : "Suma 1.250.000 lei",
+      "strict" : "Suma 1.250.000 lei",
+      "text" : "Suma 1.250.000 lei"
+    },
+    {
+      "contains" : false,
+      "lastFour" : null,
+      "lastFourStrict" : "1111",
+      "redacted" : "4.111.111.111.111.111",
+      "strict" : "•••• 1111",
+      "text" : "4.111.111.111.111.111"
+    },
+    {
+      "contains" : false,
+      "lastFour" : null,
+      "lastFourStrict" : null,
+      "redacted" : "Versiunea 4.1.1.1",
+      "strict" : "Versiunea 4.1.1.1",
+      "text" : "Versiunea 4.1.1.1"
+    },
+    {
+      "contains" : false,
+      "lastFour" : null,
+      "lastFourStrict" : "0200",
+      "redacted" : "192.168.100.200",
+      "strict" : "•••• 0200",
+      "text" : "192.168.100.200"
+    },
+    {
+      "contains" : false,
+      "lastFour" : null,
+      "lastFourStrict" : null,
+      "redacted" : "B-123-ABC",
+      "strict" : "B-123-ABC",
+      "text" : "B-123-ABC"
+    },
+    {
+      "contains" : false,
+      "lastFour" : null,
+      "lastFourStrict" : "4800",
+      "redacted" : "4500   4600   4700   4800",
+      "strict" : "•••• 4800",
+      "text" : "4500   4600   4700   4800"
+    },
+    {
+      "contains" : false,
+      "lastFour" : null,
+      "lastFourStrict" : null,
+      "redacted" : "Tel 0722.123.456",
+      "strict" : "Tel ••••",
+      "text" : "Tel 0722.123.456"
+    },
+    {
+      "contains" : false,
+      "lastFour" : null,
+      "lastFourStrict" : "0001",
+      "redacted" : "8064.2000.0000.0000.0001",
+      "strict" : "•••• 0001",
+      "text" : "8064.2000.0000.0000.0001"
+    },
+    {
+      "contains" : false,
+      "lastFour" : null,
+      "lastFourStrict" : "5904",
+      "redacted" : "{luhn:3.0569309.02590}",
+      "strict" : "•••• 5904",
+      "text" : "{luhn:3.0569309.02590}"
+    },
+    {
+      "contains" : false,
+      "lastFour" : null,
+      "lastFourStrict" : null,
+      "redacted" : "scan 2026-03-15 10.45.12.pdf",
+      "strict" : "scan •••• 10.45.12.pdf",
+      "text" : "scan 2026-03-15 10.45.12.pdf"
+    },
+    {
+      "contains" : false,
+      "lastFour" : null,
+      "lastFourStrict" : "0000",
+      "redacted" : "RO49.AAAA.1B31.0075.9384.0000",
+      "strict" : "RO49.AAAA.1B•••• 0000",
+      "text" : "RO49.AAAA.1B31.0075.9384.0000"
+    },
+    {
+      "contains" : false,
+      "lastFour" : null,
+      "lastFourStrict" : "1111",
+      "redacted" : "RO00.AAAA.4111.1111.1111.1111",
+      "strict" : "RO00.AAAA.•••• 1111",
+      "text" : "RO00.AAAA.4111.1111.1111.1111"
+    },
+    {
+      "contains" : false,
+      "lastFour" : null,
+      "lastFourStrict" : "1111",
+      "redacted" : "RO00  AAAA  4111  1111  1111  1111",
+      "strict" : "RO00  AAAA  •••• 1111",
+      "text" : "RO00  AAAA  4111  1111  1111  1111"
+    },
+    {
+      "contains" : false,
+      "lastFour" : null,
+      "lastFourStrict" : "0006",
+      "redacted" : "CNP 1800101990006 / 4111",
+      "strict" : "CNP •••• 0006 / 4111",
+      "text" : "CNP 1800101990006 / 4111"
+    },
+    {
+      "contains" : true,
+      "lastFour" : "1111",
+      "lastFourStrict" : "1111",
+      "redacted" : "01.02.2026 •••• 1111",
+      "strict" : "•••• •••• 1111",
+      "text" : "01.02.2026 4111 1111 1111 1111"
+    },
+    {
+      "contains" : true,
+      "lastFour" : "1111",
+      "lastFourStrict" : "1111",
+      "redacted" : "01-02-2026 •••• 1111",
+      "strict" : "•••• •••• 1111",
+      "text" : "01-02-2026 4111 1111 1111 1111"
+    },
+    {
+      "contains" : true,
+      "lastFour" : "1111",
+      "lastFourStrict" : "1111",
+      "redacted" : "01/02/2026 •••• 1111",
+      "strict" : "•••• •••• 1111",
+      "text" : "01/02/2026 4111 1111 1111 1111"
+    },
+    {
+      "contains" : true,
+      "lastFour" : "1111",
+      "lastFourStrict" : "1111",
+      "redacted" : "2026-02-01 •••• 1111",
+      "strict" : "•••• •••• 1111",
+      "text" : "2026-02-01 4111 1111 1111 1111"
+    },
+    {
+      "contains" : true,
+      "lastFour" : "1111",
+      "lastFourStrict" : "1111",
+      "redacted" : "Plătit 01.02.2026 12:30 •••• 1111",
+      "strict" : "Plătit •••• 12:•••• 1111",
+      "text" : "Plătit 01.02.2026 12:30 4111 1111 1111 1111"
+    },
+    {
+      "contains" : true,
+      "lastFour" : "1111",
+      "lastFourStrict" : "1111",
+      "redacted" : "01.02.2026 14.30 •••• 1111",
+      "strict" : "•••• 14.30 •••• 1111",
+      "text" : "01.02.2026 14.30 4111 1111 1111 1111"
+    },
+    {
+      "contains" : true,
+      "lastFour" : "4444",
+      "lastFourStrict" : "4444",
+      "redacted" : "31.12.2026 •••• 4444",
+      "strict" : "•••• •••• 4444",
+      "text" : "31.12.2026 5555-5555-5555-4444"
+    },
+    {
+      "contains" : true,
+      "lastFour" : "1112",
+      "lastFourStrict" : "1112",
+      "redacted" : "01.02.2026 •••• 1112",
+      "strict" : "•••• •••• 1112",
+      "text" : "01.02.2026 4111 1111 1111 1112"
+    },
+    {
+      "contains" : true,
+      "lastFour" : "1111",
+      "lastFourStrict" : "1111",
+      "redacted" : "2/1/2026 •••• 1111",
+      "strict" : "2/1/2026 •••• 1111",
+      "text" : "2/1/2026 4111 1111 1111 1111"
+    },
+    {
+      "contains" : false,
+      "lastFour" : null,
+      "lastFourStrict" : "0001",
+      "redacted" : "01.02.2026 8064 2000 0000 0000 0001",
+      "strict" : "•••• •••• 0001",
+      "text" : "01.02.2026 8064 2000 0000 0000 0001"
+    },
+    {
+      "contains" : false,
+      "lastFour" : null,
+      "lastFourStrict" : "3456",
+      "redacted" : "01.02.2026 1234 5678 9012 3456",
+      "strict" : "•••• •••• 3456",
+      "text" : "01.02.2026 1234 5678 9012 3456"
+    },
+    {
+      "contains" : true,
+      "lastFour" : "1111",
+      "lastFourStrict" : "1111",
+      "redacted" : "01.02.2026 •••• 1111 0828",
+      "strict" : "•••• •••• 1111 0828",
+      "text" : "01.02.2026 4111 1111 1111 1111 0828"
+    },
+    {
+      "contains" : true,
+      "lastFour" : "1111",
+      "lastFourStrict" : "1111",
+      "redacted" : "•••• 1111",
+      "strict" : "•••• 1111",
+      "text" : "４１１１ １１１１ １１１１ １１１１"
+    },
+    {
+      "contains" : true,
+      "lastFour" : "4444",
+      "lastFourStrict" : "4444",
+      "redacted" : "Card •••• 4444",
+      "strict" : "Card •••• 4444",
+      "text" : "Card ５５５５５５５５５５５５４４４４"
+    },
+    {
+      "contains" : true,
+      "lastFour" : "1111",
+      "lastFourStrict" : "1111",
+      "redacted" : "•••• 1111",
+      "strict" : "•••• 1111",
+      "text" : "٤١١١ ١١١١ ١١١١ ١١١١"
+    },
+    {
+      "contains" : true,
+      "lastFour" : "1111",
+      "lastFourStrict" : "1111",
+      "redacted" : "•••• 1111",
+      "strict" : "•••• 1111",
+      "text" : "४१११-११११-११११-११११"
+    },
+    {
+      "contains" : true,
+      "lastFour" : "4444",
+      "lastFourStrict" : "4444",
+      "redacted" : "•••• 4444",
+      "strict" : "•••• 4444",
+      "text" : "𝟓𝟓𝟓𝟓 𝟓𝟓𝟓𝟓 𝟓𝟓𝟓𝟓 𝟒𝟒𝟒𝟒"
+    },
+    {
+      "contains" : true,
+      "lastFour" : "1111",
+      "lastFourStrict" : "1111",
+      "redacted" : "•••• 1111",
+      "strict" : "•••• 1111",
+      "text" : "4111 ١١١١ 1111 １１１１"
+    },
+    {
+      "contains" : true,
+      "lastFour" : "1111",
+      "lastFourStrict" : "1111",
+      "redacted" : "•••• 1111",
+      "strict" : "•••• 1111",
+      "text" : "４１１１.１１１１.１１１１.１１１１"
+    },
+    {
+      "contains" : true,
+      "lastFour" : "1112",
+      "lastFourStrict" : "1112",
+      "redacted" : "•••• 1112",
+      "strict" : "•••• 1112",
+      "text" : "４１１１ １１１１ １１１１ １１１２"
+    },
+    {
+      "contains" : false,
+      "lastFour" : null,
+      "lastFourStrict" : "1111",
+      "redacted" : "AB４１１１１１１１１１１１１１１１",
+      "strict" : "AB•••• 1111",
+      "text" : "AB４１１１１１１１１１１１１１１１"
+    },
+    {
+      "contains" : false,
+      "lastFour" : null,
+      "lastFourStrict" : "0006",
+      "redacted" : "CNP １８００１０１９９０００６",
+      "strict" : "CNP •••• 0006",
+      "text" : "CNP １８００１０１９９０００６"
+    },
+    {
+      "contains" : true,
+      "lastFour" : "1111",
+      "lastFourStrict" : "1111",
+      "redacted" : "•••• 1111 ０８２８",
+      "strict" : "•••• 0828",
+      "text" : "４１１１ １１１１ １１１１ １１１１ ０８２８"
+    },
+    {
       "contains" : false,
       "lastFour" : "4444",
       "lastFourStrict" : "4444",
@@ -612,9 +1108,9 @@
     {
       "contains" : false,
       "lastFour" : null,
-      "lastFourStrict" : null,
+      "lastFourStrict" : "9012",
       "redacted" : "Cod ١٢٣٤٥٦٧٨٩٠١٢",
-      "strict" : "Cod ••••",
+      "strict" : "Cod •••• 9012",
       "text" : "Cod ١٢٣٤٥٦٧٨٩٠١٢"
     },
     {
