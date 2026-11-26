@@ -11,15 +11,19 @@
     <!-- Backups: never Android's automatic cloud backup (25 MB per app would bring a
          binder back without its documents); phone-to-phone transfer brings it all.
          The way off the phone is a .dosar copy (docs/DECISIONS.md, 2026-11-25). -->
+    <!-- The app opens the binder as it starts (DosarApplication) and writes Romanian on every
+         phone (localeConfig: its one language). -->
     <application
+        android:name=".DosarApplication"
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
+        android:localeConfig="@xml/locales_config"
         android:supportsRtl="true"
         android:theme="@style/Theme.Dosar"
-        tools:targetApi="31">
+        tools:targetApi="33">
 
         <activity
             android:name=".MainActivity"

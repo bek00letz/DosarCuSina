@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The app's one language: Romanian, on every phone (AppLocale). The phone's settings offer no
+     other for the app. -->
+<locale-config xmlns:android="http://schemas.android.com/apk/res/android">
+    <locale android:name="ro" />
+</locale-config>
