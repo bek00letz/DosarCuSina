@@ -2,7 +2,7 @@ package com.ar.dosarcusina.archive.v3
 
 import com.ar.dosarcusina.core.values.JsonCodec
 import com.ar.dosarcusina.core.values.Money
-import com.ar.dosarcusina.core.values.RomanianText
+import com.ar.dosarcusina.core.values.ChoiceText
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
@@ -60,12 +60,8 @@ data class ChoiceOption(
     val aliases: List<String> = emptyList(),
     val appliesWhen: JsonElement? = null,
 ) {
-    /** Whether [text] names it: its key, or its label or an alias without case or diacritics. */
-    fun matches(text: String): Boolean {
-        if (text == key) return true
-        val needle = fold(text)
-        return needle.isNotEmpty() && (listOf(label) + aliases).any { fold(it) == needle }
-    }
+    /** Whether [text] names it: its key, or its label or an alias without case or diacritics ([ChoiceText]). */
+    fun matches(text: String): Boolean = ChoiceText.names(text, key, label, aliases)
 
     fun toJson(): JsonObject = jsonObject {
         put("key", key)
@@ -75,10 +71,6 @@ data class ChoiceOption(
     }
 
     companion object {
-        /** Folded, whitespace collapsed, signs kept ("A+" and "A-" stay apart). */
-        private fun fold(text: String): String =
-            RomanianText.fold(text).split(Regex("\\s+")).filter { it.isNotEmpty() }.joinToString(" ")
-
         /** An option as stored, or a plain string as older definitions listed them (its key and label). */
         fun read(json: JsonElement): ChoiceOption {
             if (json is JsonPrimitive && json.isString) return ChoiceOption(json.content, json.content)
