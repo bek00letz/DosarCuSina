@@ -102,6 +102,7 @@ The Android app is being ported by [docs/ANDROID_PLAN.md](docs/ANDROID_PLAN.md).
 | :--- | :--- |
 | `core` | Values and engines, in pure Kotlin (no Android), tested on the JVM. |
 | `archive` | The `.dosar` reader and writer, in pure Kotlin. |
+| `store` | The household database: Room on its bundled SQLite, in the iOS models' shape, tested on the JVM. Room's schema of every version is committed in `android/store/schemas/`; a change to what is stored is a new version there and a migration. |
 | `catalog` | The built-in catalog, in pure Kotlin: [shared/catalog/](shared/catalog/), which the iOS tests export, copied into its resources and read. |
 | `app` | The Android app, `com.ar.dosarcusina.app`: Compose with Material 3. |
 

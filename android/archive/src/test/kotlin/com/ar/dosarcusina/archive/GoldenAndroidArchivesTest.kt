@@ -48,12 +48,12 @@ class GoldenAndroidArchivesTest {
         "over it; then review the diff of expected/ and commit it with both archives. The iOS suite imports them."
 
     /** Imports into [binder] as the golden household was, at [IMPORTED_AT] in Bucharest. */
-    private fun importer(binder: InMemoryBinder) =
+    private fun importer(binder: TestBinder) =
         DossierArchiveService(binder, Catalog.builtIn, Clock.fixed(IMPORTED_AT, ZoneOffset.UTC)) { bucharest }
 
     /** The iOS golden household, brought into an empty binder. */
     private fun household(): Binder {
-        val binder = InMemoryBinder()
+        val binder = testBinder()
         importer(binder)
             .importArchive(
                 MemoryByteSource(File(golden, "ios/household.dosar").readBytes()),
@@ -120,7 +120,7 @@ class GoldenAndroidArchivesTest {
     @ValueSource(strings = ["household.dosar", "household-password.dosar"])
     fun bothAndroidGoldenArchivesComeBackWhole(name: String) {
         val password = if (name.contains("password")) GoldenContents.PASSWORD else null
-        val binder = InMemoryBinder()
+        val binder = testBinder()
         importer(binder)
             .importArchive(
                 MemoryByteSource(File(android, name).readBytes()),

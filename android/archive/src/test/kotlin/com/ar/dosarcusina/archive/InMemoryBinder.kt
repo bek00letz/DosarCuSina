@@ -10,22 +10,53 @@ import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import java.io.File
 import java.time.Instant
+import java.util.ServiceLoader
 
 /**
- * A binder kept in memory, for the tests: the archive target Phase 2's Room store will be. It
- * writes an import's changes everything or nothing, copies every file in as it writes it (so a
- * record never points at the import's staging folder once it is in), and keeps the locks.
+ * A binder an import writes into in the tests: what it holds, how many times an import wrote, and
+ * a way to fail the next write half way, to show that nothing of it stays.
  */
-class InMemoryBinder(initial: Binder = Binder()) : ArchiveTarget {
-    var binder: Binder = initial
-        private set
+interface TestBinder : ArchiveTarget {
+    /** What it holds now, as an import or a backup reads it. */
+    val binder: Binder
 
     /** How many times an import wrote. */
-    var applied = 0
+    val applied: Int
+
+    var failsNextWrite: Boolean
+}
+
+/**
+ * Makes the binders the tests write into. The importer's tests run twice: here, on [InMemoryBinder],
+ * and in :store, on the Room store, which registers its own (META-INF/services), so both stores
+ * pass the same tests.
+ */
+interface TestBinders {
+    fun make(initial: Binder): TestBinder
+}
+
+/** A binder holding [initial], for a test: the Room store's when :store runs the tests, else one in memory. */
+fun testBinder(initial: Binder = Binder()): TestBinder = binders.make(initial)
+
+private val binders: TestBinders by lazy {
+    ServiceLoader.load(TestBinders::class.java).firstOrNull() ?: object : TestBinders {
+        override fun make(initial: Binder): TestBinder = InMemoryBinder(initial)
+    }
+}
+
+/**
+ * A binder kept in memory, for the tests: the archive target as the Room store is one. It writes
+ * an import's changes everything or nothing, copies every file in as it writes it (so a record
+ * never points at the import's staging folder once it is in), and keeps the locks.
+ */
+class InMemoryBinder(initial: Binder = Binder()) : TestBinder {
+    override var binder: Binder = initial
         private set
 
-    /** Fails the next write half way, to show that nothing of it stays. */
-    var failsNextWrite = false
+    override var applied = 0
+        private set
+
+    override var failsNextWrite = false
 
     override fun snapshot(): Binder = binder
 

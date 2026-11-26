@@ -89,15 +89,15 @@ class ImportRulesTest {
     private fun <T> records(json: String, read: (kotlinx.serialization.json.JsonElement) -> T): List<T> =
         (MachineText.parse(json) as kotlinx.serialization.json.JsonArray).map(read)
 
-    private fun import(binder: InMemoryBinder, pack: DossierPackage, mode: ArchiveImportMode): ArchiveImportResult {
+    private fun import(binder: TestBinder, pack: DossierPackage, mode: ArchiveImportMode): ArchiveImportResult {
         val plan = DossierImporter(pack, binder.snapshot(), mode, now, ZoneOffset.UTC, Catalog.builtIn).run()
         binder.apply(plan.changes)
         return plan.result
     }
 
     /** A binder holding the household, with the card's PIN and a secret row sealed on this phone. */
-    private fun householdWithSecrets(): InMemoryBinder {
-        val binder = InMemoryBinder()
+    private fun householdWithSecrets(): TestBinder {
+        val binder = testBinder()
         import(binder, pack(), ArchiveImportMode.REPLACE)
         val home = binder.binder
         val cardId = UUID.fromString(card)
@@ -110,7 +110,7 @@ class ImportRulesTest {
             )
             asset.copy(values = values, customFacts = asset.customFacts.replacingEntries(rows))
         }
-        return InMemoryBinder(home.copy(assets = withSecrets))
+        return testBinder(home.copy(assets = withSecrets))
     }
 
     @Test
@@ -151,7 +151,7 @@ class ImportRulesTest {
             "\"document.number\"",
             "\"document.pinAuthentication\": {\"type\": \"text\", \"value\": \"0000\"}, \"note\": {\"type\": \"text\", \"value\": \"$sealedPin\"}, \"document.number\"",
         )
-        val binder = InMemoryBinder()
+        val binder = testBinder()
         import(binder, pack(assets = incoming), ArchiveImportMode.REPLACE)
         val card = binder.binder.assets.first { it.id == UUID.fromString(card) }
         assertNull(card.values.value["document.pinAuthentication"], "A secret field's value from an archive is never read")
@@ -166,7 +166,7 @@ class ImportRulesTest {
 
     @Test
     fun aBuiltInTakesTheCatalogsDefinitionWhateverTheArchiveSays() {
-        val binder = InMemoryBinder()
+        val binder = testBinder()
         import(binder, pack(), ArchiveImportMode.REPLACE)
         val documents = binder.binder.templates.first { it.key == "documents" }
         val catalog = Catalog.builtIn.definition("documents")!!
@@ -186,7 +186,7 @@ class ImportRulesTest {
 
     @Test
     fun choiceTextBecomesItsOptionsKey() {
-        val binder = InMemoryBinder()
+        val binder = testBinder()
         import(binder, pack(assets = assets(cardType = "buletin")), ArchiveImportMode.REPLACE)
         val card = binder.binder.assets.first { it.id == UUID.fromString(card) }
         assertEquals(FieldValue.Text("documentType.idCard"), card.values.value["document.type"])
@@ -195,7 +195,7 @@ class ImportRulesTest {
     @ParameterizedTest
     @EnumSource(ArchiveImportMode::class)
     fun aLockIsNeverMadeWeaker(mode: ArchiveImportMode) {
-        val binder = InMemoryBinder()
+        val binder = testBinder()
         import(binder, pack(), ArchiveImportMode.REPLACE)
         assertEquals(true, binder.binder.locks["documents"])
         val unlocked = categories.replace("\"isSensitive\": true", "\"isSensitive\": false")
@@ -212,7 +212,7 @@ class ImportRulesTest {
 
     @Test
     fun aLockFromTheArchiveIsKept() {
-        val binder = InMemoryBinder()
+        val binder = testBinder()
         import(binder, pack(), ArchiveImportMode.REPLACE)
         assertEquals(false, binder.binder.locks["member"])
         // The phone's copy stays (same change time), but the backup's lock still locks it.
@@ -223,7 +223,7 @@ class ImportRulesTest {
     @ParameterizedTest
     @EnumSource(ArchiveImportMode::class)
     fun sectionsFiledUnderEachOtherStayVisible(mode: ArchiveImportMode) {
-        val binder = InMemoryBinder()
+        val binder = testBinder()
         import(binder, pack(), ArchiveImportMode.REPLACE)
         val result =
             import(binder, pack(assets = assets(cardUpdated = "2026-11-25T00:00:00Z", parentOfPerson = card)), mode)
@@ -241,7 +241,7 @@ class ImportRulesTest {
 
     @Test
     fun aParentThatIsMissingLeavesTheSectionAtTheTop() {
-        val binder = InMemoryBinder()
+        val binder = testBinder()
         val result = import(binder, pack(assets = assets().replace("\"parentId\": \"$person\"", "\"parentId\": \"${UUID.randomUUID()}\"")), ArchiveImportMode.REPLACE)
         assertEquals(1, result.movedToTop)
         assertNull(binder.binder.assets.first { it.id == UUID.fromString(card) }.parentId)
@@ -249,10 +249,10 @@ class ImportRulesTest {
 
     @Test
     fun replacingEverythingRemovesWhatTheArchiveLacksAndKeepsTheRestInPlace() {
-        val binder = InMemoryBinder()
+        val binder = testBinder()
         import(binder, pack(), ArchiveImportMode.REPLACE)
         val onlyHere = binder.binder.assets.first().copy(id = UUID.randomUUID(), name = "Doar aici", parentId = null)
-        val here = InMemoryBinder(binder.binder.copy(assets = binder.binder.assets + onlyHere))
+        val here = testBinder(binder.binder.copy(assets = binder.binder.assets + onlyHere))
         val result = import(here, pack(), ArchiveImportMode.REPLACE)
         assertEquals(0, result.inserted)
         assertEquals(setOf("Ana", "Carte de identitate – Ana"), here.binder.assets.map { it.name }.toSet())
@@ -263,14 +263,14 @@ class ImportRulesTest {
         val firm = """[{"id": "cccccccc-cccc-4ccc-8ccc-cccccccccc01", "name": "Service Exemplu", "trades": ["mechanic"],
             "phone": "0700 000 001", "email": null, "assetIds": ["$card"], "isExample": false, "taxID": "RO012345678",
             "createdAt": "2026-01-01T00:00:00Z", "updatedAt": "UPDATED"}]"""
-        val binder = InMemoryBinder()
+        val binder = testBinder()
         import(binder, pack(providers = firm.replace("UPDATED", "2026-01-01T00:00:00Z")), ArchiveImportMode.REPLACE)
         assertEquals("12345678", binder.binder.providers.single().taxID, "A CUI is kept as its digits")
         val phoneCopy = binder.binder.providers.single().copy(
             phone = null, email = "nume@exemplu.ro", trades = listOf("tyreShop"), assetIds = listOf(UUID.fromString(person)),
             updatedAt = moment("2026-10-01T00:00:00Z"),
         )
-        val here = InMemoryBinder(binder.binder.copy(providers = listOf(phoneCopy)))
+        val here = testBinder(binder.binder.copy(providers = listOf(phoneCopy)))
         import(here, pack(providers = firm.replace("UPDATED", "2026-02-01T00:00:00Z")), ArchiveImportMode.MERGE)
         val joined = here.binder.providers.single()
         assertEquals("nume@exemplu.ro", joined.email, "The newer copy's details stand")
@@ -286,7 +286,7 @@ class ImportRulesTest {
             """{"id": "dddddddd-dddd-4ddd-8ddd-ddddddddddd$id", "issuerKey": "name:ENGIEROMANIASA",
             "issuerName": "ENGIE Romania S.A.", "kind": "utilityInvoice", "field": "$field", "label": "$label",
             "createdAt": "2026-01-01T00:00:00Z", "updatedAt": "2026-01-01T00:00:00Z"}"""
-        val binder = InMemoryBinder()
+        val binder = testBinder()
         val lessons = "[${lesson(1, "dueDate", "Ultima zi de plată")}, ${lesson(2, "total", "Total de plată")}, " +
             "${lesson(3, "issueDate", "Total de plată")}, ${lesson(4, "total", "Cod 1234")}]"
         import(binder, pack(lessons = lessons), ArchiveImportMode.REPLACE)
@@ -299,7 +299,7 @@ class ImportRulesTest {
             "heroStyle": "standard", "isBuiltIn": false, "version": 3, "homeOrder": 5, "isOnHome": true, "isSensitive": false,
             "sections": [], "blueprints": [], "behavior": {"box": "perSection", "singular": {"name": "Barca", "gender": "feminine"}},
             "createdAt": "2026-01-01T00:00:00Z", "updatedAt": "2026-01-01T00:00:00Z"}]"""
-        val binder = InMemoryBinder(Binder())
+        val binder = testBinder(Binder())
         import(binder, pack(templates = own, assets = "[]"), ArchiveImportMode.REPLACE)
         // The built-ins the archive doesn't name are installed beside it.
         val boats = binder.binder.templates.single { !it.isBuiltIn }

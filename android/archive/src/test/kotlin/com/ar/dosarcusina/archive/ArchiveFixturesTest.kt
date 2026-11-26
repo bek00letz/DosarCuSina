@@ -31,11 +31,11 @@ class ArchiveFixturesTest {
     private val bucharest: ZoneId = ZoneId.of("Europe/Bucharest")
     private val clock: Clock = Clock.fixed(moment("2026-11-26T10:00:00Z"), ZoneOffset.UTC)
 
-    private fun service(binder: InMemoryBinder) =
+    private fun service(binder: TestBinder) =
         DossierArchiveService(binder, Catalog.builtIn, clock = clock, zone = { bucharest })
 
     private fun import(
-        binder: InMemoryBinder,
+        binder: TestBinder,
         archive: ByteArray,
         mode: ArchiveImportMode = ArchiveImportMode.REPLACE,
     ) =
@@ -44,7 +44,7 @@ class ArchiveFixturesTest {
     @Test
     fun theV3FixtureImportsCompletely() {
         val archive = fixtureArchive("dosar-v3/household")
-        val binder = InMemoryBinder()
+        val binder = testBinder()
         val summary = service(binder).inspect(MemoryByteSource(archive))
         assertEquals(3, summary.schemaVersion)
         assertEquals(2, summary.counts.assets)
@@ -97,14 +97,14 @@ class ArchiveFixturesTest {
 
     @Test
     fun aMergeKeepsTheNewerEditAndWhatIsOnlyHere() {
-        val binder = InMemoryBinder()
+        val binder = testBinder()
         import(binder, fixtureArchive("dosar-v3/household"))
         val car = binder.binder.assets.first { it.name == "VW Golf" }
         val edited = car.copy(name = "VW Golf editat", updatedAt = moment("2026-10-01T12:00:00Z"))
         val local = car.copy(id = java.util.UUID.randomUUID(), name = "Doar aici", parentId = null)
         val before = binder.binder
         val withEdits =
-            InMemoryBinder(before.copy(assets = before.assets.map { if (it.id == car.id) edited else it } + local))
+            testBinder(before.copy(assets = before.assets.map { if (it.id == car.id) edited else it } + local))
 
         val result = import(withEdits, fixtureArchive("dosar-v3/household"), ArchiveImportMode.MERGE)
         assertTrue(result.skipped > 0)
@@ -116,7 +116,7 @@ class ArchiveFixturesTest {
 
     @Test
     fun aBackupWithoutChangeTimesNeverOverwritesAChangeHere() {
-        val binder = InMemoryBinder()
+        val binder = testBinder()
         import(binder, fixtureArchive("dosar-v3/household"))
         val now = binder.binder
         val noted = now.copy(
@@ -127,7 +127,7 @@ class ArchiveFixturesTest {
                 ) else it
             },
         )
-        val here = InMemoryBinder(noted)
+        val here = testBinder(noted)
         val result = import(here, fixtureArchive("dosar-v3/household"), ArchiveImportMode.MERGE)
         assertEquals(0, result.updated)
         assertTrue(here.binder.historyEntries.any { it.note == "Plăcuțe originale." })
@@ -135,7 +135,7 @@ class ArchiveFixturesTest {
 
     @Test
     fun aFailedImportLeavesEverythingAsItWas() {
-        val binder = InMemoryBinder()
+        val binder = testBinder()
         import(binder, fixtureArchive("dosar-v3/household"))
         val before = binder.binder
         val broken = fixtureArchive("dosar-v3/household") { files ->
@@ -155,7 +155,7 @@ class ArchiveFixturesTest {
 
     @Test
     fun checksumsAreEnforced() {
-        val binder = InMemoryBinder()
+        val binder = testBinder()
         val tampered = fixtureArchive("dosar-v3/household") { files ->
             files["data/obligations.json"] = files.getValue("data/obligations.json").decodeToString()
                 .replace("\"180\"", "\"18\"").encodeToByteArray()
@@ -212,7 +212,7 @@ class ArchiveFixturesTest {
 
     @Test
     fun firstGenerationBackupsStillImport() {
-        val binder = InMemoryBinder()
+        val binder = testBinder()
         import(binder, fixtureArchive("dosar-v2/ios-export"))
         val home = binder.binder
         val assets = home.assets.sortedBy { it.name }

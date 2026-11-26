@@ -39,3 +39,15 @@ tasks.test {
     systemProperty("dosar.goldenArchivesOut", goldenOut.get().asFile.path)
     doFirst { goldenOut.get().asFile.deleteRecursively() }
 }
+
+// The importer's tests, as classes: :store runs the ones that write into a binder again on the
+// Room store (testBinder() in InMemoryBinder.kt), so both stores pass the same tests.
+val importerTests by configurations.creating {
+    isCanBeConsumed = true
+    isCanBeResolved = false
+}
+artifacts {
+    add(importerTests.name, layout.buildDirectory.dir("classes/kotlin/test")) {
+        builtBy(tasks.named("compileTestKotlin"))
+    }
+}
