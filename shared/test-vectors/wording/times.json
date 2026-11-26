@@ -1,0 +1,48 @@
+{
+  "cases" : [
+    {
+      "minuteOfDay" : 0,
+      "text" : "00:00"
+    },
+    {
+      "minuteOfDay" : 5,
+      "text" : "00:05"
+    },
+    {
+      "minuteOfDay" : 59,
+      "text" : "00:59"
+    },
+    {
+      "minuteOfDay" : 60,
+      "text" : "01:00"
+    },
+    {
+      "minuteOfDay" : 540,
+      "text" : "09:00"
+    },
+    {
+      "minuteOfDay" : 750,
+      "text" : "12:30"
+    },
+    {
+      "minuteOfDay" : 1439,
+      "text" : "23:59"
+    },
+    {
+      "minuteOfDay" : 1440,
+      "text" : "23:59"
+    },
+    {
+      "minuteOfDay" : -1,
+      "text" : "00:00"
+    },
+    {
+      "minuteOfDay" : 2000,
+      "text" : "23:59"
+    }
+  ],
+  "rule" : "DosarFormat.time(minuteOfDay:calendar:)",
+  "shape" : "minuteOfDay: minutes after midnight (held to the day); text: the time.",
+  "source" : "ios/Shared/DosarFormat.swift",
+  "writtenBy" : "ios/DosarCuSinaTests/WordingVectorsTests.swift"
+}

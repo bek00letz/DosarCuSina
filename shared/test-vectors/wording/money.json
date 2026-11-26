@@ -1,0 +1,1016 @@
+{
+  "cases" : [
+    {
+      "amount" : "0",
+      "currency" : "RON",
+      "formatted" : "0,00 lei",
+      "formattedCompact" : "0 lei"
+    },
+    {
+      "amount" : "1",
+      "currency" : "RON",
+      "formatted" : "1,00 lei",
+      "formattedCompact" : "1 leu"
+    },
+    {
+      "amount" : "2",
+      "currency" : "RON",
+      "formatted" : "2,00 lei",
+      "formattedCompact" : "2 lei"
+    },
+    {
+      "amount" : "19",
+      "currency" : "RON",
+      "formatted" : "19,00 lei",
+      "formattedCompact" : "19 lei"
+    },
+    {
+      "amount" : "20",
+      "currency" : "RON",
+      "formatted" : "20,00 lei",
+      "formattedCompact" : "20 de lei"
+    },
+    {
+      "amount" : "21",
+      "currency" : "RON",
+      "formatted" : "21,00 lei",
+      "formattedCompact" : "21 de lei"
+    },
+    {
+      "amount" : "100",
+      "currency" : "RON",
+      "formatted" : "100,00 lei",
+      "formattedCompact" : "100 de lei"
+    },
+    {
+      "amount" : "101",
+      "currency" : "RON",
+      "formatted" : "101,00 lei",
+      "formattedCompact" : "101 lei"
+    },
+    {
+      "amount" : "102",
+      "currency" : "RON",
+      "formatted" : "102,00 lei",
+      "formattedCompact" : "102 lei"
+    },
+    {
+      "amount" : "119",
+      "currency" : "RON",
+      "formatted" : "119,00 lei",
+      "formattedCompact" : "119 lei"
+    },
+    {
+      "amount" : "120",
+      "currency" : "RON",
+      "formatted" : "120,00 lei",
+      "formattedCompact" : "120 de lei"
+    },
+    {
+      "amount" : "1250",
+      "currency" : "RON",
+      "formatted" : "1.250,00 lei",
+      "formattedCompact" : "1.250 de lei"
+    },
+    {
+      "amount" : "1000000",
+      "currency" : "RON",
+      "formatted" : "1.000.000,00 lei",
+      "formattedCompact" : "1.000.000 de lei"
+    },
+    {
+      "amount" : "1.5",
+      "currency" : "RON",
+      "formatted" : "1,50 lei",
+      "formattedCompact" : "1,50 lei"
+    },
+    {
+      "amount" : "1250.5",
+      "currency" : "RON",
+      "formatted" : "1.250,50 lei",
+      "formattedCompact" : "1.250,50 lei"
+    },
+    {
+      "amount" : "1250.55",
+      "currency" : "RON",
+      "formatted" : "1.250,55 lei",
+      "formattedCompact" : "1.250,55 lei"
+    },
+    {
+      "amount" : "0.125",
+      "currency" : "RON",
+      "formatted" : "0,12 lei",
+      "formattedCompact" : "0,12 lei"
+    },
+    {
+      "amount" : "0.135",
+      "currency" : "RON",
+      "formatted" : "0,14 lei",
+      "formattedCompact" : "0,14 lei"
+    },
+    {
+      "amount" : "2.675",
+      "currency" : "RON",
+      "formatted" : "2,68 lei",
+      "formattedCompact" : "2,68 lei"
+    },
+    {
+      "amount" : "-1",
+      "currency" : "RON",
+      "formatted" : "-1,00 lei",
+      "formattedCompact" : "-1 leu"
+    },
+    {
+      "amount" : "-12.5",
+      "currency" : "RON",
+      "formatted" : "-12,50 lei",
+      "formattedCompact" : "-12,50 lei"
+    },
+    {
+      "amount" : "-20",
+      "currency" : "RON",
+      "formatted" : "-20,00 lei",
+      "formattedCompact" : "-20 de lei"
+    },
+    {
+      "amount" : "0.001",
+      "currency" : "RON",
+      "formatted" : "0,00 lei",
+      "formattedCompact" : "0,00 lei"
+    },
+    {
+      "amount" : "-0.001",
+      "currency" : "RON",
+      "formatted" : "-0,00 lei",
+      "formattedCompact" : "-0,00 lei"
+    },
+    {
+      "amount" : "0",
+      "currency" : "EUR",
+      "formatted" : "0,00 EUR",
+      "formattedCompact" : "0 EUR"
+    },
+    {
+      "amount" : "1",
+      "currency" : "EUR",
+      "formatted" : "1,00 EUR",
+      "formattedCompact" : "1 EUR"
+    },
+    {
+      "amount" : "2",
+      "currency" : "EUR",
+      "formatted" : "2,00 EUR",
+      "formattedCompact" : "2 EUR"
+    },
+    {
+      "amount" : "19",
+      "currency" : "EUR",
+      "formatted" : "19,00 EUR",
+      "formattedCompact" : "19 EUR"
+    },
+    {
+      "amount" : "20",
+      "currency" : "EUR",
+      "formatted" : "20,00 EUR",
+      "formattedCompact" : "20 EUR"
+    },
+    {
+      "amount" : "21",
+      "currency" : "EUR",
+      "formatted" : "21,00 EUR",
+      "formattedCompact" : "21 EUR"
+    },
+    {
+      "amount" : "100",
+      "currency" : "EUR",
+      "formatted" : "100,00 EUR",
+      "formattedCompact" : "100 EUR"
+    },
+    {
+      "amount" : "101",
+      "currency" : "EUR",
+      "formatted" : "101,00 EUR",
+      "formattedCompact" : "101 EUR"
+    },
+    {
+      "amount" : "102",
+      "currency" : "EUR",
+      "formatted" : "102,00 EUR",
+      "formattedCompact" : "102 EUR"
+    },
+    {
+      "amount" : "119",
+      "currency" : "EUR",
+      "formatted" : "119,00 EUR",
+      "formattedCompact" : "119 EUR"
+    },
+    {
+      "amount" : "120",
+      "currency" : "EUR",
+      "formatted" : "120,00 EUR",
+      "formattedCompact" : "120 EUR"
+    },
+    {
+      "amount" : "1250",
+      "currency" : "EUR",
+      "formatted" : "1.250,00 EUR",
+      "formattedCompact" : "1.250 EUR"
+    },
+    {
+      "amount" : "1000000",
+      "currency" : "EUR",
+      "formatted" : "1.000.000,00 EUR",
+      "formattedCompact" : "1.000.000 EUR"
+    },
+    {
+      "amount" : "1.5",
+      "currency" : "EUR",
+      "formatted" : "1,50 EUR",
+      "formattedCompact" : "1,50 EUR"
+    },
+    {
+      "amount" : "1250.5",
+      "currency" : "EUR",
+      "formatted" : "1.250,50 EUR",
+      "formattedCompact" : "1.250,50 EUR"
+    },
+    {
+      "amount" : "1250.55",
+      "currency" : "EUR",
+      "formatted" : "1.250,55 EUR",
+      "formattedCompact" : "1.250,55 EUR"
+    },
+    {
+      "amount" : "0.125",
+      "currency" : "EUR",
+      "formatted" : "0,12 EUR",
+      "formattedCompact" : "0,12 EUR"
+    },
+    {
+      "amount" : "0.135",
+      "currency" : "EUR",
+      "formatted" : "0,14 EUR",
+      "formattedCompact" : "0,14 EUR"
+    },
+    {
+      "amount" : "2.675",
+      "currency" : "EUR",
+      "formatted" : "2,68 EUR",
+      "formattedCompact" : "2,68 EUR"
+    },
+    {
+      "amount" : "-1",
+      "currency" : "EUR",
+      "formatted" : "-1,00 EUR",
+      "formattedCompact" : "-1 EUR"
+    },
+    {
+      "amount" : "-12.5",
+      "currency" : "EUR",
+      "formatted" : "-12,50 EUR",
+      "formattedCompact" : "-12,50 EUR"
+    },
+    {
+      "amount" : "-20",
+      "currency" : "EUR",
+      "formatted" : "-20,00 EUR",
+      "formattedCompact" : "-20 EUR"
+    },
+    {
+      "amount" : "0.001",
+      "currency" : "EUR",
+      "formatted" : "0,00 EUR",
+      "formattedCompact" : "0,00 EUR"
+    },
+    {
+      "amount" : "-0.001",
+      "currency" : "EUR",
+      "formatted" : "-0,00 EUR",
+      "formattedCompact" : "-0,00 EUR"
+    },
+    {
+      "amount" : "0",
+      "currency" : "USD",
+      "formatted" : "0,00 USD",
+      "formattedCompact" : "0 USD"
+    },
+    {
+      "amount" : "1",
+      "currency" : "USD",
+      "formatted" : "1,00 USD",
+      "formattedCompact" : "1 USD"
+    },
+    {
+      "amount" : "2",
+      "currency" : "USD",
+      "formatted" : "2,00 USD",
+      "formattedCompact" : "2 USD"
+    },
+    {
+      "amount" : "19",
+      "currency" : "USD",
+      "formatted" : "19,00 USD",
+      "formattedCompact" : "19 USD"
+    },
+    {
+      "amount" : "20",
+      "currency" : "USD",
+      "formatted" : "20,00 USD",
+      "formattedCompact" : "20 USD"
+    },
+    {
+      "amount" : "21",
+      "currency" : "USD",
+      "formatted" : "21,00 USD",
+      "formattedCompact" : "21 USD"
+    },
+    {
+      "amount" : "100",
+      "currency" : "USD",
+      "formatted" : "100,00 USD",
+      "formattedCompact" : "100 USD"
+    },
+    {
+      "amount" : "101",
+      "currency" : "USD",
+      "formatted" : "101,00 USD",
+      "formattedCompact" : "101 USD"
+    },
+    {
+      "amount" : "102",
+      "currency" : "USD",
+      "formatted" : "102,00 USD",
+      "formattedCompact" : "102 USD"
+    },
+    {
+      "amount" : "119",
+      "currency" : "USD",
+      "formatted" : "119,00 USD",
+      "formattedCompact" : "119 USD"
+    },
+    {
+      "amount" : "120",
+      "currency" : "USD",
+      "formatted" : "120,00 USD",
+      "formattedCompact" : "120 USD"
+    },
+    {
+      "amount" : "1250",
+      "currency" : "USD",
+      "formatted" : "1.250,00 USD",
+      "formattedCompact" : "1.250 USD"
+    },
+    {
+      "amount" : "1000000",
+      "currency" : "USD",
+      "formatted" : "1.000.000,00 USD",
+      "formattedCompact" : "1.000.000 USD"
+    },
+    {
+      "amount" : "1.5",
+      "currency" : "USD",
+      "formatted" : "1,50 USD",
+      "formattedCompact" : "1,50 USD"
+    },
+    {
+      "amount" : "1250.5",
+      "currency" : "USD",
+      "formatted" : "1.250,50 USD",
+      "formattedCompact" : "1.250,50 USD"
+    },
+    {
+      "amount" : "1250.55",
+      "currency" : "USD",
+      "formatted" : "1.250,55 USD",
+      "formattedCompact" : "1.250,55 USD"
+    },
+    {
+      "amount" : "0.125",
+      "currency" : "USD",
+      "formatted" : "0,12 USD",
+      "formattedCompact" : "0,12 USD"
+    },
+    {
+      "amount" : "0.135",
+      "currency" : "USD",
+      "formatted" : "0,14 USD",
+      "formattedCompact" : "0,14 USD"
+    },
+    {
+      "amount" : "2.675",
+      "currency" : "USD",
+      "formatted" : "2,68 USD",
+      "formattedCompact" : "2,68 USD"
+    },
+    {
+      "amount" : "-1",
+      "currency" : "USD",
+      "formatted" : "-1,00 USD",
+      "formattedCompact" : "-1 USD"
+    },
+    {
+      "amount" : "-12.5",
+      "currency" : "USD",
+      "formatted" : "-12,50 USD",
+      "formattedCompact" : "-12,50 USD"
+    },
+    {
+      "amount" : "-20",
+      "currency" : "USD",
+      "formatted" : "-20,00 USD",
+      "formattedCompact" : "-20 USD"
+    },
+    {
+      "amount" : "0.001",
+      "currency" : "USD",
+      "formatted" : "0,00 USD",
+      "formattedCompact" : "0,00 USD"
+    },
+    {
+      "amount" : "-0.001",
+      "currency" : "USD",
+      "formatted" : "-0,00 USD",
+      "formattedCompact" : "-0,00 USD"
+    },
+    {
+      "amount" : "0",
+      "currency" : "GBP",
+      "formatted" : "0,00 GBP",
+      "formattedCompact" : "0 GBP"
+    },
+    {
+      "amount" : "1",
+      "currency" : "GBP",
+      "formatted" : "1,00 GBP",
+      "formattedCompact" : "1 GBP"
+    },
+    {
+      "amount" : "2",
+      "currency" : "GBP",
+      "formatted" : "2,00 GBP",
+      "formattedCompact" : "2 GBP"
+    },
+    {
+      "amount" : "19",
+      "currency" : "GBP",
+      "formatted" : "19,00 GBP",
+      "formattedCompact" : "19 GBP"
+    },
+    {
+      "amount" : "20",
+      "currency" : "GBP",
+      "formatted" : "20,00 GBP",
+      "formattedCompact" : "20 GBP"
+    },
+    {
+      "amount" : "21",
+      "currency" : "GBP",
+      "formatted" : "21,00 GBP",
+      "formattedCompact" : "21 GBP"
+    },
+    {
+      "amount" : "100",
+      "currency" : "GBP",
+      "formatted" : "100,00 GBP",
+      "formattedCompact" : "100 GBP"
+    },
+    {
+      "amount" : "101",
+      "currency" : "GBP",
+      "formatted" : "101,00 GBP",
+      "formattedCompact" : "101 GBP"
+    },
+    {
+      "amount" : "102",
+      "currency" : "GBP",
+      "formatted" : "102,00 GBP",
+      "formattedCompact" : "102 GBP"
+    },
+    {
+      "amount" : "119",
+      "currency" : "GBP",
+      "formatted" : "119,00 GBP",
+      "formattedCompact" : "119 GBP"
+    },
+    {
+      "amount" : "120",
+      "currency" : "GBP",
+      "formatted" : "120,00 GBP",
+      "formattedCompact" : "120 GBP"
+    },
+    {
+      "amount" : "1250",
+      "currency" : "GBP",
+      "formatted" : "1.250,00 GBP",
+      "formattedCompact" : "1.250 GBP"
+    },
+    {
+      "amount" : "1000000",
+      "currency" : "GBP",
+      "formatted" : "1.000.000,00 GBP",
+      "formattedCompact" : "1.000.000 GBP"
+    },
+    {
+      "amount" : "1.5",
+      "currency" : "GBP",
+      "formatted" : "1,50 GBP",
+      "formattedCompact" : "1,50 GBP"
+    },
+    {
+      "amount" : "1250.5",
+      "currency" : "GBP",
+      "formatted" : "1.250,50 GBP",
+      "formattedCompact" : "1.250,50 GBP"
+    },
+    {
+      "amount" : "1250.55",
+      "currency" : "GBP",
+      "formatted" : "1.250,55 GBP",
+      "formattedCompact" : "1.250,55 GBP"
+    },
+    {
+      "amount" : "0.125",
+      "currency" : "GBP",
+      "formatted" : "0,12 GBP",
+      "formattedCompact" : "0,12 GBP"
+    },
+    {
+      "amount" : "0.135",
+      "currency" : "GBP",
+      "formatted" : "0,14 GBP",
+      "formattedCompact" : "0,14 GBP"
+    },
+    {
+      "amount" : "2.675",
+      "currency" : "GBP",
+      "formatted" : "2,68 GBP",
+      "formattedCompact" : "2,68 GBP"
+    },
+    {
+      "amount" : "-1",
+      "currency" : "GBP",
+      "formatted" : "-1,00 GBP",
+      "formattedCompact" : "-1 GBP"
+    },
+    {
+      "amount" : "-12.5",
+      "currency" : "GBP",
+      "formatted" : "-12,50 GBP",
+      "formattedCompact" : "-12,50 GBP"
+    },
+    {
+      "amount" : "-20",
+      "currency" : "GBP",
+      "formatted" : "-20,00 GBP",
+      "formattedCompact" : "-20 GBP"
+    },
+    {
+      "amount" : "0.001",
+      "currency" : "GBP",
+      "formatted" : "0,00 GBP",
+      "formattedCompact" : "0,00 GBP"
+    },
+    {
+      "amount" : "-0.001",
+      "currency" : "GBP",
+      "formatted" : "-0,00 GBP",
+      "formattedCompact" : "-0,00 GBP"
+    },
+    {
+      "amount" : "0",
+      "currency" : "CHF",
+      "formatted" : "0,00 CHF",
+      "formattedCompact" : "0 CHF"
+    },
+    {
+      "amount" : "1",
+      "currency" : "CHF",
+      "formatted" : "1,00 CHF",
+      "formattedCompact" : "1 CHF"
+    },
+    {
+      "amount" : "2",
+      "currency" : "CHF",
+      "formatted" : "2,00 CHF",
+      "formattedCompact" : "2 CHF"
+    },
+    {
+      "amount" : "19",
+      "currency" : "CHF",
+      "formatted" : "19,00 CHF",
+      "formattedCompact" : "19 CHF"
+    },
+    {
+      "amount" : "20",
+      "currency" : "CHF",
+      "formatted" : "20,00 CHF",
+      "formattedCompact" : "20 CHF"
+    },
+    {
+      "amount" : "21",
+      "currency" : "CHF",
+      "formatted" : "21,00 CHF",
+      "formattedCompact" : "21 CHF"
+    },
+    {
+      "amount" : "100",
+      "currency" : "CHF",
+      "formatted" : "100,00 CHF",
+      "formattedCompact" : "100 CHF"
+    },
+    {
+      "amount" : "101",
+      "currency" : "CHF",
+      "formatted" : "101,00 CHF",
+      "formattedCompact" : "101 CHF"
+    },
+    {
+      "amount" : "102",
+      "currency" : "CHF",
+      "formatted" : "102,00 CHF",
+      "formattedCompact" : "102 CHF"
+    },
+    {
+      "amount" : "119",
+      "currency" : "CHF",
+      "formatted" : "119,00 CHF",
+      "formattedCompact" : "119 CHF"
+    },
+    {
+      "amount" : "120",
+      "currency" : "CHF",
+      "formatted" : "120,00 CHF",
+      "formattedCompact" : "120 CHF"
+    },
+    {
+      "amount" : "1250",
+      "currency" : "CHF",
+      "formatted" : "1.250,00 CHF",
+      "formattedCompact" : "1.250 CHF"
+    },
+    {
+      "amount" : "1000000",
+      "currency" : "CHF",
+      "formatted" : "1.000.000,00 CHF",
+      "formattedCompact" : "1.000.000 CHF"
+    },
+    {
+      "amount" : "1.5",
+      "currency" : "CHF",
+      "formatted" : "1,50 CHF",
+      "formattedCompact" : "1,50 CHF"
+    },
+    {
+      "amount" : "1250.5",
+      "currency" : "CHF",
+      "formatted" : "1.250,50 CHF",
+      "formattedCompact" : "1.250,50 CHF"
+    },
+    {
+      "amount" : "1250.55",
+      "currency" : "CHF",
+      "formatted" : "1.250,55 CHF",
+      "formattedCompact" : "1.250,55 CHF"
+    },
+    {
+      "amount" : "0.125",
+      "currency" : "CHF",
+      "formatted" : "0,12 CHF",
+      "formattedCompact" : "0,12 CHF"
+    },
+    {
+      "amount" : "0.135",
+      "currency" : "CHF",
+      "formatted" : "0,14 CHF",
+      "formattedCompact" : "0,14 CHF"
+    },
+    {
+      "amount" : "2.675",
+      "currency" : "CHF",
+      "formatted" : "2,68 CHF",
+      "formattedCompact" : "2,68 CHF"
+    },
+    {
+      "amount" : "-1",
+      "currency" : "CHF",
+      "formatted" : "-1,00 CHF",
+      "formattedCompact" : "-1 CHF"
+    },
+    {
+      "amount" : "-12.5",
+      "currency" : "CHF",
+      "formatted" : "-12,50 CHF",
+      "formattedCompact" : "-12,50 CHF"
+    },
+    {
+      "amount" : "-20",
+      "currency" : "CHF",
+      "formatted" : "-20,00 CHF",
+      "formattedCompact" : "-20 CHF"
+    },
+    {
+      "amount" : "0.001",
+      "currency" : "CHF",
+      "formatted" : "0,00 CHF",
+      "formattedCompact" : "0,00 CHF"
+    },
+    {
+      "amount" : "-0.001",
+      "currency" : "CHF",
+      "formatted" : "-0,00 CHF",
+      "formattedCompact" : "-0,00 CHF"
+    },
+    {
+      "amount" : "0",
+      "currency" : "MDL",
+      "formatted" : "0,00 MDL",
+      "formattedCompact" : "0 MDL"
+    },
+    {
+      "amount" : "1",
+      "currency" : "MDL",
+      "formatted" : "1,00 MDL",
+      "formattedCompact" : "1 MDL"
+    },
+    {
+      "amount" : "2",
+      "currency" : "MDL",
+      "formatted" : "2,00 MDL",
+      "formattedCompact" : "2 MDL"
+    },
+    {
+      "amount" : "19",
+      "currency" : "MDL",
+      "formatted" : "19,00 MDL",
+      "formattedCompact" : "19 MDL"
+    },
+    {
+      "amount" : "20",
+      "currency" : "MDL",
+      "formatted" : "20,00 MDL",
+      "formattedCompact" : "20 MDL"
+    },
+    {
+      "amount" : "21",
+      "currency" : "MDL",
+      "formatted" : "21,00 MDL",
+      "formattedCompact" : "21 MDL"
+    },
+    {
+      "amount" : "100",
+      "currency" : "MDL",
+      "formatted" : "100,00 MDL",
+      "formattedCompact" : "100 MDL"
+    },
+    {
+      "amount" : "101",
+      "currency" : "MDL",
+      "formatted" : "101,00 MDL",
+      "formattedCompact" : "101 MDL"
+    },
+    {
+      "amount" : "102",
+      "currency" : "MDL",
+      "formatted" : "102,00 MDL",
+      "formattedCompact" : "102 MDL"
+    },
+    {
+      "amount" : "119",
+      "currency" : "MDL",
+      "formatted" : "119,00 MDL",
+      "formattedCompact" : "119 MDL"
+    },
+    {
+      "amount" : "120",
+      "currency" : "MDL",
+      "formatted" : "120,00 MDL",
+      "formattedCompact" : "120 MDL"
+    },
+    {
+      "amount" : "1250",
+      "currency" : "MDL",
+      "formatted" : "1.250,00 MDL",
+      "formattedCompact" : "1.250 MDL"
+    },
+    {
+      "amount" : "1000000",
+      "currency" : "MDL",
+      "formatted" : "1.000.000,00 MDL",
+      "formattedCompact" : "1.000.000 MDL"
+    },
+    {
+      "amount" : "1.5",
+      "currency" : "MDL",
+      "formatted" : "1,50 MDL",
+      "formattedCompact" : "1,50 MDL"
+    },
+    {
+      "amount" : "1250.5",
+      "currency" : "MDL",
+      "formatted" : "1.250,50 MDL",
+      "formattedCompact" : "1.250,50 MDL"
+    },
+    {
+      "amount" : "1250.55",
+      "currency" : "MDL",
+      "formatted" : "1.250,55 MDL",
+      "formattedCompact" : "1.250,55 MDL"
+    },
+    {
+      "amount" : "0.125",
+      "currency" : "MDL",
+      "formatted" : "0,12 MDL",
+      "formattedCompact" : "0,12 MDL"
+    },
+    {
+      "amount" : "0.135",
+      "currency" : "MDL",
+      "formatted" : "0,14 MDL",
+      "formattedCompact" : "0,14 MDL"
+    },
+    {
+      "amount" : "2.675",
+      "currency" : "MDL",
+      "formatted" : "2,68 MDL",
+      "formattedCompact" : "2,68 MDL"
+    },
+    {
+      "amount" : "-1",
+      "currency" : "MDL",
+      "formatted" : "-1,00 MDL",
+      "formattedCompact" : "-1 MDL"
+    },
+    {
+      "amount" : "-12.5",
+      "currency" : "MDL",
+      "formatted" : "-12,50 MDL",
+      "formattedCompact" : "-12,50 MDL"
+    },
+    {
+      "amount" : "-20",
+      "currency" : "MDL",
+      "formatted" : "-20,00 MDL",
+      "formattedCompact" : "-20 MDL"
+    },
+    {
+      "amount" : "0.001",
+      "currency" : "MDL",
+      "formatted" : "0,00 MDL",
+      "formattedCompact" : "0,00 MDL"
+    },
+    {
+      "amount" : "-0.001",
+      "currency" : "MDL",
+      "formatted" : "-0,00 MDL",
+      "formattedCompact" : "-0,00 MDL"
+    },
+    {
+      "amount" : "0",
+      "currency" : "JPY",
+      "formatted" : "0,00 JPY",
+      "formattedCompact" : "0 JPY"
+    },
+    {
+      "amount" : "1",
+      "currency" : "JPY",
+      "formatted" : "1,00 JPY",
+      "formattedCompact" : "1 JPY"
+    },
+    {
+      "amount" : "2",
+      "currency" : "JPY",
+      "formatted" : "2,00 JPY",
+      "formattedCompact" : "2 JPY"
+    },
+    {
+      "amount" : "19",
+      "currency" : "JPY",
+      "formatted" : "19,00 JPY",
+      "formattedCompact" : "19 JPY"
+    },
+    {
+      "amount" : "20",
+      "currency" : "JPY",
+      "formatted" : "20,00 JPY",
+      "formattedCompact" : "20 JPY"
+    },
+    {
+      "amount" : "21",
+      "currency" : "JPY",
+      "formatted" : "21,00 JPY",
+      "formattedCompact" : "21 JPY"
+    },
+    {
+      "amount" : "100",
+      "currency" : "JPY",
+      "formatted" : "100,00 JPY",
+      "formattedCompact" : "100 JPY"
+    },
+    {
+      "amount" : "101",
+      "currency" : "JPY",
+      "formatted" : "101,00 JPY",
+      "formattedCompact" : "101 JPY"
+    },
+    {
+      "amount" : "102",
+      "currency" : "JPY",
+      "formatted" : "102,00 JPY",
+      "formattedCompact" : "102 JPY"
+    },
+    {
+      "amount" : "119",
+      "currency" : "JPY",
+      "formatted" : "119,00 JPY",
+      "formattedCompact" : "119 JPY"
+    },
+    {
+      "amount" : "120",
+      "currency" : "JPY",
+      "formatted" : "120,00 JPY",
+      "formattedCompact" : "120 JPY"
+    },
+    {
+      "amount" : "1250",
+      "currency" : "JPY",
+      "formatted" : "1.250,00 JPY",
+      "formattedCompact" : "1.250 JPY"
+    },
+    {
+      "amount" : "1000000",
+      "currency" : "JPY",
+      "formatted" : "1.000.000,00 JPY",
+      "formattedCompact" : "1.000.000 JPY"
+    },
+    {
+      "amount" : "1.5",
+      "currency" : "JPY",
+      "formatted" : "1,50 JPY",
+      "formattedCompact" : "1,50 JPY"
+    },
+    {
+      "amount" : "1250.5",
+      "currency" : "JPY",
+      "formatted" : "1.250,50 JPY",
+      "formattedCompact" : "1.250,50 JPY"
+    },
+    {
+      "amount" : "1250.55",
+      "currency" : "JPY",
+      "formatted" : "1.250,55 JPY",
+      "formattedCompact" : "1.250,55 JPY"
+    },
+    {
+      "amount" : "0.125",
+      "currency" : "JPY",
+      "formatted" : "0,12 JPY",
+      "formattedCompact" : "0,12 JPY"
+    },
+    {
+      "amount" : "0.135",
+      "currency" : "JPY",
+      "formatted" : "0,14 JPY",
+      "formattedCompact" : "0,14 JPY"
+    },
+    {
+      "amount" : "2.675",
+      "currency" : "JPY",
+      "formatted" : "2,68 JPY",
+      "formattedCompact" : "2,68 JPY"
+    },
+    {
+      "amount" : "-1",
+      "currency" : "JPY",
+      "formatted" : "-1,00 JPY",
+      "formattedCompact" : "-1 JPY"
+    },
+    {
+      "amount" : "-12.5",
+      "currency" : "JPY",
+      "formatted" : "-12,50 JPY",
+      "formattedCompact" : "-12,50 JPY"
+    },
+    {
+      "amount" : "-20",
+      "currency" : "JPY",
+      "formatted" : "-20,00 JPY",
+      "formattedCompact" : "-20 JPY"
+    },
+    {
+      "amount" : "0.001",
+      "currency" : "JPY",
+      "formatted" : "0,00 JPY",
+      "formattedCompact" : "0,00 JPY"
+    },
+    {
+      "amount" : "-0.001",
+      "currency" : "JPY",
+      "formatted" : "-0,00 JPY",
+      "formattedCompact" : "-0,00 JPY"
+    }
+  ],
+  "rule" : "Money.formatted() and formattedCompact()",
+  "shape" : "amount: in machine form; currency: its code; formatted: with two decimals; formattedCompact: without them when the amount is whole.",
+  "source" : "ios/DosarCuSina/Models/Values/Money.swift",
+  "writtenBy" : "ios/DosarCuSinaTests/WordingVectorsTests.swift"
+}

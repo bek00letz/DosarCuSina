@@ -1,0 +1,134 @@
+{
+  "cases" : [
+    {
+      "daysRemaining" : -1,
+      "phrase" : "depășit de o zi",
+      "standalone" : "Depășit de o zi",
+      "today" : "2026-11-26",
+      "urgency" : "overdue"
+    },
+    {
+      "daysRemaining" : -2,
+      "phrase" : "depășit de 2 zile",
+      "standalone" : "Depășit de 2 zile",
+      "today" : "2026-11-26",
+      "urgency" : "overdue"
+    },
+    {
+      "daysRemaining" : -21,
+      "phrase" : "depășit de 3 săptămâni",
+      "standalone" : "Depășit de 3 săptămâni",
+      "today" : "2026-11-26",
+      "urgency" : "overdue"
+    },
+    {
+      "daysRemaining" : -30,
+      "phrase" : "depășit de o lună",
+      "standalone" : "Depășit de o lună",
+      "today" : "2026-11-26",
+      "urgency" : "overdue"
+    },
+    {
+      "daysRemaining" : -400,
+      "phrase" : "depășit de un an și o lună",
+      "standalone" : "Depășit de un an și o lună",
+      "today" : "2026-11-26",
+      "urgency" : "overdue"
+    },
+    {
+      "daysRemaining" : -1,
+      "phrase" : "întârziat cu o zi",
+      "standalone" : "Întârziat cu o zi",
+      "today" : "2026-11-26",
+      "urgency" : "withinGrace"
+    },
+    {
+      "daysRemaining" : -3,
+      "phrase" : "întârziat cu 3 zile",
+      "standalone" : "Întârziat cu 3 zile",
+      "today" : "2026-11-26",
+      "urgency" : "withinGrace"
+    },
+    {
+      "daysRemaining" : 0,
+      "phrase" : "azi",
+      "standalone" : "Azi",
+      "today" : "2026-11-26",
+      "urgency" : "today"
+    },
+    {
+      "daysRemaining" : 1,
+      "phrase" : "mâine",
+      "standalone" : "Mâine",
+      "today" : "2026-11-26",
+      "urgency" : "soon"
+    },
+    {
+      "daysRemaining" : 2,
+      "phrase" : "în 2 zile",
+      "standalone" : "În 2 zile",
+      "today" : "2026-11-26",
+      "urgency" : "soon"
+    },
+    {
+      "daysRemaining" : 7,
+      "phrase" : "în 7 zile",
+      "standalone" : "În 7 zile",
+      "today" : "2026-11-26",
+      "urgency" : "soon"
+    },
+    {
+      "daysRemaining" : 1,
+      "phrase" : "mâine",
+      "standalone" : "Mâine",
+      "today" : "2026-11-26",
+      "urgency" : "upcoming"
+    },
+    {
+      "daysRemaining" : 14,
+      "phrase" : "în 14 zile",
+      "standalone" : "În 14 zile",
+      "today" : "2026-11-26",
+      "urgency" : "upcoming"
+    },
+    {
+      "daysRemaining" : 25,
+      "phrase" : "în 3 săptămâni",
+      "standalone" : "În 3 săptămâni",
+      "today" : "2026-11-26",
+      "urgency" : "upcoming"
+    },
+    {
+      "daysRemaining" : 1,
+      "phrase" : "mâine",
+      "standalone" : "Mâine",
+      "today" : "2026-11-26",
+      "urgency" : "later"
+    },
+    {
+      "daysRemaining" : 31,
+      "phrase" : "într-o lună",
+      "standalone" : "Într-o lună",
+      "today" : "2026-11-26",
+      "urgency" : "later"
+    },
+    {
+      "daysRemaining" : 60,
+      "phrase" : "într-o lună și 4 săptămâni",
+      "standalone" : "Într-o lună și 4 săptămâni",
+      "today" : "2026-11-26",
+      "urgency" : "later"
+    },
+    {
+      "daysRemaining" : 400,
+      "phrase" : "într-un an și o lună",
+      "standalone" : "Într-un an și o lună",
+      "today" : "2026-11-26",
+      "urgency" : "later"
+    }
+  ],
+  "rule" : "WhenWording.phrase and standalone",
+  "shape" : "urgency: as stored; today; daysRemaining; phrase: the words in a sentence; standalone: starting a line.",
+  "source" : "ios/Shared/DurationWording.swift",
+  "writtenBy" : "ios/DosarCuSinaTests/WordingVectorsTests.swift"
+}

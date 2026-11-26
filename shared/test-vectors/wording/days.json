@@ -1,0 +1,170 @@
+{
+  "cases" : [
+    {
+      "cardExpiry" : "01/25",
+      "day" : "2025-01-14",
+      "dayMonth" : "14 ianuarie",
+      "dayText" : "14 ian. 2025",
+      "isOnCalendar" : true,
+      "longDay" : "14 ianuarie 2025",
+      "monthYear" : "ianuarie 2025"
+    },
+    {
+      "cardExpiry" : "02/25",
+      "day" : "2025-02-14",
+      "dayMonth" : "14 februarie",
+      "dayText" : "14 feb. 2025",
+      "isOnCalendar" : true,
+      "longDay" : "14 februarie 2025",
+      "monthYear" : "februarie 2025"
+    },
+    {
+      "cardExpiry" : "03/25",
+      "day" : "2025-03-14",
+      "dayMonth" : "14 martie",
+      "dayText" : "14 mar. 2025",
+      "isOnCalendar" : true,
+      "longDay" : "14 martie 2025",
+      "monthYear" : "martie 2025"
+    },
+    {
+      "cardExpiry" : "04/25",
+      "day" : "2025-04-14",
+      "dayMonth" : "14 aprilie",
+      "dayText" : "14 apr. 2025",
+      "isOnCalendar" : true,
+      "longDay" : "14 aprilie 2025",
+      "monthYear" : "aprilie 2025"
+    },
+    {
+      "cardExpiry" : "05/25",
+      "day" : "2025-05-14",
+      "dayMonth" : "14 mai",
+      "dayText" : "14 mai 2025",
+      "isOnCalendar" : true,
+      "longDay" : "14 mai 2025",
+      "monthYear" : "mai 2025"
+    },
+    {
+      "cardExpiry" : "06/25",
+      "day" : "2025-06-14",
+      "dayMonth" : "14 iunie",
+      "dayText" : "14 iun. 2025",
+      "isOnCalendar" : true,
+      "longDay" : "14 iunie 2025",
+      "monthYear" : "iunie 2025"
+    },
+    {
+      "cardExpiry" : "07/25",
+      "day" : "2025-07-14",
+      "dayMonth" : "14 iulie",
+      "dayText" : "14 iul. 2025",
+      "isOnCalendar" : true,
+      "longDay" : "14 iulie 2025",
+      "monthYear" : "iulie 2025"
+    },
+    {
+      "cardExpiry" : "08/25",
+      "day" : "2025-08-14",
+      "dayMonth" : "14 august",
+      "dayText" : "14 aug. 2025",
+      "isOnCalendar" : true,
+      "longDay" : "14 august 2025",
+      "monthYear" : "august 2025"
+    },
+    {
+      "cardExpiry" : "09/25",
+      "day" : "2025-09-14",
+      "dayMonth" : "14 septembrie",
+      "dayText" : "14 sept. 2025",
+      "isOnCalendar" : true,
+      "longDay" : "14 septembrie 2025",
+      "monthYear" : "septembrie 2025"
+    },
+    {
+      "cardExpiry" : "10/25",
+      "day" : "2025-10-14",
+      "dayMonth" : "14 octombrie",
+      "dayText" : "14 oct. 2025",
+      "isOnCalendar" : true,
+      "longDay" : "14 octombrie 2025",
+      "monthYear" : "octombrie 2025"
+    },
+    {
+      "cardExpiry" : "11/25",
+      "day" : "2025-11-14",
+      "dayMonth" : "14 noiembrie",
+      "dayText" : "14 nov. 2025",
+      "isOnCalendar" : true,
+      "longDay" : "14 noiembrie 2025",
+      "monthYear" : "noiembrie 2025"
+    },
+    {
+      "cardExpiry" : "12/25",
+      "day" : "2025-12-14",
+      "dayMonth" : "14 decembrie",
+      "dayText" : "14 dec. 2025",
+      "isOnCalendar" : true,
+      "longDay" : "14 decembrie 2025",
+      "monthYear" : "decembrie 2025"
+    },
+    {
+      "cardExpiry" : "01/26",
+      "day" : "2026-01-05",
+      "dayMonth" : "5 ianuarie",
+      "dayText" : "5 ian. 2026",
+      "isOnCalendar" : true,
+      "longDay" : "5 ianuarie 2026",
+      "monthYear" : "ianuarie 2026"
+    },
+    {
+      "cardExpiry" : "02/24",
+      "day" : "2024-02-29",
+      "dayMonth" : "29 februarie",
+      "dayText" : "29 feb. 2024",
+      "isOnCalendar" : true,
+      "longDay" : "29 februarie 2024",
+      "monthYear" : "februarie 2024"
+    },
+    {
+      "cardExpiry" : "02/26",
+      "day" : "2026-02-30",
+      "dayMonth" : "30 februarie",
+      "dayText" : "30 feb. 2026",
+      "isOnCalendar" : false,
+      "longDay" : "30 februarie 2026",
+      "monthYear" : "februarie 2026"
+    },
+    {
+      "cardExpiry" : "12/99",
+      "day" : "1999-12-31",
+      "dayMonth" : "31 decembrie",
+      "dayText" : "31 dec. 1999",
+      "isOnCalendar" : true,
+      "longDay" : "31 decembrie 1999",
+      "monthYear" : "decembrie 1999"
+    },
+    {
+      "cardExpiry" : "07/00",
+      "day" : "2100-07-01",
+      "dayMonth" : "1 iulie",
+      "dayText" : "1 iul. 2100",
+      "isOnCalendar" : true,
+      "longDay" : "1 iulie 2100",
+      "monthYear" : "iulie 2100"
+    },
+    {
+      "cardExpiry" : "11/26",
+      "day" : "2026-11-01",
+      "dayMonth" : "1 noiembrie",
+      "dayText" : "1 nov. 2026",
+      "isOnCalendar" : true,
+      "longDay" : "1 noiembrie 2026",
+      "monthYear" : "noiembrie 2026"
+    }
+  ],
+  "rule" : "DosarFormat.day, longDay, dayMonth, monthYear and cardExpiry, for a CalendarDay",
+  "shape" : "day: as stored (one the calendar doesn't have is written with its own numbers); dayText, longDay, dayMonth, monthYear, cardExpiry: the words.",
+  "source" : "ios/Shared/DosarFormat.swift",
+  "writtenBy" : "ios/DosarCuSinaTests/WordingVectorsTests.swift"
+}
