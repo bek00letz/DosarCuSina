@@ -106,16 +106,17 @@ public struct CalendarDay: Hashable, Comparable, Sendable, Codable, CustomString
         // The clock on the wall shows that time on that day: the moment it shows it.
         let shown = calendar.dateComponents([.hour, .minute], from: written)
         if shown.hour == hour, shown.minute == minute { return written }
-        // A time the clocks skip: the first minute after the gap, never the same time an hour on
-        // (which is what `date(from:)` gives).
+        // A time the clocks skip: the first minute after the gap, the moment the clocks change,
+        // never the same time moved on by the gap (which is what `date(from:)` gives: 04:30 for
+        // 03:30 in Romania, 02:30 for 02:00 on Lord Howe Island, whose gap is half an hour).
+        // The change is the zone's last one before `written`, within the day.
         parts.hour = nil
         parts.minute = nil
         guard let dayStarts = calendar.date(from: parts),
-              let after = calendar.nextDate(after: dayStarts.addingTimeInterval(-1),
-                                            matching: DateComponents(hour: hour, minute: minute),
-                                            matchingPolicy: .nextTime, repeatedTimePolicy: .first, direction: .forward)
+              let change = calendar.timeZone.nextDaylightSavingTimeTransition(after: dayStarts.addingTimeInterval(-1)),
+              change <= written
         else { return written }
-        return after
+        return change
     }
 
     /// Noon on this day in `calendar`'s time zone. Stored dates use noon so the
