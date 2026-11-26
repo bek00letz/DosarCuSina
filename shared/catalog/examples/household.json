@@ -203,7 +203,9 @@
     {
       "record" : {
         "daysFromNow" : -500,
-        "firms" : [],
+        "firms" : [
+
+        ],
         "items" : [
           {
             "cost" : {
@@ -291,16 +293,22 @@
     {
       "section" : {
         "category" : "member",
-        "firstDue" : {},
+        "firstDue" : {
+
+        },
         "name" : "Eu",
         "ref" : "me",
-        "values" : {}
+        "values" : {
+
+        }
       }
     },
     {
       "section" : {
         "category" : "documents",
-        "firstDue" : {},
+        "firstDue" : {
+
+        },
         "name" : "Pașaport",
         "parent" : "me",
         "ref" : "passport",
@@ -323,7 +331,9 @@
     {
       "section" : {
         "category" : "documents",
-        "firstDue" : {},
+        "firstDue" : {
+
+        },
         "name" : "Carte de identitate",
         "parent" : "me",
         "ref" : "idCard",
@@ -363,7 +373,9 @@
     {
       "section" : {
         "category" : "purchase",
-        "firstDue" : {},
+        "firstDue" : {
+
+        },
         "name" : "Frigider",
         "parent" : "home",
         "ref" : "fridge",
@@ -391,7 +403,9 @@
     {
       "section" : {
         "category" : "purchase",
-        "firstDue" : {},
+        "firstDue" : {
+
+        },
         "name" : "Aragaz",
         "parent" : "home",
         "ref" : "cooker",
@@ -415,7 +429,9 @@
     {
       "section" : {
         "category" : "tenancy",
-        "firstDue" : {},
+        "firstDue" : {
+
+        },
         "name" : "Chiriaș garsonieră",
         "parent" : "home",
         "ref" : "tenancy",
@@ -470,7 +486,9 @@
     {
       "section" : {
         "category" : "subscription",
-        "firstDue" : {},
+        "firstDue" : {
+
+        },
         "name" : "Internet fibră",
         "ref" : "internet",
         "values" : {
@@ -501,7 +519,9 @@
     {
       "section" : {
         "category" : "subscription",
-        "firstDue" : {},
+        "firstDue" : {
+
+        },
         "name" : "Stocare online",
         "ref" : "storage",
         "values" : {
