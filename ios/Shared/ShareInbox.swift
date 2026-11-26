@@ -317,7 +317,7 @@ public struct ShareInbox: Sendable {
         }
         let input = try FileHandle(forReadingFrom: source)
         defer { try? input.close() }
-        guard FileManager.default.createFile(atPath: target.path(), contents: nil, attributes: protection) else {
+        guard FileManager.default.createFile(atPath: target.path(percentEncoded: false), contents: nil, attributes: protection) else {
             throw CocoaError(.fileWriteUnknown)
         }
         do {
@@ -598,7 +598,7 @@ public struct ShareInbox: Sendable {
     /// inbox not made yet holds nothing.
     private func folderNames() throws -> [String] {
         do {
-            return try FileManager.default.contentsOfDirectory(atPath: directory.path()).filter { !$0.hasPrefix(".") }
+            return try FileManager.default.contentsOfDirectory(atPath: directory.path(percentEncoded: false)).filter { !$0.hasPrefix(".") }
         } catch let error as CocoaError where Self.isNotNow(error) {
             throw error
         } catch {
@@ -626,7 +626,7 @@ public struct ShareInbox: Sendable {
               item.version <= InboxItem.currentVersion,
               folder.lastPathComponent == item.id.uuidString.lowercased(),
               !item.files.isEmpty,
-              item.files.allSatisfy({ FileManager.default.fileExists(atPath: folder.appending(path: $0).path()) })
+              item.files.allSatisfy({ FileManager.default.fileExists(atPath: folder.appending(path: $0).path(percentEncoded: false)) })
         else { return .damaged }
         return .item(item)
     }
@@ -659,10 +659,10 @@ public struct ShareInbox: Sendable {
         let fileManager = FileManager.default
         try? fileManager.createDirectory(at: asideFolder, withIntermediateDirectories: true, attributes: Self.protection)
         let target = asideFolder.appending(path: name)
-        if fileManager.fileExists(atPath: target.path()) { try? fileManager.removeItem(at: target) }
+        if fileManager.fileExists(atPath: target.path(percentEncoded: false)) { try? fileManager.removeItem(at: target) }
         do {
             try fileManager.moveItem(at: directory.appending(path: name), to: target)
-            try? fileManager.setAttributes([.modificationDate: now], ofItemAtPath: target.path())
+            try? fileManager.setAttributes([.modificationDate: now], ofItemAtPath: target.path(percentEncoded: false))
         } catch {
             // Can't move it: it stays where it is and is tried again next time.
         }
@@ -671,9 +671,9 @@ public struct ShareInbox: Sendable {
     /// Items set aside because they couldn't be opened, newest first.
     public func unreadable() -> [UnreadableInboxItem] {
         let fileManager = FileManager.default
-        let names = (try? fileManager.contentsOfDirectory(atPath: asideFolder.path())) ?? []
+        let names = (try? fileManager.contentsOfDirectory(atPath: asideFolder.path(percentEncoded: false))) ?? []
         return names.filter { !$0.hasPrefix(".") }.map { name in
-            let date = (try? fileManager.attributesOfItem(atPath: asideFolder.appending(path: name).path())[.modificationDate]) as? Date
+            let date = (try? fileManager.attributesOfItem(atPath: asideFolder.appending(path: name).path(percentEncoded: false))[.modificationDate]) as? Date
             return UnreadableInboxItem(id: name, setAsideAt: date ?? .distantPast)
         }
         .sorted { $0.setAsideAt > $1.setAsideAt }
@@ -683,7 +683,7 @@ public struct ShareInbox: Sendable {
     public func removeUnreadable(_ id: String) throws {
         guard !id.isEmpty, !id.contains("/"), !id.hasPrefix(".") else { return }
         let target = asideFolder.appending(path: id)
-        guard FileManager.default.fileExists(atPath: target.path()) else { return }
+        guard FileManager.default.fileExists(atPath: target.path(percentEncoded: false)) else { return }
         try FileManager.default.removeItem(at: target)
     }
 
@@ -710,7 +710,7 @@ public struct ShareInbox: Sendable {
     /// Does nothing for an item that has already left.
     public func savePreview(_ preview: InboxPreview, thumbnail: Data?, for item: InboxItem) throws {
         let folder = folder(for: item.id)
-        guard FileManager.default.fileExists(atPath: folder.path()) else { return }
+        guard FileManager.default.fileExists(atPath: folder.path(percentEncoded: false)) else { return }
         var preview = preview
         if let thumbnail {
             try thumbnail.write(to: folder.appending(path: Self.thumbnailName), options: [.atomic, .completeFileProtection])
@@ -722,13 +722,13 @@ public struct ShareInbox: Sendable {
     /// The item's first-page picture, when the app kept one.
     public func thumbnailURL(of item: InboxItem) -> URL? {
         let url = folder(for: item.id).appending(path: Self.thumbnailName)
-        return FileManager.default.fileExists(atPath: url.path()) ? url : nil
+        return FileManager.default.fileExists(atPath: url.path(percentEncoded: false)) ? url : nil
     }
 
     /// Removes an item once it was filed or dismissed. Removing a missing item is fine.
     public func remove(_ id: UUID) throws {
         let target = folder(for: id)
-        guard FileManager.default.fileExists(atPath: target.path()) else { return }
+        guard FileManager.default.fileExists(atPath: target.path(percentEncoded: false)) else { return }
         try FileManager.default.removeItem(at: target)
     }
 
@@ -744,10 +744,10 @@ public struct ShareInbox: Sendable {
     /// (`contents`). A folder that can't be looked at just now is left for the next time.
     public func removeAbandonedStaging(now: Date = Date()) {
         let fileManager = FileManager.default
-        let names = (try? fileManager.contentsOfDirectory(atPath: directory.path())) ?? []
+        let names = (try? fileManager.contentsOfDirectory(atPath: directory.path(percentEncoded: false))) ?? []
         for name in names where name.hasPrefix(Self.stagingPrefix) {
             let url = directory.appending(path: name)
-            guard let attributes = try? fileManager.attributesOfItem(atPath: url.path()) else { continue }
+            guard let attributes = try? fileManager.attributesOfItem(atPath: url.path(percentEncoded: false)) else { continue }
             let touched = [attributes[.creationDate], attributes[.modificationDate]].compactMap { $0 as? Date }.max()
             if let touched, now.timeIntervalSince(touched) > Self.longestShare {
                 try? fileManager.removeItem(at: url)
@@ -777,7 +777,7 @@ public struct ShareInbox: Sendable {
 
     static func protect(_ url: URL) {
         #if os(iOS)
-        try? FileManager.default.setAttributes([.protectionKey: FileProtectionType.complete], ofItemAtPath: url.path())
+        try? FileManager.default.setAttributes([.protectionKey: FileProtectionType.complete], ofItemAtPath: url.path(percentEncoded: false))
         #endif
     }
 
