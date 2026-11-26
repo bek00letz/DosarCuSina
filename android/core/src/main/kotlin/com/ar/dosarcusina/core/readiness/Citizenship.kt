@@ -1,6 +1,6 @@
 package com.ar.dosarcusina.core.readiness
 
-import com.ar.dosarcusina.core.values.ChoiceText
+import com.ar.dosarcusina.core.values.NamedChoice
 import kotlinx.serialization.json.JsonObject
 
 /** What the travel rules know of a person's citizenship, as the iOS app's `Citizenship.Group`, by its raw value. */
@@ -38,14 +38,12 @@ class Citizenship(
 ) {
     /** One choice: a country (with its [code] and whether its citizens [movesFreely]), or none. */
     data class Option(
-        val key: String,
-        val label: String,
-        val aliases: List<String>,
+        override val key: String,
+        override val label: String,
+        override val aliases: List<String>,
         val code: String?,
         val movesFreely: Boolean,
-    ) {
-        fun matches(text: String): Boolean = ChoiceText.names(text, key, label, aliases)
-    }
+    ) : NamedChoice
 
     private val countries: Map<String, Option> = options.filter { it.code != null }.associateBy { it.key }
 

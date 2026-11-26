@@ -1,8 +1,9 @@
 package com.ar.dosarcusina.core.readiness
 
 import com.ar.dosarcusina.core.values.CalendarDay
-import com.ar.dosarcusina.core.values.ChoiceText
 import com.ar.dosarcusina.core.values.MachineText
+import com.ar.dosarcusina.core.values.NamedChoice
+import com.ar.dosarcusina.core.values.option
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonNull
@@ -161,16 +162,19 @@ class DocumentTypes(
     val types: List<Type>,
     val variants: List<Variant>,
 ) {
-    data class Type(val key: String, val label: String, val aliases: List<String>, val travelMarginDays: Int)
+    data class Type(
+        override val key: String,
+        override val label: String,
+        override val aliases: List<String>,
+        val travelMarginDays: Int,
+    ) : NamedChoice
 
     data class Variant(val type: String, val key: String, val travels: Boolean, val travelEnds: CalendarDay?)
 
     /** The type a stored text names: its key, or a label an earlier version stored. */
     fun key(text: String?): String? {
         text ?: return null
-        val type = types.firstOrNull { it.key == text }
-            ?: types.firstOrNull { ChoiceText.names(text, it.key, it.label, it.aliases) }
-        return type?.key
+        return types.option(text)?.key
     }
 
     /** A document's type, from its values. */

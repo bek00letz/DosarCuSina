@@ -1,0 +1,418 @@
+{
+  "billingCycles" : [
+    {
+      "aliases" : [
+        "Săptămânală",
+        "Weekly"
+      ],
+      "interval" : {
+        "every" : 1,
+        "unit" : "week"
+      },
+      "key" : "billing.weekly",
+      "label" : "Săptămânal"
+    },
+    {
+      "aliases" : [
+        "Lunară",
+        "Monthly"
+      ],
+      "interval" : {
+        "every" : 1,
+        "unit" : "month"
+      },
+      "key" : "billing.monthly",
+      "label" : "Lunar"
+    },
+    {
+      "aliases" : [
+        "Trimestrială",
+        "Quarterly"
+      ],
+      "interval" : {
+        "every" : 3,
+        "unit" : "month"
+      },
+      "key" : "billing.quarterly",
+      "label" : "Trimestrial"
+    },
+    {
+      "aliases" : [
+        "Anuală",
+        "Yearly",
+        "Annual"
+      ],
+      "interval" : {
+        "every" : 1,
+        "unit" : "year"
+      },
+      "key" : "billing.yearly",
+      "label" : "Anual"
+    }
+  ],
+  "codes" : [
+    {
+      "captureKey" : "clientCode",
+      "comparedAs" : "compact",
+      "editFormCondition" : {
+        "field" : "subscription.service",
+        "oneOf" : [
+          "service.gas",
+          "service.electricity",
+          "service.water",
+          "service.heating",
+          "service.sanitation",
+          "service.internetTV",
+          "service.mobile",
+          "service.transport",
+          "service.other"
+        ],
+        "orWhenEmpty" : true
+      },
+      "family" : "customer",
+      "fieldKey" : "subscription.clientCode",
+      "homeFieldKeys" : [
+        "home.waterCode"
+      ],
+      "name" : "clientCode",
+      "namesOnePoint" : false,
+      "weight" : 20
+    },
+    {
+      "captureKey" : "contractNumber",
+      "comparedAs" : "compact",
+      "editFormCondition" : {
+        "field" : "subscription.service",
+        "oneOf" : [
+          "service.gas",
+          "service.electricity",
+          "service.water",
+          "service.heating",
+          "service.sanitation",
+          "service.internetTV",
+          "service.mobile",
+          "service.transport",
+          "service.other"
+        ],
+        "orWhenEmpty" : true
+      },
+      "family" : "contract",
+      "fieldKey" : "subscription.contractNumber",
+      "homeFieldKeys" : [
+
+      ],
+      "name" : "contractNumber",
+      "namesOnePoint" : false,
+      "weight" : 50
+    },
+    {
+      "captureKey" : "account",
+      "comparedAs" : "compact",
+      "editFormCondition" : {
+        "field" : "subscription.service",
+        "oneOf" : [
+          "service.internetTV",
+          "service.mobile"
+        ]
+      },
+      "family" : "customer",
+      "fieldKey" : "subscription.account",
+      "homeFieldKeys" : [
+
+      ],
+      "name" : "account",
+      "namesOnePoint" : false,
+      "weight" : 20
+    },
+    {
+      "captureKey" : "podCode",
+      "comparedAs" : "compact",
+      "editFormCondition" : {
+        "field" : "subscription.service",
+        "oneOf" : [
+          "service.electricity"
+        ]
+      },
+      "family" : "consumptionPoint",
+      "fieldKey" : "subscription.pod",
+      "homeFieldKeys" : [
+        "home.pod"
+      ],
+      "name" : "pod",
+      "namesOnePoint" : true,
+      "weight" : 100
+    },
+    {
+      "captureKey" : "clcCode",
+      "comparedAs" : "compact",
+      "editFormCondition" : {
+        "field" : "subscription.service",
+        "oneOf" : [
+          "service.gas"
+        ]
+      },
+      "family" : "consumptionPoint",
+      "fieldKey" : "subscription.clc",
+      "homeFieldKeys" : [
+        "home.clc"
+      ],
+      "name" : "clc",
+      "namesOnePoint" : true,
+      "weight" : 100
+    },
+    {
+      "captureKey" : "placeCode",
+      "comparedAs" : "compact",
+      "editFormCondition" : {
+        "field" : "subscription.service",
+        "oneOf" : [
+          "service.water",
+          "service.heating"
+        ]
+      },
+      "family" : "consumptionPoint",
+      "fieldKey" : "subscription.placeCode",
+      "homeFieldKeys" : [
+
+      ],
+      "name" : "placeCode",
+      "namesOnePoint" : true,
+      "weight" : 100
+    },
+    {
+      "captureKey" : "phoneNumber",
+      "comparedAs" : "nationalPhoneNumber",
+      "editFormCondition" : {
+        "field" : "subscription.service",
+        "oneOf" : [
+          "service.mobile"
+        ]
+      },
+      "family" : "line",
+      "fieldKey" : "subscription.phoneNumber",
+      "homeFieldKeys" : [
+
+      ],
+      "name" : "phoneNumber",
+      "namesOnePoint" : true,
+      "weight" : 100
+    }
+  ],
+  "groups" : [
+    {
+      "key" : "subscriptionGroup.utilities",
+      "label" : "Utilități"
+    },
+    {
+      "key" : "subscriptionGroup.internetAndPhone",
+      "label" : "Internet și telefon"
+    },
+    {
+      "key" : "subscriptionGroup.transport",
+      "label" : "Transport"
+    },
+    {
+      "key" : "subscriptionGroup.appsAndStreaming",
+      "label" : "Aplicații și streaming"
+    },
+    {
+      "key" : "subscriptionGroup.other",
+      "label" : "Altele"
+    }
+  ],
+  "services" : [
+    {
+      "aliases" : [
+        "Gaz",
+        "Gaze naturale"
+      ],
+      "codes" : [
+        "clc",
+        "clientCode",
+        "contractNumber"
+      ],
+      "group" : "subscriptionGroup.utilities",
+      "isTiedToHome" : true,
+      "key" : "service.gas",
+      "label" : "Gaze",
+      "meter" : "gas",
+      "modelDescription" : "natural gas",
+      "sendsRegularBills" : true
+    },
+    {
+      "aliases" : [
+        "Energie electrică",
+        "Electricitate"
+      ],
+      "codes" : [
+        "pod",
+        "clientCode",
+        "contractNumber"
+      ],
+      "group" : "subscriptionGroup.utilities",
+      "isTiedToHome" : true,
+      "key" : "service.electricity",
+      "label" : "Curent",
+      "meter" : "electricity",
+      "modelDescription" : "electricity",
+      "sendsRegularBills" : true
+    },
+    {
+      "aliases" : [
+        "Apă și canal",
+        "Apă-canal"
+      ],
+      "codes" : [
+        "placeCode",
+        "clientCode",
+        "contractNumber"
+      ],
+      "group" : "subscriptionGroup.utilities",
+      "isTiedToHome" : true,
+      "key" : "service.water",
+      "label" : "Apă",
+      "meter" : "coldWater",
+      "modelDescription" : "water and sewerage",
+      "sendsRegularBills" : true
+    },
+    {
+      "aliases" : [
+        "Încălzire",
+        "Termoficare",
+        "Energie termică",
+        "Agent termic"
+      ],
+      "codes" : [
+        "placeCode",
+        "clientCode",
+        "contractNumber"
+      ],
+      "group" : "subscriptionGroup.utilities",
+      "isTiedToHome" : true,
+      "key" : "service.heating",
+      "label" : "Căldură",
+      "meter" : null,
+      "modelDescription" : "district heating and hot water",
+      "sendsRegularBills" : true
+    },
+    {
+      "aliases" : [
+        "Salubrizare",
+        "Gunoi",
+        "Colectare deșeuri"
+      ],
+      "codes" : [
+        "clientCode",
+        "contractNumber"
+      ],
+      "group" : "subscriptionGroup.utilities",
+      "isTiedToHome" : true,
+      "key" : "service.sanitation",
+      "label" : "Salubritate",
+      "meter" : null,
+      "modelDescription" : "waste collection",
+      "sendsRegularBills" : true
+    },
+    {
+      "aliases" : [
+        "Internet",
+        "Televiziune",
+        "TV",
+        "Cablu",
+        "Telefonie fixă"
+      ],
+      "codes" : [
+        "clientCode",
+        "contractNumber",
+        "account"
+      ],
+      "group" : "subscriptionGroup.internetAndPhone",
+      "isTiedToHome" : true,
+      "key" : "service.internetTV",
+      "label" : "Internet și TV",
+      "meter" : null,
+      "modelDescription" : "fixed internet, TV or landline",
+      "sendsRegularBills" : true
+    },
+    {
+      "aliases" : [
+        "Mobil",
+        "Abonament mobil",
+        "Telefonie mobilă"
+      ],
+      "codes" : [
+        "phoneNumber",
+        "clientCode",
+        "contractNumber",
+        "account"
+      ],
+      "group" : "subscriptionGroup.internetAndPhone",
+      "isTiedToHome" : false,
+      "key" : "service.mobile",
+      "label" : "Telefon mobil",
+      "meter" : null,
+      "modelDescription" : "mobile phone plan",
+      "sendsRegularBills" : true
+    },
+    {
+      "aliases" : [
+        "Abonament transport",
+        "Transport public",
+        "Metrou",
+        "Parcare"
+      ],
+      "codes" : [
+        "clientCode",
+        "contractNumber"
+      ],
+      "group" : "subscriptionGroup.transport",
+      "isTiedToHome" : false,
+      "key" : "service.transport",
+      "label" : "Transport",
+      "meter" : null,
+      "modelDescription" : "public transport pass or parking",
+      "sendsRegularBills" : false
+    },
+    {
+      "aliases" : [
+        "Streaming",
+        "Aplicație",
+        "Aplicații"
+      ],
+      "codes" : [
+
+      ],
+      "group" : "subscriptionGroup.appsAndStreaming",
+      "isTiedToHome" : false,
+      "key" : "service.streaming",
+      "label" : "Aplicație sau streaming",
+      "meter" : null,
+      "modelDescription" : "app, streaming or online storage",
+      "sendsRegularBills" : false
+    },
+    {
+      "aliases" : [
+        "Altul",
+        "Altceva"
+      ],
+      "codes" : [
+        "clientCode",
+        "contractNumber"
+      ],
+      "group" : "subscriptionGroup.other",
+      "isTiedToHome" : false,
+      "key" : "service.other",
+      "label" : "Alt abonament",
+      "meter" : null,
+      "modelDescription" : "something else",
+      "sendsRegularBills" : false
+    }
+  ],
+  "unknownCycle" : {
+    "every" : 1,
+    "unit" : "month"
+  },
+  "unspecifiedGroup" : "subscriptionGroup.other",
+  "unspecifiedService" : "service.other",
+  "writtenBy" : "ios/DosarCuSinaTests/SubscriptionCatalogExportTests.swift"
+}

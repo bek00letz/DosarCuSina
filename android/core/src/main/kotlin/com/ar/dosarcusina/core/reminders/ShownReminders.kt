@@ -1,8 +1,8 @@
 package com.ar.dosarcusina.core.reminders
 
 import com.ar.dosarcusina.core.urgency.DeadlineSnapshot
-import com.ar.dosarcusina.core.urgency.DeadlineStatus
 import com.ar.dosarcusina.core.values.CalendarDay
+import com.ar.dosarcusina.core.values.ObligationStatus
 import java.util.UUID
 
 /** A reminder shown in the notification shade, as the system gives it back. */
@@ -49,7 +49,7 @@ object ShownReminders {
     fun openCycles(deadlines: List<DeadlineSnapshot>): Map<UUID, CalendarDay> {
         val cycles = LinkedHashMap<UUID, CalendarDay>()
         for (deadline in deadlines) {
-            if (deadline.status == DeadlineStatus.ACTIVE) {
+            if (deadline.status == ObligationStatus.ACTIVE) {
                 cycles.putIfAbsent(deadline.id, deadline.dueDay)
             }
         }

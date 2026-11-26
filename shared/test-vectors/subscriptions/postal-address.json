@@ -1,0 +1,574 @@
+{
+  "cases" : [
+    {
+      "address" : {
+        "apartment" : "12",
+        "block" : "a1",
+        "county" : [
+
+        ],
+        "locality" : [
+          "bucuresti"
+        ],
+        "number" : "1",
+        "sector" : "3",
+        "staircase" : "b",
+        "street" : [
+          "exemplului"
+        ],
+        "streetType" : "strada"
+      },
+      "text" : "Str. Exemplului nr. 1, bl. A1, sc. B, et. 3, ap. 12, Sector 3, București"
+    },
+    {
+      "address" : {
+        "apartment" : null,
+        "block" : null,
+        "county" : [
+          "exemplu"
+        ],
+        "locality" : [
+          "exemplu",
+          "exemplu"
+        ],
+        "number" : "12",
+        "sector" : null,
+        "staircase" : null,
+        "street" : [
+
+        ],
+        "streetType" : null
+      },
+      "text" : "Sat Exemplu nr. 12, Com. Exemplu, Jud. Exemplu"
+    },
+    {
+      "address" : null,
+      "text" : "Cod client 1000000000"
+    },
+    {
+      "address" : null,
+      "text" : "1234"
+    },
+    {
+      "address" : null,
+      "text" : "Index citit la locul de consum"
+    },
+    {
+      "address" : {
+        "apartment" : "12",
+        "block" : "a1",
+        "county" : [
+
+        ],
+        "locality" : [
+          "bucuresti"
+        ],
+        "number" : "1",
+        "sector" : "3",
+        "staircase" : "b",
+        "street" : [
+          "exemplului"
+        ],
+        "streetType" : "strada"
+      },
+      "text" : "STRADA EXEMPLULUI NR.1 BL.A1 SC.B AP.12 SECTOR 3 BUCUREȘTI"
+    },
+    {
+      "address" : {
+        "apartment" : "12",
+        "block" : "a1",
+        "county" : [
+
+        ],
+        "locality" : [
+          "bucuresti"
+        ],
+        "number" : "1",
+        "sector" : "3",
+        "staircase" : "b",
+        "street" : [
+          "exemplului"
+        ],
+        "streetType" : "strada"
+      },
+      "text" : "Str. Exemplului 1, bl. A 1, sc. b, ap. 12, sect. 3, Bucuresti"
+    },
+    {
+      "address" : {
+        "apartment" : null,
+        "block" : null,
+        "county" : [
+
+        ],
+        "locality" : [
+
+        ],
+        "number" : "2",
+        "sector" : null,
+        "staircase" : null,
+        "street" : [
+          "exemplului"
+        ],
+        "streetType" : "bulevardul"
+      },
+      "text" : "B-dul Exemplului nr. 2"
+    },
+    {
+      "address" : {
+        "apartment" : null,
+        "block" : null,
+        "county" : [
+
+        ],
+        "locality" : [
+
+        ],
+        "number" : "2",
+        "sector" : null,
+        "staircase" : null,
+        "street" : [
+          "exemplului"
+        ],
+        "streetType" : "bulevardul"
+      },
+      "text" : "Bulevardul Exemplului 2, România"
+    },
+    {
+      "address" : {
+        "apartment" : null,
+        "block" : null,
+        "county" : [
+
+        ],
+        "locality" : [
+
+        ],
+        "number" : "3",
+        "sector" : null,
+        "staircase" : null,
+        "street" : [
+          "al",
+          "i",
+          "cuza"
+        ],
+        "streetType" : "strada"
+      },
+      "text" : "Str. Al. I. Cuza nr. 3"
+    },
+    {
+      "address" : null,
+      "text" : "Exemplului 1, Brașov"
+    },
+    {
+      "address" : {
+        "apartment" : null,
+        "block" : null,
+        "county" : [
+
+        ],
+        "locality" : [
+
+        ],
+        "number" : "1",
+        "sector" : null,
+        "staircase" : null,
+        "street" : [
+          "exemplului"
+        ],
+        "streetType" : "strada"
+      },
+      "text" : "Str. Exemplului 1"
+    },
+    {
+      "address" : {
+        "apartment" : null,
+        "block" : null,
+        "county" : [
+
+        ],
+        "locality" : [
+
+        ],
+        "number" : "12a",
+        "sector" : null,
+        "staircase" : null,
+        "street" : [
+          "exemplului"
+        ],
+        "streetType" : "calea"
+      },
+      "text" : "Calea Exemplului nr. 12 A"
+    },
+    {
+      "address" : {
+        "apartment" : null,
+        "block" : null,
+        "county" : [
+
+        ],
+        "locality" : [
+
+        ],
+        "number" : "1",
+        "sector" : null,
+        "staircase" : null,
+        "street" : [
+          "exemplului"
+        ],
+        "streetType" : "strada"
+      },
+      "text" : "Str. Exemplului nr. 01"
+    },
+    {
+      "address" : {
+        "apartment" : null,
+        "block" : null,
+        "county" : [
+
+        ],
+        "locality" : [
+
+        ],
+        "number" : "1",
+        "sector" : null,
+        "staircase" : null,
+        "street" : [
+          "exemplului"
+        ],
+        "streetType" : "strada"
+      },
+      "text" : "Str. Exemplului nr. 1, cod poștal 012345"
+    },
+    {
+      "address" : {
+        "apartment" : "1",
+        "block" : "a1",
+        "county" : [
+
+        ],
+        "locality" : [
+
+        ],
+        "number" : null,
+        "sector" : null,
+        "staircase" : null,
+        "street" : [
+          "exemplu"
+        ],
+        "streetType" : "aleea"
+      },
+      "text" : "Aleea Exemplu bl. A 1 ap. 01, et. 0"
+    },
+    {
+      "address" : {
+        "apartment" : null,
+        "block" : null,
+        "county" : [
+
+        ],
+        "locality" : [
+
+        ],
+        "number" : null,
+        "sector" : "0",
+        "staircase" : null,
+        "street" : [
+          "exemplului"
+        ],
+        "streetType" : "strada"
+      },
+      "text" : "Strada Exemplului, sector 0"
+    },
+    {
+      "address" : {
+        "apartment" : null,
+        "block" : null,
+        "county" : [
+          "exemplu"
+        ],
+        "locality" : [
+          "exemplu"
+        ],
+        "number" : "3",
+        "sector" : null,
+        "staircase" : null,
+        "street" : [
+          "exemplului"
+        ],
+        "streetType" : "strada"
+      },
+      "text" : "Str. Exemplului nr 3; Mun. Exemplu; jud. Exemplu"
+    },
+    {
+      "address" : {
+        "apartment" : null,
+        "block" : null,
+        "county" : [
+
+        ],
+        "locality" : [
+          "exemplu"
+        ],
+        "number" : "7",
+        "sector" : null,
+        "staircase" : null,
+        "street" : [
+          "exemplu"
+        ],
+        "streetType" : "soseaua"
+      },
+      "text" : "Șos. Exemplu nr. 7 | Loc. Exemplu"
+    },
+    {
+      "address" : {
+        "apartment" : null,
+        "block" : null,
+        "county" : [
+
+        ],
+        "locality" : [
+
+        ],
+        "number" : "5",
+        "sector" : null,
+        "staircase" : null,
+        "street" : [
+          "exemplului"
+        ],
+        "streetType" : "strada"
+      },
+      "text" : "Str. Exemplului nr. 5 nr. 7"
+    },
+    {
+      "address" : null,
+      "text" : "Sat Exemplu, Com. Exemplu"
+    },
+    {
+      "address" : {
+        "apartment" : null,
+        "block" : null,
+        "county" : [
+
+        ],
+        "locality" : [
+
+        ],
+        "number" : null,
+        "sector" : null,
+        "staircase" : null,
+        "street" : [
+          "exemplului"
+        ],
+        "streetType" : "strada"
+      },
+      "text" : "Strada Exemplului"
+    },
+    {
+      "address" : {
+        "apartment" : null,
+        "block" : null,
+        "county" : [
+
+        ],
+        "locality" : [
+
+        ],
+        "number" : "4",
+        "sector" : null,
+        "staircase" : null,
+        "street" : [
+          "exemplu"
+        ],
+        "streetType" : null
+      },
+      "text" : "Exemplu nr. 4"
+    },
+    {
+      "address" : {
+        "apartment" : null,
+        "block" : null,
+        "county" : [
+
+        ],
+        "locality" : [
+          "exemplu"
+        ],
+        "number" : "3",
+        "sector" : null,
+        "staircase" : null,
+        "street" : [
+          "gh",
+          "exemplu"
+        ],
+        "streetType" : "strada"
+      },
+      "text" : "Str. Gh. Exemplu nr. 3, UAT Exemplu"
+    },
+    {
+      "address" : {
+        "apartment" : null,
+        "block" : null,
+        "county" : [
+
+        ],
+        "locality" : [
+
+        ],
+        "number" : "2b",
+        "sector" : null,
+        "staircase" : null,
+        "street" : [
+          "exemplu"
+        ],
+        "streetType" : "intrarea"
+      },
+      "text" : "Intr. Exemplu nr. 2B"
+    },
+    {
+      "address" : {
+        "apartment" : "3",
+        "block" : null,
+        "county" : [
+
+        ],
+        "locality" : [
+
+        ],
+        "number" : "1",
+        "sector" : "4",
+        "staircase" : null,
+        "street" : [
+          "exemplu"
+        ],
+        "streetType" : "splaiul"
+      },
+      "text" : "Splaiul Exemplu nr. 1, ap. 3\nSector 4"
+    },
+    {
+      "address" : {
+        "apartment" : null,
+        "block" : null,
+        "county" : [
+
+        ],
+        "locality" : [
+
+        ],
+        "number" : "5",
+        "sector" : null,
+        "staircase" : null,
+        "street" : [
+          "stefan",
+          "cel",
+          "mare"
+        ],
+        "streetType" : "strada"
+      },
+      "text" : "Str. Ştefan cel Mare nr. 5"
+    },
+    {
+      "address" : {
+        "apartment" : null,
+        "block" : "2",
+        "county" : [
+
+        ],
+        "locality" : [
+
+        ],
+        "number" : "9",
+        "sector" : null,
+        "staircase" : null,
+        "street" : [
+          "exemplu"
+        ],
+        "streetType" : "prelungirea"
+      },
+      "text" : "Prel. Exemplu 9, Bl. 2"
+    },
+    {
+      "address" : null,
+      "text" : ""
+    },
+    {
+      "address" : null,
+      "text" : "  "
+    },
+    {
+      "answer" : true,
+      "isMarker" : "Str."
+    },
+    {
+      "answer" : true,
+      "isMarker" : "nr"
+    },
+    {
+      "answer" : true,
+      "isMarker" : "BL."
+    },
+    {
+      "answer" : true,
+      "isMarker" : "sector"
+    },
+    {
+      "answer" : true,
+      "isMarker" : "Jud."
+    },
+    {
+      "answer" : false,
+      "isMarker" : "Exemplu"
+    },
+    {
+      "answer" : true,
+      "isMarker" : "ap"
+    },
+    {
+      "answer" : true,
+      "isMarker" : "UAT"
+    },
+    {
+      "answer" : true,
+      "isMarker" : "B-dul"
+    },
+    {
+      "answer" : false,
+      "isMarker" : "1"
+    },
+    {
+      "answer" : false,
+      "isMarker" : ""
+    },
+    {
+      "answer" : true,
+      "namesOnlyThePlace" : "Sector 3, București"
+    },
+    {
+      "answer" : true,
+      "namesOnlyThePlace" : "Jud. Brașov"
+    },
+    {
+      "answer" : false,
+      "namesOnlyThePlace" : "Str. Exemplului nr. 1"
+    },
+    {
+      "answer" : false,
+      "namesOnlyThePlace" : "Ap. 12"
+    },
+    {
+      "answer" : false,
+      "namesOnlyThePlace" : "Exemplu"
+    },
+    {
+      "answer" : true,
+      "namesOnlyThePlace" : "București"
+    },
+    {
+      "answer" : false,
+      "namesOnlyThePlace" : ""
+    }
+  ],
+  "rule" : "PostalAddress(_:), PostalAddress.isMarker(_:), PostalAddress.namesOnlyThePlace(_:)",
+  "shape" : "text: an address as printed; address: its parts (street words, street type, number, block, staircase, apartment, sector, locality words, county words, folded; null for a part not printed), or null when it names no place. isMarker: a word, and whether it marks a part of an address. namesOnlyThePlace: a line, and whether it names only where a street is.",
+  "source" : "ios/DosarCuSina/Services/Subscriptions/PostalAddress.swift",
+  "writtenBy" : "ios/DosarCuSinaTests/SubscriptionVectorsTests.swift"
+}

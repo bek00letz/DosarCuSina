@@ -1,0 +1,128 @@
+{
+  "cases" : [
+    {
+      "a" : "STRADA EXEMPLULUI NR.1 BL.A1 SC.B AP.12 SECTOR 3 BUCUREȘTI",
+      "agreement" : "same",
+      "b" : "Str. Exemplului 1, bl. A 1, sc. b, ap. 12, sect. 3, Bucuresti"
+    },
+    {
+      "a" : "Str. Ștefan cel Mare nr. 5",
+      "agreement" : "same",
+      "b" : "Strada Stefan cel Mare nr. 5"
+    },
+    {
+      "a" : "B-dul Exemplului nr. 2",
+      "agreement" : "same",
+      "b" : "Bulevardul Exemplului 2"
+    },
+    {
+      "a" : "Str. Gh. Exemplu nr. 3",
+      "agreement" : "same",
+      "b" : "Str. Gheorghe Exemplu nr. 3"
+    },
+    {
+      "a" : "Str. Exemplului nr. 01",
+      "agreement" : "same",
+      "b" : "Str. Exemplului nr. 1"
+    },
+    {
+      "a" : "Str. Exemplului nr. 12A",
+      "agreement" : "same",
+      "b" : "Str. Exemplului nr. 12 A"
+    },
+    {
+      "a" : "Str. Exemplului nr. 1, București",
+      "agreement" : "same",
+      "b" : "Str. Exemplului nr. 1"
+    },
+    {
+      "a" : "Str. Exemplului nr. 1",
+      "agreement" : "different",
+      "b" : "Str. Exemplului nr. 5"
+    },
+    {
+      "a" : "Str. Exemplului nr. 1, Brașov",
+      "agreement" : "different",
+      "b" : "Str. Exemplului nr. 1, Cluj-Napoca"
+    },
+    {
+      "a" : "Str. Exemplului nr. 1, Sector 3",
+      "agreement" : "different",
+      "b" : "Str. Exemplului nr. 1, Sector 4"
+    },
+    {
+      "a" : "Str. Exemplului nr. 1",
+      "agreement" : "different",
+      "b" : "Str. Alta nr. 1"
+    },
+    {
+      "a" : "Str. Exemplului nr. 1, bl. A1, ap. 12",
+      "agreement" : "different",
+      "b" : "Str. Exemplului nr. 1, bl. A1, ap. 14"
+    },
+    {
+      "a" : "Str. Exemplului nr. 1, bl. A1, sc. B, ap. 12",
+      "agreement" : "different",
+      "b" : "Str. Exemplului nr. 1, bl. A1, sc. C, ap. 12"
+    },
+    {
+      "a" : "Str. Exemplului nr. 1, bl. A1, ap. 12",
+      "agreement" : "same",
+      "b" : "Str. Exemplului nr. 1, bl. A1, sc. B, ap. 12"
+    },
+    {
+      "a" : "Str. Exemplului nr. 1, bl. A1",
+      "agreement" : "likely",
+      "b" : "Str. Exemplului nr. 1, bl. A1, ap. 12"
+    },
+    {
+      "a" : "Str. Exemplu nr. 3",
+      "agreement" : "likely",
+      "b" : "Str. Exemplului nr. 3"
+    },
+    {
+      "a" : "Strada Exemplului",
+      "agreement" : "likely",
+      "b" : "Strada Exemplului nr. 3"
+    },
+    {
+      "a" : "Calea Exemplului nr. 3",
+      "agreement" : "likely",
+      "b" : "Strada Exemplului nr. 3"
+    },
+    {
+      "a" : "Sat Exemplu nr. 12, Com. Exemplu",
+      "agreement" : "likely",
+      "b" : "Sat Exemplu nr. 12"
+    },
+    {
+      "a" : "Sat Exemplu nr. 12",
+      "agreement" : "different",
+      "b" : "Sat Altul nr. 12"
+    },
+    {
+      "a" : "Sat Exemplu nr. 12",
+      "agreement" : "different",
+      "b" : "Sat Exemplu nr. 14"
+    },
+    {
+      "a" : "Str. Exemplului nr. 5",
+      "agreement" : "likely",
+      "b" : "Str. Exemplului nr. 5, ap. 12"
+    },
+    {
+      "a" : "Str. Exemplelor nr. 5",
+      "agreement" : "different",
+      "b" : "Str. Exemplului nr. 5"
+    },
+    {
+      "a" : "Str. Ion Exemplu nr. 5",
+      "agreement" : "likely",
+      "b" : "Str. Exemplu nr. 5"
+    }
+  ],
+  "rule" : "PostalAddress.agreement(with:)",
+  "shape" : "a, b: two addresses as printed, each one that reads; agreement: how sure it is they name the same place (different, unknown, likely, same).",
+  "source" : "ios/DosarCuSina/Services/Subscriptions/PostalAddress.swift",
+  "writtenBy" : "ios/DosarCuSinaTests/SubscriptionVectorsTests.swift"
+}
