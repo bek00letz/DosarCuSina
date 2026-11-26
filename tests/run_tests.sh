@@ -86,12 +86,14 @@ LOG="$RESULTS/test.log"
 RESULT_BUNDLE="$RESULTS/DosarCuSinaTests.xcresult"
 rm -rf "$RESULT_BUNDLE"
 # GoldenArchiveTests leaves the golden archives as they should be here when the committed
-# ones are out of date, and CatalogExportTests the built-in catalog (shared/catalog/)
+# ones are out of date, CatalogExportTests the built-in catalog (shared/catalog/), and a
+# shared-case suite that writes there its folder of shared/test-vectors/
 # (xcodebuild hands TEST_RUNNER_ variables to the tests without the prefix).
 if [[ -n "${RESULTS_DIR:-}" ]]; then
-    rm -rf "$RESULTS/golden-archives" "$RESULTS/catalog"
+    rm -rf "$RESULTS/golden-archives" "$RESULTS/catalog" "$RESULTS/test-vectors"
     export TEST_RUNNER_GOLDEN_ARCHIVES_OUT="$RESULTS/golden-archives"
     export TEST_RUNNER_CATALOG_OUT="$RESULTS/catalog"
+    export TEST_RUNNER_VECTORS_OUT="$RESULTS/test-vectors"
 fi
 
 echo "iOS tests on $DESCRIPTION"
@@ -128,6 +130,9 @@ if [[ $STATUS -ne 0 ]]; then
     [[ -n "${RESULTS_DIR:-}" ]] && echo "The full log is $LOG, the result bundle $RESULT_BUNDLE." >&2
     if [[ -d "$RESULTS/golden-archives" ]]; then
         echo "The golden archives are out of date; made afresh in $RESULTS/golden-archives (copy over shared/fixtures/golden/ios/ and review the diff of expected/)." >&2
+    fi
+    if [[ -d "$RESULTS/test-vectors" ]]; then
+        echo "Shared test cases are out of date; made afresh in $RESULTS/test-vectors (copy each folder over shared/test-vectors/ and review the diff)." >&2
     fi
     exit "$STATUS"
 fi
