@@ -302,12 +302,12 @@ struct ReadinessTests {
 
     @Test func anOptionalCheckIsAnInvitationWhateverItsRuleFound() {
         for found in ReadinessStatus.allCases {
-            let item = ReadinessItem(id: "x", status: found, need: .optional, title: "X", detail: "")
+            let item = ReadinessItem(id: "x", status: found, need: .optional, title: .text("X"), detail: .text(""))
             switch found {
             case .ok, .reminder: #expect(item.status == found, "Ready stays ready, something to bring stays to bring")
             default: #expect(item.status == .suggested, "\(found) on an optional check reads as an invitation")
             }
-            #expect(ReadinessItem(id: "x", status: found, title: "X", detail: "").status == found, "A required check keeps what its rule found")
+            #expect(ReadinessItem(id: "x", status: found, title: .text("X"), detail: .text("")).status == found, "A required check keeps what its rule found")
         }
         #expect(!ReadinessStatus.suggested.needsAttention)
         #expect(ReadinessStatus.suggested.caption == "Opțional")

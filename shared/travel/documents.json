@@ -1,0 +1,183 @@
+{
+  "typeField" : "document.type",
+  "types" : [
+    {
+      "aliases" : [
+        "Buletin",
+        "CI",
+        "ID card"
+      ],
+      "key" : "documentType.idCard",
+      "label" : "Carte de identitate",
+      "travelMarginDays" : 0
+    },
+    {
+      "aliases" : [
+        "Pasaport",
+        "Passport"
+      ],
+      "key" : "documentType.passport",
+      "label" : "Pașaport",
+      "travelMarginDays" : 180
+    },
+    {
+      "aliases" : [
+        "Permis de sedere",
+        "Residence permit",
+        "Permis de ședere temporară",
+        "Permis de ședere pe termen lung",
+        "Carte de rezidență",
+        "Residence card"
+      ],
+      "key" : "documentType.residencePermit",
+      "label" : "Permis de ședere",
+      "travelMarginDays" : 0
+    },
+    {
+      "aliases" : [
+        "Permis",
+        "Driving licence"
+      ],
+      "key" : "documentType.drivingLicence",
+      "label" : "Permis de conducere",
+      "travelMarginDays" : 0
+    },
+    {
+      "aliases" : [
+        "CEASS",
+        "EHIC",
+        "Card european de asigurări sociale de sănătate"
+      ],
+      "key" : "documentType.euHealthCard",
+      "label" : "Card european de sănătate",
+      "travelMarginDays" : 0
+    },
+    {
+      "aliases" : [
+        "Card de sănătate",
+        "Cardul de sănătate",
+        "Card național de asigurări sociale de sănătate"
+      ],
+      "key" : "documentType.nationalHealthCard",
+      "label" : "Card național de sănătate",
+      "travelMarginDays" : 0
+    },
+    {
+      "aliases" : [
+        "Green card"
+      ],
+      "key" : "documentType.greenCard",
+      "label" : "Carte verde",
+      "travelMarginDays" : 0
+    },
+    {
+      "aliases" : [
+        "Card"
+      ],
+      "key" : "documentType.bankCard",
+      "label" : "Card bancar",
+      "travelMarginDays" : 0
+    },
+    {
+      "aliases" : [
+        "Certificat digital",
+        "Token"
+      ],
+      "key" : "documentType.eSignature",
+      "label" : "Semnătură electronică",
+      "travelMarginDays" : 0
+    },
+    {
+      "aliases" : [
+        "Cazier judiciar"
+      ],
+      "key" : "documentType.criminalRecord",
+      "label" : "Cazier",
+      "travelMarginDays" : 0
+    },
+    {
+      "aliases" : [
+        "Altul"
+      ],
+      "key" : "documentType.other",
+      "label" : "Alt document",
+      "travelMarginDays" : 0
+    }
+  ],
+  "variantField" : "document.variant",
+  "variants" : [
+    {
+      "key" : "documentVariant.idCard.electronic",
+      "travelEnds" : null,
+      "travels" : true,
+      "type" : "documentType.idCard"
+    },
+    {
+      "key" : "documentVariant.idCard.withoutChip",
+      "travelEnds" : "2031-08-02",
+      "travels" : true,
+      "type" : "documentType.idCard"
+    },
+    {
+      "key" : "documentVariant.idCard.simple",
+      "travelEnds" : null,
+      "travels" : false,
+      "type" : "documentType.idCard"
+    },
+    {
+      "key" : "documentVariant.passport.electronic",
+      "travelEnds" : null,
+      "travels" : true,
+      "type" : "documentType.passport"
+    },
+    {
+      "key" : "documentVariant.passport.temporary",
+      "travelEnds" : null,
+      "travels" : true,
+      "type" : "documentType.passport"
+    },
+    {
+      "key" : "documentVariant.residencePermit.residenceCard",
+      "travelEnds" : null,
+      "travels" : true,
+      "type" : "documentType.residencePermit"
+    },
+    {
+      "key" : "documentVariant.residencePermit.withdrawalAgreement",
+      "travelEnds" : null,
+      "travels" : true,
+      "type" : "documentType.residencePermit"
+    },
+    {
+      "key" : "documentVariant.bankCard.debit",
+      "travelEnds" : null,
+      "travels" : true,
+      "type" : "documentType.bankCard"
+    },
+    {
+      "key" : "documentVariant.bankCard.credit",
+      "travelEnds" : null,
+      "travels" : true,
+      "type" : "documentType.bankCard"
+    },
+    {
+      "key" : "documentVariant.criminalRecord.judicial",
+      "travelEnds" : null,
+      "travels" : true,
+      "type" : "documentType.criminalRecord"
+    },
+    {
+      "key" : "documentVariant.criminalRecord.fiscal",
+      "travelEnds" : null,
+      "travels" : true,
+      "type" : "documentType.criminalRecord"
+    },
+    {
+      "key" : "documentVariant.criminalRecord.driving",
+      "travelEnds" : null,
+      "travels" : true,
+      "type" : "documentType.criminalRecord"
+    }
+  ],
+  "writtenBy" : "ios/DosarCuSinaTests/TravelExportTests.swift"
+}

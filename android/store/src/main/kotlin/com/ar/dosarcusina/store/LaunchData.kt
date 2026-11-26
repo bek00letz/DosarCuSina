@@ -6,8 +6,10 @@ import com.ar.dosarcusina.archive.binder.Removed
 import com.ar.dosarcusina.catalog.BuiltInInstall
 import com.ar.dosarcusina.catalog.Catalog
 import com.ar.dosarcusina.core.values.DosarCalendar
+import com.ar.dosarcusina.core.values.CalendarDay
 import com.ar.dosarcusina.store.locks.LockPublishing
 import com.ar.dosarcusina.store.repairs.DataRepairCenter
+import com.ar.dosarcusina.store.templates.HouseholdDeadlines
 import java.time.Instant
 import java.time.ZoneId
 import java.util.UUID
@@ -16,15 +18,15 @@ import java.util.UUID
  * What launch does to the household's data, in this order, as the iOS app's `LaunchData`
  * (ios/DosarCuSina/App/LaunchData.swift): what a deletion let go put back with its holder
  * ([ParentLinks.rehome]), the built-in categories from the app's catalog ([BuiltInInstall]),
- * this phone's locks sent up ([LockPublishing]), then the repair list ([DataRepairCenter]). Each step
- * saves through the unit of work on its
- * own, as the app's own step ([ChangeOrigin.APP]: nothing it changes gets a new change time), so
- * one that fails takes back only its own changes and is tried again at the next launch. Nothing
- * here is the person's to answer, so nothing is shown; a failure goes to the persistence log, by
- * its kind and without any of the household's values, and the next step still runs.
+ * this phone's locks sent up ([LockPublishing]), then the repair list ([DataRepairCenter]). Each
+ * step saves through the unit of work on its own, as the app's own step ([ChangeOrigin.APP]: nothing
+ * it changes gets a new change time), so one that fails takes back only its own changes and is
+ * tried again at the next launch. Nothing here is the person's to answer, so nothing is shown; a
+ * failure goes to the persistence log, by its kind and without any of the household's values, and
+ * the next step still runs.
  *
- * The steps the iOS app runs between these (copies that meet, what capture learned, the
- * household's own deadlines) come with what they keep.
+ * Last, the household's own deadlines ([HouseholdDeadlines]). The steps the iOS app runs between
+ * these (copies that meet, what capture learned) come with what they keep.
  */
 class LaunchData(
     private val unit: UnitOfWork,
@@ -40,6 +42,7 @@ class LaunchData(
         BUILT_IN_CATEGORIES("Installing the built-in categories"),
         LOCK_PUBLISHING("Sending this device's locks to the others"),
         REPAIR_LIST("Refreshing the repair list"),
+        HOUSEHOLD_DEADLINES("Working out the household's own deadlines"),
     }
 
     /** Runs every step; gives the ones that failed, which the log names. */
@@ -50,6 +53,7 @@ class LaunchData(
                 LaunchStep.BUILT_IN_CATEGORIES -> installBuiltIns(now)
                 LaunchStep.LOCK_PUBLISHING -> publishLocks(now)
                 LaunchStep.REPAIR_LIST -> repairs.refresh(announce = true)
+                LaunchStep.HOUSEHOLD_DEADLINES -> reconcileHouseholdRules(now)
             }
         }
     }
@@ -101,6 +105,14 @@ class LaunchData(
         val rows = LockPublishing.toSend(step.all(Tables.templates), unit.store.locks, now)
         rows.forEach(step::update)
         rows.isNotEmpty()
+    }
+
+    /**
+     * The household's own deadlines worked out again from its sections ([HouseholdDeadlines]), as the
+     * app's own step: nothing it changes gets a new change time. Whether anything changed.
+     */
+    fun reconcileHouseholdRules(now: Instant): Boolean = unit.perform(ChangeOrigin.APP, now) { step ->
+        HouseholdDeadlines(catalog.household, zone()).reconcile(step, CalendarDay.of(now, zone()), now)
     }
 
     private fun <R> rowOfId(rows: List<R>, pair: (R) -> Pair<UUID, Long>): ParentLinks.RowOfId {
