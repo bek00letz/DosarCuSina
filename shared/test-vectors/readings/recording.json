@@ -1,0 +1,3828 @@
+{
+  "cases" : [
+    {
+      "name" : "a car's typo",
+      "outcomes" : [
+        {
+          "after" : [
+            {
+              "at" : "2026-03-01T10:00:00Z",
+              "basis" : "read",
+              "key" : "new",
+              "kind" : "odometer",
+              "startsCounter" : false,
+              "unit" : "km",
+              "value" : 4572
+            }
+          ],
+          "answer" : "correctOld",
+          "counterStart" : null,
+          "current" : 4572,
+          "recorded" : true,
+          "setAside" : [
+
+          ]
+        },
+        {
+          "after" : [
+            {
+              "at" : "2026-01-10T10:00:00Z",
+              "basis" : "read",
+              "key" : "1",
+              "kind" : "odometer",
+              "startsCounter" : false,
+              "unit" : "km",
+              "value" : 45724
+            },
+            {
+              "at" : "2026-03-01T10:00:00Z",
+              "basis" : "read",
+              "key" : "new",
+              "kind" : "odometer",
+              "startsCounter" : false,
+              "unit" : "km",
+              "value" : 4572
+            }
+          ],
+          "answer" : "keepAside",
+          "counterStart" : null,
+          "current" : 45724,
+          "recorded" : true,
+          "setAside" : [
+            4572
+          ]
+        },
+        {
+          "after" : [
+            {
+              "at" : "2026-01-10T10:00:00Z",
+              "basis" : "read",
+              "key" : "1",
+              "kind" : "odometer",
+              "startsCounter" : false,
+              "unit" : "km",
+              "value" : 45724
+            },
+            {
+              "at" : "2026-03-01T10:00:00Z",
+              "basis" : "read",
+              "key" : "new",
+              "kind" : "odometer",
+              "startsCounter" : true,
+              "unit" : "km",
+              "value" : 4572
+            }
+          ],
+          "answer" : "newCounter",
+          "counterStart" : 4572,
+          "current" : 4572,
+          "recorded" : true,
+          "setAside" : [
+
+          ]
+        }
+      ],
+      "planned" : {
+        "at" : "2026-03-01T10:00:00Z",
+        "basis" : null,
+        "kind" : null,
+        "numberKind" : "kilometres",
+        "replaces" : [
+
+        ],
+        "source" : "person",
+        "typed" : null,
+        "unit" : "km",
+        "value" : 4572
+      },
+      "plannedAs" : {
+        "basis" : "read",
+        "continuesCounter" : false,
+        "isStored" : true,
+        "kind" : "odometer",
+        "unit" : "km",
+        "value" : 4572
+      },
+      "question" : {
+        "answers" : [
+          "correctOld",
+          "keepAside",
+          "newCounter"
+        ],
+        "previous" : 45724,
+        "previousAt" : "2026-01-10T10:00:00Z",
+        "unit" : "km",
+        "value" : 4572
+      },
+      "readings" : [
+        {
+          "at" : "2026-01-10T10:00:00Z",
+          "basis" : "read",
+          "key" : 1,
+          "kind" : "odometer",
+          "startsCounter" : false,
+          "unit" : "km",
+          "value" : 45724
+        }
+      ]
+    },
+    {
+      "name" : "a car's dashboard replaced",
+      "outcomes" : [
+        {
+          "after" : [
+            {
+              "at" : "2026-01-10T10:00:00Z",
+              "basis" : null,
+              "key" : "1",
+              "kind" : "odometer",
+              "startsCounter" : false,
+              "unit" : "km",
+              "value" : 145000
+            },
+            {
+              "at" : "2026-03-01T10:00:00Z",
+              "basis" : "read",
+              "key" : "new",
+              "kind" : "odometer",
+              "startsCounter" : true,
+              "unit" : "km",
+              "value" : 1200
+            }
+          ],
+          "answer" : "newCounter",
+          "counterStart" : 1200,
+          "current" : 1200,
+          "recorded" : true,
+          "setAside" : [
+
+          ]
+        },
+        {
+          "after" : [
+            {
+              "at" : "2026-03-01T10:00:00Z",
+              "basis" : "read",
+              "key" : "new",
+              "kind" : "odometer",
+              "startsCounter" : false,
+              "unit" : "km",
+              "value" : 1200
+            }
+          ],
+          "answer" : "correctOld",
+          "counterStart" : null,
+          "current" : 1200,
+          "recorded" : true,
+          "setAside" : [
+
+          ]
+        },
+        {
+          "after" : [
+            {
+              "at" : "2026-01-10T10:00:00Z",
+              "basis" : null,
+              "key" : "1",
+              "kind" : "odometer",
+              "startsCounter" : false,
+              "unit" : "km",
+              "value" : 145000
+            },
+            {
+              "at" : "2026-03-01T10:00:00Z",
+              "basis" : "read",
+              "key" : "new",
+              "kind" : "odometer",
+              "startsCounter" : false,
+              "unit" : "km",
+              "value" : 1200
+            }
+          ],
+          "answer" : "keepAside",
+          "counterStart" : null,
+          "current" : 145000,
+          "recorded" : true,
+          "setAside" : [
+            1200
+          ]
+        }
+      ],
+      "planned" : {
+        "at" : "2026-03-01T10:00:00Z",
+        "basis" : null,
+        "kind" : null,
+        "numberKind" : "kilometres",
+        "replaces" : [
+
+        ],
+        "source" : "person",
+        "typed" : null,
+        "unit" : "km",
+        "value" : 1200
+      },
+      "plannedAs" : {
+        "basis" : "read",
+        "continuesCounter" : false,
+        "isStored" : true,
+        "kind" : "odometer",
+        "unit" : "km",
+        "value" : 1200
+      },
+      "question" : {
+        "answers" : [
+          "newCounter",
+          "correctOld",
+          "keepAside"
+        ],
+        "previous" : 145000,
+        "previousAt" : "2026-01-10T10:00:00Z",
+        "unit" : "km",
+        "value" : 1200
+      },
+      "readings" : [
+        {
+          "at" : "2026-01-10T10:00:00Z",
+          "basis" : null,
+          "key" : 1,
+          "kind" : "odometer",
+          "startsCounter" : false,
+          "unit" : "km",
+          "value" : 145000
+        }
+      ]
+    },
+    {
+      "name" : "a car's small drop",
+      "outcomes" : [
+        {
+          "after" : [
+            {
+              "at" : "2026-01-10T10:00:00Z",
+              "basis" : "read",
+              "key" : "1",
+              "kind" : "odometer",
+              "startsCounter" : false,
+              "unit" : "km",
+              "value" : 100000
+            },
+            {
+              "at" : "2026-05-10T10:00:00Z",
+              "basis" : "read",
+              "key" : "new",
+              "kind" : "odometer",
+              "startsCounter" : false,
+              "unit" : "km",
+              "value" : 102900
+            }
+          ],
+          "answer" : "correctOld",
+          "counterStart" : null,
+          "current" : 102900,
+          "recorded" : true,
+          "setAside" : [
+
+          ]
+        },
+        {
+          "after" : [
+            {
+              "at" : "2026-01-10T10:00:00Z",
+              "basis" : "read",
+              "key" : "1",
+              "kind" : "odometer",
+              "startsCounter" : false,
+              "unit" : "km",
+              "value" : 100000
+            },
+            {
+              "at" : "2026-04-10T10:00:00Z",
+              "basis" : "read",
+              "key" : "2",
+              "kind" : "odometer",
+              "startsCounter" : false,
+              "unit" : "km",
+              "value" : 103000
+            },
+            {
+              "at" : "2026-05-10T10:00:00Z",
+              "basis" : "read",
+              "key" : "new",
+              "kind" : "odometer",
+              "startsCounter" : false,
+              "unit" : "km",
+              "value" : 102900
+            }
+          ],
+          "answer" : "keepAside",
+          "counterStart" : null,
+          "current" : 103000,
+          "recorded" : true,
+          "setAside" : [
+            102900
+          ]
+        },
+        {
+          "after" : [
+            {
+              "at" : "2026-01-10T10:00:00Z",
+              "basis" : "read",
+              "key" : "1",
+              "kind" : "odometer",
+              "startsCounter" : false,
+              "unit" : "km",
+              "value" : 100000
+            },
+            {
+              "at" : "2026-04-10T10:00:00Z",
+              "basis" : "read",
+              "key" : "2",
+              "kind" : "odometer",
+              "startsCounter" : false,
+              "unit" : "km",
+              "value" : 103000
+            },
+            {
+              "at" : "2026-05-10T10:00:00Z",
+              "basis" : "read",
+              "key" : "new",
+              "kind" : "odometer",
+              "startsCounter" : true,
+              "unit" : "km",
+              "value" : 102900
+            }
+          ],
+          "answer" : "newCounter",
+          "counterStart" : 102900,
+          "current" : 102900,
+          "recorded" : true,
+          "setAside" : [
+
+          ]
+        }
+      ],
+      "planned" : {
+        "at" : "2026-05-10T10:00:00Z",
+        "basis" : null,
+        "kind" : null,
+        "numberKind" : "kilometres",
+        "replaces" : [
+
+        ],
+        "source" : "person",
+        "typed" : null,
+        "unit" : "km",
+        "value" : 102900
+      },
+      "plannedAs" : {
+        "basis" : "read",
+        "continuesCounter" : false,
+        "isStored" : true,
+        "kind" : "odometer",
+        "unit" : "km",
+        "value" : 102900
+      },
+      "question" : {
+        "answers" : [
+          "correctOld",
+          "keepAside",
+          "newCounter"
+        ],
+        "previous" : 103000,
+        "previousAt" : "2026-04-10T10:00:00Z",
+        "unit" : "km",
+        "value" : 102900
+      },
+      "readings" : [
+        {
+          "at" : "2026-01-10T10:00:00Z",
+          "basis" : "read",
+          "key" : 1,
+          "kind" : "odometer",
+          "startsCounter" : false,
+          "unit" : "km",
+          "value" : 100000
+        },
+        {
+          "at" : "2026-04-10T10:00:00Z",
+          "basis" : "read",
+          "key" : 2,
+          "kind" : "odometer",
+          "startsCounter" : false,
+          "unit" : "km",
+          "value" : 103000
+        }
+      ]
+    },
+    {
+      "name" : "a car's drop of more than a year",
+      "outcomes" : [
+        {
+          "after" : [
+            {
+              "at" : "2026-01-10T10:00:00Z",
+              "basis" : "read",
+              "key" : "1",
+              "kind" : "odometer",
+              "startsCounter" : false,
+              "unit" : "km",
+              "value" : 100000
+            },
+            {
+              "at" : "2026-04-10T10:00:00Z",
+              "basis" : "read",
+              "key" : "2",
+              "kind" : "odometer",
+              "startsCounter" : false,
+              "unit" : "km",
+              "value" : 103000
+            },
+            {
+              "at" : "2026-05-10T10:00:00Z",
+              "basis" : "read",
+              "key" : "new",
+              "kind" : "odometer",
+              "startsCounter" : true,
+              "unit" : "km",
+              "value" : 80000
+            }
+          ],
+          "answer" : "newCounter",
+          "counterStart" : 80000,
+          "current" : 80000,
+          "recorded" : true,
+          "setAside" : [
+
+          ]
+        },
+        {
+          "after" : [
+            {
+              "at" : "2026-05-10T10:00:00Z",
+              "basis" : "read",
+              "key" : "new",
+              "kind" : "odometer",
+              "startsCounter" : false,
+              "unit" : "km",
+              "value" : 80000
+            }
+          ],
+          "answer" : "correctOld",
+          "counterStart" : null,
+          "current" : 80000,
+          "recorded" : true,
+          "setAside" : [
+
+          ]
+        },
+        {
+          "after" : [
+            {
+              "at" : "2026-01-10T10:00:00Z",
+              "basis" : "read",
+              "key" : "1",
+              "kind" : "odometer",
+              "startsCounter" : false,
+              "unit" : "km",
+              "value" : 100000
+            },
+            {
+              "at" : "2026-04-10T10:00:00Z",
+              "basis" : "read",
+              "key" : "2",
+              "kind" : "odometer",
+              "startsCounter" : false,
+              "unit" : "km",
+              "value" : 103000
+            },
+            {
+              "at" : "2026-05-10T10:00:00Z",
+              "basis" : "read",
+              "key" : "new",
+              "kind" : "odometer",
+              "startsCounter" : false,
+              "unit" : "km",
+              "value" : 80000
+            }
+          ],
+          "answer" : "keepAside",
+          "counterStart" : null,
+          "current" : 103000,
+          "recorded" : true,
+          "setAside" : [
+            80000
+          ]
+        }
+      ],
+      "planned" : {
+        "at" : "2026-05-10T10:00:00Z",
+        "basis" : null,
+        "kind" : null,
+        "numberKind" : "kilometres",
+        "replaces" : [
+
+        ],
+        "source" : "person",
+        "typed" : null,
+        "unit" : "km",
+        "value" : 80000
+      },
+      "plannedAs" : {
+        "basis" : "read",
+        "continuesCounter" : false,
+        "isStored" : true,
+        "kind" : "odometer",
+        "unit" : "km",
+        "value" : 80000
+      },
+      "question" : {
+        "answers" : [
+          "newCounter",
+          "correctOld",
+          "keepAside"
+        ],
+        "previous" : 103000,
+        "previousAt" : "2026-04-10T10:00:00Z",
+        "unit" : "km",
+        "value" : 80000
+      },
+      "readings" : [
+        {
+          "at" : "2026-01-10T10:00:00Z",
+          "basis" : "read",
+          "key" : 1,
+          "kind" : "odometer",
+          "startsCounter" : false,
+          "unit" : "km",
+          "value" : 100000
+        },
+        {
+          "at" : "2026-04-10T10:00:00Z",
+          "basis" : "read",
+          "key" : 2,
+          "kind" : "odometer",
+          "startsCounter" : false,
+          "unit" : "km",
+          "value" : 103000
+        }
+      ]
+    },
+    {
+      "name" : "a lower reading on the new counter",
+      "outcomes" : [
+        {
+          "after" : [
+            {
+              "at" : "2026-01-10T10:00:00Z",
+              "basis" : "read",
+              "key" : "1",
+              "kind" : "odometer",
+              "startsCounter" : false,
+              "unit" : "km",
+              "value" : 145000
+            },
+            {
+              "at" : "2026-03-01T10:00:00Z",
+              "basis" : "read",
+              "key" : "2",
+              "kind" : "odometer",
+              "startsCounter" : true,
+              "unit" : "km",
+              "value" : 1200
+            },
+            {
+              "at" : "2026-05-01T10:00:00Z",
+              "basis" : "read",
+              "key" : "new",
+              "kind" : "odometer",
+              "startsCounter" : false,
+              "unit" : "km",
+              "value" : 2000
+            }
+          ],
+          "answer" : "correctOld",
+          "counterStart" : 1200,
+          "current" : 2000,
+          "recorded" : true,
+          "setAside" : [
+
+          ]
+        },
+        {
+          "after" : [
+            {
+              "at" : "2026-01-10T10:00:00Z",
+              "basis" : "read",
+              "key" : "1",
+              "kind" : "odometer",
+              "startsCounter" : false,
+              "unit" : "km",
+              "value" : 145000
+            },
+            {
+              "at" : "2026-03-01T10:00:00Z",
+              "basis" : "read",
+              "key" : "2",
+              "kind" : "odometer",
+              "startsCounter" : true,
+              "unit" : "km",
+              "value" : 1200
+            },
+            {
+              "at" : "2026-04-01T10:00:00Z",
+              "basis" : "read",
+              "key" : "3",
+              "kind" : "odometer",
+              "startsCounter" : false,
+              "unit" : "km",
+              "value" : 2500
+            },
+            {
+              "at" : "2026-05-01T10:00:00Z",
+              "basis" : "read",
+              "key" : "new",
+              "kind" : "odometer",
+              "startsCounter" : false,
+              "unit" : "km",
+              "value" : 2000
+            }
+          ],
+          "answer" : "keepAside",
+          "counterStart" : 1200,
+          "current" : 2500,
+          "recorded" : true,
+          "setAside" : [
+            2000
+          ]
+        },
+        {
+          "after" : [
+            {
+              "at" : "2026-01-10T10:00:00Z",
+              "basis" : "read",
+              "key" : "1",
+              "kind" : "odometer",
+              "startsCounter" : false,
+              "unit" : "km",
+              "value" : 145000
+            },
+            {
+              "at" : "2026-03-01T10:00:00Z",
+              "basis" : "read",
+              "key" : "2",
+              "kind" : "odometer",
+              "startsCounter" : true,
+              "unit" : "km",
+              "value" : 1200
+            },
+            {
+              "at" : "2026-04-01T10:00:00Z",
+              "basis" : "read",
+              "key" : "3",
+              "kind" : "odometer",
+              "startsCounter" : false,
+              "unit" : "km",
+              "value" : 2500
+            },
+            {
+              "at" : "2026-05-01T10:00:00Z",
+              "basis" : "read",
+              "key" : "new",
+              "kind" : "odometer",
+              "startsCounter" : true,
+              "unit" : "km",
+              "value" : 2000
+            }
+          ],
+          "answer" : "newCounter",
+          "counterStart" : 2000,
+          "current" : 2000,
+          "recorded" : true,
+          "setAside" : [
+
+          ]
+        }
+      ],
+      "planned" : {
+        "at" : "2026-05-01T10:00:00Z",
+        "basis" : null,
+        "kind" : null,
+        "numberKind" : "kilometres",
+        "replaces" : [
+
+        ],
+        "source" : "person",
+        "typed" : null,
+        "unit" : "km",
+        "value" : 2000
+      },
+      "plannedAs" : {
+        "basis" : "read",
+        "continuesCounter" : false,
+        "isStored" : true,
+        "kind" : "odometer",
+        "unit" : "km",
+        "value" : 2000
+      },
+      "question" : {
+        "answers" : [
+          "correctOld",
+          "keepAside",
+          "newCounter"
+        ],
+        "previous" : 2500,
+        "previousAt" : "2026-04-01T10:00:00Z",
+        "unit" : "km",
+        "value" : 2000
+      },
+      "readings" : [
+        {
+          "at" : "2026-01-10T10:00:00Z",
+          "basis" : "read",
+          "key" : 1,
+          "kind" : "odometer",
+          "startsCounter" : false,
+          "unit" : "km",
+          "value" : 145000
+        },
+        {
+          "at" : "2026-03-01T10:00:00Z",
+          "basis" : "read",
+          "key" : 2,
+          "kind" : "odometer",
+          "startsCounter" : true,
+          "unit" : "km",
+          "value" : 1200
+        },
+        {
+          "at" : "2026-04-01T10:00:00Z",
+          "basis" : "read",
+          "key" : 3,
+          "kind" : "odometer",
+          "startsCounter" : false,
+          "unit" : "km",
+          "value" : 2500
+        }
+      ]
+    },
+    {
+      "name" : "a higher reading on the new counter",
+      "outcomes" : [
+        {
+          "after" : [
+            {
+              "at" : "2026-01-10T10:00:00Z",
+              "basis" : "read",
+              "key" : "1",
+              "kind" : "odometer",
+              "startsCounter" : false,
+              "unit" : "km",
+              "value" : 145000
+            },
+            {
+              "at" : "2026-03-01T10:00:00Z",
+              "basis" : "read",
+              "key" : "2",
+              "kind" : "odometer",
+              "startsCounter" : true,
+              "unit" : "km",
+              "value" : 1200
+            },
+            {
+              "at" : "2026-04-01T10:00:00Z",
+              "basis" : "read",
+              "key" : "3",
+              "kind" : "odometer",
+              "startsCounter" : false,
+              "unit" : "km",
+              "value" : 2500
+            },
+            {
+              "at" : "2026-05-01T10:00:00Z",
+              "basis" : "read",
+              "key" : "new",
+              "kind" : "odometer",
+              "startsCounter" : false,
+              "unit" : "km",
+              "value" : 2900
+            }
+          ],
+          "answer" : null,
+          "counterStart" : 1200,
+          "current" : 2900,
+          "recorded" : true,
+          "setAside" : [
+
+          ]
+        }
+      ],
+      "planned" : {
+        "at" : "2026-05-01T10:00:00Z",
+        "basis" : null,
+        "kind" : null,
+        "numberKind" : "kilometres",
+        "replaces" : [
+
+        ],
+        "source" : "person",
+        "typed" : null,
+        "unit" : "km",
+        "value" : 2900
+      },
+      "plannedAs" : {
+        "basis" : "read",
+        "continuesCounter" : false,
+        "isStored" : true,
+        "kind" : "odometer",
+        "unit" : "km",
+        "value" : 2900
+      },
+      "question" : null,
+      "readings" : [
+        {
+          "at" : "2026-01-10T10:00:00Z",
+          "basis" : "read",
+          "key" : 1,
+          "kind" : "odometer",
+          "startsCounter" : false,
+          "unit" : "km",
+          "value" : 145000
+        },
+        {
+          "at" : "2026-03-01T10:00:00Z",
+          "basis" : "read",
+          "key" : 2,
+          "kind" : "odometer",
+          "startsCounter" : true,
+          "unit" : "km",
+          "value" : 1200
+        },
+        {
+          "at" : "2026-04-01T10:00:00Z",
+          "basis" : "read",
+          "key" : 3,
+          "kind" : "odometer",
+          "startsCounter" : false,
+          "unit" : "km",
+          "value" : 2500
+        }
+      ]
+    },
+    {
+      "name" : "an older document never lowers the counter",
+      "outcomes" : [
+        {
+          "after" : [
+            {
+              "at" : "2026-01-10T10:00:00Z",
+              "basis" : "read",
+              "key" : "1",
+              "kind" : "odometer",
+              "startsCounter" : false,
+              "unit" : "km",
+              "value" : 45724
+            },
+            {
+              "at" : "2025-06-02T10:00:00Z",
+              "basis" : null,
+              "key" : "new",
+              "kind" : "odometer",
+              "startsCounter" : false,
+              "unit" : "km",
+              "value" : 40000
+            }
+          ],
+          "answer" : null,
+          "counterStart" : null,
+          "current" : 45724,
+          "recorded" : true,
+          "setAside" : [
+
+          ]
+        }
+      ],
+      "planned" : {
+        "at" : "2025-06-02T10:00:00Z",
+        "basis" : null,
+        "kind" : null,
+        "numberKind" : "kilometres",
+        "replaces" : [
+
+        ],
+        "source" : "document",
+        "typed" : null,
+        "unit" : "km",
+        "value" : 40000
+      },
+      "plannedAs" : {
+        "basis" : null,
+        "continuesCounter" : false,
+        "isStored" : true,
+        "kind" : "odometer",
+        "unit" : "km",
+        "value" : 40000
+      },
+      "question" : null,
+      "readings" : [
+        {
+          "at" : "2026-01-10T10:00:00Z",
+          "basis" : "read",
+          "key" : 1,
+          "kind" : "odometer",
+          "startsCounter" : false,
+          "unit" : "km",
+          "value" : 45724
+        }
+      ]
+    },
+    {
+      "name" : "an older document on the old counter",
+      "outcomes" : [
+        {
+          "after" : [
+            {
+              "at" : "2026-01-10T10:00:00Z",
+              "basis" : null,
+              "key" : "1",
+              "kind" : "odometer",
+              "startsCounter" : false,
+              "unit" : "km",
+              "value" : 140000
+            },
+            {
+              "at" : "2026-03-01T10:00:00Z",
+              "basis" : null,
+              "key" : "2",
+              "kind" : "odometer",
+              "startsCounter" : true,
+              "unit" : "km",
+              "value" : 1200
+            },
+            {
+              "at" : "2026-02-01T10:00:00Z",
+              "basis" : null,
+              "key" : "new",
+              "kind" : "odometer",
+              "startsCounter" : false,
+              "unit" : "km",
+              "value" : 142000
+            }
+          ],
+          "answer" : null,
+          "counterStart" : 1200,
+          "current" : 1200,
+          "recorded" : true,
+          "setAside" : [
+
+          ]
+        }
+      ],
+      "planned" : {
+        "at" : "2026-02-01T10:00:00Z",
+        "basis" : null,
+        "kind" : null,
+        "numberKind" : "kilometres",
+        "replaces" : [
+
+        ],
+        "source" : "document",
+        "typed" : null,
+        "unit" : "km",
+        "value" : 142000
+      },
+      "plannedAs" : {
+        "basis" : null,
+        "continuesCounter" : false,
+        "isStored" : true,
+        "kind" : "odometer",
+        "unit" : "km",
+        "value" : 142000
+      },
+      "question" : null,
+      "readings" : [
+        {
+          "at" : "2026-01-10T10:00:00Z",
+          "basis" : null,
+          "key" : 1,
+          "kind" : "odometer",
+          "startsCounter" : false,
+          "unit" : "km",
+          "value" : 140000
+        },
+        {
+          "at" : "2026-03-01T10:00:00Z",
+          "basis" : null,
+          "key" : 2,
+          "kind" : "odometer",
+          "startsCounter" : true,
+          "unit" : "km",
+          "value" : 1200
+        }
+      ]
+    },
+    {
+      "name" : "correcting a typo on the new counter",
+      "outcomes" : [
+        {
+          "after" : [
+            {
+              "at" : "2026-01-10T10:00:00Z",
+              "basis" : null,
+              "key" : "1",
+              "kind" : "odometer",
+              "startsCounter" : false,
+              "unit" : "km",
+              "value" : 145000
+            },
+            {
+              "at" : "2026-03-02T10:00:00Z",
+              "basis" : "read",
+              "key" : "new",
+              "kind" : "odometer",
+              "startsCounter" : true,
+              "unit" : "km",
+              "value" : 1200
+            }
+          ],
+          "answer" : "correctOld",
+          "counterStart" : 1200,
+          "current" : 1200,
+          "recorded" : true,
+          "setAside" : [
+
+          ]
+        },
+        {
+          "after" : [
+            {
+              "at" : "2026-01-10T10:00:00Z",
+              "basis" : null,
+              "key" : "1",
+              "kind" : "odometer",
+              "startsCounter" : false,
+              "unit" : "km",
+              "value" : 145000
+            },
+            {
+              "at" : "2026-03-01T10:00:00Z",
+              "basis" : null,
+              "key" : "2",
+              "kind" : "odometer",
+              "startsCounter" : true,
+              "unit" : "km",
+              "value" : 12000
+            },
+            {
+              "at" : "2026-03-02T10:00:00Z",
+              "basis" : "read",
+              "key" : "new",
+              "kind" : "odometer",
+              "startsCounter" : false,
+              "unit" : "km",
+              "value" : 1200
+            }
+          ],
+          "answer" : "keepAside",
+          "counterStart" : 12000,
+          "current" : 12000,
+          "recorded" : true,
+          "setAside" : [
+            1200
+          ]
+        },
+        {
+          "after" : [
+            {
+              "at" : "2026-01-10T10:00:00Z",
+              "basis" : null,
+              "key" : "1",
+              "kind" : "odometer",
+              "startsCounter" : false,
+              "unit" : "km",
+              "value" : 145000
+            },
+            {
+              "at" : "2026-03-01T10:00:00Z",
+              "basis" : null,
+              "key" : "2",
+              "kind" : "odometer",
+              "startsCounter" : true,
+              "unit" : "km",
+              "value" : 12000
+            },
+            {
+              "at" : "2026-03-02T10:00:00Z",
+              "basis" : "read",
+              "key" : "new",
+              "kind" : "odometer",
+              "startsCounter" : true,
+              "unit" : "km",
+              "value" : 1200
+            }
+          ],
+          "answer" : "newCounter",
+          "counterStart" : 1200,
+          "current" : 1200,
+          "recorded" : true,
+          "setAside" : [
+
+          ]
+        }
+      ],
+      "planned" : {
+        "at" : "2026-03-02T10:00:00Z",
+        "basis" : null,
+        "kind" : null,
+        "numberKind" : "kilometres",
+        "replaces" : [
+
+        ],
+        "source" : "person",
+        "typed" : null,
+        "unit" : "km",
+        "value" : 1200
+      },
+      "plannedAs" : {
+        "basis" : "read",
+        "continuesCounter" : false,
+        "isStored" : true,
+        "kind" : "odometer",
+        "unit" : "km",
+        "value" : 1200
+      },
+      "question" : {
+        "answers" : [
+          "correctOld",
+          "keepAside",
+          "newCounter"
+        ],
+        "previous" : 12000,
+        "previousAt" : "2026-03-01T10:00:00Z",
+        "unit" : "km",
+        "value" : 1200
+      },
+      "readings" : [
+        {
+          "at" : "2026-01-10T10:00:00Z",
+          "basis" : null,
+          "key" : 1,
+          "kind" : "odometer",
+          "startsCounter" : false,
+          "unit" : "km",
+          "value" : 145000
+        },
+        {
+          "at" : "2026-03-01T10:00:00Z",
+          "basis" : null,
+          "key" : 2,
+          "kind" : "odometer",
+          "startsCounter" : true,
+          "unit" : "km",
+          "value" : 12000
+        }
+      ]
+    },
+    {
+      "name" : "filing the new counter's paper again",
+      "outcomes" : [
+        {
+          "after" : [
+            {
+              "at" : "2026-01-10T10:00:00Z",
+              "basis" : null,
+              "key" : "1",
+              "kind" : "odometer",
+              "startsCounter" : false,
+              "unit" : "km",
+              "value" : 145000
+            },
+            {
+              "at" : "2026-03-01T10:00:00Z",
+              "basis" : null,
+              "key" : "2",
+              "kind" : "odometer",
+              "startsCounter" : true,
+              "unit" : "km",
+              "value" : 1200
+            },
+            {
+              "at" : "2026-03-01T10:00:00Z",
+              "basis" : null,
+              "key" : "new",
+              "kind" : "odometer",
+              "startsCounter" : true,
+              "unit" : "km",
+              "value" : 1250
+            }
+          ],
+          "answer" : null,
+          "counterStart" : 1250,
+          "current" : 1250,
+          "recorded" : true,
+          "setAside" : [
+
+          ]
+        }
+      ],
+      "planned" : {
+        "at" : "2026-03-01T10:00:00Z",
+        "basis" : null,
+        "kind" : null,
+        "numberKind" : "kilometres",
+        "replaces" : [
+          2
+        ],
+        "source" : "document",
+        "typed" : null,
+        "unit" : "km",
+        "value" : 1250
+      },
+      "plannedAs" : {
+        "basis" : null,
+        "continuesCounter" : true,
+        "isStored" : true,
+        "kind" : "odometer",
+        "unit" : "km",
+        "value" : 1250
+      },
+      "question" : null,
+      "readings" : [
+        {
+          "at" : "2026-01-10T10:00:00Z",
+          "basis" : null,
+          "key" : 1,
+          "kind" : "odometer",
+          "startsCounter" : false,
+          "unit" : "km",
+          "value" : 145000
+        },
+        {
+          "at" : "2026-03-01T10:00:00Z",
+          "basis" : null,
+          "key" : 2,
+          "kind" : "odometer",
+          "startsCounter" : true,
+          "unit" : "km",
+          "value" : 1200
+        }
+      ]
+    },
+    {
+      "name" : "a counter that went round",
+      "outcomes" : [
+        {
+          "after" : [
+            {
+              "at" : "2025-01-01T10:00:00Z",
+              "basis" : null,
+              "key" : "1",
+              "kind" : "odometer",
+              "startsCounter" : false,
+              "unit" : "km",
+              "value" : 99990
+            },
+            {
+              "at" : "2025-12-01T10:00:00Z",
+              "basis" : null,
+              "key" : "2",
+              "kind" : "odometer",
+              "startsCounter" : false,
+              "unit" : "km",
+              "value" : 99999
+            },
+            {
+              "at" : "2026-01-15T10:00:00Z",
+              "basis" : "read",
+              "key" : "new",
+              "kind" : "odometer",
+              "startsCounter" : true,
+              "unit" : "km",
+              "value" : 5
+            }
+          ],
+          "answer" : "newCounter",
+          "counterStart" : 5,
+          "current" : 5,
+          "recorded" : true,
+          "setAside" : [
+
+          ]
+        },
+        {
+          "after" : [
+            {
+              "at" : "2026-01-15T10:00:00Z",
+              "basis" : "read",
+              "key" : "new",
+              "kind" : "odometer",
+              "startsCounter" : false,
+              "unit" : "km",
+              "value" : 5
+            }
+          ],
+          "answer" : "correctOld",
+          "counterStart" : null,
+          "current" : 5,
+          "recorded" : true,
+          "setAside" : [
+
+          ]
+        },
+        {
+          "after" : [
+            {
+              "at" : "2025-01-01T10:00:00Z",
+              "basis" : null,
+              "key" : "1",
+              "kind" : "odometer",
+              "startsCounter" : false,
+              "unit" : "km",
+              "value" : 99990
+            },
+            {
+              "at" : "2025-12-01T10:00:00Z",
+              "basis" : null,
+              "key" : "2",
+              "kind" : "odometer",
+              "startsCounter" : false,
+              "unit" : "km",
+              "value" : 99999
+            },
+            {
+              "at" : "2026-01-15T10:00:00Z",
+              "basis" : "read",
+              "key" : "new",
+              "kind" : "odometer",
+              "startsCounter" : false,
+              "unit" : "km",
+              "value" : 5
+            }
+          ],
+          "answer" : "keepAside",
+          "counterStart" : null,
+          "current" : 99999,
+          "recorded" : true,
+          "setAside" : [
+            5
+          ]
+        }
+      ],
+      "planned" : {
+        "at" : "2026-01-15T10:00:00Z",
+        "basis" : null,
+        "kind" : null,
+        "numberKind" : "kilometres",
+        "replaces" : [
+
+        ],
+        "source" : "person",
+        "typed" : null,
+        "unit" : "km",
+        "value" : 5
+      },
+      "plannedAs" : {
+        "basis" : "read",
+        "continuesCounter" : false,
+        "isStored" : true,
+        "kind" : "odometer",
+        "unit" : "km",
+        "value" : 5
+      },
+      "question" : {
+        "answers" : [
+          "newCounter",
+          "correctOld",
+          "keepAside"
+        ],
+        "previous" : 99999,
+        "previousAt" : "2025-12-01T10:00:00Z",
+        "unit" : "km",
+        "value" : 5
+      },
+      "readings" : [
+        {
+          "at" : "2025-01-01T10:00:00Z",
+          "basis" : null,
+          "key" : 1,
+          "kind" : "odometer",
+          "startsCounter" : false,
+          "unit" : "km",
+          "value" : 99990
+        },
+        {
+          "at" : "2025-12-01T10:00:00Z",
+          "basis" : null,
+          "key" : 2,
+          "kind" : "odometer",
+          "startsCounter" : false,
+          "unit" : "km",
+          "value" : 99999
+        }
+      ]
+    },
+    {
+      "name" : "a regularisation below the estimates",
+      "outcomes" : [
+        {
+          "after" : [
+            {
+              "at" : "2026-06-05T10:00:00Z",
+              "basis" : "read",
+              "key" : "1",
+              "kind" : "gas",
+              "startsCounter" : false,
+              "unit" : "m3",
+              "value" : 10000
+            },
+            {
+              "at" : "2026-07-05T10:00:00Z",
+              "basis" : "estimated",
+              "key" : "2",
+              "kind" : "gas",
+              "startsCounter" : false,
+              "unit" : "m3",
+              "value" : 10100
+            },
+            {
+              "at" : "2026-08-05T10:00:00Z",
+              "basis" : "estimated",
+              "key" : "3",
+              "kind" : "gas",
+              "startsCounter" : false,
+              "unit" : "m3",
+              "value" : 10200
+            },
+            {
+              "at" : "2026-09-05T10:00:00Z",
+              "basis" : "estimated",
+              "key" : "4",
+              "kind" : "gas",
+              "startsCounter" : false,
+              "unit" : "m3",
+              "value" : 10300
+            },
+            {
+              "at" : "2026-10-05T10:00:00Z",
+              "basis" : "read",
+              "key" : "new",
+              "kind" : "gas",
+              "startsCounter" : false,
+              "unit" : "m3",
+              "value" : 10150
+            }
+          ],
+          "answer" : null,
+          "counterStart" : null,
+          "current" : 10150,
+          "recorded" : true,
+          "setAside" : [
+
+          ]
+        }
+      ],
+      "planned" : {
+        "at" : "2026-10-05T10:00:00Z",
+        "basis" : "read",
+        "kind" : "gas",
+        "numberKind" : "kilometres",
+        "replaces" : [
+
+        ],
+        "source" : "document",
+        "typed" : null,
+        "unit" : "m3",
+        "value" : 10150
+      },
+      "plannedAs" : {
+        "basis" : "read",
+        "continuesCounter" : false,
+        "isStored" : true,
+        "kind" : "gas",
+        "unit" : "m3",
+        "value" : 10150
+      },
+      "question" : null,
+      "readings" : [
+        {
+          "at" : "2026-06-05T10:00:00Z",
+          "basis" : "read",
+          "key" : 1,
+          "kind" : "gas",
+          "startsCounter" : false,
+          "unit" : "m3",
+          "value" : 10000
+        },
+        {
+          "at" : "2026-07-05T10:00:00Z",
+          "basis" : "estimated",
+          "key" : 2,
+          "kind" : "gas",
+          "startsCounter" : false,
+          "unit" : "m3",
+          "value" : 10100
+        },
+        {
+          "at" : "2026-08-05T10:00:00Z",
+          "basis" : "estimated",
+          "key" : 3,
+          "kind" : "gas",
+          "startsCounter" : false,
+          "unit" : "m3",
+          "value" : 10200
+        },
+        {
+          "at" : "2026-09-05T10:00:00Z",
+          "basis" : "estimated",
+          "key" : 4,
+          "kind" : "gas",
+          "startsCounter" : false,
+          "unit" : "m3",
+          "value" : 10300
+        }
+      ]
+    },
+    {
+      "name" : "a new gas meter",
+      "outcomes" : [
+        {
+          "after" : [
+            {
+              "at" : "2026-06-05T10:00:00Z",
+              "basis" : "read",
+              "key" : "1",
+              "kind" : "gas",
+              "startsCounter" : false,
+              "unit" : "m3",
+              "value" : 10000
+            },
+            {
+              "at" : "2026-07-05T10:00:00Z",
+              "basis" : "estimated",
+              "key" : "2",
+              "kind" : "gas",
+              "startsCounter" : false,
+              "unit" : "m3",
+              "value" : 10100
+            },
+            {
+              "at" : "2026-08-05T10:00:00Z",
+              "basis" : "estimated",
+              "key" : "3",
+              "kind" : "gas",
+              "startsCounter" : false,
+              "unit" : "m3",
+              "value" : 10200
+            },
+            {
+              "at" : "2026-09-05T10:00:00Z",
+              "basis" : "estimated",
+              "key" : "4",
+              "kind" : "gas",
+              "startsCounter" : false,
+              "unit" : "m3",
+              "value" : 10300
+            },
+            {
+              "at" : "2026-10-05T10:00:00Z",
+              "basis" : "read",
+              "key" : "new",
+              "kind" : "gas",
+              "startsCounter" : true,
+              "unit" : "m3",
+              "value" : 15
+            }
+          ],
+          "answer" : "newCounter",
+          "counterStart" : 15,
+          "current" : 15,
+          "recorded" : true,
+          "setAside" : [
+
+          ]
+        },
+        {
+          "after" : [
+            {
+              "at" : "2026-06-05T10:00:00Z",
+              "basis" : "estimated",
+              "key" : "1",
+              "kind" : "gas",
+              "startsCounter" : false,
+              "unit" : "m3",
+              "value" : 10000
+            },
+            {
+              "at" : "2026-07-05T10:00:00Z",
+              "basis" : "estimated",
+              "key" : "2",
+              "kind" : "gas",
+              "startsCounter" : false,
+              "unit" : "m3",
+              "value" : 10100
+            },
+            {
+              "at" : "2026-08-05T10:00:00Z",
+              "basis" : "estimated",
+              "key" : "3",
+              "kind" : "gas",
+              "startsCounter" : false,
+              "unit" : "m3",
+              "value" : 10200
+            },
+            {
+              "at" : "2026-09-05T10:00:00Z",
+              "basis" : "estimated",
+              "key" : "4",
+              "kind" : "gas",
+              "startsCounter" : false,
+              "unit" : "m3",
+              "value" : 10300
+            },
+            {
+              "at" : "2026-10-05T10:00:00Z",
+              "basis" : "read",
+              "key" : "new",
+              "kind" : "gas",
+              "startsCounter" : false,
+              "unit" : "m3",
+              "value" : 15
+            }
+          ],
+          "answer" : "wasEstimate",
+          "counterStart" : null,
+          "current" : 15,
+          "recorded" : true,
+          "setAside" : [
+
+          ]
+        }
+      ],
+      "planned" : {
+        "at" : "2026-10-05T10:00:00Z",
+        "basis" : "read",
+        "kind" : "gas",
+        "numberKind" : "kilometres",
+        "replaces" : [
+
+        ],
+        "source" : "document",
+        "typed" : null,
+        "unit" : "m3",
+        "value" : 15
+      },
+      "plannedAs" : {
+        "basis" : "read",
+        "continuesCounter" : false,
+        "isStored" : true,
+        "kind" : "gas",
+        "unit" : "m3",
+        "value" : 15
+      },
+      "question" : {
+        "answers" : [
+          "newCounter",
+          "wasEstimate"
+        ],
+        "previous" : 10300,
+        "previousAt" : "2026-09-05T10:00:00Z",
+        "unit" : "m3",
+        "value" : 15
+      },
+      "readings" : [
+        {
+          "at" : "2026-06-05T10:00:00Z",
+          "basis" : "read",
+          "key" : 1,
+          "kind" : "gas",
+          "startsCounter" : false,
+          "unit" : "m3",
+          "value" : 10000
+        },
+        {
+          "at" : "2026-07-05T10:00:00Z",
+          "basis" : "estimated",
+          "key" : 2,
+          "kind" : "gas",
+          "startsCounter" : false,
+          "unit" : "m3",
+          "value" : 10100
+        },
+        {
+          "at" : "2026-08-05T10:00:00Z",
+          "basis" : "estimated",
+          "key" : 3,
+          "kind" : "gas",
+          "startsCounter" : false,
+          "unit" : "m3",
+          "value" : 10200
+        },
+        {
+          "at" : "2026-09-05T10:00:00Z",
+          "basis" : "estimated",
+          "key" : 4,
+          "kind" : "gas",
+          "startsCounter" : false,
+          "unit" : "m3",
+          "value" : 10300
+        }
+      ]
+    },
+    {
+      "name" : "a gas drop of more than a year",
+      "outcomes" : [
+        {
+          "after" : [
+            {
+              "at" : "2026-06-05T10:00:00Z",
+              "basis" : null,
+              "key" : "1",
+              "kind" : "gas",
+              "startsCounter" : false,
+              "unit" : "m3",
+              "value" : 10000
+            },
+            {
+              "at" : "2026-09-05T10:00:00Z",
+              "basis" : null,
+              "key" : "2",
+              "kind" : "gas",
+              "startsCounter" : false,
+              "unit" : "m3",
+              "value" : 10300
+            },
+            {
+              "at" : "2026-10-05T10:00:00Z",
+              "basis" : null,
+              "key" : "new",
+              "kind" : "gas",
+              "startsCounter" : true,
+              "unit" : "m3",
+              "value" : 8000
+            }
+          ],
+          "answer" : "newCounter",
+          "counterStart" : 8000,
+          "current" : 8000,
+          "recorded" : true,
+          "setAside" : [
+
+          ]
+        },
+        {
+          "after" : [
+            {
+              "at" : "2026-06-05T10:00:00Z",
+              "basis" : "estimated",
+              "key" : "1",
+              "kind" : "gas",
+              "startsCounter" : false,
+              "unit" : "m3",
+              "value" : 10000
+            },
+            {
+              "at" : "2026-09-05T10:00:00Z",
+              "basis" : "estimated",
+              "key" : "2",
+              "kind" : "gas",
+              "startsCounter" : false,
+              "unit" : "m3",
+              "value" : 10300
+            },
+            {
+              "at" : "2026-10-05T10:00:00Z",
+              "basis" : null,
+              "key" : "new",
+              "kind" : "gas",
+              "startsCounter" : false,
+              "unit" : "m3",
+              "value" : 8000
+            }
+          ],
+          "answer" : "wasEstimate",
+          "counterStart" : null,
+          "current" : 8000,
+          "recorded" : true,
+          "setAside" : [
+
+          ]
+        }
+      ],
+      "planned" : {
+        "at" : "2026-10-05T10:00:00Z",
+        "basis" : null,
+        "kind" : "gas",
+        "numberKind" : "kilometres",
+        "replaces" : [
+
+        ],
+        "source" : "document",
+        "typed" : null,
+        "unit" : "m3",
+        "value" : 8000
+      },
+      "plannedAs" : {
+        "basis" : null,
+        "continuesCounter" : false,
+        "isStored" : true,
+        "kind" : "gas",
+        "unit" : "m3",
+        "value" : 8000
+      },
+      "question" : {
+        "answers" : [
+          "newCounter",
+          "wasEstimate"
+        ],
+        "previous" : 10300,
+        "previousAt" : "2026-09-05T10:00:00Z",
+        "unit" : "m3",
+        "value" : 8000
+      },
+      "readings" : [
+        {
+          "at" : "2026-06-05T10:00:00Z",
+          "basis" : null,
+          "key" : 1,
+          "kind" : "gas",
+          "startsCounter" : false,
+          "unit" : "m3",
+          "value" : 10000
+        },
+        {
+          "at" : "2026-09-05T10:00:00Z",
+          "basis" : null,
+          "key" : 2,
+          "kind" : "gas",
+          "startsCounter" : false,
+          "unit" : "m3",
+          "value" : 10300
+        }
+      ]
+    },
+    {
+      "name" : "below a reading not known as an estimate",
+      "outcomes" : [
+        {
+          "after" : [
+            {
+              "at" : "2026-06-05T10:00:00Z",
+              "basis" : null,
+              "key" : "1",
+              "kind" : "gas",
+              "startsCounter" : false,
+              "unit" : "m3",
+              "value" : 10000
+            },
+            {
+              "at" : "2026-09-05T10:00:00Z",
+              "basis" : "estimated",
+              "key" : "2",
+              "kind" : "gas",
+              "startsCounter" : false,
+              "unit" : "m3",
+              "value" : 10300
+            },
+            {
+              "at" : "2026-10-05T10:00:00Z",
+              "basis" : null,
+              "key" : "new",
+              "kind" : "gas",
+              "startsCounter" : false,
+              "unit" : "m3",
+              "value" : 10050
+            }
+          ],
+          "answer" : "wasEstimate",
+          "counterStart" : null,
+          "current" : 10050,
+          "recorded" : true,
+          "setAside" : [
+
+          ]
+        },
+        {
+          "after" : [
+            {
+              "at" : "2026-06-05T10:00:00Z",
+              "basis" : null,
+              "key" : "1",
+              "kind" : "gas",
+              "startsCounter" : false,
+              "unit" : "m3",
+              "value" : 10000
+            },
+            {
+              "at" : "2026-09-05T10:00:00Z",
+              "basis" : null,
+              "key" : "2",
+              "kind" : "gas",
+              "startsCounter" : false,
+              "unit" : "m3",
+              "value" : 10300
+            },
+            {
+              "at" : "2026-10-05T10:00:00Z",
+              "basis" : null,
+              "key" : "new",
+              "kind" : "gas",
+              "startsCounter" : true,
+              "unit" : "m3",
+              "value" : 10050
+            }
+          ],
+          "answer" : "newCounter",
+          "counterStart" : 10050,
+          "current" : 10050,
+          "recorded" : true,
+          "setAside" : [
+
+          ]
+        }
+      ],
+      "planned" : {
+        "at" : "2026-10-05T10:00:00Z",
+        "basis" : null,
+        "kind" : "gas",
+        "numberKind" : "kilometres",
+        "replaces" : [
+
+        ],
+        "source" : "document",
+        "typed" : null,
+        "unit" : "m3",
+        "value" : 10050
+      },
+      "plannedAs" : {
+        "basis" : null,
+        "continuesCounter" : false,
+        "isStored" : true,
+        "kind" : "gas",
+        "unit" : "m3",
+        "value" : 10050
+      },
+      "question" : {
+        "answers" : [
+          "wasEstimate",
+          "newCounter"
+        ],
+        "previous" : 10300,
+        "previousAt" : "2026-09-05T10:00:00Z",
+        "unit" : "m3",
+        "value" : 10050
+      },
+      "readings" : [
+        {
+          "at" : "2026-06-05T10:00:00Z",
+          "basis" : null,
+          "key" : 1,
+          "kind" : "gas",
+          "startsCounter" : false,
+          "unit" : "m3",
+          "value" : 10000
+        },
+        {
+          "at" : "2026-09-05T10:00:00Z",
+          "basis" : null,
+          "key" : 2,
+          "kind" : "gas",
+          "startsCounter" : false,
+          "unit" : "m3",
+          "value" : 10300
+        }
+      ]
+    },
+    {
+      "name" : "an estimate far above the real index",
+      "outcomes" : [
+        {
+          "after" : [
+            {
+              "at" : "2026-01-05T10:00:00Z",
+              "basis" : "read",
+              "key" : "1",
+              "kind" : "gas",
+              "startsCounter" : false,
+              "unit" : "m3",
+              "value" : 10000
+            },
+            {
+              "at" : "2026-07-05T10:00:00Z",
+              "basis" : "read",
+              "key" : "2",
+              "kind" : "gas",
+              "startsCounter" : false,
+              "unit" : "m3",
+              "value" : 10600
+            },
+            {
+              "at" : "2026-10-05T10:00:00Z",
+              "basis" : "estimated",
+              "key" : "3",
+              "kind" : "gas",
+              "startsCounter" : false,
+              "unit" : "m3",
+              "value" : 13000
+            },
+            {
+              "at" : "2026-11-05T10:00:00Z",
+              "basis" : "read",
+              "key" : "new",
+              "kind" : "gas",
+              "startsCounter" : false,
+              "unit" : "m3",
+              "value" : 10700
+            }
+          ],
+          "answer" : "wasEstimate",
+          "counterStart" : null,
+          "current" : 10700,
+          "recorded" : true,
+          "setAside" : [
+
+          ]
+        },
+        {
+          "after" : [
+            {
+              "at" : "2026-01-05T10:00:00Z",
+              "basis" : "read",
+              "key" : "1",
+              "kind" : "gas",
+              "startsCounter" : false,
+              "unit" : "m3",
+              "value" : 10000
+            },
+            {
+              "at" : "2026-07-05T10:00:00Z",
+              "basis" : "read",
+              "key" : "2",
+              "kind" : "gas",
+              "startsCounter" : false,
+              "unit" : "m3",
+              "value" : 10600
+            },
+            {
+              "at" : "2026-10-05T10:00:00Z",
+              "basis" : "estimated",
+              "key" : "3",
+              "kind" : "gas",
+              "startsCounter" : false,
+              "unit" : "m3",
+              "value" : 13000
+            },
+            {
+              "at" : "2026-11-05T10:00:00Z",
+              "basis" : "read",
+              "key" : "new",
+              "kind" : "gas",
+              "startsCounter" : true,
+              "unit" : "m3",
+              "value" : 10700
+            }
+          ],
+          "answer" : "newCounter",
+          "counterStart" : 10700,
+          "current" : 10700,
+          "recorded" : true,
+          "setAside" : [
+
+          ]
+        }
+      ],
+      "planned" : {
+        "at" : "2026-11-05T10:00:00Z",
+        "basis" : "read",
+        "kind" : "gas",
+        "numberKind" : "kilometres",
+        "replaces" : [
+
+        ],
+        "source" : "document",
+        "typed" : null,
+        "unit" : "m3",
+        "value" : 10700
+      },
+      "plannedAs" : {
+        "basis" : "read",
+        "continuesCounter" : false,
+        "isStored" : true,
+        "kind" : "gas",
+        "unit" : "m3",
+        "value" : 10700
+      },
+      "question" : {
+        "answers" : [
+          "wasEstimate",
+          "newCounter"
+        ],
+        "previous" : 13000,
+        "previousAt" : "2026-10-05T10:00:00Z",
+        "unit" : "m3",
+        "value" : 10700
+      },
+      "readings" : [
+        {
+          "at" : "2026-01-05T10:00:00Z",
+          "basis" : "read",
+          "key" : 1,
+          "kind" : "gas",
+          "startsCounter" : false,
+          "unit" : "m3",
+          "value" : 10000
+        },
+        {
+          "at" : "2026-07-05T10:00:00Z",
+          "basis" : "read",
+          "key" : 2,
+          "kind" : "gas",
+          "startsCounter" : false,
+          "unit" : "m3",
+          "value" : 10600
+        },
+        {
+          "at" : "2026-10-05T10:00:00Z",
+          "basis" : "estimated",
+          "key" : 3,
+          "kind" : "gas",
+          "startsCounter" : false,
+          "unit" : "m3",
+          "value" : 13000
+        }
+      ]
+    },
+    {
+      "name" : "after a regularisation the next bill",
+      "outcomes" : [
+        {
+          "after" : [
+            {
+              "at" : "2026-06-05T10:00:00Z",
+              "basis" : "read",
+              "key" : "1",
+              "kind" : "gas",
+              "startsCounter" : false,
+              "unit" : "m3",
+              "value" : 10000
+            },
+            {
+              "at" : "2026-07-05T10:00:00Z",
+              "basis" : "estimated",
+              "key" : "2",
+              "kind" : "gas",
+              "startsCounter" : false,
+              "unit" : "m3",
+              "value" : 10100
+            },
+            {
+              "at" : "2026-08-05T10:00:00Z",
+              "basis" : "estimated",
+              "key" : "3",
+              "kind" : "gas",
+              "startsCounter" : false,
+              "unit" : "m3",
+              "value" : 10200
+            },
+            {
+              "at" : "2026-09-05T10:00:00Z",
+              "basis" : "estimated",
+              "key" : "4",
+              "kind" : "gas",
+              "startsCounter" : false,
+              "unit" : "m3",
+              "value" : 10300
+            },
+            {
+              "at" : "2026-10-05T10:00:00Z",
+              "basis" : "read",
+              "key" : "5",
+              "kind" : "gas",
+              "startsCounter" : false,
+              "unit" : "m3",
+              "value" : 10150
+            },
+            {
+              "at" : "2026-11-05T10:00:00Z",
+              "basis" : null,
+              "key" : "new",
+              "kind" : "gas",
+              "startsCounter" : false,
+              "unit" : "m3",
+              "value" : 10250
+            }
+          ],
+          "answer" : null,
+          "counterStart" : null,
+          "current" : 10250,
+          "recorded" : true,
+          "setAside" : [
+
+          ]
+        }
+      ],
+      "planned" : {
+        "at" : "2026-11-05T10:00:00Z",
+        "basis" : null,
+        "kind" : "gas",
+        "numberKind" : "kilometres",
+        "replaces" : [
+
+        ],
+        "source" : "document",
+        "typed" : null,
+        "unit" : "m3",
+        "value" : 10250
+      },
+      "plannedAs" : {
+        "basis" : null,
+        "continuesCounter" : false,
+        "isStored" : true,
+        "kind" : "gas",
+        "unit" : "m3",
+        "value" : 10250
+      },
+      "question" : null,
+      "readings" : [
+        {
+          "at" : "2026-06-05T10:00:00Z",
+          "basis" : "read",
+          "key" : 1,
+          "kind" : "gas",
+          "startsCounter" : false,
+          "unit" : "m3",
+          "value" : 10000
+        },
+        {
+          "at" : "2026-07-05T10:00:00Z",
+          "basis" : "estimated",
+          "key" : 2,
+          "kind" : "gas",
+          "startsCounter" : false,
+          "unit" : "m3",
+          "value" : 10100
+        },
+        {
+          "at" : "2026-08-05T10:00:00Z",
+          "basis" : "estimated",
+          "key" : 3,
+          "kind" : "gas",
+          "startsCounter" : false,
+          "unit" : "m3",
+          "value" : 10200
+        },
+        {
+          "at" : "2026-09-05T10:00:00Z",
+          "basis" : "estimated",
+          "key" : 4,
+          "kind" : "gas",
+          "startsCounter" : false,
+          "unit" : "m3",
+          "value" : 10300
+        },
+        {
+          "at" : "2026-10-05T10:00:00Z",
+          "basis" : "read",
+          "key" : 5,
+          "kind" : "gas",
+          "startsCounter" : false,
+          "unit" : "m3",
+          "value" : 10150
+        }
+      ]
+    },
+    {
+      "name" : "below a corrected estimate",
+      "outcomes" : [
+        {
+          "after" : [
+            {
+              "at" : "2026-06-05T10:00:00Z",
+              "basis" : "read",
+              "key" : "1",
+              "kind" : "gas",
+              "startsCounter" : false,
+              "unit" : "m3",
+              "value" : 10000
+            },
+            {
+              "at" : "2026-07-05T10:00:00Z",
+              "basis" : "estimated",
+              "key" : "2",
+              "kind" : "gas",
+              "startsCounter" : false,
+              "unit" : "m3",
+              "value" : 10100
+            },
+            {
+              "at" : "2026-08-05T10:00:00Z",
+              "basis" : "estimated",
+              "key" : "3",
+              "kind" : "gas",
+              "startsCounter" : false,
+              "unit" : "m3",
+              "value" : 10200
+            },
+            {
+              "at" : "2026-09-05T10:00:00Z",
+              "basis" : "estimated",
+              "key" : "4",
+              "kind" : "gas",
+              "startsCounter" : false,
+              "unit" : "m3",
+              "value" : 10300
+            },
+            {
+              "at" : "2026-10-05T10:00:00Z",
+              "basis" : "estimated",
+              "key" : "5",
+              "kind" : "gas",
+              "startsCounter" : false,
+              "unit" : "m3",
+              "value" : 10150
+            },
+            {
+              "at" : "2026-11-05T10:00:00Z",
+              "basis" : null,
+              "key" : "new",
+              "kind" : "gas",
+              "startsCounter" : false,
+              "unit" : "m3",
+              "value" : 10120
+            }
+          ],
+          "answer" : "wasEstimate",
+          "counterStart" : null,
+          "current" : 10120,
+          "recorded" : true,
+          "setAside" : [
+
+          ]
+        },
+        {
+          "after" : [
+            {
+              "at" : "2026-06-05T10:00:00Z",
+              "basis" : "read",
+              "key" : "1",
+              "kind" : "gas",
+              "startsCounter" : false,
+              "unit" : "m3",
+              "value" : 10000
+            },
+            {
+              "at" : "2026-07-05T10:00:00Z",
+              "basis" : "estimated",
+              "key" : "2",
+              "kind" : "gas",
+              "startsCounter" : false,
+              "unit" : "m3",
+              "value" : 10100
+            },
+            {
+              "at" : "2026-08-05T10:00:00Z",
+              "basis" : "estimated",
+              "key" : "3",
+              "kind" : "gas",
+              "startsCounter" : false,
+              "unit" : "m3",
+              "value" : 10200
+            },
+            {
+              "at" : "2026-09-05T10:00:00Z",
+              "basis" : "estimated",
+              "key" : "4",
+              "kind" : "gas",
+              "startsCounter" : false,
+              "unit" : "m3",
+              "value" : 10300
+            },
+            {
+              "at" : "2026-10-05T10:00:00Z",
+              "basis" : "read",
+              "key" : "5",
+              "kind" : "gas",
+              "startsCounter" : false,
+              "unit" : "m3",
+              "value" : 10150
+            },
+            {
+              "at" : "2026-11-05T10:00:00Z",
+              "basis" : null,
+              "key" : "new",
+              "kind" : "gas",
+              "startsCounter" : true,
+              "unit" : "m3",
+              "value" : 10120
+            }
+          ],
+          "answer" : "newCounter",
+          "counterStart" : 10120,
+          "current" : 10120,
+          "recorded" : true,
+          "setAside" : [
+
+          ]
+        }
+      ],
+      "planned" : {
+        "at" : "2026-11-05T10:00:00Z",
+        "basis" : null,
+        "kind" : "gas",
+        "numberKind" : "kilometres",
+        "replaces" : [
+
+        ],
+        "source" : "document",
+        "typed" : null,
+        "unit" : "m3",
+        "value" : 10120
+      },
+      "plannedAs" : {
+        "basis" : null,
+        "continuesCounter" : false,
+        "isStored" : true,
+        "kind" : "gas",
+        "unit" : "m3",
+        "value" : 10120
+      },
+      "question" : {
+        "answers" : [
+          "wasEstimate",
+          "newCounter"
+        ],
+        "previous" : 10150,
+        "previousAt" : "2026-10-05T10:00:00Z",
+        "unit" : "m3",
+        "value" : 10120
+      },
+      "readings" : [
+        {
+          "at" : "2026-06-05T10:00:00Z",
+          "basis" : "read",
+          "key" : 1,
+          "kind" : "gas",
+          "startsCounter" : false,
+          "unit" : "m3",
+          "value" : 10000
+        },
+        {
+          "at" : "2026-07-05T10:00:00Z",
+          "basis" : "estimated",
+          "key" : 2,
+          "kind" : "gas",
+          "startsCounter" : false,
+          "unit" : "m3",
+          "value" : 10100
+        },
+        {
+          "at" : "2026-08-05T10:00:00Z",
+          "basis" : "estimated",
+          "key" : 3,
+          "kind" : "gas",
+          "startsCounter" : false,
+          "unit" : "m3",
+          "value" : 10200
+        },
+        {
+          "at" : "2026-09-05T10:00:00Z",
+          "basis" : "estimated",
+          "key" : 4,
+          "kind" : "gas",
+          "startsCounter" : false,
+          "unit" : "m3",
+          "value" : 10300
+        },
+        {
+          "at" : "2026-10-05T10:00:00Z",
+          "basis" : "read",
+          "key" : 5,
+          "kind" : "gas",
+          "startsCounter" : false,
+          "unit" : "m3",
+          "value" : 10150
+        }
+      ]
+    },
+    {
+      "name" : "engine hours apart from kilometres",
+      "outcomes" : [
+        {
+          "after" : [
+            {
+              "at" : "2026-01-10T10:00:00Z",
+              "basis" : "read",
+              "key" : "1",
+              "kind" : "odometer",
+              "startsCounter" : false,
+              "unit" : "km",
+              "value" : 5000
+            },
+            {
+              "at" : "2026-03-10T10:00:00Z",
+              "basis" : "read",
+              "key" : "new",
+              "kind" : "engineHours",
+              "startsCounter" : false,
+              "unit" : "h",
+              "value" : 250
+            }
+          ],
+          "answer" : "correctOld",
+          "counterStart" : null,
+          "current" : 250,
+          "recorded" : true,
+          "setAside" : [
+
+          ]
+        },
+        {
+          "after" : [
+            {
+              "at" : "2026-01-10T10:00:00Z",
+              "basis" : "read",
+              "key" : "1",
+              "kind" : "odometer",
+              "startsCounter" : false,
+              "unit" : "km",
+              "value" : 5000
+            },
+            {
+              "at" : "2026-02-10T10:00:00Z",
+              "basis" : "read",
+              "key" : "2",
+              "kind" : "engineHours",
+              "startsCounter" : false,
+              "unit" : "h",
+              "value" : 300
+            },
+            {
+              "at" : "2026-03-10T10:00:00Z",
+              "basis" : "read",
+              "key" : "new",
+              "kind" : "engineHours",
+              "startsCounter" : false,
+              "unit" : "h",
+              "value" : 250
+            }
+          ],
+          "answer" : "keepAside",
+          "counterStart" : null,
+          "current" : 300,
+          "recorded" : true,
+          "setAside" : [
+            250
+          ]
+        },
+        {
+          "after" : [
+            {
+              "at" : "2026-01-10T10:00:00Z",
+              "basis" : "read",
+              "key" : "1",
+              "kind" : "odometer",
+              "startsCounter" : false,
+              "unit" : "km",
+              "value" : 5000
+            },
+            {
+              "at" : "2026-02-10T10:00:00Z",
+              "basis" : "read",
+              "key" : "2",
+              "kind" : "engineHours",
+              "startsCounter" : false,
+              "unit" : "h",
+              "value" : 300
+            },
+            {
+              "at" : "2026-03-10T10:00:00Z",
+              "basis" : "read",
+              "key" : "new",
+              "kind" : "engineHours",
+              "startsCounter" : true,
+              "unit" : "h",
+              "value" : 250
+            }
+          ],
+          "answer" : "newCounter",
+          "counterStart" : 250,
+          "current" : 250,
+          "recorded" : true,
+          "setAside" : [
+
+          ]
+        }
+      ],
+      "planned" : {
+        "at" : "2026-03-10T10:00:00Z",
+        "basis" : null,
+        "kind" : "engineHours",
+        "numberKind" : "kilometres",
+        "replaces" : [
+
+        ],
+        "source" : "person",
+        "typed" : null,
+        "unit" : "h",
+        "value" : 250
+      },
+      "plannedAs" : {
+        "basis" : "read",
+        "continuesCounter" : false,
+        "isStored" : true,
+        "kind" : "engineHours",
+        "unit" : "h",
+        "value" : 250
+      },
+      "question" : {
+        "answers" : [
+          "correctOld",
+          "keepAside",
+          "newCounter"
+        ],
+        "previous" : 300,
+        "previousAt" : "2026-02-10T10:00:00Z",
+        "unit" : "h",
+        "value" : 250
+      },
+      "readings" : [
+        {
+          "at" : "2026-01-10T10:00:00Z",
+          "basis" : "read",
+          "key" : 1,
+          "kind" : "odometer",
+          "startsCounter" : false,
+          "unit" : "km",
+          "value" : 5000
+        },
+        {
+          "at" : "2026-02-10T10:00:00Z",
+          "basis" : "read",
+          "key" : 2,
+          "kind" : "engineHours",
+          "startsCounter" : false,
+          "unit" : "h",
+          "value" : 300
+        }
+      ]
+    },
+    {
+      "name" : "engine hours below the kilometres",
+      "outcomes" : [
+        {
+          "after" : [
+            {
+              "at" : "2026-01-10T10:00:00Z",
+              "basis" : "read",
+              "key" : "1",
+              "kind" : "odometer",
+              "startsCounter" : false,
+              "unit" : "km",
+              "value" : 5000
+            },
+            {
+              "at" : "2026-02-10T10:00:00Z",
+              "basis" : "read",
+              "key" : "2",
+              "kind" : "engineHours",
+              "startsCounter" : false,
+              "unit" : "h",
+              "value" : 300
+            },
+            {
+              "at" : "2026-03-10T10:00:00Z",
+              "basis" : "read",
+              "key" : "new",
+              "kind" : "engineHours",
+              "startsCounter" : false,
+              "unit" : "h",
+              "value" : 400
+            }
+          ],
+          "answer" : null,
+          "counterStart" : null,
+          "current" : 400,
+          "recorded" : true,
+          "setAside" : [
+
+          ]
+        }
+      ],
+      "planned" : {
+        "at" : "2026-03-10T10:00:00Z",
+        "basis" : null,
+        "kind" : "engineHours",
+        "numberKind" : "kilometres",
+        "replaces" : [
+
+        ],
+        "source" : "person",
+        "typed" : null,
+        "unit" : "h",
+        "value" : 400
+      },
+      "plannedAs" : {
+        "basis" : "read",
+        "continuesCounter" : false,
+        "isStored" : true,
+        "kind" : "engineHours",
+        "unit" : "h",
+        "value" : 400
+      },
+      "question" : null,
+      "readings" : [
+        {
+          "at" : "2026-01-10T10:00:00Z",
+          "basis" : "read",
+          "key" : 1,
+          "kind" : "odometer",
+          "startsCounter" : false,
+          "unit" : "km",
+          "value" : 5000
+        },
+        {
+          "at" : "2026-02-10T10:00:00Z",
+          "basis" : "read",
+          "key" : 2,
+          "kind" : "engineHours",
+          "startsCounter" : false,
+          "unit" : "h",
+          "value" : 300
+        }
+      ]
+    },
+    {
+      "name" : "kilometres below the kilometres beside engine hours",
+      "outcomes" : [
+        {
+          "after" : [
+            {
+              "at" : "2026-02-10T10:00:00Z",
+              "basis" : "read",
+              "key" : "2",
+              "kind" : "engineHours",
+              "startsCounter" : false,
+              "unit" : "h",
+              "value" : 300
+            },
+            {
+              "at" : "2026-03-10T10:00:00Z",
+              "basis" : "read",
+              "key" : "new",
+              "kind" : "odometer",
+              "startsCounter" : false,
+              "unit" : "km",
+              "value" : 4900
+            }
+          ],
+          "answer" : "correctOld",
+          "counterStart" : null,
+          "current" : 4900,
+          "recorded" : true,
+          "setAside" : [
+
+          ]
+        },
+        {
+          "after" : [
+            {
+              "at" : "2026-01-10T10:00:00Z",
+              "basis" : "read",
+              "key" : "1",
+              "kind" : "odometer",
+              "startsCounter" : false,
+              "unit" : "km",
+              "value" : 5000
+            },
+            {
+              "at" : "2026-02-10T10:00:00Z",
+              "basis" : "read",
+              "key" : "2",
+              "kind" : "engineHours",
+              "startsCounter" : false,
+              "unit" : "h",
+              "value" : 300
+            },
+            {
+              "at" : "2026-03-10T10:00:00Z",
+              "basis" : "read",
+              "key" : "new",
+              "kind" : "odometer",
+              "startsCounter" : false,
+              "unit" : "km",
+              "value" : 4900
+            }
+          ],
+          "answer" : "keepAside",
+          "counterStart" : null,
+          "current" : 5000,
+          "recorded" : true,
+          "setAside" : [
+            4900
+          ]
+        },
+        {
+          "after" : [
+            {
+              "at" : "2026-01-10T10:00:00Z",
+              "basis" : "read",
+              "key" : "1",
+              "kind" : "odometer",
+              "startsCounter" : false,
+              "unit" : "km",
+              "value" : 5000
+            },
+            {
+              "at" : "2026-02-10T10:00:00Z",
+              "basis" : "read",
+              "key" : "2",
+              "kind" : "engineHours",
+              "startsCounter" : false,
+              "unit" : "h",
+              "value" : 300
+            },
+            {
+              "at" : "2026-03-10T10:00:00Z",
+              "basis" : "read",
+              "key" : "new",
+              "kind" : "odometer",
+              "startsCounter" : true,
+              "unit" : "km",
+              "value" : 4900
+            }
+          ],
+          "answer" : "newCounter",
+          "counterStart" : 4900,
+          "current" : 4900,
+          "recorded" : true,
+          "setAside" : [
+
+          ]
+        }
+      ],
+      "planned" : {
+        "at" : "2026-03-10T10:00:00Z",
+        "basis" : null,
+        "kind" : null,
+        "numberKind" : "kilometres",
+        "replaces" : [
+
+        ],
+        "source" : "person",
+        "typed" : null,
+        "unit" : "km",
+        "value" : 4900
+      },
+      "plannedAs" : {
+        "basis" : "read",
+        "continuesCounter" : false,
+        "isStored" : true,
+        "kind" : "odometer",
+        "unit" : "km",
+        "value" : 4900
+      },
+      "question" : {
+        "answers" : [
+          "correctOld",
+          "keepAside",
+          "newCounter"
+        ],
+        "previous" : 5000,
+        "previousAt" : "2026-01-10T10:00:00Z",
+        "unit" : "km",
+        "value" : 4900
+      },
+      "readings" : [
+        {
+          "at" : "2026-01-10T10:00:00Z",
+          "basis" : "read",
+          "key" : 1,
+          "kind" : "odometer",
+          "startsCounter" : false,
+          "unit" : "km",
+          "value" : 5000
+        },
+        {
+          "at" : "2026-02-10T10:00:00Z",
+          "basis" : "read",
+          "key" : 2,
+          "kind" : "engineHours",
+          "startsCounter" : false,
+          "unit" : "h",
+          "value" : 300
+        }
+      ]
+    },
+    {
+      "name" : "the same moment",
+      "outcomes" : [
+        {
+          "after" : [
+            {
+              "at" : "2026-03-01T10:00:00Z",
+              "basis" : null,
+              "key" : "1",
+              "kind" : "odometer",
+              "startsCounter" : false,
+              "unit" : "km",
+              "value" : 10000
+            },
+            {
+              "at" : "2026-03-01T10:00:00Z",
+              "basis" : "read",
+              "key" : "new",
+              "kind" : "odometer",
+              "startsCounter" : false,
+              "unit" : "km",
+              "value" : 10020
+            }
+          ],
+          "answer" : "correctOld",
+          "counterStart" : null,
+          "current" : 10020,
+          "recorded" : true,
+          "setAside" : [
+
+          ]
+        },
+        {
+          "after" : [
+            {
+              "at" : "2026-03-01T10:00:00Z",
+              "basis" : null,
+              "key" : "1",
+              "kind" : "odometer",
+              "startsCounter" : false,
+              "unit" : "km",
+              "value" : 10000
+            },
+            {
+              "at" : "2026-03-01T10:00:00Z",
+              "basis" : null,
+              "key" : "2",
+              "kind" : "odometer",
+              "startsCounter" : false,
+              "unit" : "km",
+              "value" : 10050
+            },
+            {
+              "at" : "2026-03-01T10:00:00Z",
+              "basis" : "read",
+              "key" : "new",
+              "kind" : "odometer",
+              "startsCounter" : false,
+              "unit" : "km",
+              "value" : 10020
+            }
+          ],
+          "answer" : "keepAside",
+          "counterStart" : null,
+          "current" : 10050,
+          "recorded" : true,
+          "setAside" : [
+
+          ]
+        },
+        {
+          "after" : [
+            {
+              "at" : "2026-03-01T10:00:00Z",
+              "basis" : null,
+              "key" : "1",
+              "kind" : "odometer",
+              "startsCounter" : false,
+              "unit" : "km",
+              "value" : 10000
+            },
+            {
+              "at" : "2026-03-01T10:00:00Z",
+              "basis" : null,
+              "key" : "2",
+              "kind" : "odometer",
+              "startsCounter" : false,
+              "unit" : "km",
+              "value" : 10050
+            },
+            {
+              "at" : "2026-03-01T10:00:00Z",
+              "basis" : "read",
+              "key" : "new",
+              "kind" : "odometer",
+              "startsCounter" : true,
+              "unit" : "km",
+              "value" : 10020
+            }
+          ],
+          "answer" : "newCounter",
+          "counterStart" : 10020,
+          "current" : 10050,
+          "recorded" : true,
+          "setAside" : [
+            10000
+          ]
+        }
+      ],
+      "planned" : {
+        "at" : "2026-03-01T10:00:00Z",
+        "basis" : null,
+        "kind" : null,
+        "numberKind" : "kilometres",
+        "replaces" : [
+
+        ],
+        "source" : "person",
+        "typed" : null,
+        "unit" : "km",
+        "value" : 10020
+      },
+      "plannedAs" : {
+        "basis" : "read",
+        "continuesCounter" : false,
+        "isStored" : true,
+        "kind" : "odometer",
+        "unit" : "km",
+        "value" : 10020
+      },
+      "question" : {
+        "answers" : [
+          "correctOld",
+          "keepAside",
+          "newCounter"
+        ],
+        "previous" : 10050,
+        "previousAt" : "2026-03-01T10:00:00Z",
+        "unit" : "km",
+        "value" : 10020
+      },
+      "readings" : [
+        {
+          "at" : "2026-03-01T10:00:00Z",
+          "basis" : null,
+          "key" : 1,
+          "kind" : "odometer",
+          "startsCounter" : false,
+          "unit" : "km",
+          "value" : 10000
+        },
+        {
+          "at" : "2026-03-01T10:00:00Z",
+          "basis" : null,
+          "key" : 2,
+          "kind" : "odometer",
+          "startsCounter" : false,
+          "unit" : "km",
+          "value" : 10050
+        }
+      ]
+    },
+    {
+      "name" : "the same day, earlier",
+      "outcomes" : [
+        {
+          "after" : [
+            {
+              "at" : "2026-03-01T10:00:00Z",
+              "basis" : null,
+              "key" : "1",
+              "kind" : "odometer",
+              "startsCounter" : false,
+              "unit" : "km",
+              "value" : 10000
+            },
+            {
+              "at" : "2026-03-01T10:00:00Z",
+              "basis" : null,
+              "key" : "2",
+              "kind" : "odometer",
+              "startsCounter" : false,
+              "unit" : "km",
+              "value" : 10050
+            },
+            {
+              "at" : "2026-03-01T08:00:00Z",
+              "basis" : "read",
+              "key" : "new",
+              "kind" : "odometer",
+              "startsCounter" : false,
+              "unit" : "km",
+              "value" : 10020
+            }
+          ],
+          "answer" : null,
+          "counterStart" : null,
+          "current" : 10050,
+          "recorded" : true,
+          "setAside" : [
+            10000
+          ]
+        }
+      ],
+      "planned" : {
+        "at" : "2026-03-01T08:00:00Z",
+        "basis" : null,
+        "kind" : null,
+        "numberKind" : "kilometres",
+        "replaces" : [
+
+        ],
+        "source" : "person",
+        "typed" : null,
+        "unit" : "km",
+        "value" : 10020
+      },
+      "plannedAs" : {
+        "basis" : "read",
+        "continuesCounter" : false,
+        "isStored" : true,
+        "kind" : "odometer",
+        "unit" : "km",
+        "value" : 10020
+      },
+      "question" : null,
+      "readings" : [
+        {
+          "at" : "2026-03-01T10:00:00Z",
+          "basis" : null,
+          "key" : 1,
+          "kind" : "odometer",
+          "startsCounter" : false,
+          "unit" : "km",
+          "value" : 10000
+        },
+        {
+          "at" : "2026-03-01T10:00:00Z",
+          "basis" : null,
+          "key" : 2,
+          "kind" : "odometer",
+          "startsCounter" : false,
+          "unit" : "km",
+          "value" : 10050
+        }
+      ]
+    },
+    {
+      "name" : "typed with a thousands dot",
+      "outcomes" : [
+        {
+          "after" : [
+            {
+              "at" : "2026-01-10T10:00:00Z",
+              "basis" : "read",
+              "key" : "1",
+              "kind" : "odometer",
+              "startsCounter" : false,
+              "unit" : "km",
+              "value" : 45724
+            },
+            {
+              "at" : "2026-03-01T10:00:00Z",
+              "basis" : "read",
+              "key" : "new",
+              "kind" : "odometer",
+              "startsCounter" : false,
+              "unit" : "km",
+              "value" : 45724
+            }
+          ],
+          "answer" : null,
+          "counterStart" : null,
+          "current" : 45724,
+          "recorded" : true,
+          "setAside" : [
+
+          ]
+        }
+      ],
+      "planned" : {
+        "at" : "2026-03-01T10:00:00Z",
+        "basis" : null,
+        "kind" : null,
+        "numberKind" : "kilometres",
+        "replaces" : [
+
+        ],
+        "source" : "person",
+        "typed" : "45.724",
+        "unit" : "km",
+        "value" : null
+      },
+      "plannedAs" : {
+        "basis" : "read",
+        "continuesCounter" : false,
+        "isStored" : true,
+        "kind" : "odometer",
+        "unit" : "km",
+        "value" : 45724
+      },
+      "question" : null,
+      "readings" : [
+        {
+          "at" : "2026-01-10T10:00:00Z",
+          "basis" : "read",
+          "key" : 1,
+          "kind" : "odometer",
+          "startsCounter" : false,
+          "unit" : "km",
+          "value" : 45724
+        }
+      ]
+    },
+    {
+      "name" : "typed with a thousands comma",
+      "outcomes" : [
+        {
+          "after" : [
+            {
+              "at" : "2026-01-10T10:00:00Z",
+              "basis" : "read",
+              "key" : "1",
+              "kind" : "odometer",
+              "startsCounter" : false,
+              "unit" : "km",
+              "value" : 45724
+            },
+            {
+              "at" : "2026-03-01T10:00:00Z",
+              "basis" : "read",
+              "key" : "new",
+              "kind" : "odometer",
+              "startsCounter" : false,
+              "unit" : "km",
+              "value" : 45724
+            }
+          ],
+          "answer" : null,
+          "counterStart" : null,
+          "current" : 45724,
+          "recorded" : true,
+          "setAside" : [
+
+          ]
+        }
+      ],
+      "planned" : {
+        "at" : "2026-03-01T10:00:00Z",
+        "basis" : null,
+        "kind" : null,
+        "numberKind" : "kilometres",
+        "replaces" : [
+
+        ],
+        "source" : "person",
+        "typed" : "45,724 km",
+        "unit" : "km",
+        "value" : null
+      },
+      "plannedAs" : {
+        "basis" : "read",
+        "continuesCounter" : false,
+        "isStored" : true,
+        "kind" : "odometer",
+        "unit" : "km",
+        "value" : 45724
+      },
+      "question" : null,
+      "readings" : [
+        {
+          "at" : "2026-01-10T10:00:00Z",
+          "basis" : "read",
+          "key" : 1,
+          "kind" : "odometer",
+          "startsCounter" : false,
+          "unit" : "km",
+          "value" : 45724
+        }
+      ]
+    },
+    {
+      "name" : "typed a tenth",
+      "outcomes" : [
+        {
+          "after" : [
+            {
+              "at" : "2026-03-01T10:00:00Z",
+              "basis" : "read",
+              "key" : "new",
+              "kind" : "odometer",
+              "startsCounter" : false,
+              "unit" : "km",
+              "value" : 4572
+            }
+          ],
+          "answer" : "correctOld",
+          "counterStart" : null,
+          "current" : 4572,
+          "recorded" : true,
+          "setAside" : [
+
+          ]
+        },
+        {
+          "after" : [
+            {
+              "at" : "2026-01-10T10:00:00Z",
+              "basis" : "read",
+              "key" : "1",
+              "kind" : "odometer",
+              "startsCounter" : false,
+              "unit" : "km",
+              "value" : 45724
+            },
+            {
+              "at" : "2026-03-01T10:00:00Z",
+              "basis" : "read",
+              "key" : "new",
+              "kind" : "odometer",
+              "startsCounter" : false,
+              "unit" : "km",
+              "value" : 4572
+            }
+          ],
+          "answer" : "keepAside",
+          "counterStart" : null,
+          "current" : 45724,
+          "recorded" : true,
+          "setAside" : [
+            4572
+          ]
+        },
+        {
+          "after" : [
+            {
+              "at" : "2026-01-10T10:00:00Z",
+              "basis" : "read",
+              "key" : "1",
+              "kind" : "odometer",
+              "startsCounter" : false,
+              "unit" : "km",
+              "value" : 45724
+            },
+            {
+              "at" : "2026-03-01T10:00:00Z",
+              "basis" : "read",
+              "key" : "new",
+              "kind" : "odometer",
+              "startsCounter" : true,
+              "unit" : "km",
+              "value" : 4572
+            }
+          ],
+          "answer" : "newCounter",
+          "counterStart" : 4572,
+          "current" : 4572,
+          "recorded" : true,
+          "setAside" : [
+
+          ]
+        }
+      ],
+      "planned" : {
+        "at" : "2026-03-01T10:00:00Z",
+        "basis" : null,
+        "kind" : null,
+        "numberKind" : "kilometres",
+        "replaces" : [
+
+        ],
+        "source" : "person",
+        "typed" : "4.572",
+        "unit" : "km",
+        "value" : null
+      },
+      "plannedAs" : {
+        "basis" : "read",
+        "continuesCounter" : false,
+        "isStored" : true,
+        "kind" : "odometer",
+        "unit" : "km",
+        "value" : 4572
+      },
+      "question" : {
+        "answers" : [
+          "correctOld",
+          "keepAside",
+          "newCounter"
+        ],
+        "previous" : 45724,
+        "previousAt" : "2026-01-10T10:00:00Z",
+        "unit" : "km",
+        "value" : 4572
+      },
+      "readings" : [
+        {
+          "at" : "2026-01-10T10:00:00Z",
+          "basis" : "read",
+          "key" : 1,
+          "kind" : "odometer",
+          "startsCounter" : false,
+          "unit" : "km",
+          "value" : 45724
+        }
+      ]
+    },
+    {
+      "name" : "typed an index with decimals",
+      "outcomes" : [
+        {
+          "after" : [
+            {
+              "at" : "2026-06-05T10:00:00Z",
+              "basis" : "estimated",
+              "key" : "1",
+              "kind" : "gas",
+              "startsCounter" : false,
+              "unit" : "m3",
+              "value" : 1300
+            },
+            {
+              "at" : "2026-07-05T10:00:00Z",
+              "basis" : "read",
+              "key" : "new",
+              "kind" : "gas",
+              "startsCounter" : false,
+              "unit" : "m3",
+              "value" : 1234.5
+            }
+          ],
+          "answer" : "wasEstimate",
+          "counterStart" : null,
+          "current" : 1234.5,
+          "recorded" : true,
+          "setAside" : [
+
+          ]
+        },
+        {
+          "after" : [
+            {
+              "at" : "2026-06-05T10:00:00Z",
+              "basis" : null,
+              "key" : "1",
+              "kind" : "gas",
+              "startsCounter" : false,
+              "unit" : "m3",
+              "value" : 1300
+            },
+            {
+              "at" : "2026-07-05T10:00:00Z",
+              "basis" : "read",
+              "key" : "new",
+              "kind" : "gas",
+              "startsCounter" : true,
+              "unit" : "m3",
+              "value" : 1234.5
+            }
+          ],
+          "answer" : "newCounter",
+          "counterStart" : 1234.5,
+          "current" : 1234.5,
+          "recorded" : true,
+          "setAside" : [
+
+          ]
+        }
+      ],
+      "planned" : {
+        "at" : "2026-07-05T10:00:00Z",
+        "basis" : null,
+        "kind" : "gas",
+        "numberKind" : "meterIndex",
+        "replaces" : [
+
+        ],
+        "source" : "person",
+        "typed" : "1.234,5",
+        "unit" : "m3",
+        "value" : null
+      },
+      "plannedAs" : {
+        "basis" : "read",
+        "continuesCounter" : false,
+        "isStored" : true,
+        "kind" : "gas",
+        "unit" : "m3",
+        "value" : 1234.5
+      },
+      "question" : {
+        "answers" : [
+          "wasEstimate",
+          "newCounter"
+        ],
+        "previous" : 1300,
+        "previousAt" : "2026-06-05T10:00:00Z",
+        "unit" : "m3",
+        "value" : 1234.5
+      },
+      "readings" : [
+        {
+          "at" : "2026-06-05T10:00:00Z",
+          "basis" : null,
+          "key" : 1,
+          "kind" : "gas",
+          "startsCounter" : false,
+          "unit" : "m3",
+          "value" : 1300
+        }
+      ]
+    },
+    {
+      "name" : "an estimate is never stored",
+      "outcomes" : [
+        {
+          "after" : [
+            {
+              "at" : "2026-01-10T10:00:00Z",
+              "basis" : "read",
+              "key" : "1",
+              "kind" : "odometer",
+              "startsCounter" : false,
+              "unit" : "km",
+              "value" : 45724
+            }
+          ],
+          "answer" : null,
+          "counterStart" : null,
+          "current" : 45724,
+          "recorded" : false,
+          "setAside" : [
+
+          ]
+        }
+      ],
+      "planned" : {
+        "at" : "2026-03-01T10:00:00Z",
+        "basis" : null,
+        "kind" : null,
+        "numberKind" : "kilometres",
+        "replaces" : [
+
+        ],
+        "source" : "estimate",
+        "typed" : null,
+        "unit" : "km",
+        "value" : 46000
+      },
+      "plannedAs" : {
+        "basis" : null,
+        "continuesCounter" : false,
+        "isStored" : false,
+        "kind" : "odometer",
+        "unit" : "km",
+        "value" : 46000
+      },
+      "question" : null,
+      "readings" : [
+        {
+          "at" : "2026-01-10T10:00:00Z",
+          "basis" : "read",
+          "key" : 1,
+          "kind" : "odometer",
+          "startsCounter" : false,
+          "unit" : "km",
+          "value" : 45724
+        }
+      ]
+    },
+    {
+      "name" : "a person's reading is read",
+      "outcomes" : [
+        {
+          "after" : [
+            {
+              "at" : "2026-01-10T10:00:00Z",
+              "basis" : "read",
+              "key" : "1",
+              "kind" : "odometer",
+              "startsCounter" : false,
+              "unit" : "km",
+              "value" : 45724
+            },
+            {
+              "at" : "2026-03-01T10:00:00Z",
+              "basis" : "read",
+              "key" : "new",
+              "kind" : "odometer",
+              "startsCounter" : false,
+              "unit" : "km",
+              "value" : 46000
+            }
+          ],
+          "answer" : null,
+          "counterStart" : null,
+          "current" : 46000,
+          "recorded" : true,
+          "setAside" : [
+
+          ]
+        }
+      ],
+      "planned" : {
+        "at" : "2026-03-01T10:00:00Z",
+        "basis" : "estimated",
+        "kind" : null,
+        "numberKind" : "kilometres",
+        "replaces" : [
+
+        ],
+        "source" : "person",
+        "typed" : null,
+        "unit" : "km",
+        "value" : 46000
+      },
+      "plannedAs" : {
+        "basis" : "read",
+        "continuesCounter" : false,
+        "isStored" : true,
+        "kind" : "odometer",
+        "unit" : "km",
+        "value" : 46000
+      },
+      "question" : null,
+      "readings" : [
+        {
+          "at" : "2026-01-10T10:00:00Z",
+          "basis" : "read",
+          "key" : 1,
+          "kind" : "odometer",
+          "startsCounter" : false,
+          "unit" : "km",
+          "value" : 45724
+        }
+      ]
+    },
+    {
+      "name" : "a weight only goes where it goes",
+      "outcomes" : [
+        {
+          "after" : [
+            {
+              "at" : "2026-01-10T10:00:00Z",
+              "basis" : null,
+              "key" : "1",
+              "kind" : "bodyWeight",
+              "startsCounter" : false,
+              "unit" : "kg",
+              "value" : 80
+            },
+            {
+              "at" : "2026-03-01T10:00:00Z",
+              "basis" : "read",
+              "key" : "new",
+              "kind" : "bodyWeight",
+              "startsCounter" : false,
+              "unit" : "kg",
+              "value" : 75
+            }
+          ],
+          "answer" : null,
+          "counterStart" : null,
+          "current" : 75,
+          "recorded" : true,
+          "setAside" : [
+
+          ]
+        }
+      ],
+      "planned" : {
+        "at" : "2026-03-01T10:00:00Z",
+        "basis" : null,
+        "kind" : "bodyWeight",
+        "numberKind" : "kilometres",
+        "replaces" : [
+
+        ],
+        "source" : "person",
+        "typed" : null,
+        "unit" : "kg",
+        "value" : 75
+      },
+      "plannedAs" : {
+        "basis" : "read",
+        "continuesCounter" : false,
+        "isStored" : true,
+        "kind" : "bodyWeight",
+        "unit" : "kg",
+        "value" : 75
+      },
+      "question" : null,
+      "readings" : [
+        {
+          "at" : "2026-01-10T10:00:00Z",
+          "basis" : null,
+          "key" : 1,
+          "kind" : "bodyWeight",
+          "startsCounter" : false,
+          "unit" : "kg",
+          "value" : 80
+        }
+      ]
+    },
+    {
+      "name" : "a kind from its unit",
+      "outcomes" : [
+        {
+          "after" : [
+            {
+              "at" : "2026-01-10T10:00:00Z",
+              "basis" : "estimated",
+              "key" : "1",
+              "kind" : "electricity",
+              "startsCounter" : false,
+              "unit" : "kwh",
+              "value" : 900
+            },
+            {
+              "at" : "2026-03-01T10:00:00Z",
+              "basis" : null,
+              "key" : "new",
+              "kind" : "electricity",
+              "startsCounter" : false,
+              "unit" : "kwh",
+              "value" : 850
+            }
+          ],
+          "answer" : "wasEstimate",
+          "counterStart" : null,
+          "current" : 850,
+          "recorded" : true,
+          "setAside" : [
+
+          ]
+        },
+        {
+          "after" : [
+            {
+              "at" : "2026-01-10T10:00:00Z",
+              "basis" : null,
+              "key" : "1",
+              "kind" : "electricity",
+              "startsCounter" : false,
+              "unit" : "kwh",
+              "value" : 900
+            },
+            {
+              "at" : "2026-03-01T10:00:00Z",
+              "basis" : null,
+              "key" : "new",
+              "kind" : "electricity",
+              "startsCounter" : true,
+              "unit" : "kwh",
+              "value" : 850
+            }
+          ],
+          "answer" : "newCounter",
+          "counterStart" : 850,
+          "current" : 850,
+          "recorded" : true,
+          "setAside" : [
+
+          ]
+        }
+      ],
+      "planned" : {
+        "at" : "2026-03-01T10:00:00Z",
+        "basis" : null,
+        "kind" : null,
+        "numberKind" : "kilometres",
+        "replaces" : [
+
+        ],
+        "source" : "document",
+        "typed" : null,
+        "unit" : "kwh",
+        "value" : 850
+      },
+      "plannedAs" : {
+        "basis" : null,
+        "continuesCounter" : false,
+        "isStored" : true,
+        "kind" : "electricity",
+        "unit" : "kwh",
+        "value" : 850
+      },
+      "question" : {
+        "answers" : [
+          "wasEstimate",
+          "newCounter"
+        ],
+        "previous" : 900,
+        "previousAt" : "2026-01-10T10:00:00Z",
+        "unit" : "kwh",
+        "value" : 850
+      },
+      "readings" : [
+        {
+          "at" : "2026-01-10T10:00:00Z",
+          "basis" : null,
+          "key" : 1,
+          "kind" : "electricity",
+          "startsCounter" : false,
+          "unit" : "kwh",
+          "value" : 900
+        }
+      ]
+    }
+  ],
+  "rule" : "PlannedReading, HouseholdMutations.askAboutReading(_:answer:) and recordReading(_:answer:in:), readingSeries(of:unit:), counterStart(of:unit:)",
+  "shape" : "readings: a section's readings, each by a key (at, value, unit key, kind, startsCounter, basis). planned: the reading a step plans (its value, or typed text read as numberKind; at; source; unit key, kind and basis when given; the keys of readings it replaces). plannedAs: what the plan makes of it, null when typed text isn't a number. question: what recording it asks with no answer (the highest reading before and when, the new value and unit, the answers offered), or null. outcomes: for each answer offered (or none, when it asks nothing), whether a reading was recorded, the section's readings after it by key (\"new\" for the one recorded), the series' value now, what it sets aside, and the value that started the counter in use.",
+  "source" : "ios/DosarCuSina/Services/History/Readings.swift",
+  "writtenBy" : "ios/DosarCuSinaTests/ReadingVectorsTests.swift"
+}

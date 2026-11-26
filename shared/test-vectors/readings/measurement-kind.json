@@ -1,0 +1,254 @@
+{
+  "cases" : [
+    {
+      "defaultUnit" : "kwh",
+      "isCumulative" : true,
+      "mayBeEstimated" : true,
+      "offered" : [
+        "wasEstimate",
+        "newCounter"
+      ],
+      "offeredLikelyNewCounter" : [
+        "newCounter",
+        "wasEstimate"
+      ],
+      "raw" : "electricity"
+    },
+    {
+      "defaultUnit" : "m3",
+      "isCumulative" : true,
+      "mayBeEstimated" : true,
+      "offered" : [
+        "wasEstimate",
+        "newCounter"
+      ],
+      "offeredLikelyNewCounter" : [
+        "newCounter",
+        "wasEstimate"
+      ],
+      "raw" : "gas"
+    },
+    {
+      "defaultUnit" : "m3",
+      "isCumulative" : true,
+      "mayBeEstimated" : true,
+      "offered" : [
+        "wasEstimate",
+        "newCounter"
+      ],
+      "offeredLikelyNewCounter" : [
+        "newCounter",
+        "wasEstimate"
+      ],
+      "raw" : "coldWater"
+    },
+    {
+      "defaultUnit" : "m3",
+      "isCumulative" : true,
+      "mayBeEstimated" : true,
+      "offered" : [
+        "wasEstimate",
+        "newCounter"
+      ],
+      "offeredLikelyNewCounter" : [
+        "newCounter",
+        "wasEstimate"
+      ],
+      "raw" : "hotWater"
+    },
+    {
+      "defaultUnit" : "gcal",
+      "isCumulative" : true,
+      "mayBeEstimated" : true,
+      "offered" : [
+        "wasEstimate",
+        "newCounter"
+      ],
+      "offeredLikelyNewCounter" : [
+        "newCounter",
+        "wasEstimate"
+      ],
+      "raw" : "thermalEnergy"
+    },
+    {
+      "defaultUnit" : "mgdl",
+      "isCumulative" : false,
+      "mayBeEstimated" : false,
+      "offered" : [
+        "correctOld",
+        "keepAside",
+        "newCounter"
+      ],
+      "offeredLikelyNewCounter" : [
+        "newCounter",
+        "correctOld",
+        "keepAside"
+      ],
+      "raw" : "biomarker"
+    },
+    {
+      "defaultUnit" : "mmhg",
+      "isCumulative" : false,
+      "mayBeEstimated" : false,
+      "offered" : [
+        "correctOld",
+        "keepAside",
+        "newCounter"
+      ],
+      "offeredLikelyNewCounter" : [
+        "newCounter",
+        "correctOld",
+        "keepAside"
+      ],
+      "raw" : "bloodPressure"
+    },
+    {
+      "defaultUnit" : "kg",
+      "isCumulative" : false,
+      "mayBeEstimated" : false,
+      "offered" : [
+        "correctOld",
+        "keepAside",
+        "newCounter"
+      ],
+      "offeredLikelyNewCounter" : [
+        "newCounter",
+        "correctOld",
+        "keepAside"
+      ],
+      "raw" : "bodyWeight"
+    },
+    {
+      "defaultUnit" : "dpt",
+      "isCumulative" : false,
+      "mayBeEstimated" : false,
+      "offered" : [
+        "correctOld",
+        "keepAside",
+        "newCounter"
+      ],
+      "offeredLikelyNewCounter" : [
+        "newCounter",
+        "correctOld",
+        "keepAside"
+      ],
+      "raw" : "diopters"
+    },
+    {
+      "defaultUnit" : "km",
+      "isCumulative" : true,
+      "mayBeEstimated" : false,
+      "offered" : [
+        "correctOld",
+        "keepAside",
+        "newCounter"
+      ],
+      "offeredLikelyNewCounter" : [
+        "newCounter",
+        "correctOld",
+        "keepAside"
+      ],
+      "raw" : "odometer"
+    },
+    {
+      "defaultUnit" : "h",
+      "isCumulative" : true,
+      "mayBeEstimated" : false,
+      "offered" : [
+        "correctOld",
+        "keepAside",
+        "newCounter"
+      ],
+      "offeredLikelyNewCounter" : [
+        "newCounter",
+        "correctOld",
+        "keepAside"
+      ],
+      "raw" : "engineHours"
+    },
+    {
+      "defaultUnit" : null,
+      "isCumulative" : true,
+      "mayBeEstimated" : false,
+      "offered" : [
+        "correctOld",
+        "keepAside",
+        "newCounter"
+      ],
+      "offeredLikelyNewCounter" : [
+        "newCounter",
+        "correctOld",
+        "keepAside"
+      ],
+      "raw" : "cycles"
+    },
+    {
+      "defaultUnit" : null,
+      "isCumulative" : false,
+      "mayBeEstimated" : false,
+      "offered" : [
+        "correctOld",
+        "keepAside",
+        "newCounter"
+      ],
+      "offeredLikelyNewCounter" : [
+        "newCounter",
+        "correctOld",
+        "keepAside"
+      ],
+      "raw" : "custom"
+    },
+    {
+      "kind" : "custom",
+      "stored" : "thermometer"
+    },
+    {
+      "forUnit" : "km",
+      "kind" : "odometer"
+    },
+    {
+      "forUnit" : "kg",
+      "kind" : "bodyWeight"
+    },
+    {
+      "forUnit" : "h",
+      "kind" : "engineHours"
+    },
+    {
+      "forUnit" : "kwh",
+      "kind" : "electricity"
+    },
+    {
+      "forUnit" : "m3",
+      "kind" : "cycles"
+    },
+    {
+      "forUnit" : "gcal",
+      "kind" : "cycles"
+    },
+    {
+      "forUnit" : "shots",
+      "kind" : "cycles"
+    },
+    {
+      "forUnit" : "ore motor",
+      "kind" : "cycles"
+    },
+    {
+      "forUnit" : null,
+      "kind" : "cycles"
+    },
+    {
+      "allAnswers" : [
+        "wasEstimate",
+        "newCounter",
+        "correctOld",
+        "keepAside"
+      ]
+    }
+  ],
+  "rule" : "MeasurementKind (defaultUnit, isCumulative, mayBeEstimated, forUnit), LowerReadingAnswer.allCases and offered(for:likelyNewCounter:)",
+  "shape" : "raw: a kind with its default unit's key, whether it only goes up, whether its readings may be estimated, and the answers a lower reading offers (offered) and offers when it looks like a new counter (offeredLikelyNewCounter). stored: a raw a newer build wrote, and the kind it reads as. forUnit: a unit's key (null for none) and the kind a field in it records. allAnswers: every answer, in order.",
+  "source" : "ios/DosarCuSina/Models/Schema/RecordModels.swift, ios/DosarCuSina/Services/History/Readings.swift",
+  "writtenBy" : "ios/DosarCuSinaTests/ReadingVectorsTests.swift"
+}

@@ -1,0 +1,420 @@
+{
+  "cases" : [
+    {
+      "counterAtFrom" : 0,
+      "counterAtTo" : 1,
+      "distance" : 3000,
+      "from" : {
+        "at" : "2026-02-01T10:00:00Z",
+        "metric" : 101000
+      },
+      "name" : "a replaced dashboard",
+      "readings" : [
+        {
+          "at" : "2026-01-01T10:00:00Z",
+          "isEstimate" : false,
+          "metric" : 100000,
+          "startsCounter" : false
+        },
+        {
+          "at" : "2026-04-01T10:00:00Z",
+          "isEstimate" : false,
+          "metric" : 103000,
+          "startsCounter" : false
+        },
+        {
+          "at" : "2026-05-01T10:00:00Z",
+          "isEstimate" : false,
+          "metric" : 500,
+          "startsCounter" : true
+        },
+        {
+          "at" : "2026-06-01T10:00:00Z",
+          "isEstimate" : false,
+          "metric" : 1500,
+          "startsCounter" : false
+        }
+      ],
+      "to" : {
+        "at" : "2026-06-01T10:00:00Z",
+        "metric" : 1500
+      }
+    },
+    {
+      "counterAtFrom" : 1,
+      "counterAtTo" : 1,
+      "distance" : 600,
+      "from" : {
+        "at" : "2026-05-15T10:00:00Z",
+        "metric" : 900
+      },
+      "name" : "a replaced dashboard",
+      "readings" : [
+        {
+          "at" : "2026-01-01T10:00:00Z",
+          "isEstimate" : false,
+          "metric" : 100000,
+          "startsCounter" : false
+        },
+        {
+          "at" : "2026-04-01T10:00:00Z",
+          "isEstimate" : false,
+          "metric" : 103000,
+          "startsCounter" : false
+        },
+        {
+          "at" : "2026-05-01T10:00:00Z",
+          "isEstimate" : false,
+          "metric" : 500,
+          "startsCounter" : true
+        },
+        {
+          "at" : "2026-06-01T10:00:00Z",
+          "isEstimate" : false,
+          "metric" : 1500,
+          "startsCounter" : false
+        }
+      ],
+      "to" : {
+        "at" : "2026-06-01T10:00:00Z",
+        "metric" : 1500
+      }
+    },
+    {
+      "counterAtFrom" : 0,
+      "counterAtTo" : 0,
+      "distance" : 3000,
+      "from" : {
+        "at" : "2026-01-01T10:00:00Z",
+        "metric" : 100000
+      },
+      "name" : "a replaced dashboard",
+      "readings" : [
+        {
+          "at" : "2026-01-01T10:00:00Z",
+          "isEstimate" : false,
+          "metric" : 100000,
+          "startsCounter" : false
+        },
+        {
+          "at" : "2026-04-01T10:00:00Z",
+          "isEstimate" : false,
+          "metric" : 103000,
+          "startsCounter" : false
+        },
+        {
+          "at" : "2026-05-01T10:00:00Z",
+          "isEstimate" : false,
+          "metric" : 500,
+          "startsCounter" : true
+        },
+        {
+          "at" : "2026-06-01T10:00:00Z",
+          "isEstimate" : false,
+          "metric" : 1500,
+          "startsCounter" : false
+        }
+      ],
+      "to" : {
+        "at" : "2026-04-01T10:00:00Z",
+        "metric" : 103000
+      }
+    },
+    {
+      "counterAtFrom" : 1,
+      "counterAtTo" : 1,
+      "distance" : 0,
+      "from" : {
+        "at" : "2026-06-01T10:00:00Z",
+        "metric" : 1500
+      },
+      "name" : "a replaced dashboard",
+      "readings" : [
+        {
+          "at" : "2026-01-01T10:00:00Z",
+          "isEstimate" : false,
+          "metric" : 100000,
+          "startsCounter" : false
+        },
+        {
+          "at" : "2026-04-01T10:00:00Z",
+          "isEstimate" : false,
+          "metric" : 103000,
+          "startsCounter" : false
+        },
+        {
+          "at" : "2026-05-01T10:00:00Z",
+          "isEstimate" : false,
+          "metric" : 500,
+          "startsCounter" : true
+        },
+        {
+          "at" : "2026-06-01T10:00:00Z",
+          "isEstimate" : false,
+          "metric" : 1500,
+          "startsCounter" : false
+        }
+      ],
+      "to" : {
+        "at" : "2026-05-15T10:00:00Z",
+        "metric" : 900
+      }
+    },
+    {
+      "counterAtFrom" : 0,
+      "counterAtTo" : 1,
+      "distance" : 5000,
+      "from" : {
+        "at" : "2025-12-01T10:00:00Z",
+        "metric" : 99000
+      },
+      "name" : "a replaced dashboard",
+      "readings" : [
+        {
+          "at" : "2026-01-01T10:00:00Z",
+          "isEstimate" : false,
+          "metric" : 100000,
+          "startsCounter" : false
+        },
+        {
+          "at" : "2026-04-01T10:00:00Z",
+          "isEstimate" : false,
+          "metric" : 103000,
+          "startsCounter" : false
+        },
+        {
+          "at" : "2026-05-01T10:00:00Z",
+          "isEstimate" : false,
+          "metric" : 500,
+          "startsCounter" : true
+        },
+        {
+          "at" : "2026-06-01T10:00:00Z",
+          "isEstimate" : false,
+          "metric" : 1500,
+          "startsCounter" : false
+        }
+      ],
+      "to" : {
+        "at" : "2026-06-01T10:00:00Z",
+        "metric" : 1500
+      }
+    },
+    {
+      "counterAtFrom" : 0,
+      "counterAtTo" : 2,
+      "distance" : 1595,
+      "from" : {
+        "at" : "2025-02-01T10:00:00Z",
+        "metric" : 10500
+      },
+      "name" : "three counters",
+      "readings" : [
+        {
+          "at" : "2025-01-01T10:00:00Z",
+          "isEstimate" : false,
+          "metric" : 10000,
+          "startsCounter" : false
+        },
+        {
+          "at" : "2025-03-01T10:00:00Z",
+          "isEstimate" : false,
+          "metric" : 11000,
+          "startsCounter" : false
+        },
+        {
+          "at" : "2025-04-01T10:00:00Z",
+          "isEstimate" : false,
+          "metric" : 100,
+          "startsCounter" : true
+        },
+        {
+          "at" : "2025-06-01T10:00:00Z",
+          "isEstimate" : false,
+          "metric" : 900,
+          "startsCounter" : false
+        },
+        {
+          "at" : "2025-07-01T10:00:00Z",
+          "isEstimate" : false,
+          "metric" : 5,
+          "startsCounter" : true
+        },
+        {
+          "at" : "2025-09-01T10:00:00Z",
+          "isEstimate" : false,
+          "metric" : 505,
+          "startsCounter" : false
+        }
+      ],
+      "to" : {
+        "at" : "2025-08-01T10:00:00Z",
+        "metric" : 300
+      }
+    },
+    {
+      "counterAtFrom" : 1,
+      "counterAtTo" : 2,
+      "distance" : 1000,
+      "from" : {
+        "at" : "2025-05-01T10:00:00Z",
+        "metric" : 400
+      },
+      "name" : "three counters",
+      "readings" : [
+        {
+          "at" : "2025-01-01T10:00:00Z",
+          "isEstimate" : false,
+          "metric" : 10000,
+          "startsCounter" : false
+        },
+        {
+          "at" : "2025-03-01T10:00:00Z",
+          "isEstimate" : false,
+          "metric" : 11000,
+          "startsCounter" : false
+        },
+        {
+          "at" : "2025-04-01T10:00:00Z",
+          "isEstimate" : false,
+          "metric" : 100,
+          "startsCounter" : true
+        },
+        {
+          "at" : "2025-06-01T10:00:00Z",
+          "isEstimate" : false,
+          "metric" : 900,
+          "startsCounter" : false
+        },
+        {
+          "at" : "2025-07-01T10:00:00Z",
+          "isEstimate" : false,
+          "metric" : 5,
+          "startsCounter" : true
+        },
+        {
+          "at" : "2025-09-01T10:00:00Z",
+          "isEstimate" : false,
+          "metric" : 505,
+          "startsCounter" : false
+        }
+      ],
+      "to" : {
+        "at" : "2025-09-01T10:00:00Z",
+        "metric" : 505
+      }
+    },
+    {
+      "counterAtFrom" : 0,
+      "counterAtTo" : 2,
+      "distance" : 2300,
+      "from" : {
+        "at" : "2025-01-01T10:00:00Z",
+        "metric" : 10000
+      },
+      "name" : "three counters",
+      "readings" : [
+        {
+          "at" : "2025-01-01T10:00:00Z",
+          "isEstimate" : false,
+          "metric" : 10000,
+          "startsCounter" : false
+        },
+        {
+          "at" : "2025-03-01T10:00:00Z",
+          "isEstimate" : false,
+          "metric" : 11000,
+          "startsCounter" : false
+        },
+        {
+          "at" : "2025-04-01T10:00:00Z",
+          "isEstimate" : false,
+          "metric" : 100,
+          "startsCounter" : true
+        },
+        {
+          "at" : "2025-06-01T10:00:00Z",
+          "isEstimate" : false,
+          "metric" : 900,
+          "startsCounter" : false
+        },
+        {
+          "at" : "2025-07-01T10:00:00Z",
+          "isEstimate" : false,
+          "metric" : 5,
+          "startsCounter" : true
+        },
+        {
+          "at" : "2025-09-01T10:00:00Z",
+          "isEstimate" : false,
+          "metric" : 505,
+          "startsCounter" : false
+        }
+      ],
+      "to" : {
+        "at" : "2025-09-01T10:00:00Z",
+        "metric" : 505
+      }
+    },
+    {
+      "counterAtFrom" : 0,
+      "counterAtTo" : 0,
+      "distance" : 1000,
+      "from" : {
+        "at" : "2026-01-01T10:00:00Z",
+        "metric" : 1000
+      },
+      "name" : "one counter",
+      "readings" : [
+        {
+          "at" : "2026-01-01T10:00:00Z",
+          "isEstimate" : false,
+          "metric" : 1000,
+          "startsCounter" : false
+        },
+        {
+          "at" : "2026-02-01T10:00:00Z",
+          "isEstimate" : false,
+          "metric" : 2000,
+          "startsCounter" : false
+        }
+      ],
+      "to" : {
+        "at" : "2026-02-01T10:00:00Z",
+        "metric" : 2000
+      }
+    },
+    {
+      "counterAtFrom" : 0,
+      "counterAtTo" : 0,
+      "distance" : 0,
+      "from" : {
+        "at" : "2026-02-01T10:00:00Z",
+        "metric" : 2000
+      },
+      "name" : "one counter",
+      "readings" : [
+        {
+          "at" : "2026-01-01T10:00:00Z",
+          "isEstimate" : false,
+          "metric" : 1000,
+          "startsCounter" : false
+        },
+        {
+          "at" : "2026-02-01T10:00:00Z",
+          "isEstimate" : false,
+          "metric" : 2000,
+          "startsCounter" : false
+        }
+      ],
+      "to" : {
+        "at" : "2026-01-01T10:00:00Z",
+        "metric" : 1000
+      }
+    }
+  ],
+  "rule" : "ReadingSeries.distance(from:to:) and counter(at:)",
+  "shape" : "readings: a section's readings as kept. from, to: a value at a moment. distance: how far the counter moved between them, counter by counter, never below zero. counterAtFrom, counterAtTo: the counter each moment belongs to.",
+  "source" : "ios/DosarCuSina/Services/History/Readings.swift",
+  "writtenBy" : "ios/DosarCuSinaTests/ReadingVectorsTests.swift"
+}
