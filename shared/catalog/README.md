@@ -13,9 +13,10 @@ The categories that ship with the app (Mașini, Locuințe, Acte and the rest), d
 | [`keys.json`](keys.json) | The built-in field, deadline and category keys the code names. |
 | [`ownCategories.json`](ownCategories.json) | What a category of one's own is made of besides the answers to its switches. |
 | [`household.json`](household.json) | The household's own deadlines, which belong to no section. |
+| [`documents.json`](documents.json) | What a personal document can be: its types, their variants and the names they give. |
 | [`subscriptions/subscriptions.json`](subscriptions/subscriptions.json) | What a subscription can be: its services, codes, groups and billing cycles. Written by [`SubscriptionCatalogExportTests`](../../ios/DosarCuSinaTests/SubscriptionCatalogExportTests.swift) (see below). |
 
-All six are machine JSON, written by `MachineText` with their keys sorted, so a diff shows only what changed.
+All seven are machine JSON, written by `MachineText` with their keys sorted, so a diff shows only what changed.
 
 ### `templates.json`
 
@@ -47,12 +48,26 @@ What a category of one's own is made of besides the answers to its few questions
 
 - **`basePockets`:** the pockets every new category of one's own starts with (`CategorySwitches.basePockets`); the switches add theirs.
 - **`counterSectionKey`:** the field section a counter goes in (`custom.counter`).
+- **`recovered`:** „Recuperate”, the category of one's own the repair list keeps records in whose section was deleted on another device (`LostRecordsStep`): its `key`, `name`, `symbol`, `pockets` and the id of its one section (`sectionID`), the same on every device and on both apps, so two devices that keep records there make one.
 - **`counters`:** each way a service is counted, in `CategorySwitches.Counter`'s order (the order a category's service is read in): `counter` (its raw value, which names the service deadline `custom.service.<counter>`), `defaultEvery` (the interval it starts at: months, kilometres or hours), `field` (its counter field, none for a service by time) and `service` (its service deadline at `defaultEvery`, as a template's `blueprints` writes one). The interval the person types is laid into the deadline's `recurrence` and `firstDue` by the rule both apps share (`CategorySwitches.serviceBlueprint`).
 - **`writtenBy`:** the test that writes the files.
 
 ### `household.json`
 
 - **`blueprints`:** the household's own deadlines (`HouseholdRules.blueprints`), each as a template's `blueprints` writes one: today the rental income declaration (`household.rentalDeclaration`), made while the household has a tenancy (`HouseholdRules.reconcile`).
+- **`writtenBy`:** the test that writes the files.
+
+### `documents.json`
+
+What a personal document can be, declared once in the iOS code (`DocumentType` in [`ChoiceOptions.swift`](../../ios/DosarCuSina/Models/Fields/ChoiceOptions.swift)), read by Android's `DocumentTypes` (`Catalog.documentTypes`):
+
+- **`typeFieldKey`**, **`variantFieldKey`:** the fields that hold a document's type and its variant.
+- **`types`:** in the order they are offered, each its `key` (stored), `label` and `aliases` (what stored or typed text it is found by).
+- **`variants`:** in order, each its `type`, `key`, `label` and, when the document takes a name of its own, its `documentName` („Cazier fiscal”).
+- **`unnamed`:** what a document of no type this build knows is called.
+- **`keepsBackSide`**, **`readOnPhoneOnly`**, **`sharedWithCare`:** the types each rule holds for.
+- **`validityMonthsAfterIssue`:** how long a type or a variant is valid after it is issued, in months (a cazier judiciar, six).
+- **`travelMargins`:** how long before its expiry a type stops being good for travel, in days (a passport, 180).
 - **`writtenBy`:** the test that writes the files.
 
 ### `subscriptions/subscriptions.json`
@@ -70,7 +85,7 @@ What a subscription can be, declared once in the iOS code (`ServiceKind.services
 
 ## Fresh or failing
 
-`CatalogExportTests` writes the five files again on every iOS test run and fails when what is committed differs, or when a JSON file here is written by nothing any more. A failed run on GitHub keeps them made afresh in its `test-results` artifact, as `catalog/` (`tests/run_tests.sh` passes the folder as `TEST_RUNNER_CATALOG_OUT`): copy them over this folder. Or write them on a Mac:
+`CatalogExportTests` writes the six files again on every iOS test run and fails when what is committed differs, or when a JSON file here is written by nothing any more. A failed run on GitHub keeps them made afresh in its `test-results` artifact, as `catalog/` (`tests/run_tests.sh` passes the folder as `TEST_RUNNER_CATALOG_OUT`): copy them over this folder. Or write them on a Mac:
 
 ```sh
 TEST_RUNNER_CATALOG_WRITE=1 xcodebuild test -project ios/DosarCuSina.xcodeproj -scheme DosarCuSina \
@@ -82,7 +97,7 @@ TEST_RUNNER_CATALOG_WRITE=1 xcodebuild test -project ios/DosarCuSina.xcodeproj -
 
 ## Who reads them
 
-- **Android:** the `catalog` module ([`android/catalog`](../../android/catalog)) copies the five files into its resources as it is built (the `catalogResources` task), so the app carries this folder as it is, and reads them into `Catalog.builtIn`, with the archive's own codecs. Every part must read whole; a part the build can't read fails the build's tests, never the person's binder. The importer takes each built-in's definition from it (`BuiltIns`), and `BuiltInInstall` decides what installing the built-ins changes, as the iOS app's `TemplateStore.installBuiltIns` does. `CategorySwitches` makes a category of one's own from `ownCategories.json` (`Catalog.ownCategories`), and `HouseholdRules` the household's deadlines from `household.json` (`Catalog.household`).
+- **Android:** the `catalog` module ([`android/catalog`](../../android/catalog)) copies the six files into its resources as it is built (the `catalogResources` task), so the app carries this folder as it is, and reads them into `Catalog.builtIn`, with the archive's own codecs. Every part must read whole; a part the build can't read fails the build's tests, never the person's binder. The importer takes each built-in's definition from it (`BuiltIns`), and `BuiltInInstall` decides what installing the built-ins changes, as the iOS app's `TemplateStore.installBuiltIns` does. `CategorySwitches` makes a category of one's own from `ownCategories.json` (`Catalog.ownCategories`), and `HouseholdRules` the household's deadlines from `household.json` (`Catalog.household`).
 - **iOS:** nothing reads them; the catalog is the code.
 
 ## Left for later

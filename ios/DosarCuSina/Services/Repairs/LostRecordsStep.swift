@@ -20,6 +20,13 @@ struct LostRecordsStep: DataRepairStep {
     /// The category „Recuperate” and its one section, the same on every device.
     static let categoryKey = TemplateDefinition.customKeyPrefix + "recovered"
     static let sectionID = UUID(uuidString: "6F1C2B7E-5D4A-4E8B-9C3D-0A1B2C3D4E5F")!
+    /// Its name, its symbol and the pockets it shows: what both apps make it with
+    /// (`shared/catalog/ownCategories.json`, `recovered`).
+    static var name: String {
+        String(localized: "Recuperate", comment: "A section of one's own made for records whose section was deleted on another device.")
+    }
+    static let symbol = "tray.full"
+    static let pockets: [SectionPocket] = [.upcoming, .documents, .history]
 
     var title: String { String(localized: "Rămase fără secțiune", comment: "Repair group: records whose section was deleted on another device.") }
     var applyTitle: String { String(localized: "Păstrează", comment: "Applies one repair: keep a record whose section was deleted on another device.") }
@@ -91,9 +98,8 @@ struct LostRecordsStep: DataRepairStep {
     static func section(in context: ModelContext, calendar: Calendar) throws -> Asset {
         if let section = Asset.find(sectionID.uuidString, in: context), !section.isDeleted { return section }
         let store = TemplateStore(context: context)
-        let name = String(localized: "Recuperate", comment: "A section of one's own made for records whose section was deleted on another device.")
         let template = try store.templatesByKey()[categoryKey]
-            ?? store.createCustom(name: name, symbol: "tray.full", pockets: [.upcoming, .documents, .history],
+            ?? store.createCustom(name: name, symbol: symbol, pockets: pockets,
                                   isSensitive: BinderLocks.read(in: context).anySectionLocked, key: categoryKey)
         let section = try AssetActions(context: context, calendar: calendar).create(name: name, template: template, values: FieldValues())
         section.id = sectionID
