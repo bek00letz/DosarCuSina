@@ -287,10 +287,7 @@ class TemplateStore(
      * same ([CategorySwitches.boxAsGrouping]). The row to save, or none when nothing changes; it saves
      * nothing itself. Run by the repair list (`OwnCategoryBoxesStep`) and by [editCustom].
      */
-    fun takeBoxAsGrouping(template: CategoryTemplate): CategoryTemplate? =
-        CategorySwitches.boxAsGrouping(template.parts, template.isBuiltIn, template.chosenGrouping)?.let { taken ->
-            template.withBehavior(taken.behavior).copy(boxGroupingRaw = taken.grouping.raw)
-        }
+    fun takeBoxAsGrouping(template: CategoryTemplate): CategoryTemplate? = template.takingBoxAsGrouping()
 
     // Inside
 
