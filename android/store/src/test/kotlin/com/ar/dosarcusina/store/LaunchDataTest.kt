@@ -110,6 +110,10 @@ class LaunchDataTest {
             "Waiting for the owner",
         )
         assertEquals(binder.repairs.pending, binder.repairs.announcement, "And the calm prompt says so")
-        assertEquals(LaunchData.LaunchStep.entries.last(), LaunchData.LaunchStep.REPAIR_LIST, "After the built-ins")
+        assertEquals(
+            listOf(LaunchData.LaunchStep.REPAIR_LIST, LaunchData.LaunchStep.HOUSEHOLD_DEADLINES),
+            LaunchData.LaunchStep.entries.takeLast(2),
+            "After the built-ins, and before the household's own deadlines, as the iOS app runs them",
+        )
     }
 }

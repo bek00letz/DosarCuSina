@@ -1,0 +1,31 @@
+{
+  "blueprints" : [
+    {
+      "completion" : "rentalDeclaration",
+      "firstDue" : {
+        "type" : "nextFixedDate"
+      },
+      "isSuggested" : true,
+      "key" : "household.rentalDeclaration",
+      "kind" : "tax",
+      "note" : "Venitul din chirii se declară la ANAF până pe 25 mai.",
+      "recurrence" : {
+        "dates" : [
+          "05-25"
+        ],
+        "type" : "fixedDates"
+      },
+      "reminders" : {
+        "consequence" : "legal",
+        "followUpAfterLapse" : true,
+        "graceDays" : 0,
+        "leadDays" : [
+          30,
+          7
+        ]
+      },
+      "title" : "Declarația unică pentru chirii"
+    }
+  ],
+  "writtenBy" : "ios/DosarCuSinaTests/CatalogExportTests.swift"
+}

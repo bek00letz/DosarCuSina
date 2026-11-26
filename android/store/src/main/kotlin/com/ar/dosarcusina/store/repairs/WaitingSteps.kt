@@ -21,7 +21,6 @@ object WaitingSteps {
     private const val CAPTURE_REPAIRS = "CaptureRepairs and the document and visit actions (Phase 3)"
     private const val POLICIES = "the policy facts (BlueprintFacts, DeadlineFacts) and ObligationActions (Phase 3)"
     private const val PAPERS = "PaperIdentity and the history actions (Phase 3)"
-    private const val OWN_CATEGORIES = "CategorySwitches and TemplateStore's categories of one's own"
 
     val staleDocumentLinks = WaitingStep(
         DataRepairStepId.STALE_DOCUMENT_LINKS, DataRepairGroup.MOVED_DOCUMENTS, CAPTURE_REPAIRS,
@@ -66,18 +65,6 @@ object WaitingSteps {
         "AssetActions.automaticParent and AssetActions.move (Phase 3)",
         isSuggestion = true, applyVerb = ApplyVerb.MOVE,
     )
-    val ownCategoryBoxes = WaitingStep(
-        DataRepairStepId.OWN_CATEGORY_BOXES, DataRepairGroup.OWN_CATEGORY_BOXES,
-        "$OWN_CATEGORIES (TemplateStore.takeBoxAsGrouping)", runsByItself = true,
-    )
-    val ownCategoryVisits = WaitingStep(
-        DataRepairStepId.OWN_CATEGORY_VISITS, DataRepairGroup.OWN_CATEGORY_VISITS,
-        "$OWN_CATEGORIES (CategorySwitches.visit(for:))", runsByItself = true,
-    )
-    val serviceNotes = WaitingStep(
-        DataRepairStepId.SERVICE_NOTES, DataRepairGroup.SERVICES,
-        "$OWN_CATEGORIES (CategorySwitches.isServiceBlueprint)",
-    )
     val renewalRepeats = WaitingStep(
         DataRepairStepId.RENEWAL_REPEATS, DataRepairGroup.RENEWED_DOCUMENTS,
         "CompletionKind and CompletionShape.replacesDocument (Phase 3)",
@@ -96,7 +83,7 @@ object WaitingSteps {
     )
     val lostRecords = WaitingStep(
         DataRepairStepId.LOST_RECORDS, DataRepairGroup.LOST_RECORDS,
-        "TemplateStore.createCustom (the categories of one's own) and AssetActions.create (Phase 3)",
+        "AssetActions.create (Phase 3), and the words „Recuperate” it keeps, from the app's strings",
         applyVerb = ApplyVerb.KEEP,
     )
 }

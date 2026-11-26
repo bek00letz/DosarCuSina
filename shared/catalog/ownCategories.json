@@ -1,0 +1,126 @@
+{
+  "basePockets" : [
+    "upcoming",
+    "history",
+    "people",
+    "money",
+    "keyFacts"
+  ],
+  "counterSectionKey" : "custom.counter",
+  "counters" : [
+    {
+      "counter" : "yearly",
+      "defaultEvery" : 12,
+      "service" : {
+        "completion" : "ownService",
+        "firstDue" : {
+          "every" : 1,
+          "type" : "afterInterval",
+          "unit" : "year"
+        },
+        "isSuggested" : true,
+        "key" : "custom.service.yearly",
+        "kind" : "maintenance",
+        "recurrence" : {
+          "anchor" : "completion",
+          "every" : 1,
+          "type" : "interval",
+          "unit" : "year"
+        },
+        "reminders" : {
+          "consequence" : "comfort",
+          "followUpAfterLapse" : false,
+          "graceDays" : 30,
+          "leadDays" : [
+            14,
+            1
+          ]
+        },
+        "title" : "Revizie periodică"
+      }
+    },
+    {
+      "counter" : "kilometres",
+      "defaultEvery" : 10000,
+      "field" : {
+        "isEssential" : true,
+        "isSensitive" : false,
+        "key" : "custom.counter.km",
+        "label" : "Kilometraj",
+        "role" : "heroMetric",
+        "type" : "metric",
+        "unit" : "km"
+      },
+      "service" : {
+        "completion" : "ownService",
+        "firstDue" : {
+          "every" : 1,
+          "type" : "afterInterval",
+          "unit" : "year"
+        },
+        "isSuggested" : true,
+        "key" : "custom.service.kilometres",
+        "kind" : "maintenance",
+        "recurrence" : {
+          "every" : 10000,
+          "fallbackEvery" : 1,
+          "fallbackUnit" : "year",
+          "type" : "metric",
+          "unit" : "km"
+        },
+        "reminders" : {
+          "consequence" : "comfort",
+          "followUpAfterLapse" : false,
+          "graceDays" : 30,
+          "leadDays" : [
+            14,
+            1
+          ]
+        },
+        "title" : "Revizie periodică"
+      }
+    },
+    {
+      "counter" : "engineHours",
+      "defaultEvery" : 100,
+      "field" : {
+        "isEssential" : true,
+        "isSensitive" : false,
+        "key" : "custom.counter.h",
+        "label" : "Ore de motor",
+        "role" : "heroMetric",
+        "type" : "metric",
+        "unit" : "h"
+      },
+      "service" : {
+        "completion" : "ownService",
+        "firstDue" : {
+          "every" : 1,
+          "type" : "afterInterval",
+          "unit" : "year"
+        },
+        "isSuggested" : true,
+        "key" : "custom.service.engineHours",
+        "kind" : "maintenance",
+        "recurrence" : {
+          "every" : 100,
+          "fallbackEvery" : 1,
+          "fallbackUnit" : "year",
+          "type" : "metric",
+          "unit" : "h"
+        },
+        "reminders" : {
+          "consequence" : "comfort",
+          "followUpAfterLapse" : false,
+          "graceDays" : 30,
+          "leadDays" : [
+            14,
+            1
+          ]
+        },
+        "title" : "Revizie periodică"
+      }
+    }
+  ],
+  "writtenBy" : "ios/DosarCuSinaTests/CatalogExportTests.swift"
+}
