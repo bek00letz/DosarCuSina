@@ -18,15 +18,15 @@ import SwiftData
 struct LostRecordsStep: DataRepairStep {
     static let id = DataRepairStepID.lostRecords
     /// The category „Recuperate” and its one section, the same on every device.
-    static let categoryKey = TemplateDefinition.customKeyPrefix + "recovered"
-    static let sectionID = UUID(uuidString: "6F1C2B7E-5D4A-4E8B-9C3D-0A1B2C3D4E5F")!
+    nonisolated static let categoryKey = TemplateDefinition.customKeyPrefix + "recovered"
+    nonisolated static let sectionID = UUID(uuidString: "6F1C2B7E-5D4A-4E8B-9C3D-0A1B2C3D4E5F")!
     /// Its name, its symbol and the pockets it shows: what both apps make it with
     /// (`shared/catalog/ownCategories.json`, `recovered`).
-    static var name: String {
+    nonisolated static var name: String {
         String(localized: "Recuperate", comment: "A section of one's own made for records whose section was deleted on another device.")
     }
-    static let symbol = "tray.full"
-    static let pockets: [SectionPocket] = [.upcoming, .documents, .history]
+    nonisolated static let symbol = "tray.full"
+    nonisolated static let pockets: [SectionPocket] = [.upcoming, .documents, .history]
 
     var title: String { String(localized: "Rămase fără secțiune", comment: "Repair group: records whose section was deleted on another device.") }
     var applyTitle: String { String(localized: "Păstrează", comment: "Applies one repair: keep a record whose section was deleted on another device.") }
