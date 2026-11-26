@@ -229,13 +229,16 @@ public enum SubscriptionMatcher {
         }
     }
 
-    /// Never the one: a different consumption point or line, or another service.
+    /// Never the one: a different consumption point or line, or another service. Both services
+    /// are read through the service's one resolver (`ServiceKind.service(_:)`), so a paper's
+    /// "Gaze naturale" and a subscription's key name the same service; a name it doesn't know
+    /// tells nothing apart.
     static func isCompatible(_ subscription: Subscription, with reading: Reading) -> Bool {
         for code in Code.allCases where code.namesOnePoint {
             if let read = reading.codes[code], let kept = subscription.values[code.fieldKey]?.textValue,
                normalized(kept, as: code) != normalized(read, as: code) { return false }
         }
-        if let service = reading.service, let theirs = SubscriptionFields.service(of: subscription.values),
+        if let service = ServiceKind.service(reading.service)?.key, let theirs = SubscriptionFields.service(of: subscription.values),
            service != theirs, service != ServiceKind.other, theirs != ServiceKind.other { return false }
         return true
     }

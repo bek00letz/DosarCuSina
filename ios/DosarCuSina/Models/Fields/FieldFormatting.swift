@@ -96,7 +96,7 @@ public enum FieldFormatter {
                 : .invalid(String(localized: "Numărul de telefon nu e complet.", comment: "Phone field error"))
         case .year:
             let latest = Calendar.dosar.component(.year, from: Date()) + 1
-            guard let year = RomanianNumber.value(text, as: .count).map({ NSDecimalNumber(decimal: $0).doubleValue }), (1900...Double(latest)).contains(year) else {
+            guard let year = RomanianNumber.value(text, as: .count).map(RomanianNumber.double), (1900...Double(latest)).contains(year) else {
                 return .invalid(String(localized: "Scrie anul cu patru cifre, de exemplu 2018.", comment: "Year field error"))
             }
             return .valid
@@ -125,8 +125,7 @@ public enum FieldFormatter {
         case .text:
             return .text(normalize(text, as: type))
         case .number:
-            let kind = type == .year ? NumberKind.count : NumberKind.forField(unit: unit)
-            return RomanianNumber.value(text, as: kind, unit: unit).map { .number(NSDecimalNumber(decimal: $0).doubleValue) }
+            return RomanianNumber.value(text, as: numberKind(of: type, unit: unit), unit: unit).map { .number(RomanianNumber.double($0)) }
         case .money:
             return RomanianNumber.value(text, as: .money).map { .money(Money($0, currency: currency)) }
         case .date:
@@ -136,8 +135,15 @@ public enum FieldFormatter {
         }
     }
 
+    /// The kind a field's number is read as: a year is counted, kilometres are whole by their
+    /// unit, any other number is a measured value. What typing reads it as, and what a stored
+    /// number's decimals are (`DecimalDoubleStep`).
+    public static func numberKind(of type: FieldType, unit: MeasurementUnit?) -> NumberKind {
+        type == .year ? .count : NumberKind.forField(unit: unit)
+    }
+
     public static func parseNumber(_ raw: String) -> Double? {
-        RomanianNumber.value(raw, as: .meterIndex).map { NSDecimalNumber(decimal: $0).doubleValue }
+        RomanianNumber.value(raw, as: .meterIndex).map(RomanianNumber.double)
     }
 
     /// The one reader's answer as a field validation: its message when it refuses.

@@ -226,7 +226,7 @@ struct VisitDraft: Equatable {
             filled.append(.day)
         }
         if asks.contains(.counter), odometer == nil, case .metric(let value, _)? = fields[.odometer] {
-            odometer = NSDecimalNumber(decimal: value).doubleValue
+            odometer = RomanianNumber.double(value)
             odometerSource = .document
         }
         if asks.contains(.provider), provider == .none, let name = fields[.provider]?.text, !name.isEmpty {
