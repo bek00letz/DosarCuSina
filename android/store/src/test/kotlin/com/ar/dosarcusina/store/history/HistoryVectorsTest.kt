@@ -105,7 +105,8 @@ class HistoryVectorsTest {
 
     @TestFactory
     fun partKeys(): List<DynamicTest> = HistoryVectorFiles.cases("labour").filter { "partName" in it }.map { case ->
-        DynamicTest.dynamicTest(case.text("partName")) {
+        // Quoted, so a name of spaces alone (a case of its own) still has a title JUnit accepts.
+        DynamicTest.dynamicTest("„${case.text("partName")}”") {
             val parts = requireNotNull(Catalog.builtIn.definition(case.text("category"))).components
             assertEquals(case.text("key"), ComponentCatalog.key(case.text("partName"), parts))
         }
