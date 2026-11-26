@@ -6,6 +6,8 @@ plugins {
 
 dependencies {
     implementation(projects.core)
+    // The importer is handed the app's own categories; its tests hand it the real catalog.
+    testImplementation(projects.catalog)
 }
 
 lint {

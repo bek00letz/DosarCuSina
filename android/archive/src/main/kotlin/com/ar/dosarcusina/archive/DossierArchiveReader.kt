@@ -1,5 +1,6 @@
 package com.ar.dosarcusina.archive
 
+import com.ar.dosarcusina.archive.binder.BuiltIns
 import com.ar.dosarcusina.archive.v2.DossierV2Converter
 import com.ar.dosarcusina.archive.v3.ArchiveFile
 import com.ar.dosarcusina.archive.v3.ArchiveFiles
@@ -68,10 +69,11 @@ object DossierArchiveReader {
     /** What an archive holds, once every file in it is checked. None of its files is kept. */
     fun summary(
         source: ArchiveByteSource,
+        builtIns: BuiltIns,
         password: String? = null,
         limits: DosarZipEngine.Limits = DosarZipEngine.Limits.standard,
     ): ArchiveSummary = ArchiveOpening.opened(source, password) { plain ->
-        when (val reading = readPlain(plain, limits, Keeping.CheckOnly)) {
+        when (val reading = readPlain(plain, limits, Keeping.CheckOnly, builtIns)) {
             is Reading.Summary -> reading.summary
             is Reading.Package -> ArchiveSummary(reading.pack.manifest)
         }
@@ -80,14 +82,16 @@ object DossierArchiveReader {
     /**
      * The archive, checked and decoded, its documents' files written to [directory] for the
      * importer to read one at a time. The caller removes [directory] once the package is in.
+     * A version 2 archive's line items are matched to the parts of [builtIns]' categories.
      */
     fun read(
         source: ArchiveByteSource,
+        builtIns: BuiltIns,
         password: String? = null,
         directory: File,
         limits: DosarZipEngine.Limits = DosarZipEngine.Limits.standard,
     ): DossierPackage = ArchiveOpening.opened(source, password) { plain ->
-        when (val reading = readPlain(plain, limits, Keeping.Extract(directory))) {
+        when (val reading = readPlain(plain, limits, Keeping.Extract(directory), builtIns)) {
             is Reading.Package -> reading.pack
             is Reading.Summary -> throw ArchiveError.NotADossier
         }
@@ -99,7 +103,12 @@ object DossierArchiveReader {
         data class Package(val pack: DossierPackage) : Reading
     }
 
-    private fun readPlain(source: ArchiveByteSource, limits: DosarZipEngine.Limits, keeping: Keeping): Reading {
+    private fun readPlain(
+        source: ArchiveByteSource,
+        limits: DosarZipEngine.Limits,
+        keeping: Keeping,
+        builtIns: BuiltIns,
+    ): Reading {
         val zip = DosarZipEngine.Reader(source, limits)
         val manifestItem = zip.item(DossierV3.Path.MANIFEST) ?: throw ArchiveError.NotADossier
         val manifestBytes = zip.data(manifestItem)
@@ -112,7 +121,7 @@ object DossierArchiveReader {
                     zip, DossierV2Converter.checksums(manifestBytes), DossierV2Converter.DATA_FILES,
                     refusingUnlisted = false, keeping = keeping, holdingData = true,
                 )
-                Reading.Package(DossierV2Converter.pack(manifestBytes, checked.data, checked.vault))
+                Reading.Package(DossierV2Converter.pack(manifestBytes, checked.data, checked.vault, builtIns))
             }
             DossierV3.SCHEMA_VERSION -> readV3(zip, manifestBytes, keeping)
             else -> throw ArchiveError.UnsupportedVersion(version)

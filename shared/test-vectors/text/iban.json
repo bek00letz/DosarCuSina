@@ -1,0 +1,227 @@
+{
+  "built" : "A token in a case's text is a number that passes its check, built when the test runs so the repository never holds one. {luhn:DIGITS}: DIGITS as written with the Luhn check digit after them. {iban:CC:BBAN}: CC, the two ISO 13616 check digits (98 minus BBAN + CC + \"00\" mod 97, letters as A=10 … Z=35), then BBAN. {iban4:CC:BBAN}: the same, in groups of four with a space between. {fours:DIGITS}: DIGITS in groups of four with a space between. Answers name the same tokens.",
+  "cases" : [
+    {
+      "isValid" : true,
+      "ranges" : [
+        {
+          "at" : 0,
+          "text" : "RO49 AAAA 1B31 0075 9384 0000"
+        }
+      ],
+      "text" : "RO49 AAAA 1B31 0075 9384 0000"
+    },
+    {
+      "isValid" : true,
+      "ranges" : [
+        {
+          "at" : 0,
+          "text" : "RO49AAAA1B31007593840000"
+        }
+      ],
+      "text" : "RO49AAAA1B31007593840000"
+    },
+    {
+      "isValid" : true,
+      "ranges" : [
+        {
+          "at" : 0,
+          "text" : "ro49aaaa1b31007593840000"
+        }
+      ],
+      "text" : "ro49aaaa1b31007593840000"
+    },
+    {
+      "isValid" : true,
+      "ranges" : [
+        {
+          "at" : 0,
+          "text" : "RO49-AAAA-1B31-0075-9384-0000"
+        }
+      ],
+      "text" : "RO49-AAAA-1B31-0075-9384-0000"
+    },
+    {
+      "isValid" : true,
+      "ranges" : [
+        {
+          "at" : 0,
+          "text" : "GB82 WEST 1234 5698 7654 32"
+        }
+      ],
+      "text" : "GB82 WEST 1234 5698 7654 32"
+    },
+    {
+      "isValid" : true,
+      "ranges" : [
+        {
+          "at" : 0,
+          "text" : "DE89 3704 0044 0532 0130 00"
+        }
+      ],
+      "text" : "DE89 3704 0044 0532 0130 00"
+    },
+    {
+      "isValid" : true,
+      "ranges" : [
+        {
+          "at" : 0,
+          "text" : "FR14 2004 1010 0505 0001 3M02 606"
+        }
+      ],
+      "text" : "FR14 2004 1010 0505 0001 3M02 606"
+    },
+    {
+      "isValid" : true,
+      "ranges" : [
+        {
+          "at" : 1,
+          "text" : "RO49 AAAA 1B31 0075 9384 0000"
+        }
+      ],
+      "text" : " RO49 AAAA 1B31 0075 9384 0000 "
+    },
+    {
+      "isValid" : false,
+      "ranges" : [
+
+      ],
+      "text" : "RO49 AAAA 1B31 0075 9384 0001"
+    },
+    {
+      "isValid" : false,
+      "ranges" : [
+
+      ],
+      "text" : "RO49 AAAA 1B31 0075 9384 000Ș"
+    },
+    {
+      "isValid" : false,
+      "ranges" : [
+
+      ],
+      "text" : "RO49AAAA1B310075"
+    },
+    {
+      "isValid" : false,
+      "ranges" : [
+
+      ],
+      "text" : "{iban:DE:3704004405320130000}"
+    },
+    {
+      "isValid" : true,
+      "ranges" : [
+
+      ],
+      "text" : "{iban:QQ:12345678901234}"
+    },
+    {
+      "isValid" : true,
+      "ranges" : [
+        {
+          "at" : 0,
+          "text" : "{iban4:RO:AAAA4111111111111111}"
+        }
+      ],
+      "text" : "{iban4:RO:AAAA4111111111111111}"
+    },
+    {
+      "isValid" : false,
+      "ranges" : [
+        {
+          "at" : 6,
+          "text" : "RO49 AAAA 1B31 0075 9384 0000"
+        }
+      ],
+      "text" : "IBAN: RO49 AAAA 1B31 0075 9384 0000."
+    },
+    {
+      "isValid" : false,
+      "ranges" : [
+        {
+          "at" : 0,
+          "text" : "RO49 AAAA 1B31 0075 9384 0000"
+        },
+        {
+          "at" : 33,
+          "text" : "GB82 WEST 1234 5698 7654 32"
+        }
+      ],
+      "text" : "RO49 AAAA 1B31 0075 9384 0000 și GB82 WEST 1234 5698 7654 32"
+    },
+    {
+      "isValid" : false,
+      "ranges" : [
+
+      ],
+      "text" : "XRO49AAAA1B31007593840000"
+    },
+    {
+      "isValid" : false,
+      "ranges" : [
+
+      ],
+      "text" : "RO49AAAA1B31007593840000X"
+    },
+    {
+      "isValid" : true,
+      "ranges" : [
+        {
+          "at" : 0,
+          "text" : "RO49 AAAA1B31-0075 9384 0000"
+        }
+      ],
+      "text" : "RO49 AAAA1B31-0075 9384 0000"
+    },
+    {
+      "isValid" : true,
+      "ranges" : [
+
+      ],
+      "text" : "RO 49 AAAA 1B31 0075 9384 0000"
+    },
+    {
+      "isValid" : true,
+      "ranges" : [
+
+      ],
+      "text" : "RO49  AAAA 1B31 0075 9384 0000"
+    },
+    {
+      "isValid" : false,
+      "ranges" : [
+        {
+          "at" : 15,
+          "text" : "RO49 AAAA 1B31 0075 9384 0000"
+        }
+      ],
+      "text" : "Contul în lei: RO49 AAAA 1B31 0075 9384 0000, deschis în Iași."
+    },
+    {
+      "isValid" : false,
+      "ranges" : [
+
+      ],
+      "text" : "de 12 cu 34"
+    },
+    {
+      "isValid" : false,
+      "ranges" : [
+
+      ],
+      "text" : ""
+    },
+    {
+      "isValid" : true,
+      "ranges" : [
+
+      ],
+      "text" : "ıt60 X054 2811 1010 0000 0123 456"
+    }
+  ],
+  "rule" : "IBAN.isValid(_:) and IBAN.ranges(in:): the ISO 13616 check, and where a text holds an IBAN that passes it",
+  "shape" : "text: a text (with built tokens). isValid: whether the whole text, compacted, is an IBAN that passes its check. ranges: each IBAN found in it, in order: where it starts (in UTF-16 code units) and its text.",
+  "source" : "ios/Shared/IBAN.swift",
+  "writtenBy" : "ios/DosarCuSinaTests/TextVectorsTests.swift"
+}

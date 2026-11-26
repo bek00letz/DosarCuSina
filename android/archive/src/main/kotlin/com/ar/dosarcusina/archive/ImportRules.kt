@@ -59,11 +59,13 @@ object ArchiveMerge {
  * A category's place on the binder, as the iOS app's `CategoryOrder`: within a range, so the place after the last is
  * always a number.
  */
-internal object CategoryOrder {
+object CategoryOrder {
     private const val FARTHEST = 1 shl 20
 
+    /** [order] as a place can be. */
     fun place(order: Int): Int = order.coerceIn(-FARTHEST, FARTHEST)
 
+    /** The place after every one of [orders]: a new category goes last. */
     fun after(orders: Collection<Int>): Int = place(orders.maxOrNull() ?: -1) + 1
 }
 

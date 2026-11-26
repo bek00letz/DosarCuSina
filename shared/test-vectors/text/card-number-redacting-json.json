@@ -1,0 +1,77 @@
+{
+  "built" : "A token in a case's text is a number that passes its check, built when the test runs so the repository never holds one. {luhn:DIGITS}: DIGITS as written with the Luhn check digit after them. {iban:CC:BBAN}: CC, the two ISO 13616 check digits (98 minus BBAN + CC + \"00\" mod 97, letters as A=10 … Z=35), then BBAN. {iban4:CC:BBAN}: the same, in groups of four with a space between. {fours:DIGITS}: DIGITS in groups of four with a space between. Answers name the same tokens.",
+  "cases" : [
+    {
+      "json" : {
+        "nested" : {
+          "list" : [
+            "5555-5555-5555-4444",
+            "RO49 AAAA 1B31 0075 9384 0000",
+            true,
+            null
+          ]
+        },
+        "number" : 4111111111111111,
+        "title" : "Card 4111 1111 1111 1111"
+      },
+      "redacted" : {
+        "nested" : {
+          "list" : [
+            "•••• 4444",
+            "RO49 AAAA 1B31 0075 9384 0000",
+            true,
+            null
+          ]
+        },
+        "number" : 4111111111111111,
+        "title" : "Card •••• 1111"
+      },
+      "sealed" : [
+
+      ]
+    },
+    {
+      "json" : {
+        "code" : "sealed:v1:AAAA4111111111111111",
+        "label" : "Cod 4111111111111111"
+      },
+      "redacted" : {
+        "code" : "sealed:v1:AAAA4111111111111111",
+        "label" : "Cod •••• 1111"
+      },
+      "sealed" : [
+        "sealed:v1:AAAA4111111111111111"
+      ]
+    },
+    {
+      "json" : [
+        "Plătit cu 4111 1111 1111 1111 în Iași",
+        12.5,
+        {
+          "x" : "fără cifre"
+        }
+      ],
+      "redacted" : [
+        "Plătit cu •••• 1111 în Iași",
+        12.5,
+        {
+          "x" : "fără cifre"
+        }
+      ],
+      "sealed" : [
+
+      ]
+    },
+    {
+      "json" : "Nr. 12 4111 1111 1111 1111",
+      "redacted" : "Nr. 12 •••• 1111",
+      "sealed" : [
+
+      ]
+    }
+  ],
+  "rule" : "PaymentCardNumbers.redacting(_:): JSON a newer build wrote, with every card number in its strings masked and sealed codes left alone",
+  "shape" : "json: a JSON value. sealed: the strings in it that are sealed secrets, by their own form. redacted: the same JSON with its strings masked by the anywhere rule, sealed ones left as they are; numbers, keys and the rest unchanged.",
+  "source" : "ios/DosarCuSina/Services/Security/PaymentCardNumbers.swift",
+  "writtenBy" : "ios/DosarCuSinaTests/TextVectorsTests.swift"
+}

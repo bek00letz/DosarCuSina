@@ -11,12 +11,9 @@ import com.ar.dosarcusina.archive.binder.BinderObligation
 import com.ar.dosarcusina.archive.binder.BinderProvider
 import com.ar.dosarcusina.archive.binder.BinderServiceItem
 import com.ar.dosarcusina.archive.binder.BinderTemplate
-import com.ar.dosarcusina.archive.binder.BuiltInDefinition
 import com.ar.dosarcusina.archive.binder.BuiltIns
 import com.ar.dosarcusina.archive.binder.Removed
-import com.ar.dosarcusina.archive.binder.UntilTheSharedCatalog
 import com.ar.dosarcusina.archive.v3.AttachmentRecord
-import com.ar.dosarcusina.archive.v3.CategoryBehavior
 import com.ar.dosarcusina.archive.v3.ChangeTime
 import com.ar.dosarcusina.archive.v3.ComponentDefinition
 import com.ar.dosarcusina.archive.v3.CustomFact
@@ -26,12 +23,10 @@ import com.ar.dosarcusina.archive.v3.FieldDefinition
 import com.ar.dosarcusina.archive.v3.FieldSection
 import com.ar.dosarcusina.archive.v3.FieldValues
 import com.ar.dosarcusina.archive.v3.Ids
-import com.ar.dosarcusina.archive.v3.ObligationBlueprint
 import com.ar.dosarcusina.archive.v3.StoredFile
 import com.ar.dosarcusina.archive.v3.TemplateRecord
 import com.ar.dosarcusina.core.values.CalendarDay
 import com.ar.dosarcusina.core.values.KeptList
-import com.ar.dosarcusina.core.values.KeptObject
 import com.ar.dosarcusina.core.values.MeasurementUnit
 import com.ar.dosarcusina.core.values.Money
 import java.time.Instant
@@ -49,9 +44,8 @@ data class ImportPlan(val changes: BinderChanges, val result: ArchiveImportResul
  *
  * An archive brings the household's records and the choices a person can make themselves. It
  * never changes what the app defines, whatever it says:
- * - a built-in category takes the app's own definition ([BuiltIns]; until the shared catalog,
- *   the definition the archive carries), and an archive brings only its order, whether it shows
- *   on the binder, its box and its lock;
+ * - a built-in category takes the app's own definition ([BuiltIns], the shared catalog), and an
+ *   archive brings only its order, whether it shows on the binder, its box and its lock;
  * - a lock is never made weaker: a category or a field locked on this phone stays locked;
  * - secrets (PIN codes, secret rows) never come from an archive, and the ones this phone keeps
  *   for the same records stay, in both modes ([SecretRules]);
@@ -77,7 +71,8 @@ class DossierImporter(
     private val now: Instant,
     /** The time zone the app counts days in: a snooze's moment becomes its day here. */
     private val zone: ZoneId,
-    private val builtIns: BuiltIns = UntilTheSharedCatalog,
+    /** The app's own categories (`com.ar.dosarcusina.catalog.Catalog.builtIn`). */
+    private val builtIns: BuiltIns,
     /** False for a binder that syncs: a backup's examples stay out. Android's binder doesn't sync yet. */
     private val keepsExamples: Boolean = true,
 ) {
@@ -86,7 +81,7 @@ class DossierImporter(
     private var skipped = 0
     private var movedToTop = 0
     private val locks = LinkedHashMap<String, Boolean>()
-    private val phone = PhoneKeeps.capture(binder, builtIns)
+    private val phone = PhoneKeeps.capture(binder)
 
     private val templates = Table(binder.templates, BinderTemplate::key, BinderTemplate::updatedAt)
     private val assets = Table(binder.assets, BinderAsset::id, BinderAsset::updatedAt)
@@ -209,7 +204,7 @@ class DossierImporter(
             builtIns.all.filter { it.key !in mentioned && (it.key !in templates || mode == ArchiveImportMode.REPLACE) }
         for (definition in missing) {
             val here = templates[definition.key]
-            val made = catalogTemplate(definition, here, createdAt = here?.createdAt ?: now).copy(
+            val made = definition.template(here, createdAt = here?.createdAt ?: now).copy(
                 homeOrder = order, isOnHome = definition.isOnHomeByDefault, boxGrouping = null,
                 // Installed from the catalog, not changed by anyone.
                 updatedAt = ChangeTime.UNKNOWN,
@@ -225,7 +220,8 @@ class DossierImporter(
 
     private fun importTemplate(dto: TemplateRecord) {
         val catalog = builtIns.definition(dto.key)
-        val isBuiltIn = catalog != null || builtIns.isBuiltIn(dto.key)
+        // A built-in is the app's, whatever the archive says; anything else is the person's own.
+        val isBuiltIn = catalog != null
         val isLocked = phone.lock(dto.key, archive = dto.isSensitive, fallback = catalog?.isSensitiveByDefault ?: false)
         val here = when (val placement = place(dto.key, dto.updatedAt, templates)) {
             Placement.Keep -> {
@@ -239,7 +235,7 @@ class DossierImporter(
         // Replaced in place, or new, it was made when the archive's was.
         val createdAt =
             if (here == null || mode == ArchiveImportMode.REPLACE) clamped(dto.createdAt) else here.createdAt
-        val defined = catalog?.let { catalogTemplate(it, here, createdAt) }
+        val defined = catalog?.template(here, createdAt)
             ?: archiveTemplate(dto, isBuiltIn, createdAt)
         templates.write(
             defined.copy(
@@ -276,20 +272,6 @@ class DossierImporter(
             createdAt = createdAt, updatedAt = ChangeTime.UNKNOWN,
         )
     }
-
-    /** A built-in as the catalog defines it, on the record already here when there is one. */
-    private fun catalogTemplate(definition: BuiltInDefinition, here: BinderTemplate?, createdAt: Instant) =
-        BinderTemplate(
-        key = definition.key, name = definition.name, summary = definition.summary, symbol = definition.symbol,
-        tint = definition.tint, heroStyle = definition.heroStyle, isBuiltIn = true, version = definition.version,
-        homeOrder = here?.homeOrder ?: 0, isOnHome = here?.isOnHome ?: definition.isOnHomeByDefault,
-        sections = KeptList.made(definition.sections, FieldSection.codec, FieldSection::key),
-        blueprints = KeptList.made(definition.blueprints, ObligationBlueprint.codec, ObligationBlueprint::key),
-        components = KeptList.made(definition.components, ComponentDefinition.codec, ComponentDefinition::key),
-        pockets = definition.pockets,
-        behavior = KeptObject.made(definition.behavior, CategoryBehavior.codec).omitted(CategoryBehavior::isStandard),
-        boxGrouping = here?.boxGrouping, createdAt = createdAt, updatedAt = here?.updatedAt ?: ChangeTime.UNKNOWN,
-    )
 
     /** A category's lock after the import: raised, or set for one new here; never lowered. */
     private fun setLock(key: String, locked: Boolean) {
@@ -635,11 +617,11 @@ internal class PhoneKeeps private constructor(
     }
 
     companion object {
-        fun capture(binder: Binder, builtIns: BuiltIns): PhoneKeeps {
+        fun capture(binder: Binder): PhoneKeeps {
             val guarded = HashMap<String, Map<String, FieldDefinition>>()
             for (template in binder.templates) {
-                // A built-in's definition is the app's (none to guard); one the archive gives is guarded.
-                if (builtIns.definition(template.key) != null) continue
+                // A built-in's definition is the app's (none to guard); a category of one's own is guarded.
+                if (template.isBuiltIn) continue
                 val fields =
                     template.sections.items.flatMap(FieldSection::fields).filter { it.isSecret || it.isSensitive }
                 if (fields.isNotEmpty()) guarded[template.key] = fields.associateBy(FieldDefinition::key)

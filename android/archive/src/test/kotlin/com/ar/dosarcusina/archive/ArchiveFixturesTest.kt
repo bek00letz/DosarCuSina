@@ -3,6 +3,7 @@ package com.ar.dosarcusina.archive
 import com.ar.dosarcusina.archive.v3.ChangeTime
 import com.ar.dosarcusina.archive.v3.FieldValue
 import com.ar.dosarcusina.archive.v3.RecurrenceRule
+import com.ar.dosarcusina.catalog.Catalog
 import com.ar.dosarcusina.core.values.CalendarDay
 import com.ar.dosarcusina.core.values.Money
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -30,7 +31,8 @@ class ArchiveFixturesTest {
     private val bucharest: ZoneId = ZoneId.of("Europe/Bucharest")
     private val clock: Clock = Clock.fixed(moment("2026-11-26T10:00:00Z"), ZoneOffset.UTC)
 
-    private fun service(binder: TestBinder) = DossierArchiveService(binder, clock = clock, zone = { bucharest })
+    private fun service(binder: TestBinder) =
+        DossierArchiveService(binder, Catalog.builtIn, clock = clock, zone = { bucharest })
 
     private fun import(
         binder: TestBinder,
@@ -181,29 +183,29 @@ class ArchiveFixturesTest {
             """{"format":"com.ar.dosarcusina.dossier","schemaVersion":9}""".encodeToByteArray(),
         )))
         assertEquals(ArchiveError.UnsupportedVersion(9), assertThrows<ArchiveError> {
-            DossierArchiveReader.read(MemoryByteSource(future), directory = staging)
+            DossierArchiveReader.read(MemoryByteSource(future), Catalog.builtIn, directory = staging)
         })
         val other = createArchive(listOf(Entry("readme.txt", "hi".encodeToByteArray())))
         assertEquals(ArchiveError.NotADossier, assertThrows<ArchiveError> {
-            DossierArchiveReader.read(MemoryByteSource(other), directory = staging)
+            DossierArchiveReader.read(MemoryByteSource(other), Catalog.builtIn, directory = staging)
         })
         val foreign = createArchive(listOf(Entry(
             "manifest.json",
             """{"format":"com.example","schemaVersion":3}""".encodeToByteArray(),
         )))
         assertEquals(ArchiveError.NotADossier, assertThrows<ArchiveError> {
-            DossierArchiveReader.summary(MemoryByteSource(foreign))
+            DossierArchiveReader.summary(MemoryByteSource(foreign), Catalog.builtIn)
         })
     }
 
     @Test
     fun aSummaryStreamsEveryFileAndKeepsNone() {
         val archive = fixtureArchive("dosar-v3/household")
-        DossierArchiveReader.summary(MemoryByteSource(archive))
+        DossierArchiveReader.summary(MemoryByteSource(archive), Catalog.builtIn)
         assertTrue(staging.listFiles().orEmpty().isEmpty())
         // Reading it takes each file out once and decodes the data files from where they were written, removing each.
         val folder = File(staging, "read")
-        val pack = DossierArchiveReader.read(MemoryByteSource(archive), directory = folder)
+        val pack = DossierArchiveReader.read(MemoryByteSource(archive), Catalog.builtIn, directory = folder)
         assertEquals(5, folder.listFiles().orEmpty().size, "Only the vault's five files stay, for the importer")
         assertEquals(5, pack.files.paths.size)
     }
@@ -233,8 +235,8 @@ class ArchiveFixturesTest {
         assertEquals(Money(BigDecimal(160)), completion.totalCost)
         assertEquals(1, home.attachments.count { it.obligationId == itp.id && it.historyEntryId == completion.id })
         val service = home.historyEntries.first { it.kind == "maintenance" }
-        // The iOS app finds `engine.oil` in the vehicle's parts; Android has no catalog until Phase 2.
-        assertEquals("custom.schimb-ulei-si-filtre", home.serviceItems.first { it.entryId == service.id }.componentKey)
+        // Found among the vehicle's parts in the catalog, as the iOS app finds it.
+        assertEquals("engine.oil", home.serviceItems.first { it.entryId == service.id }.componentKey)
 
         val washer = assets[1]
         assertEquals("purchase", washer.templateKey)

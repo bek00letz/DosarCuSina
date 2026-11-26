@@ -30,6 +30,8 @@ val archiveTests: Configuration by configurations.creating {
 dependencies {
     archiveTests(project(path = ":archive", configuration = "importerTests"))
     testImplementation(project(path = ":archive", configuration = "importerTests"))
+    // The importer's tests hand it the real catalog, here as in :archive.
+    testImplementation(projects.catalog)
 }
 val importerTestClasses = listOf(
     "ArchiveFixturesTest",

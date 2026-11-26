@@ -30,5 +30,7 @@ include(":core")
 include(":archive")
 // Pure Kotlin on the JVM: the household database (Room on bundled SQLite).
 include(":store")
+// Pure Kotlin: the built-in catalog, read from shared/catalog/.
+include(":catalog")
 // The Android app.
 include(":app")

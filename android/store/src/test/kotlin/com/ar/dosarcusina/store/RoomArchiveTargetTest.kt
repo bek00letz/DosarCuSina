@@ -12,6 +12,7 @@ import com.ar.dosarcusina.archive.fixtureArchive
 import com.ar.dosarcusina.archive.moment
 import com.ar.dosarcusina.archive.sha256
 import com.ar.dosarcusina.archive.unpackArchive
+import com.ar.dosarcusina.catalog.Catalog
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
@@ -34,7 +35,7 @@ class RoomArchiveTargetTest {
     private val clock: Clock = Clock.fixed(moment("2026-11-26T10:00:00Z"), ZoneOffset.UTC)
 
     private fun import(binder: RoomTestBinder, mode: ArchiveImportMode = ArchiveImportMode.REPLACE) {
-        DossierArchiveService(binder, clock = clock, zone = { bucharest })
+        DossierArchiveService(binder, Catalog.builtIn, clock = clock, zone = { bucharest })
             .importArchive(MemoryByteSource(fixtureArchive("dosar-v3/household")), mode = mode, staging = staging)
     }
 

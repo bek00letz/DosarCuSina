@@ -1,0 +1,127 @@
+{
+  "built" : "A token in a case's text is a number that passes its check, built when the test runs so the repository never holds one. {luhn:DIGITS}: DIGITS as written with the Luhn check digit after them. {iban:CC:BBAN}: CC, the two ISO 13616 check digits (98 minus BBAN + CC + \"00\" mod 97, letters as A=10 … Z=35), then BBAN. {iban4:CC:BBAN}: the same, in groups of four with a space between. {fours:DIGITS}: DIGITS in groups of four with a space between. Answers name the same tokens.",
+  "cases" : [
+    {
+      "contains" : false,
+      "isEmpty" : false,
+      "redacted" : "Microcip {luhn:64200000000123} citit la vaccin",
+      "strict" : "Microcip •••• 1234 citit la vaccin",
+      "text" : "Microcip {luhn:64200000000123} citit la vaccin",
+      "values" : [
+        {
+          "text" : "{luhn:64200000000123}",
+          "type" : "microchip"
+        }
+      ]
+    },
+    {
+      "contains" : true,
+      "isEmpty" : false,
+      "redacted" : "Microcip {luhn:64200000000123}, plătit cu •••• 1111",
+      "strict" : "Microcip •••• 1234, plătit cu •••• 1111",
+      "text" : "Microcip {luhn:64200000000123}, plătit cu 4111 1111 1111 1111",
+      "values" : [
+        {
+          "text" : "{luhn:64200000000123}",
+          "type" : "microchip"
+        }
+      ]
+    },
+    {
+      "contains" : false,
+      "isEmpty" : false,
+      "redacted" : "{luhn:64200000000123}4",
+      "strict" : "•••• 2344",
+      "text" : "{luhn:64200000000123}4",
+      "values" : [
+        {
+          "text" : "{luhn:64200000000123}",
+          "type" : "microchip"
+        }
+      ]
+    },
+    {
+      "contains" : false,
+      "isEmpty" : false,
+      "redacted" : "Cip {luhn:64200000000123} și {luhn:642 000 000 001 23}",
+      "strict" : "Cip •••• 1234 și •••• 1234",
+      "text" : "Cip {luhn:64200000000123} și {luhn:642 000 000 001 23}",
+      "values" : [
+        {
+          "text" : "{luhn:642 000 000 001 23}",
+          "type" : "microchip"
+        }
+      ]
+    },
+    {
+      "contains" : true,
+      "isEmpty" : true,
+      "redacted" : "Microcip •••• 1234",
+      "strict" : "Microcip •••• 1234",
+      "text" : "Microcip {luhn:64200000000123}",
+      "values" : [
+        {
+          "text" : "{luhn:64200000000123}",
+          "type" : "text"
+        }
+      ]
+    },
+    {
+      "contains" : true,
+      "isEmpty" : true,
+      "redacted" : "Microcip •••• 1234",
+      "strict" : "Microcip •••• 1234",
+      "text" : "Microcip {luhn:64200000000123}",
+      "values" : [
+        {
+          "text" : "{luhn:64200000000123}",
+          "type" : "phone"
+        }
+      ]
+    },
+    {
+      "contains" : false,
+      "isEmpty" : false,
+      "redacted" : "Cont RO49 AAAA 1B31 0075 9384 0000, cip {luhn:64200000000123}",
+      "strict" : "Cont RO49 AAAA 1B•••• 0000, cip •••• 1234",
+      "text" : "Cont RO49 AAAA 1B31 0075 9384 0000, cip {luhn:64200000000123}",
+      "values" : [
+        {
+          "text" : "RO49 AAAA 1B31 0075 9384 0000",
+          "type" : "iban"
+        },
+        {
+          "text" : "{luhn:64200000000123}",
+          "type" : "microchip"
+        }
+      ]
+    },
+    {
+      "contains" : true,
+      "isEmpty" : true,
+      "redacted" : "Card •••• 1111",
+      "strict" : "Card •••• 1111",
+      "text" : "Card 4111 1111 1111 1111",
+      "values" : [
+        {
+          "text" : "4111 1111 1111 1111",
+          "type" : "microchip"
+        }
+      ]
+    },
+    {
+      "contains" : true,
+      "isEmpty" : true,
+      "redacted" : "Microcip •••• 1234",
+      "strict" : "Microcip •••• 1234",
+      "text" : "Microcip {luhn:64200000000123}",
+      "values" : [
+
+      ]
+    }
+  ],
+  "rule" : "PaymentCardNumbers.KeptWhole(typed:) and redact(_:strict:keeping:): the digits of a section's own typed values stay whole in all its words",
+  "shape" : "values: a section's values with their fields' types (with built tokens). text: words the section keeps. isEmpty: whether nothing is kept whole. redacted, strict: the text masked keeping them, by the anywhere rule and on a bank card. contains: whether it holds a card number that isn't one of them.",
+  "source" : "ios/DosarCuSina/Services/Security/PaymentCardNumbers.swift",
+  "writtenBy" : "ios/DosarCuSinaTests/TextVectorsTests.swift"
+}

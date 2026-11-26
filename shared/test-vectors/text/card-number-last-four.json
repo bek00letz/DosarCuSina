@@ -1,0 +1,41 @@
+{
+  "built" : "A token in a case's text is a number that passes its check, built when the test runs so the repository never holds one. {luhn:DIGITS}: DIGITS as written with the Luhn check digit after them. {iban:CC:BBAN}: CC, the two ISO 13616 check digits (98 minus BBAN + CC + \"00\" mod 97, letters as A=10 … Z=35), then BBAN. {iban4:CC:BBAN}: the same, in groups of four with a space between. {fours:DIGITS}: DIGITS in groups of four with a space between. Answers name the same tokens.",
+  "cases" : [
+    {
+      "lastFour" : "4821",
+      "value" : "4821"
+    },
+    {
+      "lastFour" : "4821",
+      "value" : "•••• 4821"
+    },
+    {
+      "lastFour" : "1111",
+      "value" : "4111 1111 1111 1111"
+    },
+    {
+      "lastFour" : null,
+      "value" : "12"
+    },
+    {
+      "lastFour" : null,
+      "value" : ""
+    },
+    {
+      "lastFour" : "5678",
+      "value" : "Card 1234-5678"
+    },
+    {
+      "lastFour" : null,
+      "value" : "４８２１"
+    },
+    {
+      "lastFour" : "4821",
+      "value" : "48 21"
+    }
+  ],
+  "rule" : "PaymentCardNumbers.lastFour(of:): only the last four digits of what was typed or read",
+  "shape" : "value: text typed or read. lastFour: its last four ASCII digits, or null when it has fewer.",
+  "source" : "ios/Shared/CardNumberRule.swift",
+  "writtenBy" : "ios/DosarCuSinaTests/TextVectorsTests.swift"
+}
