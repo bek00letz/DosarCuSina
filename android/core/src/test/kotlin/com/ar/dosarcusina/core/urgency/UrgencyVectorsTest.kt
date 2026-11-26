@@ -1,11 +1,13 @@
 package com.ar.dosarcusina.core.urgency
 
+import com.ar.dosarcusina.core.values.ObligationStatus
 import com.ar.dosarcusina.core.values.bool
 import com.ar.dosarcusina.core.values.int
 import com.ar.dosarcusina.core.values.ints
 import com.ar.dosarcusina.core.values.label
 import com.ar.dosarcusina.core.values.text
 import com.ar.dosarcusina.core.values.textOrNull
+import java.io.File
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
@@ -13,7 +15,6 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.DynamicTest
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestFactory
-import java.io.File
 
 /** How urgent a deadline is, pinned against the iOS app's answers. Placeholder data only. */
 class UrgencyVectorsTest {
@@ -54,7 +55,7 @@ class UrgencyVectorsTest {
                 case.containsKey("storedConsequence") ->
                     assertEquals(case.text("reads"), Consequence.stored(case.textOrNull("storedConsequence")).stored)
                 case.containsKey("storedStatus") ->
-                    assertEquals(case.text("reads"), DeadlineStatus.stored(case.textOrNull("storedStatus")).stored)
+                    assertEquals(case.text("reads"), ObligationStatus.stored(case.textOrNull("storedStatus")).raw)
                 case.containsKey("urgency") -> {
                     val urgency = AttentionUrgency.entries.single { it.stored == case.text("urgency") }
                     assertEquals(case.int("order"), urgency.ordinal)

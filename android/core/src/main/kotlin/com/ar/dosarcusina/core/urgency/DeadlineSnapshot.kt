@@ -1,38 +1,10 @@
 package com.ar.dosarcusina.core.urgency
 
 import com.ar.dosarcusina.core.values.CalendarDay
+import com.ar.dosarcusina.core.values.ObligationStatus
 import java.time.Instant
 import java.time.ZoneId
 import java.util.UUID
-
-/**
- * Whether a deadline is running, as the iOS app's `ObligationStatus`. The stored texts are part
- * of the `.dosar` contract.
- */
-enum class DeadlineStatus(val stored: String) {
-    ACTIVE("active"),
-
-    /** Temporarily off: no reminders, hidden from attention, kept in the list. */
-    PAUSED("paused"),
-
-    /** A one-off deadline that was completed. */
-    DONE("done"),
-
-    /** Kept for history only. */
-    ARCHIVED("archived"),
-    ;
-
-    companion object {
-        /**
-         * What an unknown stored status (from a newer build or archive) behaves as: the loudest,
-         * so a deadline never goes quiet because this build can't read its status.
-         */
-        val LOUDEST: DeadlineStatus = ACTIVE
-
-        /** A stored value: unknown or missing reads as [LOUDEST]. */
-        fun stored(raw: String?): DeadlineStatus = entries.firstOrNull { it.stored == raw } ?: LOUDEST
-    }
-}
 
 /**
  * A plain copy of one deadline with what urgency, the reminder plan and the badge read, as the
@@ -45,7 +17,7 @@ enum class DeadlineStatus(val stored: String) {
  */
 data class DeadlineSnapshot(
     val id: UUID,
-    val status: DeadlineStatus,
+    val status: ObligationStatus,
     val dueDay: CalendarDay,
     /** The day it comes back after „Amână”; hidden until that day starts where the phone is. */
     val snoozedUntil: CalendarDay? = null,
@@ -96,5 +68,5 @@ data class DeadlineSnapshot(
 object NeedsAction {
     /** The count on [today]. */
     fun count(deadlines: List<DeadlineSnapshot>, today: CalendarDay): Int =
-        deadlines.count { it.status == DeadlineStatus.ACTIVE && !it.isSnoozed(today) && it.urgency(today).isAlarming }
+        deadlines.count { it.status == ObligationStatus.ACTIVE && !it.isSnoozed(today) && it.urgency(today).isAlarming }
 }

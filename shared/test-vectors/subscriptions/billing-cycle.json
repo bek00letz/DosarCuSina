@@ -1,0 +1,120 @@
+{
+  "cases" : [
+    {
+      "interval" : {
+        "every" : 1,
+        "unit" : "week"
+      },
+      "text" : "billing.weekly"
+    },
+    {
+      "interval" : {
+        "every" : 1,
+        "unit" : "month"
+      },
+      "text" : "billing.monthly"
+    },
+    {
+      "interval" : {
+        "every" : 3,
+        "unit" : "month"
+      },
+      "text" : "billing.quarterly"
+    },
+    {
+      "interval" : {
+        "every" : 1,
+        "unit" : "year"
+      },
+      "text" : "billing.yearly"
+    },
+    {
+      "interval" : {
+        "every" : 1,
+        "unit" : "week"
+      },
+      "text" : "Săptămânal"
+    },
+    {
+      "interval" : {
+        "every" : 1,
+        "unit" : "week"
+      },
+      "text" : "saptamanala"
+    },
+    {
+      "interval" : {
+        "every" : 1,
+        "unit" : "month"
+      },
+      "text" : "LUNAR"
+    },
+    {
+      "interval" : {
+        "every" : 1,
+        "unit" : "month"
+      },
+      "text" : "Lunară"
+    },
+    {
+      "interval" : {
+        "every" : 3,
+        "unit" : "month"
+      },
+      "text" : "Trimestrial"
+    },
+    {
+      "interval" : {
+        "every" : 3,
+        "unit" : "month"
+      },
+      "text" : "quarterly"
+    },
+    {
+      "interval" : {
+        "every" : 1,
+        "unit" : "year"
+      },
+      "text" : "Annual"
+    },
+    {
+      "interval" : {
+        "every" : 1,
+        "unit" : "year"
+      },
+      "text" : "Anuală"
+    },
+    {
+      "interval" : {
+        "every" : 1,
+        "unit" : "year"
+      },
+      "text" : "  Anual  "
+    },
+    {
+      "interval" : {
+        "every" : 1,
+        "unit" : "month"
+      },
+      "text" : "bianual"
+    },
+    {
+      "interval" : {
+        "every" : 1,
+        "unit" : "month"
+      },
+      "text" : ""
+    },
+    {
+      "interval" : {
+        "every" : 1,
+        "unit" : "month"
+      },
+      "text" : null
+    }
+  ],
+  "rule" : "BillingCycle.interval(_:)",
+  "shape" : "text: a stored or typed cycle (null for none); interval: how long one cycle lasts, as every and unit (day, week, month, year).",
+  "source" : "ios/DosarCuSina/Models/Fields/ChoiceOptions.swift",
+  "writtenBy" : "ios/DosarCuSinaTests/SubscriptionVectorsTests.swift"
+}

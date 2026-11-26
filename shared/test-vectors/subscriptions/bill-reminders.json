@@ -1,0 +1,205 @@
+{
+  "cases" : [
+    {
+      "change" : "paused",
+      "directDebitAfter" : true,
+      "directDebitBefore" : false,
+      "reminders" : [
+        {
+          "due" : "2026-11-20",
+          "status" : "active"
+        }
+      ],
+      "statusesAfter" : [
+        "paused"
+      ],
+      "today" : "2026-11-02"
+    },
+    {
+      "change" : "paused",
+      "directDebitAfter" : true,
+      "directDebitBefore" : null,
+      "reminders" : [
+        {
+          "due" : "2026-11-20",
+          "status" : "active"
+        }
+      ],
+      "statusesAfter" : [
+        "paused"
+      ],
+      "today" : "2026-11-02"
+    },
+    {
+      "change" : "resumed",
+      "directDebitAfter" : false,
+      "directDebitBefore" : true,
+      "reminders" : [
+        {
+          "due" : "2026-11-20",
+          "status" : "paused"
+        }
+      ],
+      "statusesAfter" : [
+        "active"
+      ],
+      "today" : "2026-11-10"
+    },
+    {
+      "change" : "resumed",
+      "directDebitAfter" : false,
+      "directDebitBefore" : true,
+      "reminders" : [
+        {
+          "due" : "2026-11-20",
+          "status" : "paused"
+        }
+      ],
+      "statusesAfter" : [
+        "active"
+      ],
+      "today" : "2026-11-20"
+    },
+    {
+      "change" : null,
+      "directDebitAfter" : false,
+      "directDebitBefore" : true,
+      "reminders" : [
+        {
+          "due" : "2026-11-20",
+          "status" : "paused"
+        }
+      ],
+      "statusesAfter" : [
+        "paused"
+      ],
+      "today" : "2026-11-25"
+    },
+    {
+      "change" : null,
+      "directDebitAfter" : true,
+      "directDebitBefore" : true,
+      "reminders" : [
+        {
+          "due" : "2026-11-20",
+          "status" : "active"
+        }
+      ],
+      "statusesAfter" : [
+        "active"
+      ],
+      "today" : "2026-11-02"
+    },
+    {
+      "change" : null,
+      "directDebitAfter" : false,
+      "directDebitBefore" : false,
+      "reminders" : [
+        {
+          "due" : "2026-11-20",
+          "status" : "paused"
+        }
+      ],
+      "statusesAfter" : [
+        "paused"
+      ],
+      "today" : "2026-11-02"
+    },
+    {
+      "change" : null,
+      "directDebitAfter" : true,
+      "directDebitBefore" : false,
+      "reminders" : [
+
+      ],
+      "statusesAfter" : [
+
+      ],
+      "today" : "2026-11-02"
+    },
+    {
+      "change" : null,
+      "directDebitAfter" : false,
+      "directDebitBefore" : true,
+      "reminders" : [
+        {
+          "due" : "2026-11-20",
+          "status" : "active"
+        }
+      ],
+      "statusesAfter" : [
+        "active"
+      ],
+      "today" : "2026-11-02"
+    },
+    {
+      "change" : null,
+      "directDebitAfter" : true,
+      "directDebitBefore" : false,
+      "reminders" : [
+        {
+          "due" : "2026-11-20",
+          "status" : "paused"
+        }
+      ],
+      "statusesAfter" : [
+        "paused"
+      ],
+      "today" : "2026-11-02"
+    },
+    {
+      "change" : "resumed",
+      "directDebitAfter" : false,
+      "directDebitBefore" : true,
+      "reminders" : [
+        {
+          "due" : "2026-11-05",
+          "status" : "paused"
+        },
+        {
+          "due" : "2026-12-05",
+          "status" : "paused"
+        },
+        {
+          "due" : "2026-12-20",
+          "status" : "active"
+        }
+      ],
+      "statusesAfter" : [
+        "paused",
+        "active",
+        "active"
+      ],
+      "today" : "2026-11-10"
+    },
+    {
+      "change" : "paused",
+      "directDebitAfter" : true,
+      "directDebitBefore" : false,
+      "reminders" : [
+        {
+          "due" : "2026-11-05",
+          "status" : "active"
+        },
+        {
+          "due" : "2026-12-05",
+          "status" : "paused"
+        },
+        {
+          "due" : "2026-12-20",
+          "status" : "active"
+        }
+      ],
+      "statusesAfter" : [
+        "paused",
+        "paused",
+        "paused"
+      ],
+      "today" : "2026-11-10"
+    }
+  ],
+  "rule" : "BillReminders.direction(from:to:) and follow(_:from:actions:today:calendar:), run by AssetActions.update",
+  "shape" : "directDebitBefore: whether the bank paid the subscription's bills before the edit (null when never said), directDebitAfter: after it, today: the edit's day, reminders: its Factura de plătit deadlines, each its status and due day; change: what happened to them (paused, resumed, null for nothing), statusesAfter: each one's status after the edit, in order.",
+  "source" : "ios/DosarCuSina/Services/Subscriptions/BillReminders.swift",
+  "writtenBy" : "ios/DosarCuSinaTests/SubscriptionVectorsTests.swift"
+}
