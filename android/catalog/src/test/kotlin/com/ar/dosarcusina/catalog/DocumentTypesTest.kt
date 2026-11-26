@@ -1,8 +1,7 @@
 package com.ar.dosarcusina.catalog
 
 import com.ar.dosarcusina.archive.v3.Condition
-import com.ar.dosarcusina.archive.v3.FieldValue
-import com.ar.dosarcusina.archive.v3.FieldValues
+import com.ar.dosarcusina.core.readiness.TravelData
 import com.ar.dosarcusina.core.values.CalendarDay
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
@@ -11,22 +10,19 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
 /**
- * What a personal document can be, read from the shared catalog's `documents.json`: the same types
- * and variants the documents category offers, the names they give, and the rules declared on them.
- * The full answers are the iOS app's shared cases (`SectionVectorsTest`, in :store).
+ * What a personal document can be, read once for the whole app from shared/travel/documents.json
+ * (`core.readiness.DocumentTypes`): each variant is the documents category's own option, offered for
+ * its type, and the names and rules the section actions read are the iOS app's. The full answers
+ * are the iOS app's shared cases (`SectionVectorsTest`, in :store); `TravelDataTest` checks the types.
  */
 class DocumentTypesTest {
     private val catalog = Catalog.builtIn
-    private val types = catalog.documentTypes
+    private val types = TravelData.builtIn.documents
 
     @Test
-    fun theTypesAndVariantsAreTheOnesTheDocumentsCategoryOffers() {
+    fun eachVariantIsTheDocumentsCategorysOptionOfferedForItsType() {
         val fields = requireNotNull(catalog.definition(BuiltInTemplates.Key.DOCUMENTS)).sections.flatMap { it.fields }
-        val type = fields.single { it.key == types.typeFieldKey }
-        val offered = type.options?.map { Triple(it.key, it.label, it.aliases) }
-        assertEquals(offered, types.types.map { Triple(it.key, it.label, it.aliases) })
-        val variant = fields.single { it.key == types.variantFieldKey }
-        assertEquals(variant.options?.map { it.key }, types.variants.map { it.key })
+        val variant = fields.single { it.key == types.variantField }
         for (option in variant.options.orEmpty()) {
             val spec = types.variants.single { it.key == option.key }
             val condition = requireNotNull(option.appliesWhen?.let(Condition::read))
@@ -42,9 +38,9 @@ class DocumentTypesTest {
         val electronic = types.documentName("documentType.idCard", "documentVariant.idCard.electronic")
         assertEquals("Carte de identitate", electronic)
         assertEquals(types.unnamed, types.documentName("documentType.somethingNewer", null))
-        val label = FieldValues(mapOf(types.typeFieldKey to FieldValue.Text("Pasaport")))
-        assertEquals("Pașaport", types.documentName(label))
-        assertNull(types.documentName(FieldValues()))
+        assertEquals("Cazier fiscal", types.documentName("Cazier", "Fiscal"), "Both stored as labels")
+        assertEquals("Pașaport", types.documentName("Pasaport", null))
+        assertNull(types.documentName(null, null))
     }
 
     @Test

@@ -204,8 +204,11 @@ struct TravelExportTests {
             .object([
                 "type": .string(spec.type),
                 "key": .string(spec.option.key),
+                "label": .string(spec.option.label),
                 "travels": .bool(!TravelRules.notForTravel.contains(spec.option.key)),
                 "travelEnds": TravelRules.travelEnds[spec.option.key].map { .string($0.isoString) } ?? .null,
+                // The name the document takes when it isn't its type's ("Cazier fiscal"), else null.
+                "documentName": spec.documentName.map { .string($0) } ?? .null,
             ])
         }
         return .object([
@@ -213,6 +216,13 @@ struct TravelExportTests {
             "variantField": .string(DocumentType.variantFieldKey),
             "types": .array(types),
             "variants": .array(variants),
+            // What else the app declares on the types as data, read by the section actions
+            // (a document's name, its back, its validity after issue) as well as the checks.
+            "unnamed": .string(DocumentType.unnamed),
+            "keepsBackSide": strings(DocumentType.keepsBackSide.sorted()),
+            "validityMonthsAfterIssue": .object(DocumentType.validityMonthsAfterIssue.mapValues { .int($0) }),
+            "readOnPhoneOnly": strings(DocumentType.readOnPhoneOnly.sorted()),
+            "sharedWithCare": strings(DocumentType.sharedWithCare.sorted()),
             "writtenBy": .string(writtenBy),
         ])
     }

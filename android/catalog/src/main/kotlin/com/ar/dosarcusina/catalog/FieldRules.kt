@@ -6,6 +6,7 @@ import com.ar.dosarcusina.archive.v3.Condition
 import com.ar.dosarcusina.archive.v3.FieldDefinition
 import com.ar.dosarcusina.archive.v3.FieldValue
 import com.ar.dosarcusina.archive.v3.FieldValues
+import com.ar.dosarcusina.core.readiness.DocumentTypes
 import com.ar.dosarcusina.core.subscriptions.SubscriptionGroup
 import com.ar.dosarcusina.core.values.option
 import kotlinx.serialization.json.JsonObject
@@ -114,12 +115,12 @@ object FieldRules {
         /** A document's last valid day from the day it was issued, when its type and variant have a validity. */
         data class ValidityAfterIssue(val issueField: String) : Derivation {
             override fun inputs(documentTypes: DocumentTypes) =
-                listOf(issueField, documentTypes.typeFieldKey, documentTypes.variantFieldKey)
+                listOf(issueField, documentTypes.typeField, documentTypes.variantField)
 
             override fun value(values: FieldValues, documentTypes: DocumentTypes): FieldValue? {
                 val issued = (values[issueField] as? FieldValue.Day)?.value ?: return null
-                val type = values[documentTypes.typeFieldKey]?.textValue
-                val variant = values[documentTypes.variantFieldKey]?.textValue
+                val type = values[documentTypes.typeField]?.textValue
+                val variant = values[documentTypes.variantField]?.textValue
                 return documentTypes.validUntil(issued, type, variant)?.let(FieldValue::Day)
             }
         }

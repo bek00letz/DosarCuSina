@@ -18,6 +18,8 @@ import com.ar.dosarcusina.catalog.SubscriptionFields
 import com.ar.dosarcusina.core.readings.LowerReadingAnswer
 import com.ar.dosarcusina.core.readings.MeasurementKind
 import com.ar.dosarcusina.core.readings.ReadingSource
+import com.ar.dosarcusina.core.readiness.DocumentTypes
+import com.ar.dosarcusina.core.readiness.TravelData
 import com.ar.dosarcusina.core.subscriptions.BillReminders
 import com.ar.dosarcusina.core.values.CalendarDay
 import com.ar.dosarcusina.core.values.DosarCalendar
@@ -152,8 +154,10 @@ class AssetActions(
     private val now: () -> Instant = unit.clock,
     /** The time zone the app counts days in (`Calendar.dosar`). */
     private val zone: () -> ZoneId = DosarCalendar::zone,
-    /** The app's own categories: a definition when its category's record isn't here, and the documents' types. */
+    /** The app's own categories: a section's definition when its category's record isn't here. */
     private val catalog: Catalog = Catalog.builtIn,
+    /** What a personal document can be: its types, their variants and the names they give. */
+    private val documentTypes: DocumentTypes = TravelData.builtIn.documents,
 ) {
     // Planning
 
@@ -167,7 +171,7 @@ class AssetActions(
     /** The same for a category not saved yet: one of the person's own, while they describe it. */
     fun plannedObligations(parts: CategoryParts, values: FieldValues): List<PlannedObligation> =
         BlueprintRules.planned(
-            parts.sections.flatMap { it.fields }, parts.blueprints, values, today(), catalog.documentTypes,
+            parts.sections.flatMap { it.fields }, parts.blueprints, values, today(), documentTypes,
         )
 
     // Making
@@ -196,8 +200,8 @@ class AssetActions(
         val made = Making(name, template, prepared, notes, obligations, isExample)
         return unit.perform(now = now()) { step ->
             val holder = newParent?.let {
-                val values = requireNotNull(parentValues)
-                make(step, Making(it.name, it.template, values, null, emptyList(), isExample), parent = null)
+                val holderValues = requireNotNull(parentValues)
+                make(step, Making(it.name, it.template, holderValues, null, emptyList(), isExample), parent = null)
             }
             make(step, made, holder?.pk ?: parent?.pk)
         }
@@ -264,10 +268,9 @@ class AssetActions(
         val stored = current(snapshot(), document)
         val start = edit.startedFrom ?: SectionEditStart.of(stored)
         var name = edit.name
-        val types = catalog.documentTypes
         if (name == start.name) {
-            val oldName = types.documentName(start.values)
-            val newName = types.documentName(edit.values)
+            val oldName = documentName(start.values)
+            val newName = documentName(edit.values)
             if (newName != null) {
                 DocumentNaming.retyped(start.name, oldName, newName)?.let { name = it }
             }
@@ -296,6 +299,14 @@ class AssetActions(
         val digest = photo?.let(step::keep)
         step.update(fresh(step, asset).copy(photoData = digest))
     }
+
+    /**
+     * What a personal document with [values] is called by its type and variant ("Carte de
+     * identitate", "Cazier judiciar"), when it has a type this build knows.
+     */
+    fun documentName(values: FieldValues): String? = documentTypes.documentName(
+        values[documentTypes.typeField]?.textValue, values[documentTypes.variantField]?.textValue,
+    )
 
     // Measuring
 
@@ -438,7 +449,7 @@ class AssetActions(
         val template = SectionPlaces.categories(view)[section.templateKey]
         val definition = template?.let { fields(it) }
         val values = definition?.let {
-            val ruled = FieldRules.applying(FieldRules.normalizingChoices(laid, it), it, stored, catalog.documentTypes)
+            val ruled = FieldRules.applying(FieldRules.normalizingChoices(laid, it), it, stored, documentTypes)
             SecretFields.sealing(ruled, it, sealer)
         } ?: laid
         val hero = definition?.let { HeroMetric.value(values, it) }
@@ -553,7 +564,7 @@ class AssetActions(
     /** [values] as saving a new section keeps them: choices as keys, the rules applied, secrets sealed. */
     private fun prepare(values: FieldValues, fields: List<FieldDefinition>): FieldValues {
         val keys = FieldRules.normalizingChoices(values, fields)
-        val ruled = FieldRules.applying(keys, fields, previous = null, documentTypes = catalog.documentTypes)
+        val ruled = FieldRules.applying(keys, fields, previous = null, documentTypes = documentTypes)
         return SecretFields.sealing(ruled, fields, sealer)
     }
 

@@ -6,6 +6,7 @@ import com.ar.dosarcusina.archive.v3.FieldValues
 import com.ar.dosarcusina.archive.v3.ObligationBlueprint
 import com.ar.dosarcusina.archive.v3.RecurrenceRule
 import com.ar.dosarcusina.archive.v3.ReminderProfile
+import com.ar.dosarcusina.core.readiness.DocumentTypes
 import com.ar.dosarcusina.core.values.CalendarDay
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive

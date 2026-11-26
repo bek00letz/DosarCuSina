@@ -3,10 +3,10 @@ package com.ar.dosarcusina.store.sections
 import com.ar.dosarcusina.archive.ProviderTaxID
 import com.ar.dosarcusina.archive.v3.FieldValue
 import com.ar.dosarcusina.archive.v3.FieldValues
-import com.ar.dosarcusina.catalog.Catalog
 import com.ar.dosarcusina.catalog.DocumentNaming
 import com.ar.dosarcusina.catalog.FieldRules
 import com.ar.dosarcusina.catalog.PlannedObligation
+import com.ar.dosarcusina.core.readiness.TravelData
 import com.ar.dosarcusina.core.values.CalendarDay
 import com.ar.dosarcusina.core.values.JsonTrees
 import com.ar.dosarcusina.core.values.MachineText
@@ -54,8 +54,6 @@ class SectionVectorsTest {
         const val TODAY = "2026-11-26"
     }
 
-    private val catalog = Catalog.builtIn
-
     private fun cases(name: String): List<JsonObject> {
         val shared = requireNotNull(System.getProperty("dosar.shared")) { "The test task sets dosar.shared" }
         val file = File(shared, "test-vectors/sections/$name.json")
@@ -94,7 +92,7 @@ class SectionVectorsTest {
                 val typed = values(case.getValue("values"))
                 val fields = fields(template)
                 val keys = FieldRules.normalizingChoices(typed, fields)
-                val kept = FieldRules.applying(keys, fields, null, catalog.documentTypes)
+                val kept = FieldRules.applying(keys, fields, null, TravelData.builtIn.documents)
                 assertEquals(values(case.getValue("kept")), kept, "The values as saving keeps them")
                 val planned = actions(binder).plannedObligations(template, typed).map { plan ->
                     JsonObject(
@@ -300,7 +298,8 @@ class SectionVectorsTest {
 
     @TestFactory
     fun documentNames(): List<DynamicTest> {
-        val types = catalog.documentTypes
+        val types = TravelData.builtIn.documents
+        val actions = actions(binder())
         return cases("document-names").mapIndexed { index, case ->
             DynamicTest.dynamicTest("Case $index") {
                 when {
@@ -323,7 +322,7 @@ class SectionVectorsTest {
                     "values" in case ->
                         assertEquals(
                             case.textOrNull("nameFromValues"),
-                            types.documentName(values(case.getValue("values"))),
+                            actions.documentName(values(case.getValue("values"))),
                         )
                     "validUntil" in case -> {
                         val rule = case.getValue("validUntil").jsonObject

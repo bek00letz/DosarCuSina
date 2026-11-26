@@ -4,7 +4,7 @@ import Testing
 
 /// The built-in catalog (`BuiltInTemplates`), written to `shared/catalog/` as data, so the
 /// Android app reads the same categories and never keeps a catalog of its own
-/// (docs/ANDROID_PLAN.md, "How parity is kept", item 1). Six files, which
+/// (docs/ANDROID_PLAN.md, "How parity is kept", item 1). Five files, which
 /// `shared/catalog/README.md` describes:
 ///
 /// - `templates.json`: every built-in's definition, in the catalog's order and in the shape a
@@ -18,9 +18,7 @@ import Testing
 /// - `ownCategories.json`: what a category of one's own is made of besides the answers to its
 ///   switches (`CategorySwitches`): the pockets it starts with, each way of counting a service
 ///   with its counter field and its service deadline, and „Recuperate” (`LostRecordsStep`);
-/// - `household.json`: the household's own deadlines (`HouseholdRules.blueprints`);
-/// - `documents.json`: what a personal document can be (`DocumentType`): its types, their
-///   variants and the names they give, and the rules declared on them as data.
+/// - `household.json`: the household's own deadlines (`HouseholdRules.blueprints`).
 ///
 /// Fresh or failing, as `CopyMatrixTests` keeps docs/COPY_MATRIX.md: the test writes the files
 /// again and fails when what is committed differs. A run that finds them out of date leaves
@@ -115,7 +113,6 @@ struct CatalogExportTests {
             "keys.json": try render(Keys()),
             "ownCategories.json": try render(OwnCategories()),
             "household.json": try render(Household()),
-            "documents.json": try render(Documents()),
         ]
     }
 
@@ -217,43 +214,6 @@ struct CatalogExportTests {
         var symbol = LostRecordsStep.symbol
         var pockets = LostRecordsStep.pockets.map(\.rawValue)
         var sectionID = LostRecordsStep.sectionID
-    }
-
-    /// What a personal document can be (`DocumentType`): its types in the order they are offered,
-    /// each with its label and what else it is found by; their variants, each offered only for its
-    /// type, with the name the document takes when it differs from the type's (`documentName`);
-    /// what a document of no type is called; and what is declared on the types as data: which keep
-    /// a back (`keepsBackSide`), how long one is valid after it is issued
-    /// (`validityMonthsAfterIssue`, by type or variant), how long before its expiry it stops being
-    /// good for travel (`travelMargins`), which are read only on the phone and which are shared
-    /// with care.
-    struct Documents: Encodable {
-        struct Kind: Encodable {
-            var key: String
-            var label: String
-            var aliases: [String]
-        }
-
-        struct Variant: Encodable {
-            var type: String
-            var key: String
-            var label: String
-            var documentName: String?
-        }
-
-        var typeFieldKey = DocumentType.typeFieldKey
-        var variantFieldKey = DocumentType.variantFieldKey
-        var types = DocumentType.options.map { Kind(key: $0.key, label: $0.label, aliases: $0.aliases) }
-        var variants = DocumentType.variants.map {
-            Variant(type: $0.type, key: $0.option.key, label: $0.option.label, documentName: $0.documentName)
-        }
-        var unnamed = DocumentType.unnamed
-        var keepsBackSide = DocumentType.keepsBackSide.sorted()
-        var validityMonthsAfterIssue = DocumentType.validityMonthsAfterIssue
-        var travelMargins = DocumentType.travelMargins
-        var readOnPhoneOnly = DocumentType.readOnPhoneOnly.sorted()
-        var sharedWithCare = DocumentType.sharedWithCare.sorted()
-        var writtenBy = CatalogExportTests.writtenBy
     }
 
     /// The household's own deadlines (`HouseholdRules.blueprints`): what a deadline with no

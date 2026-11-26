@@ -26,7 +26,6 @@ import kotlinx.serialization.json.intOrNull
  * is read with, and must read whole: the catalog is the app's own, so a part this build can't
  * read is a broken build ([CatalogError]), never something to carry raw.
  */
-@Suppress("LongParameterList") // One part per file of the catalog.
 class Catalog private constructor(
     /** The catalog's version (`TemplateDefinition.builtInCatalogVersion`): every built-in's. */
     val version: Int,
@@ -41,8 +40,6 @@ class Catalog private constructor(
     val ownCategories: OwnCategories,
     /** The household's own deadlines, which belong to no section (`household.json`). */
     val household: HouseholdRules,
-    /** What a personal document can be: its types, their variants and the names they give (`documents.json`). */
-    val documentTypes: DocumentTypes,
 ) : BuiltIns {
     private val byKey: Map<String, BuiltInDefinition> = all.associateBy(BuiltInDefinition::key)
 
@@ -55,7 +52,6 @@ class Catalog private constructor(
         KEYS("keys.json"),
         OWN_CATEGORIES("ownCategories.json"),
         HOUSEHOLD("household.json"),
-        DOCUMENTS("documents.json"),
     }
 
     companion object {
@@ -104,40 +100,6 @@ class Catalog private constructor(
                     parse(text, File.HOUSEHOLD).obj(File.HOUSEHOLD.fileName)
                         .parts("blueprints", ObligationBlueprint.codec, "household"),
                 ),
-                documentTypes = documentTypes(parse(text, File.DOCUMENTS).obj(File.DOCUMENTS.fileName)),
-            )
-        }
-
-        private fun documentTypes(documents: JsonObject): DocumentTypes {
-            val types = documents.list("types").map { it.obj("types") }.map { type ->
-                val aliases = type.list("aliases").map { it.text("aliases") }
-                DocumentTypes.Type(type.string("key"), type.string("label"), aliases)
-            }
-            val keys = types.map { it.key }.toSet()
-            val variants = documents.list("variants").map { it.obj("variants") }.map { variant ->
-                val type = variant.string("type")
-                catalogCheck(type in keys) { "documents.json has a variant of $type, which is no type" }
-                DocumentTypes.Variant(
-                    type, variant.string("key"), variant.string("label"), variant["documentName"]?.text("documentName"),
-                )
-            }
-            fun keySet(name: String) = documents.list(name).map { it.text(name) }.toSet()
-            fun days(name: String) = (documents[name]?.obj(name) ?: throw CatalogError("$name is missing"))
-                .mapValues { (key, value) ->
-                    (value as? JsonPrimitive)?.takeIf { !it.isString }?.intOrNull
-                        ?: throw CatalogError("$name.$key isn't a whole number")
-                }
-            return DocumentTypes(
-                typeFieldKey = documents.string("typeFieldKey"),
-                variantFieldKey = documents.string("variantFieldKey"),
-                types = types,
-                variants = variants,
-                unnamed = documents.string("unnamed"),
-                keepsBack = keySet("keepsBackSide"),
-                validityMonthsAfterIssue = days("validityMonthsAfterIssue"),
-                travelMargins = days("travelMargins"),
-                readOnPhoneOnly = keySet("readOnPhoneOnly"),
-                sharedWithCare = keySet("sharedWithCare"),
             )
         }
 

@@ -8,6 +8,7 @@ import com.ar.dosarcusina.core.values.MachineText
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
+import java.util.UUID
 import kotlin.math.floor
 import kotlin.math.max
 
@@ -353,3 +354,18 @@ class OwnCategories internal constructor(
     /** The service deadline of [counter] as the catalog writes it, at the interval it starts at. */
     fun service(counter: CategorySwitches.Counter): ObligationBlueprint = services.getValue(counter)
 }
+
+/**
+ * „Recuperate”, the category of one's own the repair list keeps records in whose section was
+ * deleted on another device, as the iOS app's `LostRecordsStep` makes it: one key and one
+ * section id on every device and on both apps, so two that keep records there make one.
+ */
+data class RecoveredCategory(
+    val key: String,
+    val name: String,
+    val symbol: String,
+    /** `SectionPocket` keys, as stored. */
+    val pockets: List<String>,
+    /** The id of its one section. */
+    val sectionID: UUID,
+)
