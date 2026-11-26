@@ -80,6 +80,7 @@ class SearchVectorsTest {
         SearchVectors.tests("search-redacting", { label(it, "text") }) { case ->
             val text = Built.expand(case.text("text"))
             assertEquals(Built.expand(case.text("redacted")), SearchPrivacy.redacting(text, kept(case)), "redacted")
+            assertEquals(Built.expand(case.text("shown")), SearchPrivacy.shown(text, kept(case)), "shown")
             assertEquals(case.bool("mayRemember"), SearchPrivacy.mayRemember(text), "mayRemember")
         }
 

@@ -21,8 +21,10 @@ import com.ar.dosarcusina.store.FreeText
 import com.ar.dosarcusina.store.RecordRef
 import com.ar.dosarcusina.store.Tables
 import com.ar.dosarcusina.store.locks.BinderLocks
+import com.ar.dosarcusina.store.locks.DocumentLock
 import com.ar.dosarcusina.store.locks.DocumentSections
 import com.ar.dosarcusina.store.locks.isLocked
+import com.ar.dosarcusina.store.locks.lock
 import com.ar.dosarcusina.store.schema.Asset
 import com.ar.dosarcusina.store.schema.Attachment
 import com.ar.dosarcusina.store.schema.CategoryTemplate
@@ -104,7 +106,7 @@ class BinderSearch(
      */
     fun recordsShowing(changed: RecordRef): Set<RecordRef>? = when (changed.type) {
         Tables.templates.type -> null
-        Tables.assets.type -> setOf(changed) + links.showingSection(changed.row)
+        Tables.assets.type -> setOf(changed) + links.showingSection(changed.row) + unfiledIfCategoryMissing(changed.row)
         Tables.obligations.type -> setOf(changed) + links.papersOf(obligation = changed.row)
         Tables.history.type -> setOf(changed) + links.showingRecord(changed.row)
         Tables.items.type -> links.showingPart(changed.row)
@@ -112,6 +114,35 @@ class BinderSearch(
         Tables.readings.type -> links.papersOf(reading = changed.row)
         Tables.attachments.type -> setOf(changed)
         else -> emptySet()
+    }
+
+    /**
+     * The records whose documents show something of a deleted record, beside its own documents, which
+     * go with it. Null when the deletion can reach any record (a category), so everything is read
+     * again. A section gone may have been the one whose category hadn't arrived, the last thing of the
+     * binder that read as locked: the documents that name no section read again.
+     */
+    fun recordsShowingDeleted(deleted: RecordRef): Set<RecordRef>? = when (deleted.type) {
+        Tables.templates.type -> null
+        Tables.assets.type -> documentsNamingNoSection()
+        else -> emptySet()
+    }
+
+    /**
+     * The documents that name no section that can be found ([DocumentLock.UnknownSection]), whose lock
+     * is the whole binder's ([BinderLocks.isLocked]).
+     */
+    private fun documentsNamingNoSection(): Set<RecordRef> = view.all(Tables.attachments)
+        .filter { locks.lock(it, documentSections) == DocumentLock.UnknownSection }
+        .mapTo(LinkedHashSet(), ::ref)
+
+    /**
+     * A section whose category hasn't arrived is locked ([BinderLocks]), so it can change whether
+     * anything of the binder is: what the documents that name no section read.
+     */
+    private fun unfiledIfCategoryMissing(row: Long): Set<RecordRef> {
+        val section = view.row(Tables.assets, row) ?: return emptySet()
+        return if (template(section.templateKey) == null) documentsNamingNoSection() else emptySet()
     }
 
     // Reading the records

@@ -77,7 +77,8 @@ public enum SpotlightCatalog {
 
         for asset in assets where SearchPrivacy.mayShowOutside(isLocked: inLockedCategory(asset), isExample: asset.isExample) {
             guard let title = SearchPrivacy.outsideText(asset.name, withholding: withheld[asset.id] ?? [], keeping: kept[asset.id] ?? .nothing) else { continue }
-            let category = templates[asset.templateKey]?.name
+            // Every line it shows by the same rule as its title (`SearchPrivacy.outsideText`).
+            let category = SearchPrivacy.outsideText(templates[asset.templateKey]?.name)
             entries.append(SpotlightEntry(kind: .section, route: .asset(asset.id), title: title, detail: category,
                                           keywords: category.map { [$0] } ?? []))
         }
