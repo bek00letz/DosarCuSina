@@ -28,13 +28,13 @@ import com.ar.dosarcusina.core.values.MeasurementUnit
 import com.ar.dosarcusina.core.values.ObligationStatus
 import com.ar.dosarcusina.core.values.StoredDay
 import com.ar.dosarcusina.core.values.ThreeWay
-import com.ar.dosarcusina.store.BinderSnapshot
 import com.ar.dosarcusina.store.BinderView
 import com.ar.dosarcusina.store.Step
 import com.ar.dosarcusina.store.Tables
 import com.ar.dosarcusina.store.UndoReceipt
 import com.ar.dosarcusina.store.Undoable
 import com.ar.dosarcusina.store.UnitOfWork
+import com.ar.dosarcusina.store.view
 import com.ar.dosarcusina.store.examples.ExampleOwnership
 import com.ar.dosarcusina.store.obligations.ObligationActions
 import com.ar.dosarcusina.store.readings.HeroMetric
@@ -55,7 +55,6 @@ import com.ar.dosarcusina.store.security.SecretFields
 import com.ar.dosarcusina.store.security.SecretSealer
 import com.ar.dosarcusina.store.templates.HouseholdDeadlines
 import com.ar.dosarcusina.store.templates.template
-import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonElement
 import java.time.Instant
@@ -589,7 +588,7 @@ class AssetActions(
 
     private fun today(): CalendarDay = CalendarDay.of(now(), zone())
 
-    private fun snapshot(): BinderView = runBlocking { BinderSnapshot.read(unit.store.database) }
+    private fun snapshot(): BinderView = unit.view()
 
     private fun current(view: BinderView, asset: Asset): Asset =
         requireNotNull(view.row(Tables.assets, asset.pk)) { "No section in row ${asset.pk}" }

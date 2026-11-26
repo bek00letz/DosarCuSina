@@ -17,13 +17,13 @@ import com.ar.dosarcusina.core.values.Money
 import com.ar.dosarcusina.core.values.ObligationStatus
 import com.ar.dosarcusina.core.values.StoredDay
 import com.ar.dosarcusina.core.values.ThreeWay
-import com.ar.dosarcusina.store.BinderSnapshot
 import com.ar.dosarcusina.store.BinderView
 import com.ar.dosarcusina.store.Step
 import com.ar.dosarcusina.store.Tables
 import com.ar.dosarcusina.store.UndoReceipt
 import com.ar.dosarcusina.store.Undoable
 import com.ar.dosarcusina.store.UnitOfWork
+import com.ar.dosarcusina.store.view
 import com.ar.dosarcusina.store.examples.ExampleOwnership
 import com.ar.dosarcusina.store.history.HistoryActions
 import com.ar.dosarcusina.store.history.LineItemDraft
@@ -37,7 +37,6 @@ import com.ar.dosarcusina.store.schema.keptReminders
 import com.ar.dosarcusina.store.schema.reminders
 import com.ar.dosarcusina.store.schema.withKeptRecurrence
 import com.ar.dosarcusina.store.schema.withKeptReminders
-import kotlinx.coroutines.runBlocking
 import java.time.Instant
 import java.time.ZoneId
 
@@ -536,7 +535,7 @@ class ObligationActions(
         step.update(row.copy(statusRaw = status.raw, snoozedUntilISO = snoozed))
     }
 
-    private fun snapshot(): BinderView = runBlocking { BinderSnapshot.read(unit.store.database) }
+    private fun snapshot(): BinderView = unit.view()
 
     private fun current(view: BinderView, obligation: Obligation): Obligation =
         view.row(Tables.obligations, obligation.pk) ?: throw NoSuchElementException("The deadline isn't in the binder")
