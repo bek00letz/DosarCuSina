@@ -8,6 +8,11 @@ To propose a change to a decision, open an issue with the **Proposal** template 
 
 ## 2026-11-26
 
+### Android's words are generated from the iOS String Catalogs (owner)
+- **Decided (owner):** Android's words are generated from the iOS String Catalogs (the app's, the Shared table and the widgets'), plurals included, by `scripts/android-words.py`: into the Android app's resources (`strings.xml`) and into `android/core`'s (`words.json`), so the pure Kotlin modules write the same Romanian. The `android-lint` check fails when either is out of date. The words Android must say differently („Face ID” becomes „deblocarea cu amprenta”) are a short written list, `shared/strings/android-differs.json`, each with why; an entry whose key no catalog has any more fails. The wording engines give a catalog key and its arguments on both apps, and shared cases (`shared/test-vectors/wording/`, written by the iOS tests) compare the finished Romanian text word for word.
+- **Why:** one source of truth, so the words can't drift between the two apps.
+- **Alternative not taken:** Android's own `strings.xml`, kept in step by comparing the copy matrix. Two sources of the same words, kept equal only where the matrix looks.
+
 ### Caută keeps the title of every result in a locked section (owner)
 - **Decided (owner, replaces part of „A locked section is locked wherever it is named”):** Caută keeps the title of every result a locked section gives, the section itself, its documents and parts as well as its deadlines and visits, with nothing else under it („Deblochează secțiunea ca să vezi mai mult.”); opening one still asks for Face ID. The rule follows what the app already does.
 - **Why:** finding a document or a part by its name is what search is for, as it is for „RCA” or „Schimb ulei”; a title alone says what something is called, never what it holds. Every other place outside the section's page still shows only that it is locked, and the iPhone's search shows nothing of it.
