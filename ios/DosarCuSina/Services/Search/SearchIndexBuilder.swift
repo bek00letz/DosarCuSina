@@ -199,11 +199,12 @@ public struct SearchIndexBuilder {
     }
 
     /// The document with every CNP-shaped number, card number and sealed value taken out of
-    /// what can be matched (`SearchPrivacy.redacting`) and of the line its row shows under the
-    /// title (`SearchPrivacy.shown`, which keeps what is already masked); what its section keeps
-    /// whole (`kept`) stays, as it is stored.
+    /// what can be matched (`SearchPrivacy.redacting`) and of every line its row shows, its title
+    /// and the line under it (`SearchPrivacy.shown`, which keeps what is already masked); what its
+    /// section keeps whole (`kept`) stays, as it is stored.
     static func redacted(_ document: SearchDocument, keeping kept: PaymentCardNumbers.KeptWhole) -> SearchDocument {
         var result = document
+        result.title = SearchPrivacy.shown(document.title, keeping: kept)
         result.fields = document.fields.map { SearchField(SearchPrivacy.redacting($0.text, keeping: kept), weight: $0.weight) }
         result.subtitle = document.subtitle.map { SearchPrivacy.shown($0, keeping: kept) }.flatMap { $0.isEmpty ? nil : $0 }
         return result

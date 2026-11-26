@@ -289,6 +289,28 @@ struct SearchLockedSectionsTests {
         #expect(line.hasPrefix("Dosar Exemplu ·") && !line.contains("1800101990006"))
     }
 
+    @Test("A section named with a CNP-shaped number shows without it in Caută")
+    func aTitleIsShownByTheSameRule() throws {
+        let context = try makeContext()
+        let vehicles = try #require(try TemplateStore(context: context).template(forKey: BuiltInTemplates.Key.vehicle))
+        let assets = AssetActions(context: context, calendar: .bucharest, now: { noon("2026-11-03") })
+        let named = try assets.create(name: "Certificat 1800101990006", template: vehicles, values: FieldValues())
+        _ = try assets.create(name: "VW Golf 2018", template: vehicles, values: FieldValues())
+        let deadline = Obligation(title: "ITP 1800101990006", kind: .legal, dueDay: CalendarDay("2027-03-01"))
+        context.insert(deadline)
+        deadline.asset = named
+        try UnitOfWork.save(context)
+
+        let index = try index(context)
+        #expect(index.documents.contains { $0.kind == .asset && $0.title == "Certificat" })
+        #expect(index.documents.contains { $0.kind == .asset && $0.title == "VW Golf 2018" }, "A title with nothing taken out stays as it is")
+        let itp = try #require(index.documents.first { $0.kind == .obligation })
+        #expect(itp.title == "ITP" && itp.subtitle?.hasPrefix("Certificat ·") == true)
+        #expect(!index.documents.contains { ($0.title + ($0.subtitle ?? "")).contains("1800101990006") })
+        #expect(index.search("1800101990006").isEmpty, "Nor is it matched")
+        #expect(index.search("certificat").contains { $0.document.kind == .asset })
+    }
+
     @Test("A section whose category hasn't arrived reads again the documents that name no section")
     func aSectionWhoseCategoryIsMissingReadsTheUnfiledDocuments() async throws {
         // Nothing locked yet: no built-in categories, one open category of one's own.

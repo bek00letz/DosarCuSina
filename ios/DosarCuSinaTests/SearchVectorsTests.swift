@@ -245,7 +245,7 @@ struct SearchVectorsTests {
             ("Suma 1 250 lei, CNP 1800101990006, card 4111111111111111", []),
             ("Exemplu •••• · 2020", []), ("••••", []), ("Copie 1800101990006 · card •••• 1111", []),
             ("1800101990006 · 2020", []), ("Pașaport   1800101990006  · 10 ianuarie 2027", []), ("Cod \(sealed) · VW Golf", []),
-            ("VW  Golf · 10 ianuarie 2027", []),
+            ("VW  Golf · 10 ianuarie 2027", []), ("Certificat 1800101990006", []), ("VW Golf 2018", []),
         ]
         let cases: [JSONValue] = inputs.map { input in
             let text = Built.expand(input.text)
@@ -346,7 +346,8 @@ struct SearchVectorsTests {
     /// deadline, a visit and a part, archived, read off an identity document, one of the whole
     /// household's, one that names nothing and one filed in an open section through a locked
     /// section's deadline; a section's line with a value search never keeps and a year, and one
-    /// with a CNP and a masked card number; what each section's change and deletion read again.
+    /// with a CNP and a masked card number; a section named with a CNP-shaped number; what each
+    /// section's change and deletion read again.
     static func records() throws -> Vectors {
         let container = try makeInMemoryContainer()
         let context = PersistenceController.context(in: container)
@@ -415,7 +416,9 @@ struct SearchVectorsTests {
             "paper.copy": .text("Copie 1800101990006 · card •••• 1111"),
         ]), notes: "Ține-l în sertar")
         let stray = Asset(id: id(4), name: "Secțiune fără categorie", templateKey: "search.absent", notes: "sosește mai târziu")
-        for (offset, section) in [golf, rex, passport, stray].enumerated() {
+        // A name with a CNP-shaped number in it: Caută shows it without the number.
+        let certificate = Asset(id: id(5), name: "Certificat 1800101990006", templateKey: papers.key)
+        for (offset, section) in [golf, rex, passport, stray, certificate].enumerated() {
             context.insert(section)
             section.createdAt = noon("2026-01-0\(offset + 1)")
             section.updatedAt = noon("2026-02-0\(offset + 1)")
@@ -517,7 +520,7 @@ struct SearchVectorsTests {
             guard let ids else { return .null }
             return .array(ids.compactMap { Self.recordName($0, in: context) }.sorted().map(JSONValue.string))
         }
-        var rereads: [JSONValue] = try [golf, rex, passport, stray].map { section in
+        var rereads: [JSONValue] = try [golf, rex, passport, stray, certificate].map { section in
             .object([
                 "section": .string(section.id.uuidString),
                 "changed": named(try builder.recordsShowing(section.persistentModelID)),

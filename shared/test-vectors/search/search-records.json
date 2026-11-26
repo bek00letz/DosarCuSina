@@ -176,6 +176,32 @@
           "title" : "Secțiune fără categorie"
         },
         {
+          "date" : "2026-02-05T10:00:00Z",
+          "fields" : [
+            {
+              "text" : "Certificat ",
+              "weight" : 10
+            },
+            {
+              "text" : "Acte",
+              "weight" : 6
+            },
+            {
+              "text" : "",
+              "weight" : 3
+            }
+          ],
+          "id" : "asset:5E000000-AB00-4C00-8D00-E00000001005",
+          "isSensitive" : true,
+          "kind" : "asset",
+          "route" : {
+            "id" : "5E000000-AB00-4C00-8D00-E00000001005",
+            "kind" : "asset"
+          },
+          "subtitle" : "Acte",
+          "title" : "Certificat"
+        },
+        {
           "date" : "2026-03-03T10:00:00Z",
           "fields" : [
             {
@@ -1249,6 +1275,19 @@
             "values" : {
 
             }
+          },
+          {
+            "facts" : [
+
+            ],
+            "id" : "5E000000-AB00-4C00-8D00-E00000001005",
+            "name" : "Certificat 1800101990006",
+            "notes" : null,
+            "templateKey" : "search.papers",
+            "updatedAt" : "2026-02-05T10:00:00Z",
+            "values" : {
+
+            }
           }
         ],
         "attachments" : [
@@ -1874,6 +1913,15 @@
             "document:5E000000-AB00-4C00-8D00-E00000001059"
           ],
           "section" : "5E000000-AB00-4C00-8D00-E00000001004"
+        },
+        {
+          "changed" : [
+            "asset:5E000000-AB00-4C00-8D00-E00000001005"
+          ],
+          "deleted" : [
+            "document:5E000000-AB00-4C00-8D00-E00000001059"
+          ],
+          "section" : "5E000000-AB00-4C00-8D00-E00000001005"
         },
         {
           "category" : "search.papers",

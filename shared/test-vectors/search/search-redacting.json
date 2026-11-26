@@ -294,6 +294,24 @@
       "redacted" : "VW  Golf · 10 ianuarie 2027",
       "shown" : "VW  Golf · 10 ianuarie 2027",
       "text" : "VW  Golf · 10 ianuarie 2027"
+    },
+    {
+      "kept" : [
+
+      ],
+      "mayRemember" : false,
+      "redacted" : "Certificat ",
+      "shown" : "Certificat",
+      "text" : "Certificat 1800101990006"
+    },
+    {
+      "kept" : [
+
+      ],
+      "mayRemember" : true,
+      "redacted" : "VW Golf 2018",
+      "shown" : "VW Golf 2018",
+      "text" : "VW Golf 2018"
     }
   ],
   "rule" : "SearchPrivacy.redacting(_:keeping:), shown(_:keeping:) and mayRemember(_:): what the index and the recent searches never keep (a CNP-shaped number, a card number, masked or not, a sealed value), a section's own typed values kept whole; the line a result shows under its title by the same rule, keeping what is already masked",

@@ -242,11 +242,12 @@ class SearchEntries(private val wording: SearchWording, private val zone: ZoneId
 
         /**
          * [document] with every CNP-shaped number, card number and sealed value taken out of what can be
-         * matched ([SearchPrivacy.redacting]) and of the line its row shows under the title
-         * ([SearchPrivacy.shown], which keeps what is already masked; a part left empty goes); what its
-         * section keeps whole ([kept]) stays, as it is stored.
+         * matched ([SearchPrivacy.redacting]) and of every line its row shows, its title and the line
+         * under it ([SearchPrivacy.shown], which keeps what is already masked; a part left empty goes);
+         * what its section keeps whole ([kept]) stays, as it is stored.
          */
         private fun redacted(document: SearchDocument, kept: KeptWhole): SearchDocument = document.copy(
+            title = SearchPrivacy.shown(document.title, kept),
             fields = document.fields.map { it.copy(text = SearchPrivacy.redacting(it.text, kept)) },
             subtitle = document.subtitle.mapNotNull { detail ->
                 when (detail) {
