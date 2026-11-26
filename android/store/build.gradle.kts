@@ -11,6 +11,8 @@ plugins {
 dependencies {
     api(projects.archive)
     implementation(projects.core)
+    // Launch installs the built-in categories from the catalog (LaunchData).
+    implementation(projects.catalog)
     implementation(libs.room.runtime)
     implementation(libs.sqlite.bundled)
     ksp(libs.room.compiler)

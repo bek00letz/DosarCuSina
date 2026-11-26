@@ -38,7 +38,9 @@ class RoomTestBinder(initial: Binder) : TestBinder {
     val sectionLocks = SectionLocks(SectionLocks.fileForStore(File(lockFolder, BinderStore.DATABASE_NAME)))
     val store = scratchStore(sectionLocks)
     val locks = CategoryLocks(sectionLocks, Catalog.builtIn)
-    val target = RoomArchiveTarget(store, locks)
+    val log = RecordingLog()
+    val unit = UnitOfWork(store, locks, log, undoRoot = scratchFolder("undo-"))
+    val target = RoomArchiveTarget(unit)
 
     override var applied = 0
         private set
