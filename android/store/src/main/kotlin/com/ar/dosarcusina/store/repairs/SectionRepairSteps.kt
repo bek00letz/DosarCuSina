@@ -235,12 +235,11 @@ object DuplicateProvidersStep : DataRepairStep {
     }
 
     override fun apply(findings: List<DataRepairFinding>, step: Step, context: DataRepairContext) {
-        for (finding in findings) {
-            val group = finding.subject as? DataRepairSubject.DuplicateProviders ?: continue
+        for (group in findings.mapNotNull { it.subject as? DataRepairSubject.DuplicateProviders }) {
             for (duplicate in group.duplicateIds) {
-                val kept = provider(step, group.keptId) ?: break
-                val copy = provider(step, duplicate)?.takeIf { it.id != kept.id } ?: continue
-                join(step, copy, kept)
+                val kept = provider(step, group.keptId)
+                val copy = provider(step, duplicate)?.takeIf { kept != null && it.id != kept.id } ?: continue
+                join(step, copy, requireNotNull(kept))
             }
         }
     }

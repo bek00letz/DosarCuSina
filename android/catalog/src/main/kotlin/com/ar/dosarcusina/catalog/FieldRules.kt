@@ -46,8 +46,7 @@ object FieldRules {
     ): FieldValues {
         var result = values
         if (previous == null) {
-            for (field in fields) {
-                if (result[field.key] != null) continue
+            for (field in fields.filter { result[it.key] == null }) {
                 val default = field.defaultValue?.let(FieldValue::read) ?: continue
                 result = result.with(field.key, default)
             }

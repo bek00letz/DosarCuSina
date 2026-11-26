@@ -71,8 +71,7 @@ object SecretFields {
     fun sealing(values: FieldValues, fields: List<FieldDefinition>, sealer: SecretSealer): FieldValues {
         var result = values
         for (field in fields(fields)) {
-            val text = values[field.key]?.textValue ?: continue
-            if (SealedText.isSealed(text)) continue
+            val text = values[field.key]?.textValue?.takeUnless(SealedText::isSealed) ?: continue
             val plain = PaymentCardNumbers.redact(text.trim())
             result = result.with(field.key, if (plain.isEmpty()) null else FieldValue.Text(sealer.seal(plain)))
         }

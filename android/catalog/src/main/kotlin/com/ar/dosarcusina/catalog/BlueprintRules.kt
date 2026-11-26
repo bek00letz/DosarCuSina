@@ -4,97 +4,20 @@ import com.ar.dosarcusina.archive.v3.Condition
 import com.ar.dosarcusina.archive.v3.FieldDefinition
 import com.ar.dosarcusina.archive.v3.FieldValues
 import com.ar.dosarcusina.archive.v3.ObligationBlueprint
-import com.ar.dosarcusina.archive.v3.RecurrenceRule
-import com.ar.dosarcusina.archive.v3.ReminderProfile
 import com.ar.dosarcusina.core.readiness.DocumentTypes
 import com.ar.dosarcusina.core.values.CalendarDay
-import kotlinx.serialization.json.JsonObject
-import kotlinx.serialization.json.JsonPrimitive
 
 /**
- * What one of a category's usual deadlines says about the deadline made from it, as the iOS app's
- * `ObligationBlueprint` (ios/DosarCuSina/Models/Obligations/ObligationTypes.swift and
- * DueDayValidity.swift): whether it applies to a section's values, the reminders it gives for
- * them, whether a first day is worth scheduling, and the note it starts with. The deadline actions
- * read these when they make a deadline; nothing decides them twice.
+ * Which of a category's usual deadlines a new section starts with, as the iOS app's
+ * `AssetActions.plannedObligations` (ios/DosarCuSina/Services/Obligations/AssetActions.swift): those
+ * that apply to its values, each with its first day worked out when its rule can, ticked by the one
+ * rule ([PlannedObligation.startsSelected]). What a deadline made from a blueprint reminds with and
+ * when it is worth making are the deadline engine's (`RecurrenceEngine`, the blueprint's own rules).
  */
 object BlueprintRules {
-    private const val RENEWAL = "renewal"
-    private const val LEGAL = "legal"
-
     /** Whether [blueprint] applies to a section with [values] (`appliesWhen`): always, unless its rule says not. */
     fun applies(blueprint: ObligationBlueprint, values: FieldValues): Boolean =
         blueprint.appliesWhen?.let(Condition::read)?.isMet(values) ?: true
-
-    /**
-     * The reminders a deadline from [blueprint] gives for a section with [values]
-     * (`reminders(for:)`): the variant for the value its `reminderVariants` reads (a passport, a
-     * dog), else its own, else its kind's ([defaultProfile]).
-     */
-    fun reminders(blueprint: ObligationBlueprint, values: FieldValues): ReminderProfile {
-        val variants = blueprint.reminderVariants as? JsonObject
-        val field = (variants?.get("field") as? JsonPrimitive)?.takeIf { it.isString }?.content
-        val value = field?.let { values[it]?.textValue }
-        val variant = value?.let { (variants["variants"] as? JsonObject)?.get(it) }?.let(ReminderProfile.codec::decode)
-        return variant ?: blueprint.reminders?.let(ReminderProfile.codec::decode) ?: defaultProfile(blueprint.kind)
-    }
-
-    /**
-     * The reminders of a kind of deadline when its blueprint says none (`ObligationKind.defaultProfile`);
-     * a kind a newer build wrote reads as the loudest, legal.
-     */
-    @Suppress("MagicNumber") // The iOS kinds' profiles, as data.
-    fun defaultProfile(kind: String): ReminderProfile = when (kind) {
-        "tax" -> ReminderProfile(listOf(14, 1), "financial")
-        "insurance" -> ReminderProfile(listOf(30, 7, 0), LEGAL)
-        "health" -> ReminderProfile(listOf(7, 1), "health", graceDays = 7)
-        RENEWAL -> ReminderProfile(listOf(60, 30), LEGAL)
-        "payment" -> ReminderProfile(listOf(2, 0), "financial")
-        "maintenance" -> ReminderProfile(listOf(14, 1), "comfort", graceDays = 14)
-        "routine" -> ReminderProfile(listOf(0), "comfort", graceDays = 3)
-        else -> ReminderProfile(listOf(30, 7, 0), LEGAL)
-    }
-
-    /**
-     * Whether a deadline from [blueprint] first due on [day] is worth making on [today]
-     * (`isWorthScheduling(on:today:values:)`): a day still to come, or a renewal the law asks
-     * for, which is worth knowing about even once it has passed (an expired identity card).
-     */
-    fun isWorthScheduling(
-        blueprint: ObligationBlueprint,
-        day: CalendarDay,
-        today: CalendarDay,
-        values: FieldValues,
-    ): Boolean = day >= today || (blueprint.kind == RENEWAL && reminders(blueprint, values).consequence == LEGAL)
-
-    /**
-     * The section's field a deadline from [blueprint] is first due by, with its offset in days, when
-     * its first day comes from one (`FirstDueRule.field`): a document's renewal by its expiry.
-     */
-    fun firstDueField(blueprint: ObligationBlueprint): FieldDay? {
-        val rule = blueprint.firstDue as? JsonObject ?: return null
-        if ((rule["type"] as? JsonPrimitive)?.content != "field") return null
-        val key = (rule["field"] as? JsonPrimitive)?.takeIf { it.isString }?.content ?: return null
-        val offset = (rule["offsetDays"] as? JsonPrimitive)?.takeIf { !it.isString }?.content?.toIntOrNull() ?: 0
-        return FieldDay(key, offset)
-    }
-
-    /** A first day taken from a section's date field, shifted by [offsetDays]. */
-    data class FieldDay(val field: String, val offsetDays: Int)
-
-    /** Whether a deadline from [blueprint] repeats (`RecurrenceRule.repeats`): a rule this build can't read doesn't. */
-    fun repeats(blueprint: ObligationBlueprint): Boolean =
-        when (blueprint.recurrence?.let(RecurrenceRule.codec::decode) ?: RecurrenceRule.None) {
-            RecurrenceRule.None, is RecurrenceRule.Unreadable -> false
-            else -> true
-        }
-
-    /**
-     * The note a deadline from [blueprint] starts with (`deadlineNote`): its own, except a service's
-     * of a category of one's own, whose note only says how often, which the deadline's page says anyway.
-     */
-    fun deadlineNote(blueprint: ObligationBlueprint): String? =
-        if (CategorySwitches.isServiceBlueprint(blueprint.key)) null else blueprint.note
 
     /**
      * The deadlines a new section of a category with [fields] and [blueprints] would start with,
