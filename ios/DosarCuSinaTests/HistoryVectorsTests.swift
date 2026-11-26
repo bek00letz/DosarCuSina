@@ -819,7 +819,7 @@ struct HistoryVectorsTests {
                        action: ["do": "rate", "entry": .int(0), "rating": .int(0)]),
             ActionCase(name: "a rating cleared", section: car, before: [["do": "recordVisit", "on": nov10, "rating": .int(4)]],
                        action: ["do": "rate", "entry": .int(0)]),
-            ActionCase(name: "deleting a visit takes its reading", section: car, before: [service], action: ["do": "delete", "entry": .int(0)]),
+            ActionCase(name: "deleting a visit takes its reading", section: car, firms: [firm], before: [service], action: ["do": "delete", "entry": .int(0)]),
             ActionCase(name: "parts added to a record, each found in the category's parts", section: car,
                        before: [["do": "record", "kind": "repair", "title": "Frâne", "on": nov10]],
                        action: ["do": "addItems", "entry": .int(0), "items": [line("Plăcuțe de frână spate", "380"), line("Manoperă", "120")]]),
