@@ -1,0 +1,773 @@
+{
+  "cases" : [
+    {
+      "items" : [
+
+      ],
+      "name" : "nothing listed",
+      "visitTitle" : "Vizită"
+    },
+    {
+      "items" : [
+        "Ulei și filtru de ulei"
+      ],
+      "name" : "one thing",
+      "visitTitle" : "Ulei și filtru de ulei"
+    },
+    {
+      "items" : [
+        "Plăcuțe frână față",
+        "Odorizant"
+      ],
+      "name" : "two things",
+      "visitTitle" : "Plăcuțe frână față, Odorizant"
+    },
+    {
+      "items" : [
+        "Plăcuțe frână față",
+        "Manoperă"
+      ],
+      "name" : "labour is no work it names",
+      "visitTitle" : "Plăcuțe frână față"
+    },
+    {
+      "items" : [
+        "Manoperă 1,5 ore"
+      ],
+      "name" : "labour alone keeps its name",
+      "visitTitle" : "Manoperă 1,5 ore"
+    },
+    {
+      "items" : [
+        "Ulei",
+        "Filtru de aer",
+        "Bujii"
+      ],
+      "name" : "three things are counted",
+      "visitTitle" : "Revizie: 3 lucrări"
+    },
+    {
+      "items" : [
+        "Ulei",
+        "Filtru de aer",
+        "Bujii",
+        "Manoperă"
+      ],
+      "name" : "four things, one labour",
+      "visitTitle" : "Revizie: 3 lucrări"
+    },
+    {
+      "items" : [
+        "A",
+        "B",
+        "C",
+        "D",
+        "E"
+      ],
+      "name" : "five things",
+      "visitTitle" : "Revizie: 5 lucrări"
+    },
+    {
+      "items" : [
+        "",
+        "Ulei"
+      ],
+      "name" : "a blank name says nothing",
+      "visitTitle" : "Ulei"
+    },
+    {
+      "category" : "vehicle",
+      "entryTitle" : "Vizită la service",
+      "items" : [
+
+      ],
+      "name" : "vehicle: nothing listed"
+    },
+    {
+      "category" : "vehicle",
+      "entryTitle" : "Ulei și filtru de ulei",
+      "items" : [
+        "Ulei și filtru de ulei"
+      ],
+      "name" : "vehicle: one thing"
+    },
+    {
+      "category" : "vehicle",
+      "entryTitle" : "Plăcuțe frână față, Odorizant",
+      "items" : [
+        "Plăcuțe frână față",
+        "Odorizant"
+      ],
+      "name" : "vehicle: two things"
+    },
+    {
+      "category" : "vehicle",
+      "entryTitle" : "Plăcuțe frână față",
+      "items" : [
+        "Plăcuțe frână față",
+        "Manoperă"
+      ],
+      "name" : "vehicle: labour is no work it names"
+    },
+    {
+      "category" : "vehicle",
+      "entryTitle" : "Manoperă 1,5 ore",
+      "items" : [
+        "Manoperă 1,5 ore"
+      ],
+      "name" : "vehicle: labour alone keeps its name"
+    },
+    {
+      "category" : "vehicle",
+      "entryTitle" : "Revizie: 3 lucrări",
+      "items" : [
+        "Ulei",
+        "Filtru de aer",
+        "Bujii"
+      ],
+      "name" : "vehicle: three things are counted"
+    },
+    {
+      "category" : "vehicle",
+      "entryTitle" : "Revizie: 3 lucrări",
+      "items" : [
+        "Ulei",
+        "Filtru de aer",
+        "Bujii",
+        "Manoperă"
+      ],
+      "name" : "vehicle: four things, one labour"
+    },
+    {
+      "category" : "vehicle",
+      "entryTitle" : "Revizie: 5 lucrări",
+      "items" : [
+        "A",
+        "B",
+        "C",
+        "D",
+        "E"
+      ],
+      "name" : "vehicle: five things"
+    },
+    {
+      "category" : "vehicle",
+      "entryTitle" : "Ulei",
+      "items" : [
+        "",
+        "Ulei"
+      ],
+      "name" : "vehicle: a blank name says nothing"
+    },
+    {
+      "category" : "home",
+      "entryTitle" : "Lucrare",
+      "items" : [
+
+      ],
+      "name" : "home: nothing listed"
+    },
+    {
+      "category" : "home",
+      "entryTitle" : "Ulei și filtru de ulei",
+      "items" : [
+        "Ulei și filtru de ulei"
+      ],
+      "name" : "home: one thing"
+    },
+    {
+      "category" : "home",
+      "entryTitle" : "Plăcuțe frână față, Odorizant",
+      "items" : [
+        "Plăcuțe frână față",
+        "Odorizant"
+      ],
+      "name" : "home: two things"
+    },
+    {
+      "category" : "home",
+      "entryTitle" : "Plăcuțe frână față",
+      "items" : [
+        "Plăcuțe frână față",
+        "Manoperă"
+      ],
+      "name" : "home: labour is no work it names"
+    },
+    {
+      "category" : "home",
+      "entryTitle" : "Manoperă 1,5 ore",
+      "items" : [
+        "Manoperă 1,5 ore"
+      ],
+      "name" : "home: labour alone keeps its name"
+    },
+    {
+      "category" : "home",
+      "entryTitle" : "Lucrare",
+      "items" : [
+        "Ulei",
+        "Filtru de aer",
+        "Bujii"
+      ],
+      "name" : "home: three things are counted"
+    },
+    {
+      "category" : "home",
+      "entryTitle" : "Lucrare",
+      "items" : [
+        "Ulei",
+        "Filtru de aer",
+        "Bujii",
+        "Manoperă"
+      ],
+      "name" : "home: four things, one labour"
+    },
+    {
+      "category" : "home",
+      "entryTitle" : "Lucrare",
+      "items" : [
+        "A",
+        "B",
+        "C",
+        "D",
+        "E"
+      ],
+      "name" : "home: five things"
+    },
+    {
+      "category" : "home",
+      "entryTitle" : "Ulei",
+      "items" : [
+        "",
+        "Ulei"
+      ],
+      "name" : "home: a blank name says nothing"
+    },
+    {
+      "category" : "pet",
+      "entryTitle" : "Vizită la veterinar",
+      "items" : [
+
+      ],
+      "name" : "pet: nothing listed"
+    },
+    {
+      "category" : "pet",
+      "entryTitle" : "Ulei și filtru de ulei",
+      "items" : [
+        "Ulei și filtru de ulei"
+      ],
+      "name" : "pet: one thing"
+    },
+    {
+      "category" : "pet",
+      "entryTitle" : "Plăcuțe frână față, Odorizant",
+      "items" : [
+        "Plăcuțe frână față",
+        "Odorizant"
+      ],
+      "name" : "pet: two things"
+    },
+    {
+      "category" : "pet",
+      "entryTitle" : "Plăcuțe frână față",
+      "items" : [
+        "Plăcuțe frână față",
+        "Manoperă"
+      ],
+      "name" : "pet: labour is no work it names"
+    },
+    {
+      "category" : "pet",
+      "entryTitle" : "Manoperă 1,5 ore",
+      "items" : [
+        "Manoperă 1,5 ore"
+      ],
+      "name" : "pet: labour alone keeps its name"
+    },
+    {
+      "category" : "pet",
+      "entryTitle" : "Vizită la veterinar",
+      "items" : [
+        "Ulei",
+        "Filtru de aer",
+        "Bujii"
+      ],
+      "name" : "pet: three things are counted"
+    },
+    {
+      "category" : "pet",
+      "entryTitle" : "Vizită la veterinar",
+      "items" : [
+        "Ulei",
+        "Filtru de aer",
+        "Bujii",
+        "Manoperă"
+      ],
+      "name" : "pet: four things, one labour"
+    },
+    {
+      "category" : "pet",
+      "entryTitle" : "Vizită la veterinar",
+      "items" : [
+        "A",
+        "B",
+        "C",
+        "D",
+        "E"
+      ],
+      "name" : "pet: five things"
+    },
+    {
+      "category" : "pet",
+      "entryTitle" : "Ulei",
+      "items" : [
+        "",
+        "Ulei"
+      ],
+      "name" : "pet: a blank name says nothing"
+    },
+    {
+      "category" : "health",
+      "entryTitle" : "Vizită la medic",
+      "items" : [
+
+      ],
+      "name" : "health: nothing listed"
+    },
+    {
+      "category" : "health",
+      "entryTitle" : "Ulei și filtru de ulei",
+      "items" : [
+        "Ulei și filtru de ulei"
+      ],
+      "name" : "health: one thing"
+    },
+    {
+      "category" : "health",
+      "entryTitle" : "Plăcuțe frână față, Odorizant",
+      "items" : [
+        "Plăcuțe frână față",
+        "Odorizant"
+      ],
+      "name" : "health: two things"
+    },
+    {
+      "category" : "health",
+      "entryTitle" : "Plăcuțe frână față",
+      "items" : [
+        "Plăcuțe frână față",
+        "Manoperă"
+      ],
+      "name" : "health: labour is no work it names"
+    },
+    {
+      "category" : "health",
+      "entryTitle" : "Manoperă 1,5 ore",
+      "items" : [
+        "Manoperă 1,5 ore"
+      ],
+      "name" : "health: labour alone keeps its name"
+    },
+    {
+      "category" : "health",
+      "entryTitle" : "Vizită la medic",
+      "items" : [
+        "Ulei",
+        "Filtru de aer",
+        "Bujii"
+      ],
+      "name" : "health: three things are counted"
+    },
+    {
+      "category" : "health",
+      "entryTitle" : "Vizită la medic",
+      "items" : [
+        "Ulei",
+        "Filtru de aer",
+        "Bujii",
+        "Manoperă"
+      ],
+      "name" : "health: four things, one labour"
+    },
+    {
+      "category" : "health",
+      "entryTitle" : "Vizită la medic",
+      "items" : [
+        "A",
+        "B",
+        "C",
+        "D",
+        "E"
+      ],
+      "name" : "health: five things"
+    },
+    {
+      "category" : "health",
+      "entryTitle" : "Ulei",
+      "items" : [
+        "",
+        "Ulei"
+      ],
+      "name" : "health: a blank name says nothing"
+    },
+    {
+      "category" : "purchase",
+      "entryTitle" : "Reparație",
+      "items" : [
+
+      ],
+      "name" : "purchase: nothing listed"
+    },
+    {
+      "category" : "purchase",
+      "entryTitle" : "Ulei și filtru de ulei",
+      "items" : [
+        "Ulei și filtru de ulei"
+      ],
+      "name" : "purchase: one thing"
+    },
+    {
+      "category" : "purchase",
+      "entryTitle" : "Plăcuțe frână față, Odorizant",
+      "items" : [
+        "Plăcuțe frână față",
+        "Odorizant"
+      ],
+      "name" : "purchase: two things"
+    },
+    {
+      "category" : "purchase",
+      "entryTitle" : "Plăcuțe frână față",
+      "items" : [
+        "Plăcuțe frână față",
+        "Manoperă"
+      ],
+      "name" : "purchase: labour is no work it names"
+    },
+    {
+      "category" : "purchase",
+      "entryTitle" : "Manoperă 1,5 ore",
+      "items" : [
+        "Manoperă 1,5 ore"
+      ],
+      "name" : "purchase: labour alone keeps its name"
+    },
+    {
+      "category" : "purchase",
+      "entryTitle" : "Reparație",
+      "items" : [
+        "Ulei",
+        "Filtru de aer",
+        "Bujii"
+      ],
+      "name" : "purchase: three things are counted"
+    },
+    {
+      "category" : "purchase",
+      "entryTitle" : "Reparație",
+      "items" : [
+        "Ulei",
+        "Filtru de aer",
+        "Bujii",
+        "Manoperă"
+      ],
+      "name" : "purchase: four things, one labour"
+    },
+    {
+      "category" : "purchase",
+      "entryTitle" : "Reparație",
+      "items" : [
+        "A",
+        "B",
+        "C",
+        "D",
+        "E"
+      ],
+      "name" : "purchase: five things"
+    },
+    {
+      "category" : "purchase",
+      "entryTitle" : "Ulei",
+      "items" : [
+        "",
+        "Ulei"
+      ],
+      "name" : "purchase: a blank name says nothing"
+    },
+    {
+      "category" : "other",
+      "entryTitle" : "Lucrare",
+      "items" : [
+
+      ],
+      "name" : "other: nothing listed"
+    },
+    {
+      "category" : "other",
+      "entryTitle" : "Ulei și filtru de ulei",
+      "items" : [
+        "Ulei și filtru de ulei"
+      ],
+      "name" : "other: one thing"
+    },
+    {
+      "category" : "other",
+      "entryTitle" : "Plăcuțe frână față, Odorizant",
+      "items" : [
+        "Plăcuțe frână față",
+        "Odorizant"
+      ],
+      "name" : "other: two things"
+    },
+    {
+      "category" : "other",
+      "entryTitle" : "Plăcuțe frână față",
+      "items" : [
+        "Plăcuțe frână față",
+        "Manoperă"
+      ],
+      "name" : "other: labour is no work it names"
+    },
+    {
+      "category" : "other",
+      "entryTitle" : "Manoperă 1,5 ore",
+      "items" : [
+        "Manoperă 1,5 ore"
+      ],
+      "name" : "other: labour alone keeps its name"
+    },
+    {
+      "category" : "other",
+      "entryTitle" : "Lucrare",
+      "items" : [
+        "Ulei",
+        "Filtru de aer",
+        "Bujii"
+      ],
+      "name" : "other: three things are counted"
+    },
+    {
+      "category" : "other",
+      "entryTitle" : "Lucrare",
+      "items" : [
+        "Ulei",
+        "Filtru de aer",
+        "Bujii",
+        "Manoperă"
+      ],
+      "name" : "other: four things, one labour"
+    },
+    {
+      "category" : "other",
+      "entryTitle" : "Lucrare",
+      "items" : [
+        "A",
+        "B",
+        "C",
+        "D",
+        "E"
+      ],
+      "name" : "other: five things"
+    },
+    {
+      "category" : "other",
+      "entryTitle" : "Ulei",
+      "items" : [
+        "",
+        "Ulei"
+      ],
+      "name" : "other: a blank name says nothing"
+    },
+    {
+      "category" : "bike",
+      "entryTitle" : "Vizită la service",
+      "items" : [
+
+      ],
+      "name" : "bike: nothing listed"
+    },
+    {
+      "category" : "bike",
+      "entryTitle" : "Ulei și filtru de ulei",
+      "items" : [
+        "Ulei și filtru de ulei"
+      ],
+      "name" : "bike: one thing"
+    },
+    {
+      "category" : "bike",
+      "entryTitle" : "Plăcuțe frână față, Odorizant",
+      "items" : [
+        "Plăcuțe frână față",
+        "Odorizant"
+      ],
+      "name" : "bike: two things"
+    },
+    {
+      "category" : "bike",
+      "entryTitle" : "Plăcuțe frână față",
+      "items" : [
+        "Plăcuțe frână față",
+        "Manoperă"
+      ],
+      "name" : "bike: labour is no work it names"
+    },
+    {
+      "category" : "bike",
+      "entryTitle" : "Manoperă 1,5 ore",
+      "items" : [
+        "Manoperă 1,5 ore"
+      ],
+      "name" : "bike: labour alone keeps its name"
+    },
+    {
+      "category" : "bike",
+      "entryTitle" : "Revizie: 3 lucrări",
+      "items" : [
+        "Ulei",
+        "Filtru de aer",
+        "Bujii"
+      ],
+      "name" : "bike: three things are counted"
+    },
+    {
+      "category" : "bike",
+      "entryTitle" : "Revizie: 3 lucrări",
+      "items" : [
+        "Ulei",
+        "Filtru de aer",
+        "Bujii",
+        "Manoperă"
+      ],
+      "name" : "bike: four things, one labour"
+    },
+    {
+      "category" : "bike",
+      "entryTitle" : "Revizie: 5 lucrări",
+      "items" : [
+        "A",
+        "B",
+        "C",
+        "D",
+        "E"
+      ],
+      "name" : "bike: five things"
+    },
+    {
+      "category" : "bike",
+      "entryTitle" : "Ulei",
+      "items" : [
+        "",
+        "Ulei"
+      ],
+      "name" : "bike: a blank name says nothing"
+    },
+    {
+      "category" : "espresso",
+      "entryTitle" : "Revizie",
+      "items" : [
+
+      ],
+      "name" : "espresso: nothing listed"
+    },
+    {
+      "category" : "espresso",
+      "entryTitle" : "Ulei și filtru de ulei",
+      "items" : [
+        "Ulei și filtru de ulei"
+      ],
+      "name" : "espresso: one thing"
+    },
+    {
+      "category" : "espresso",
+      "entryTitle" : "Plăcuțe frână față, Odorizant",
+      "items" : [
+        "Plăcuțe frână față",
+        "Odorizant"
+      ],
+      "name" : "espresso: two things"
+    },
+    {
+      "category" : "espresso",
+      "entryTitle" : "Plăcuțe frână față",
+      "items" : [
+        "Plăcuțe frână față",
+        "Manoperă"
+      ],
+      "name" : "espresso: labour is no work it names"
+    },
+    {
+      "category" : "espresso",
+      "entryTitle" : "Manoperă 1,5 ore",
+      "items" : [
+        "Manoperă 1,5 ore"
+      ],
+      "name" : "espresso: labour alone keeps its name"
+    },
+    {
+      "category" : "espresso",
+      "entryTitle" : "Revizie",
+      "items" : [
+        "Ulei",
+        "Filtru de aer",
+        "Bujii"
+      ],
+      "name" : "espresso: three things are counted"
+    },
+    {
+      "category" : "espresso",
+      "entryTitle" : "Revizie",
+      "items" : [
+        "Ulei",
+        "Filtru de aer",
+        "Bujii",
+        "Manoperă"
+      ],
+      "name" : "espresso: four things, one labour"
+    },
+    {
+      "category" : "espresso",
+      "entryTitle" : "Revizie",
+      "items" : [
+        "A",
+        "B",
+        "C",
+        "D",
+        "E"
+      ],
+      "name" : "espresso: five things"
+    },
+    {
+      "category" : "espresso",
+      "entryTitle" : "Ulei",
+      "items" : [
+        "",
+        "Ulei"
+      ],
+      "name" : "espresso: a blank name says nothing"
+    },
+    {
+      "name" : "the words",
+      "words" : {
+        "doctor" : "Vizită la medic",
+        "job" : "Lucrare",
+        "manyJobs" : {
+          "3" : "Revizie: 3 lucrări",
+          "4" : "Revizie: 4 lucrări",
+          "5" : "Revizie: 5 lucrări",
+          "6" : "Revizie: 6 lucrări"
+        },
+        "repair" : "Reparație",
+        "service" : "Vizită la service",
+        "upkeep" : "Revizie",
+        "vet" : "Vizită la veterinar",
+        "visit" : "Vizită"
+      }
+    }
+  ],
+  "rule" : "HistoryActions.visitTitle(for:) and VisitForm.entryTitle(for:), over LabourLine.work",
+  "shape" : "items: the names of what a visit lists. visitTitle: the record's title when nothing names its kind. category with entryTitle: the title its form gives it. words: the iOS words a title is written with (visit: a visit of no kind; each visit kind's title; manyJobs: a service of so many jobs, by count), which the Android test words its titles with.",
+  "source" : "ios/DosarCuSina/Services/History/HistoryActions.swift, VisitForm.swift",
+  "writtenBy" : "ios/DosarCuSinaTests/HistoryVectorsTests.swift"
+}

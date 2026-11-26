@@ -1,0 +1,8106 @@
+{
+  "cases" : [
+    {
+      "historyKind" : "visit",
+      "listsParts" : false,
+      "shape" : {
+        "asksRating" : [
+          true,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a făcut",
+        "provider" : "Cine a lucrat",
+        "rating" : "job",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : null
+    },
+    {
+      "historyKind" : "visit",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          true,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a făcut",
+        "provider" : "Cine a lucrat",
+        "rating" : "job",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : true
+      },
+      "visit" : null
+    },
+    {
+      "historyKind" : "visit",
+      "listsParts" : false,
+      "shape" : {
+        "asksRating" : [
+          true,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a făcut",
+        "provider" : "Service-ul",
+        "rating" : "job",
+        "ratingHeader" : "Cum a lucrat?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "service"
+    },
+    {
+      "historyKind" : "visit",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          true,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a făcut",
+        "provider" : "Service-ul",
+        "rating" : "job",
+        "ratingHeader" : "Cum a lucrat?",
+        "reference" : "number",
+        "rowsAreParts" : true
+      },
+      "visit" : "service"
+    },
+    {
+      "historyKind" : "visit",
+      "listsParts" : false,
+      "shape" : {
+        "asksRating" : [
+          true,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a lucrat",
+        "provider" : "Cine a lucrat",
+        "rating" : "job",
+        "ratingHeader" : "Cum a lucrat?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "job"
+    },
+    {
+      "historyKind" : "visit",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          true,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a lucrat",
+        "provider" : "Cine a lucrat",
+        "rating" : "job",
+        "ratingHeader" : "Cum a lucrat?",
+        "reference" : "number",
+        "rowsAreParts" : true
+      },
+      "visit" : "job"
+    },
+    {
+      "historyKind" : "visit",
+      "listsParts" : false,
+      "shape" : {
+        "asksRating" : [
+          true,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a făcut",
+        "provider" : "Cine a reparat",
+        "rating" : "job",
+        "ratingHeader" : "Cum a lucrat?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "repair"
+    },
+    {
+      "historyKind" : "visit",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          true,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a făcut",
+        "provider" : "Cine a reparat",
+        "rating" : "job",
+        "ratingHeader" : "Cum a lucrat?",
+        "reference" : "number",
+        "rowsAreParts" : true
+      },
+      "visit" : "repair"
+    },
+    {
+      "historyKind" : "visit",
+      "listsParts" : false,
+      "shape" : {
+        "asksRating" : [
+          true,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a făcut",
+        "provider" : "Cine a lucrat",
+        "rating" : "job",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "upkeep"
+    },
+    {
+      "historyKind" : "visit",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          true,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a făcut",
+        "provider" : "Cine a lucrat",
+        "rating" : "job",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : true
+      },
+      "visit" : "upkeep"
+    },
+    {
+      "historyKind" : "visit",
+      "listsParts" : false,
+      "shape" : {
+        "asksRating" : [
+          true,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a făcut",
+        "provider" : "Medicul sau clinica",
+        "rating" : "job",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "doctor"
+    },
+    {
+      "historyKind" : "visit",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          true,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a făcut",
+        "provider" : "Medicul sau clinica",
+        "rating" : "job",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : true
+      },
+      "visit" : "doctor"
+    },
+    {
+      "historyKind" : "visit",
+      "listsParts" : false,
+      "shape" : {
+        "asksRating" : [
+          true,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce i s-a făcut",
+        "provider" : "Veterinarul",
+        "rating" : "job",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "vet"
+    },
+    {
+      "historyKind" : "visit",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          true,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce i s-a făcut",
+        "provider" : "Veterinarul",
+        "rating" : "job",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : true
+      },
+      "visit" : "vet"
+    },
+    {
+      "historyKind" : "visit",
+      "listsParts" : false,
+      "shape" : {
+        "asksRating" : [
+          true,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a făcut",
+        "provider" : "Cine a lucrat",
+        "rating" : "job",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "note"
+    },
+    {
+      "historyKind" : "visit",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          true,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a făcut",
+        "provider" : "Cine a lucrat",
+        "rating" : "job",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : true
+      },
+      "visit" : "note"
+    },
+    {
+      "historyKind" : "visit",
+      "listsParts" : false,
+      "shape" : {
+        "asksRating" : [
+          true,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a făcut",
+        "provider" : "Cine a lucrat",
+        "rating" : "job",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "none"
+    },
+    {
+      "historyKind" : "visit",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          true,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a făcut",
+        "provider" : "Cine a lucrat",
+        "rating" : "job",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : true
+      },
+      "visit" : "none"
+    },
+    {
+      "historyKind" : "repair",
+      "listsParts" : false,
+      "shape" : {
+        "asksRating" : [
+          true,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a reparat",
+        "provider" : "Cine a lucrat",
+        "rating" : "job",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : null
+    },
+    {
+      "historyKind" : "repair",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          true,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a reparat",
+        "provider" : "Cine a lucrat",
+        "rating" : "job",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : true
+      },
+      "visit" : null
+    },
+    {
+      "historyKind" : "repair",
+      "listsParts" : false,
+      "shape" : {
+        "asksRating" : [
+          true,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a făcut",
+        "provider" : "Service-ul",
+        "rating" : "job",
+        "ratingHeader" : "Cum a lucrat?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "service"
+    },
+    {
+      "historyKind" : "repair",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          true,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a făcut",
+        "provider" : "Service-ul",
+        "rating" : "job",
+        "ratingHeader" : "Cum a lucrat?",
+        "reference" : "number",
+        "rowsAreParts" : true
+      },
+      "visit" : "service"
+    },
+    {
+      "historyKind" : "repair",
+      "listsParts" : false,
+      "shape" : {
+        "asksRating" : [
+          true,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a lucrat",
+        "provider" : "Cine a lucrat",
+        "rating" : "job",
+        "ratingHeader" : "Cum a lucrat?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "job"
+    },
+    {
+      "historyKind" : "repair",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          true,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a lucrat",
+        "provider" : "Cine a lucrat",
+        "rating" : "job",
+        "ratingHeader" : "Cum a lucrat?",
+        "reference" : "number",
+        "rowsAreParts" : true
+      },
+      "visit" : "job"
+    },
+    {
+      "historyKind" : "repair",
+      "listsParts" : false,
+      "shape" : {
+        "asksRating" : [
+          true,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a reparat",
+        "provider" : "Cine a reparat",
+        "rating" : "job",
+        "ratingHeader" : "Cum a lucrat?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "repair"
+    },
+    {
+      "historyKind" : "repair",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          true,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a reparat",
+        "provider" : "Cine a reparat",
+        "rating" : "job",
+        "ratingHeader" : "Cum a lucrat?",
+        "reference" : "number",
+        "rowsAreParts" : true
+      },
+      "visit" : "repair"
+    },
+    {
+      "historyKind" : "repair",
+      "listsParts" : false,
+      "shape" : {
+        "asksRating" : [
+          true,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a făcut",
+        "provider" : "Cine a lucrat",
+        "rating" : "job",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "upkeep"
+    },
+    {
+      "historyKind" : "repair",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          true,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a făcut",
+        "provider" : "Cine a lucrat",
+        "rating" : "job",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : true
+      },
+      "visit" : "upkeep"
+    },
+    {
+      "historyKind" : "repair",
+      "listsParts" : false,
+      "shape" : {
+        "asksRating" : [
+          true,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a reparat",
+        "provider" : "Medicul sau clinica",
+        "rating" : "job",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "doctor"
+    },
+    {
+      "historyKind" : "repair",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          true,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a reparat",
+        "provider" : "Medicul sau clinica",
+        "rating" : "job",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : true
+      },
+      "visit" : "doctor"
+    },
+    {
+      "historyKind" : "repair",
+      "listsParts" : false,
+      "shape" : {
+        "asksRating" : [
+          true,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce i s-a făcut",
+        "provider" : "Veterinarul",
+        "rating" : "job",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "vet"
+    },
+    {
+      "historyKind" : "repair",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          true,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce i s-a făcut",
+        "provider" : "Veterinarul",
+        "rating" : "job",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : true
+      },
+      "visit" : "vet"
+    },
+    {
+      "historyKind" : "repair",
+      "listsParts" : false,
+      "shape" : {
+        "asksRating" : [
+          true,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a reparat",
+        "provider" : "Cine a lucrat",
+        "rating" : "job",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "note"
+    },
+    {
+      "historyKind" : "repair",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          true,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a reparat",
+        "provider" : "Cine a lucrat",
+        "rating" : "job",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : true
+      },
+      "visit" : "note"
+    },
+    {
+      "historyKind" : "repair",
+      "listsParts" : false,
+      "shape" : {
+        "asksRating" : [
+          true,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a reparat",
+        "provider" : "Cine a lucrat",
+        "rating" : "job",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "none"
+    },
+    {
+      "historyKind" : "repair",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          true,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a reparat",
+        "provider" : "Cine a lucrat",
+        "rating" : "job",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : true
+      },
+      "visit" : "none"
+    },
+    {
+      "historyKind" : "maintenance",
+      "listsParts" : false,
+      "shape" : {
+        "asksRating" : [
+          true,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a făcut",
+        "provider" : "Cine a lucrat",
+        "rating" : "job",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : null
+    },
+    {
+      "historyKind" : "maintenance",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          true,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a făcut",
+        "provider" : "Cine a lucrat",
+        "rating" : "job",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : true
+      },
+      "visit" : null
+    },
+    {
+      "historyKind" : "maintenance",
+      "listsParts" : false,
+      "shape" : {
+        "asksRating" : [
+          true,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a făcut",
+        "provider" : "Service-ul",
+        "rating" : "job",
+        "ratingHeader" : "Cum a lucrat?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "service"
+    },
+    {
+      "historyKind" : "maintenance",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          true,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a făcut",
+        "provider" : "Service-ul",
+        "rating" : "job",
+        "ratingHeader" : "Cum a lucrat?",
+        "reference" : "number",
+        "rowsAreParts" : true
+      },
+      "visit" : "service"
+    },
+    {
+      "historyKind" : "maintenance",
+      "listsParts" : false,
+      "shape" : {
+        "asksRating" : [
+          true,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a lucrat",
+        "provider" : "Cine a lucrat",
+        "rating" : "job",
+        "ratingHeader" : "Cum a lucrat?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "job"
+    },
+    {
+      "historyKind" : "maintenance",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          true,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a lucrat",
+        "provider" : "Cine a lucrat",
+        "rating" : "job",
+        "ratingHeader" : "Cum a lucrat?",
+        "reference" : "number",
+        "rowsAreParts" : true
+      },
+      "visit" : "job"
+    },
+    {
+      "historyKind" : "maintenance",
+      "listsParts" : false,
+      "shape" : {
+        "asksRating" : [
+          true,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a făcut",
+        "provider" : "Cine a reparat",
+        "rating" : "job",
+        "ratingHeader" : "Cum a lucrat?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "repair"
+    },
+    {
+      "historyKind" : "maintenance",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          true,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a făcut",
+        "provider" : "Cine a reparat",
+        "rating" : "job",
+        "ratingHeader" : "Cum a lucrat?",
+        "reference" : "number",
+        "rowsAreParts" : true
+      },
+      "visit" : "repair"
+    },
+    {
+      "historyKind" : "maintenance",
+      "listsParts" : false,
+      "shape" : {
+        "asksRating" : [
+          true,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a făcut",
+        "provider" : "Cine a lucrat",
+        "rating" : "job",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "upkeep"
+    },
+    {
+      "historyKind" : "maintenance",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          true,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a făcut",
+        "provider" : "Cine a lucrat",
+        "rating" : "job",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : true
+      },
+      "visit" : "upkeep"
+    },
+    {
+      "historyKind" : "maintenance",
+      "listsParts" : false,
+      "shape" : {
+        "asksRating" : [
+          true,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a făcut",
+        "provider" : "Medicul sau clinica",
+        "rating" : "job",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "doctor"
+    },
+    {
+      "historyKind" : "maintenance",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          true,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a făcut",
+        "provider" : "Medicul sau clinica",
+        "rating" : "job",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : true
+      },
+      "visit" : "doctor"
+    },
+    {
+      "historyKind" : "maintenance",
+      "listsParts" : false,
+      "shape" : {
+        "asksRating" : [
+          true,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce i s-a făcut",
+        "provider" : "Veterinarul",
+        "rating" : "job",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "vet"
+    },
+    {
+      "historyKind" : "maintenance",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          true,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce i s-a făcut",
+        "provider" : "Veterinarul",
+        "rating" : "job",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : true
+      },
+      "visit" : "vet"
+    },
+    {
+      "historyKind" : "maintenance",
+      "listsParts" : false,
+      "shape" : {
+        "asksRating" : [
+          true,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a făcut",
+        "provider" : "Cine a lucrat",
+        "rating" : "job",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "note"
+    },
+    {
+      "historyKind" : "maintenance",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          true,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a făcut",
+        "provider" : "Cine a lucrat",
+        "rating" : "job",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : true
+      },
+      "visit" : "note"
+    },
+    {
+      "historyKind" : "maintenance",
+      "listsParts" : false,
+      "shape" : {
+        "asksRating" : [
+          true,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a făcut",
+        "provider" : "Cine a lucrat",
+        "rating" : "job",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "none"
+    },
+    {
+      "historyKind" : "maintenance",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          true,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a făcut",
+        "provider" : "Cine a lucrat",
+        "rating" : "job",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : true
+      },
+      "visit" : "none"
+    },
+    {
+      "historyKind" : "inspection",
+      "listsParts" : false,
+      "shape" : {
+        "asksRating" : [
+          false,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a verificat",
+        "provider" : "Cine a verificat",
+        "rating" : "withSomeone",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : null
+    },
+    {
+      "historyKind" : "inspection",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a verificat",
+        "provider" : "Cine a verificat",
+        "rating" : "withSomeone",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : null
+    },
+    {
+      "historyKind" : "inspection",
+      "listsParts" : false,
+      "shape" : {
+        "asksRating" : [
+          false,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a verificat",
+        "provider" : "Cine a verificat",
+        "rating" : "withSomeone",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "service"
+    },
+    {
+      "historyKind" : "inspection",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a verificat",
+        "provider" : "Cine a verificat",
+        "rating" : "withSomeone",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "service"
+    },
+    {
+      "historyKind" : "inspection",
+      "listsParts" : false,
+      "shape" : {
+        "asksRating" : [
+          false,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a verificat",
+        "provider" : "Cine a verificat",
+        "rating" : "withSomeone",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "job"
+    },
+    {
+      "historyKind" : "inspection",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a verificat",
+        "provider" : "Cine a verificat",
+        "rating" : "withSomeone",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "job"
+    },
+    {
+      "historyKind" : "inspection",
+      "listsParts" : false,
+      "shape" : {
+        "asksRating" : [
+          false,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a verificat",
+        "provider" : "Cine a verificat",
+        "rating" : "withSomeone",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "repair"
+    },
+    {
+      "historyKind" : "inspection",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a verificat",
+        "provider" : "Cine a verificat",
+        "rating" : "withSomeone",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "repair"
+    },
+    {
+      "historyKind" : "inspection",
+      "listsParts" : false,
+      "shape" : {
+        "asksRating" : [
+          false,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a verificat",
+        "provider" : "Cine a verificat",
+        "rating" : "withSomeone",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "upkeep"
+    },
+    {
+      "historyKind" : "inspection",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a verificat",
+        "provider" : "Cine a verificat",
+        "rating" : "withSomeone",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "upkeep"
+    },
+    {
+      "historyKind" : "inspection",
+      "listsParts" : false,
+      "shape" : {
+        "asksRating" : [
+          false,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a verificat",
+        "provider" : "Cine a verificat",
+        "rating" : "withSomeone",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "doctor"
+    },
+    {
+      "historyKind" : "inspection",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a verificat",
+        "provider" : "Cine a verificat",
+        "rating" : "withSomeone",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "doctor"
+    },
+    {
+      "historyKind" : "inspection",
+      "listsParts" : false,
+      "shape" : {
+        "asksRating" : [
+          false,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a verificat",
+        "provider" : "Cine a verificat",
+        "rating" : "withSomeone",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "vet"
+    },
+    {
+      "historyKind" : "inspection",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a verificat",
+        "provider" : "Cine a verificat",
+        "rating" : "withSomeone",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "vet"
+    },
+    {
+      "historyKind" : "inspection",
+      "listsParts" : false,
+      "shape" : {
+        "asksRating" : [
+          false,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a verificat",
+        "provider" : "Cine a verificat",
+        "rating" : "withSomeone",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "note"
+    },
+    {
+      "historyKind" : "inspection",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a verificat",
+        "provider" : "Cine a verificat",
+        "rating" : "withSomeone",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "note"
+    },
+    {
+      "historyKind" : "inspection",
+      "listsParts" : false,
+      "shape" : {
+        "asksRating" : [
+          false,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a verificat",
+        "provider" : "Cine a verificat",
+        "rating" : "withSomeone",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "none"
+    },
+    {
+      "historyKind" : "inspection",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a verificat",
+        "provider" : "Cine a verificat",
+        "rating" : "withSomeone",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "none"
+    },
+    {
+      "historyKind" : "purchase",
+      "listsParts" : false,
+      "shape" : {
+        "asksRating" : [
+          false,
+          false,
+          false,
+          false
+        ],
+        "items" : "Ce ai cumpărat",
+        "provider" : "De unde",
+        "rating" : "never",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "invoice",
+        "rowsAreParts" : false
+      },
+      "visit" : null
+    },
+    {
+      "historyKind" : "purchase",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          false,
+          false,
+          false
+        ],
+        "items" : "Ce ai cumpărat",
+        "provider" : "De unde",
+        "rating" : "never",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "invoice",
+        "rowsAreParts" : false
+      },
+      "visit" : null
+    },
+    {
+      "historyKind" : "purchase",
+      "listsParts" : false,
+      "shape" : {
+        "asksRating" : [
+          false,
+          false,
+          false,
+          false
+        ],
+        "items" : "Ce ai cumpărat",
+        "provider" : "De unde",
+        "rating" : "never",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "invoice",
+        "rowsAreParts" : false
+      },
+      "visit" : "service"
+    },
+    {
+      "historyKind" : "purchase",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          false,
+          false,
+          false
+        ],
+        "items" : "Ce ai cumpărat",
+        "provider" : "De unde",
+        "rating" : "never",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "invoice",
+        "rowsAreParts" : false
+      },
+      "visit" : "service"
+    },
+    {
+      "historyKind" : "purchase",
+      "listsParts" : false,
+      "shape" : {
+        "asksRating" : [
+          false,
+          false,
+          false,
+          false
+        ],
+        "items" : "Ce ai cumpărat",
+        "provider" : "De unde",
+        "rating" : "never",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "invoice",
+        "rowsAreParts" : false
+      },
+      "visit" : "job"
+    },
+    {
+      "historyKind" : "purchase",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          false,
+          false,
+          false
+        ],
+        "items" : "Ce ai cumpărat",
+        "provider" : "De unde",
+        "rating" : "never",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "invoice",
+        "rowsAreParts" : false
+      },
+      "visit" : "job"
+    },
+    {
+      "historyKind" : "purchase",
+      "listsParts" : false,
+      "shape" : {
+        "asksRating" : [
+          false,
+          false,
+          false,
+          false
+        ],
+        "items" : "Ce ai cumpărat",
+        "provider" : "De unde",
+        "rating" : "never",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "invoice",
+        "rowsAreParts" : false
+      },
+      "visit" : "repair"
+    },
+    {
+      "historyKind" : "purchase",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          false,
+          false,
+          false
+        ],
+        "items" : "Ce ai cumpărat",
+        "provider" : "De unde",
+        "rating" : "never",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "invoice",
+        "rowsAreParts" : false
+      },
+      "visit" : "repair"
+    },
+    {
+      "historyKind" : "purchase",
+      "listsParts" : false,
+      "shape" : {
+        "asksRating" : [
+          false,
+          false,
+          false,
+          false
+        ],
+        "items" : "Ce ai cumpărat",
+        "provider" : "De unde",
+        "rating" : "never",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "invoice",
+        "rowsAreParts" : false
+      },
+      "visit" : "upkeep"
+    },
+    {
+      "historyKind" : "purchase",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          false,
+          false,
+          false
+        ],
+        "items" : "Ce ai cumpărat",
+        "provider" : "De unde",
+        "rating" : "never",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "invoice",
+        "rowsAreParts" : false
+      },
+      "visit" : "upkeep"
+    },
+    {
+      "historyKind" : "purchase",
+      "listsParts" : false,
+      "shape" : {
+        "asksRating" : [
+          false,
+          false,
+          false,
+          false
+        ],
+        "items" : "Ce ai cumpărat",
+        "provider" : "De unde",
+        "rating" : "never",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "invoice",
+        "rowsAreParts" : false
+      },
+      "visit" : "doctor"
+    },
+    {
+      "historyKind" : "purchase",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          false,
+          false,
+          false
+        ],
+        "items" : "Ce ai cumpărat",
+        "provider" : "De unde",
+        "rating" : "never",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "invoice",
+        "rowsAreParts" : false
+      },
+      "visit" : "doctor"
+    },
+    {
+      "historyKind" : "purchase",
+      "listsParts" : false,
+      "shape" : {
+        "asksRating" : [
+          false,
+          false,
+          false,
+          false
+        ],
+        "items" : "Ce ai cumpărat",
+        "provider" : "De unde",
+        "rating" : "never",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "invoice",
+        "rowsAreParts" : false
+      },
+      "visit" : "vet"
+    },
+    {
+      "historyKind" : "purchase",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          false,
+          false,
+          false
+        ],
+        "items" : "Ce ai cumpărat",
+        "provider" : "De unde",
+        "rating" : "never",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "invoice",
+        "rowsAreParts" : false
+      },
+      "visit" : "vet"
+    },
+    {
+      "historyKind" : "purchase",
+      "listsParts" : false,
+      "shape" : {
+        "asksRating" : [
+          false,
+          false,
+          false,
+          false
+        ],
+        "items" : "Ce ai cumpărat",
+        "provider" : "De unde",
+        "rating" : "never",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "invoice",
+        "rowsAreParts" : false
+      },
+      "visit" : "note"
+    },
+    {
+      "historyKind" : "purchase",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          false,
+          false,
+          false
+        ],
+        "items" : "Ce ai cumpărat",
+        "provider" : "De unde",
+        "rating" : "never",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "invoice",
+        "rowsAreParts" : false
+      },
+      "visit" : "note"
+    },
+    {
+      "historyKind" : "purchase",
+      "listsParts" : false,
+      "shape" : {
+        "asksRating" : [
+          false,
+          false,
+          false,
+          false
+        ],
+        "items" : "Ce ai cumpărat",
+        "provider" : "De unde",
+        "rating" : "never",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "invoice",
+        "rowsAreParts" : false
+      },
+      "visit" : "none"
+    },
+    {
+      "historyKind" : "purchase",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          false,
+          false,
+          false
+        ],
+        "items" : "Ce ai cumpărat",
+        "provider" : "De unde",
+        "rating" : "never",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "invoice",
+        "rowsAreParts" : false
+      },
+      "visit" : "none"
+    },
+    {
+      "historyKind" : "payment",
+      "listsParts" : false,
+      "shape" : {
+        "asksRating" : [
+          false,
+          false,
+          false,
+          false
+        ],
+        "items" : "Ce cuprinde",
+        "provider" : "Cui ai plătit",
+        "rating" : "never",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "invoice",
+        "rowsAreParts" : false
+      },
+      "visit" : null
+    },
+    {
+      "historyKind" : "payment",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          false,
+          false,
+          false
+        ],
+        "items" : "Ce cuprinde",
+        "provider" : "Cui ai plătit",
+        "rating" : "never",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "invoice",
+        "rowsAreParts" : false
+      },
+      "visit" : null
+    },
+    {
+      "historyKind" : "payment",
+      "listsParts" : false,
+      "shape" : {
+        "asksRating" : [
+          false,
+          false,
+          false,
+          false
+        ],
+        "items" : "Ce cuprinde",
+        "provider" : "Cui ai plătit",
+        "rating" : "never",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "invoice",
+        "rowsAreParts" : false
+      },
+      "visit" : "service"
+    },
+    {
+      "historyKind" : "payment",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          false,
+          false,
+          false
+        ],
+        "items" : "Ce cuprinde",
+        "provider" : "Cui ai plătit",
+        "rating" : "never",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "invoice",
+        "rowsAreParts" : false
+      },
+      "visit" : "service"
+    },
+    {
+      "historyKind" : "payment",
+      "listsParts" : false,
+      "shape" : {
+        "asksRating" : [
+          false,
+          false,
+          false,
+          false
+        ],
+        "items" : "Ce cuprinde",
+        "provider" : "Cui ai plătit",
+        "rating" : "never",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "invoice",
+        "rowsAreParts" : false
+      },
+      "visit" : "job"
+    },
+    {
+      "historyKind" : "payment",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          false,
+          false,
+          false
+        ],
+        "items" : "Ce cuprinde",
+        "provider" : "Cui ai plătit",
+        "rating" : "never",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "invoice",
+        "rowsAreParts" : false
+      },
+      "visit" : "job"
+    },
+    {
+      "historyKind" : "payment",
+      "listsParts" : false,
+      "shape" : {
+        "asksRating" : [
+          false,
+          false,
+          false,
+          false
+        ],
+        "items" : "Ce cuprinde",
+        "provider" : "Cui ai plătit",
+        "rating" : "never",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "invoice",
+        "rowsAreParts" : false
+      },
+      "visit" : "repair"
+    },
+    {
+      "historyKind" : "payment",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          false,
+          false,
+          false
+        ],
+        "items" : "Ce cuprinde",
+        "provider" : "Cui ai plătit",
+        "rating" : "never",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "invoice",
+        "rowsAreParts" : false
+      },
+      "visit" : "repair"
+    },
+    {
+      "historyKind" : "payment",
+      "listsParts" : false,
+      "shape" : {
+        "asksRating" : [
+          false,
+          false,
+          false,
+          false
+        ],
+        "items" : "Ce cuprinde",
+        "provider" : "Cui ai plătit",
+        "rating" : "never",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "invoice",
+        "rowsAreParts" : false
+      },
+      "visit" : "upkeep"
+    },
+    {
+      "historyKind" : "payment",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          false,
+          false,
+          false
+        ],
+        "items" : "Ce cuprinde",
+        "provider" : "Cui ai plătit",
+        "rating" : "never",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "invoice",
+        "rowsAreParts" : false
+      },
+      "visit" : "upkeep"
+    },
+    {
+      "historyKind" : "payment",
+      "listsParts" : false,
+      "shape" : {
+        "asksRating" : [
+          false,
+          false,
+          false,
+          false
+        ],
+        "items" : "Ce cuprinde",
+        "provider" : "Cui ai plătit",
+        "rating" : "never",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "invoice",
+        "rowsAreParts" : false
+      },
+      "visit" : "doctor"
+    },
+    {
+      "historyKind" : "payment",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          false,
+          false,
+          false
+        ],
+        "items" : "Ce cuprinde",
+        "provider" : "Cui ai plătit",
+        "rating" : "never",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "invoice",
+        "rowsAreParts" : false
+      },
+      "visit" : "doctor"
+    },
+    {
+      "historyKind" : "payment",
+      "listsParts" : false,
+      "shape" : {
+        "asksRating" : [
+          false,
+          false,
+          false,
+          false
+        ],
+        "items" : "Ce cuprinde",
+        "provider" : "Cui ai plătit",
+        "rating" : "never",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "invoice",
+        "rowsAreParts" : false
+      },
+      "visit" : "vet"
+    },
+    {
+      "historyKind" : "payment",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          false,
+          false,
+          false
+        ],
+        "items" : "Ce cuprinde",
+        "provider" : "Cui ai plătit",
+        "rating" : "never",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "invoice",
+        "rowsAreParts" : false
+      },
+      "visit" : "vet"
+    },
+    {
+      "historyKind" : "payment",
+      "listsParts" : false,
+      "shape" : {
+        "asksRating" : [
+          false,
+          false,
+          false,
+          false
+        ],
+        "items" : "Ce cuprinde",
+        "provider" : "Cui ai plătit",
+        "rating" : "never",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "invoice",
+        "rowsAreParts" : false
+      },
+      "visit" : "note"
+    },
+    {
+      "historyKind" : "payment",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          false,
+          false,
+          false
+        ],
+        "items" : "Ce cuprinde",
+        "provider" : "Cui ai plătit",
+        "rating" : "never",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "invoice",
+        "rowsAreParts" : false
+      },
+      "visit" : "note"
+    },
+    {
+      "historyKind" : "payment",
+      "listsParts" : false,
+      "shape" : {
+        "asksRating" : [
+          false,
+          false,
+          false,
+          false
+        ],
+        "items" : "Ce cuprinde",
+        "provider" : "Cui ai plătit",
+        "rating" : "never",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "invoice",
+        "rowsAreParts" : false
+      },
+      "visit" : "none"
+    },
+    {
+      "historyKind" : "payment",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          false,
+          false,
+          false
+        ],
+        "items" : "Ce cuprinde",
+        "provider" : "Cui ai plătit",
+        "rating" : "never",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "invoice",
+        "rowsAreParts" : false
+      },
+      "visit" : "none"
+    },
+    {
+      "historyKind" : "vaccination",
+      "listsParts" : false,
+      "shape" : {
+        "asksRating" : [
+          false,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a făcut",
+        "provider" : "Cine s-a ocupat",
+        "rating" : "withSomeone",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : null
+    },
+    {
+      "historyKind" : "vaccination",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a făcut",
+        "provider" : "Cine s-a ocupat",
+        "rating" : "withSomeone",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : null
+    },
+    {
+      "historyKind" : "vaccination",
+      "listsParts" : false,
+      "shape" : {
+        "asksRating" : [
+          false,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a făcut",
+        "provider" : "Service-ul",
+        "rating" : "withSomeone",
+        "ratingHeader" : "Cum a lucrat?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "service"
+    },
+    {
+      "historyKind" : "vaccination",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a făcut",
+        "provider" : "Service-ul",
+        "rating" : "withSomeone",
+        "ratingHeader" : "Cum a lucrat?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "service"
+    },
+    {
+      "historyKind" : "vaccination",
+      "listsParts" : false,
+      "shape" : {
+        "asksRating" : [
+          false,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a lucrat",
+        "provider" : "Cine a lucrat",
+        "rating" : "withSomeone",
+        "ratingHeader" : "Cum a lucrat?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "job"
+    },
+    {
+      "historyKind" : "vaccination",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a lucrat",
+        "provider" : "Cine a lucrat",
+        "rating" : "withSomeone",
+        "ratingHeader" : "Cum a lucrat?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "job"
+    },
+    {
+      "historyKind" : "vaccination",
+      "listsParts" : false,
+      "shape" : {
+        "asksRating" : [
+          false,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a făcut",
+        "provider" : "Cine a reparat",
+        "rating" : "withSomeone",
+        "ratingHeader" : "Cum a lucrat?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "repair"
+    },
+    {
+      "historyKind" : "vaccination",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a făcut",
+        "provider" : "Cine a reparat",
+        "rating" : "withSomeone",
+        "ratingHeader" : "Cum a lucrat?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "repair"
+    },
+    {
+      "historyKind" : "vaccination",
+      "listsParts" : false,
+      "shape" : {
+        "asksRating" : [
+          false,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a făcut",
+        "provider" : "Cine s-a ocupat",
+        "rating" : "withSomeone",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "upkeep"
+    },
+    {
+      "historyKind" : "vaccination",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a făcut",
+        "provider" : "Cine s-a ocupat",
+        "rating" : "withSomeone",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "upkeep"
+    },
+    {
+      "historyKind" : "vaccination",
+      "listsParts" : false,
+      "shape" : {
+        "asksRating" : [
+          false,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a făcut",
+        "provider" : "Medicul sau clinica",
+        "rating" : "withSomeone",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "doctor"
+    },
+    {
+      "historyKind" : "vaccination",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a făcut",
+        "provider" : "Medicul sau clinica",
+        "rating" : "withSomeone",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "doctor"
+    },
+    {
+      "historyKind" : "vaccination",
+      "listsParts" : false,
+      "shape" : {
+        "asksRating" : [
+          false,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce i s-a făcut",
+        "provider" : "Veterinarul",
+        "rating" : "withSomeone",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "vet"
+    },
+    {
+      "historyKind" : "vaccination",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce i s-a făcut",
+        "provider" : "Veterinarul",
+        "rating" : "withSomeone",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "vet"
+    },
+    {
+      "historyKind" : "vaccination",
+      "listsParts" : false,
+      "shape" : {
+        "asksRating" : [
+          false,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a făcut",
+        "provider" : "Cine s-a ocupat",
+        "rating" : "withSomeone",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "note"
+    },
+    {
+      "historyKind" : "vaccination",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a făcut",
+        "provider" : "Cine s-a ocupat",
+        "rating" : "withSomeone",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "note"
+    },
+    {
+      "historyKind" : "vaccination",
+      "listsParts" : false,
+      "shape" : {
+        "asksRating" : [
+          false,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a făcut",
+        "provider" : "Cine s-a ocupat",
+        "rating" : "withSomeone",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "none"
+    },
+    {
+      "historyKind" : "vaccination",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a făcut",
+        "provider" : "Cine s-a ocupat",
+        "rating" : "withSomeone",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "none"
+    },
+    {
+      "historyKind" : "treatment",
+      "listsParts" : false,
+      "shape" : {
+        "asksRating" : [
+          false,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a făcut",
+        "provider" : "Cine s-a ocupat",
+        "rating" : "withSomeone",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : null
+    },
+    {
+      "historyKind" : "treatment",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a făcut",
+        "provider" : "Cine s-a ocupat",
+        "rating" : "withSomeone",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : null
+    },
+    {
+      "historyKind" : "treatment",
+      "listsParts" : false,
+      "shape" : {
+        "asksRating" : [
+          false,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a făcut",
+        "provider" : "Service-ul",
+        "rating" : "withSomeone",
+        "ratingHeader" : "Cum a lucrat?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "service"
+    },
+    {
+      "historyKind" : "treatment",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a făcut",
+        "provider" : "Service-ul",
+        "rating" : "withSomeone",
+        "ratingHeader" : "Cum a lucrat?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "service"
+    },
+    {
+      "historyKind" : "treatment",
+      "listsParts" : false,
+      "shape" : {
+        "asksRating" : [
+          false,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a lucrat",
+        "provider" : "Cine a lucrat",
+        "rating" : "withSomeone",
+        "ratingHeader" : "Cum a lucrat?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "job"
+    },
+    {
+      "historyKind" : "treatment",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a lucrat",
+        "provider" : "Cine a lucrat",
+        "rating" : "withSomeone",
+        "ratingHeader" : "Cum a lucrat?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "job"
+    },
+    {
+      "historyKind" : "treatment",
+      "listsParts" : false,
+      "shape" : {
+        "asksRating" : [
+          false,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a făcut",
+        "provider" : "Cine a reparat",
+        "rating" : "withSomeone",
+        "ratingHeader" : "Cum a lucrat?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "repair"
+    },
+    {
+      "historyKind" : "treatment",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a făcut",
+        "provider" : "Cine a reparat",
+        "rating" : "withSomeone",
+        "ratingHeader" : "Cum a lucrat?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "repair"
+    },
+    {
+      "historyKind" : "treatment",
+      "listsParts" : false,
+      "shape" : {
+        "asksRating" : [
+          false,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a făcut",
+        "provider" : "Cine s-a ocupat",
+        "rating" : "withSomeone",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "upkeep"
+    },
+    {
+      "historyKind" : "treatment",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a făcut",
+        "provider" : "Cine s-a ocupat",
+        "rating" : "withSomeone",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "upkeep"
+    },
+    {
+      "historyKind" : "treatment",
+      "listsParts" : false,
+      "shape" : {
+        "asksRating" : [
+          false,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a făcut",
+        "provider" : "Medicul sau clinica",
+        "rating" : "withSomeone",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "doctor"
+    },
+    {
+      "historyKind" : "treatment",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a făcut",
+        "provider" : "Medicul sau clinica",
+        "rating" : "withSomeone",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "doctor"
+    },
+    {
+      "historyKind" : "treatment",
+      "listsParts" : false,
+      "shape" : {
+        "asksRating" : [
+          false,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce i s-a făcut",
+        "provider" : "Veterinarul",
+        "rating" : "withSomeone",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "vet"
+    },
+    {
+      "historyKind" : "treatment",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce i s-a făcut",
+        "provider" : "Veterinarul",
+        "rating" : "withSomeone",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "vet"
+    },
+    {
+      "historyKind" : "treatment",
+      "listsParts" : false,
+      "shape" : {
+        "asksRating" : [
+          false,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a făcut",
+        "provider" : "Cine s-a ocupat",
+        "rating" : "withSomeone",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "note"
+    },
+    {
+      "historyKind" : "treatment",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a făcut",
+        "provider" : "Cine s-a ocupat",
+        "rating" : "withSomeone",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "note"
+    },
+    {
+      "historyKind" : "treatment",
+      "listsParts" : false,
+      "shape" : {
+        "asksRating" : [
+          false,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a făcut",
+        "provider" : "Cine s-a ocupat",
+        "rating" : "withSomeone",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "none"
+    },
+    {
+      "historyKind" : "treatment",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a făcut",
+        "provider" : "Cine s-a ocupat",
+        "rating" : "withSomeone",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "none"
+    },
+    {
+      "historyKind" : "note",
+      "listsParts" : false,
+      "shape" : {
+        "asksRating" : [
+          false,
+          false,
+          false,
+          false
+        ],
+        "items" : "Ce ai notat",
+        "provider" : null,
+        "rating" : "never",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : null
+    },
+    {
+      "historyKind" : "note",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          false,
+          false,
+          false
+        ],
+        "items" : "Ce ai notat",
+        "provider" : null,
+        "rating" : "never",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : null
+    },
+    {
+      "historyKind" : "note",
+      "listsParts" : false,
+      "shape" : {
+        "asksRating" : [
+          false,
+          false,
+          false,
+          false
+        ],
+        "items" : "Ce ai notat",
+        "provider" : null,
+        "rating" : "never",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "service"
+    },
+    {
+      "historyKind" : "note",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          false,
+          false,
+          false
+        ],
+        "items" : "Ce ai notat",
+        "provider" : null,
+        "rating" : "never",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "service"
+    },
+    {
+      "historyKind" : "note",
+      "listsParts" : false,
+      "shape" : {
+        "asksRating" : [
+          false,
+          false,
+          false,
+          false
+        ],
+        "items" : "Ce ai notat",
+        "provider" : null,
+        "rating" : "never",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "job"
+    },
+    {
+      "historyKind" : "note",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          false,
+          false,
+          false
+        ],
+        "items" : "Ce ai notat",
+        "provider" : null,
+        "rating" : "never",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "job"
+    },
+    {
+      "historyKind" : "note",
+      "listsParts" : false,
+      "shape" : {
+        "asksRating" : [
+          false,
+          false,
+          false,
+          false
+        ],
+        "items" : "Ce ai notat",
+        "provider" : null,
+        "rating" : "never",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "repair"
+    },
+    {
+      "historyKind" : "note",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          false,
+          false,
+          false
+        ],
+        "items" : "Ce ai notat",
+        "provider" : null,
+        "rating" : "never",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "repair"
+    },
+    {
+      "historyKind" : "note",
+      "listsParts" : false,
+      "shape" : {
+        "asksRating" : [
+          false,
+          false,
+          false,
+          false
+        ],
+        "items" : "Ce ai notat",
+        "provider" : null,
+        "rating" : "never",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "upkeep"
+    },
+    {
+      "historyKind" : "note",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          false,
+          false,
+          false
+        ],
+        "items" : "Ce ai notat",
+        "provider" : null,
+        "rating" : "never",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "upkeep"
+    },
+    {
+      "historyKind" : "note",
+      "listsParts" : false,
+      "shape" : {
+        "asksRating" : [
+          false,
+          false,
+          false,
+          false
+        ],
+        "items" : "Ce ai notat",
+        "provider" : null,
+        "rating" : "never",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "doctor"
+    },
+    {
+      "historyKind" : "note",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          false,
+          false,
+          false
+        ],
+        "items" : "Ce ai notat",
+        "provider" : null,
+        "rating" : "never",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "doctor"
+    },
+    {
+      "historyKind" : "note",
+      "listsParts" : false,
+      "shape" : {
+        "asksRating" : [
+          false,
+          false,
+          false,
+          false
+        ],
+        "items" : "Ce ai notat",
+        "provider" : null,
+        "rating" : "never",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "vet"
+    },
+    {
+      "historyKind" : "note",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          false,
+          false,
+          false
+        ],
+        "items" : "Ce ai notat",
+        "provider" : null,
+        "rating" : "never",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "vet"
+    },
+    {
+      "historyKind" : "note",
+      "listsParts" : false,
+      "shape" : {
+        "asksRating" : [
+          false,
+          false,
+          false,
+          false
+        ],
+        "items" : "Ce ai notat",
+        "provider" : null,
+        "rating" : "never",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "note"
+    },
+    {
+      "historyKind" : "note",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          false,
+          false,
+          false
+        ],
+        "items" : "Ce ai notat",
+        "provider" : null,
+        "rating" : "never",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "note"
+    },
+    {
+      "historyKind" : "note",
+      "listsParts" : false,
+      "shape" : {
+        "asksRating" : [
+          false,
+          false,
+          false,
+          false
+        ],
+        "items" : "Ce ai notat",
+        "provider" : null,
+        "rating" : "never",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "none"
+    },
+    {
+      "historyKind" : "note",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          false,
+          false,
+          false
+        ],
+        "items" : "Ce ai notat",
+        "provider" : null,
+        "rating" : "never",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "none"
+    },
+    {
+      "completing" : "chore",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a făcut",
+        "provider" : "Cine s-a ocupat",
+        "rating" : "withSomeone",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : null
+    },
+    {
+      "completing" : "chore",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a făcut",
+        "provider" : "Cine s-a ocupat",
+        "rating" : "withSomeone",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "service"
+    },
+    {
+      "completing" : "chore",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a lucrat",
+        "provider" : "Cine s-a ocupat",
+        "rating" : "withSomeone",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "job"
+    },
+    {
+      "completing" : "chore",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a făcut",
+        "provider" : "Cine s-a ocupat",
+        "rating" : "withSomeone",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "repair"
+    },
+    {
+      "completing" : "chore",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a făcut",
+        "provider" : "Cine s-a ocupat",
+        "rating" : "withSomeone",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "upkeep"
+    },
+    {
+      "completing" : "chore",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a făcut",
+        "provider" : "Cine s-a ocupat",
+        "rating" : "withSomeone",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "doctor"
+    },
+    {
+      "completing" : "chore",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce i s-a făcut",
+        "provider" : "Cine s-a ocupat",
+        "rating" : "withSomeone",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "vet"
+    },
+    {
+      "completing" : "chore",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a făcut",
+        "provider" : "Cine s-a ocupat",
+        "rating" : "withSomeone",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "note"
+    },
+    {
+      "completing" : "chore",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a făcut",
+        "provider" : "Cine s-a ocupat",
+        "rating" : "withSomeone",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "none"
+    },
+    {
+      "completing" : "acknowledged",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          false,
+          false,
+          false
+        ],
+        "items" : "Ce ai notat",
+        "provider" : null,
+        "rating" : "never",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : null
+    },
+    {
+      "completing" : "acknowledged",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          false,
+          false,
+          false
+        ],
+        "items" : "Ce ai notat",
+        "provider" : null,
+        "rating" : "never",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "service"
+    },
+    {
+      "completing" : "acknowledged",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          false,
+          false,
+          false
+        ],
+        "items" : "Ce ai notat",
+        "provider" : null,
+        "rating" : "never",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "job"
+    },
+    {
+      "completing" : "acknowledged",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          false,
+          false,
+          false
+        ],
+        "items" : "Ce ai notat",
+        "provider" : null,
+        "rating" : "never",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "repair"
+    },
+    {
+      "completing" : "acknowledged",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          false,
+          false,
+          false
+        ],
+        "items" : "Ce ai notat",
+        "provider" : null,
+        "rating" : "never",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "upkeep"
+    },
+    {
+      "completing" : "acknowledged",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          false,
+          false,
+          false
+        ],
+        "items" : "Ce ai notat",
+        "provider" : null,
+        "rating" : "never",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "doctor"
+    },
+    {
+      "completing" : "acknowledged",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          false,
+          false,
+          false
+        ],
+        "items" : "Ce ai notat",
+        "provider" : null,
+        "rating" : "never",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "vet"
+    },
+    {
+      "completing" : "acknowledged",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          false,
+          false,
+          false
+        ],
+        "items" : "Ce ai notat",
+        "provider" : null,
+        "rating" : "never",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "note"
+    },
+    {
+      "completing" : "acknowledged",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          false,
+          false,
+          false
+        ],
+        "items" : "Ce ai notat",
+        "provider" : null,
+        "rating" : "never",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "none"
+    },
+    {
+      "completing" : "vehicleService",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          true,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a făcut",
+        "provider" : "Cine a lucrat",
+        "rating" : "job",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : true
+      },
+      "visit" : null
+    },
+    {
+      "completing" : "vehicleService",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          true,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a făcut",
+        "provider" : "Service-ul",
+        "rating" : "job",
+        "ratingHeader" : "Cum a lucrat?",
+        "reference" : "number",
+        "rowsAreParts" : true
+      },
+      "visit" : "service"
+    },
+    {
+      "completing" : "vehicleService",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          true,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a lucrat",
+        "provider" : "Cine a lucrat",
+        "rating" : "job",
+        "ratingHeader" : "Cum a lucrat?",
+        "reference" : "number",
+        "rowsAreParts" : true
+      },
+      "visit" : "job"
+    },
+    {
+      "completing" : "vehicleService",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          true,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a făcut",
+        "provider" : "Cine a reparat",
+        "rating" : "job",
+        "ratingHeader" : "Cum a lucrat?",
+        "reference" : "number",
+        "rowsAreParts" : true
+      },
+      "visit" : "repair"
+    },
+    {
+      "completing" : "vehicleService",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          true,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a făcut",
+        "provider" : "Cine a lucrat",
+        "rating" : "job",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : true
+      },
+      "visit" : "upkeep"
+    },
+    {
+      "completing" : "vehicleService",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          true,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a făcut",
+        "provider" : "Medicul sau clinica",
+        "rating" : "job",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : true
+      },
+      "visit" : "doctor"
+    },
+    {
+      "completing" : "vehicleService",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          true,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce i s-a făcut",
+        "provider" : "Veterinarul",
+        "rating" : "job",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : true
+      },
+      "visit" : "vet"
+    },
+    {
+      "completing" : "vehicleService",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          true,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a făcut",
+        "provider" : "Cine a lucrat",
+        "rating" : "job",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : true
+      },
+      "visit" : "note"
+    },
+    {
+      "completing" : "vehicleService",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          true,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a făcut",
+        "provider" : "Cine a lucrat",
+        "rating" : "job",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : true
+      },
+      "visit" : "none"
+    },
+    {
+      "completing" : "tyreChange",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          true,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a făcut",
+        "provider" : "Cine a lucrat",
+        "rating" : "job",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : true
+      },
+      "visit" : null
+    },
+    {
+      "completing" : "tyreChange",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          true,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a făcut",
+        "provider" : "Service-ul",
+        "rating" : "job",
+        "ratingHeader" : "Cum a lucrat?",
+        "reference" : "number",
+        "rowsAreParts" : true
+      },
+      "visit" : "service"
+    },
+    {
+      "completing" : "tyreChange",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          true,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a lucrat",
+        "provider" : "Cine a lucrat",
+        "rating" : "job",
+        "ratingHeader" : "Cum a lucrat?",
+        "reference" : "number",
+        "rowsAreParts" : true
+      },
+      "visit" : "job"
+    },
+    {
+      "completing" : "tyreChange",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          true,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a făcut",
+        "provider" : "Cine a reparat",
+        "rating" : "job",
+        "ratingHeader" : "Cum a lucrat?",
+        "reference" : "number",
+        "rowsAreParts" : true
+      },
+      "visit" : "repair"
+    },
+    {
+      "completing" : "tyreChange",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          true,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a făcut",
+        "provider" : "Cine a lucrat",
+        "rating" : "job",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : true
+      },
+      "visit" : "upkeep"
+    },
+    {
+      "completing" : "tyreChange",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          true,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a făcut",
+        "provider" : "Medicul sau clinica",
+        "rating" : "job",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : true
+      },
+      "visit" : "doctor"
+    },
+    {
+      "completing" : "tyreChange",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          true,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce i s-a făcut",
+        "provider" : "Veterinarul",
+        "rating" : "job",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : true
+      },
+      "visit" : "vet"
+    },
+    {
+      "completing" : "tyreChange",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          true,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a făcut",
+        "provider" : "Cine a lucrat",
+        "rating" : "job",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : true
+      },
+      "visit" : "note"
+    },
+    {
+      "completing" : "tyreChange",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          true,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a făcut",
+        "provider" : "Cine a lucrat",
+        "rating" : "job",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : true
+      },
+      "visit" : "none"
+    },
+    {
+      "completing" : "bikeService",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          true,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a făcut",
+        "provider" : "Cine a lucrat",
+        "rating" : "job",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : true
+      },
+      "visit" : null
+    },
+    {
+      "completing" : "bikeService",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          true,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a făcut",
+        "provider" : "Service-ul",
+        "rating" : "job",
+        "ratingHeader" : "Cum a lucrat?",
+        "reference" : "number",
+        "rowsAreParts" : true
+      },
+      "visit" : "service"
+    },
+    {
+      "completing" : "bikeService",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          true,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a lucrat",
+        "provider" : "Cine a lucrat",
+        "rating" : "job",
+        "ratingHeader" : "Cum a lucrat?",
+        "reference" : "number",
+        "rowsAreParts" : true
+      },
+      "visit" : "job"
+    },
+    {
+      "completing" : "bikeService",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          true,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a făcut",
+        "provider" : "Cine a reparat",
+        "rating" : "job",
+        "ratingHeader" : "Cum a lucrat?",
+        "reference" : "number",
+        "rowsAreParts" : true
+      },
+      "visit" : "repair"
+    },
+    {
+      "completing" : "bikeService",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          true,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a făcut",
+        "provider" : "Cine a lucrat",
+        "rating" : "job",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : true
+      },
+      "visit" : "upkeep"
+    },
+    {
+      "completing" : "bikeService",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          true,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a făcut",
+        "provider" : "Medicul sau clinica",
+        "rating" : "job",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : true
+      },
+      "visit" : "doctor"
+    },
+    {
+      "completing" : "bikeService",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          true,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce i s-a făcut",
+        "provider" : "Veterinarul",
+        "rating" : "job",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : true
+      },
+      "visit" : "vet"
+    },
+    {
+      "completing" : "bikeService",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          true,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a făcut",
+        "provider" : "Cine a lucrat",
+        "rating" : "job",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : true
+      },
+      "visit" : "note"
+    },
+    {
+      "completing" : "bikeService",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          true,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a făcut",
+        "provider" : "Cine a lucrat",
+        "rating" : "job",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : true
+      },
+      "visit" : "none"
+    },
+    {
+      "completing" : "chimneySweep",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          true,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a făcut",
+        "provider" : "Cine a lucrat",
+        "rating" : "job",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : true
+      },
+      "visit" : null
+    },
+    {
+      "completing" : "chimneySweep",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          true,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a făcut",
+        "provider" : "Service-ul",
+        "rating" : "job",
+        "ratingHeader" : "Cum a lucrat?",
+        "reference" : "number",
+        "rowsAreParts" : true
+      },
+      "visit" : "service"
+    },
+    {
+      "completing" : "chimneySweep",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          true,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a lucrat",
+        "provider" : "Cine a lucrat",
+        "rating" : "job",
+        "ratingHeader" : "Cum a lucrat?",
+        "reference" : "number",
+        "rowsAreParts" : true
+      },
+      "visit" : "job"
+    },
+    {
+      "completing" : "chimneySweep",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          true,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a făcut",
+        "provider" : "Cine a reparat",
+        "rating" : "job",
+        "ratingHeader" : "Cum a lucrat?",
+        "reference" : "number",
+        "rowsAreParts" : true
+      },
+      "visit" : "repair"
+    },
+    {
+      "completing" : "chimneySweep",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          true,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a făcut",
+        "provider" : "Cine a lucrat",
+        "rating" : "job",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : true
+      },
+      "visit" : "upkeep"
+    },
+    {
+      "completing" : "chimneySweep",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          true,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a făcut",
+        "provider" : "Medicul sau clinica",
+        "rating" : "job",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : true
+      },
+      "visit" : "doctor"
+    },
+    {
+      "completing" : "chimneySweep",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          true,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce i s-a făcut",
+        "provider" : "Veterinarul",
+        "rating" : "job",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : true
+      },
+      "visit" : "vet"
+    },
+    {
+      "completing" : "chimneySweep",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          true,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a făcut",
+        "provider" : "Cine a lucrat",
+        "rating" : "job",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : true
+      },
+      "visit" : "note"
+    },
+    {
+      "completing" : "chimneySweep",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          true,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a făcut",
+        "provider" : "Cine a lucrat",
+        "rating" : "job",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : true
+      },
+      "visit" : "none"
+    },
+    {
+      "completing" : "doneAtHome",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a făcut",
+        "provider" : "Cine s-a ocupat",
+        "rating" : "withSomeone",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : null
+    },
+    {
+      "completing" : "doneAtHome",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a făcut",
+        "provider" : "Cine s-a ocupat",
+        "rating" : "withSomeone",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "service"
+    },
+    {
+      "completing" : "doneAtHome",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a lucrat",
+        "provider" : "Cine s-a ocupat",
+        "rating" : "withSomeone",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "job"
+    },
+    {
+      "completing" : "doneAtHome",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a făcut",
+        "provider" : "Cine s-a ocupat",
+        "rating" : "withSomeone",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "repair"
+    },
+    {
+      "completing" : "doneAtHome",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a făcut",
+        "provider" : "Cine s-a ocupat",
+        "rating" : "withSomeone",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "upkeep"
+    },
+    {
+      "completing" : "doneAtHome",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a făcut",
+        "provider" : "Cine s-a ocupat",
+        "rating" : "withSomeone",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "doctor"
+    },
+    {
+      "completing" : "doneAtHome",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce i s-a făcut",
+        "provider" : "Cine s-a ocupat",
+        "rating" : "withSomeone",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "vet"
+    },
+    {
+      "completing" : "doneAtHome",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a făcut",
+        "provider" : "Cine s-a ocupat",
+        "rating" : "withSomeone",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "note"
+    },
+    {
+      "completing" : "doneAtHome",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a făcut",
+        "provider" : "Cine s-a ocupat",
+        "rating" : "withSomeone",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "none"
+    },
+    {
+      "completing" : "ownService",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          true,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a făcut",
+        "provider" : "Cine a lucrat",
+        "rating" : "job",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : true
+      },
+      "visit" : null
+    },
+    {
+      "completing" : "ownService",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          true,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a făcut",
+        "provider" : "Service-ul",
+        "rating" : "job",
+        "ratingHeader" : "Cum a lucrat?",
+        "reference" : "number",
+        "rowsAreParts" : true
+      },
+      "visit" : "service"
+    },
+    {
+      "completing" : "ownService",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          true,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a lucrat",
+        "provider" : "Cine a lucrat",
+        "rating" : "job",
+        "ratingHeader" : "Cum a lucrat?",
+        "reference" : "number",
+        "rowsAreParts" : true
+      },
+      "visit" : "job"
+    },
+    {
+      "completing" : "ownService",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          true,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a făcut",
+        "provider" : "Cine a reparat",
+        "rating" : "job",
+        "ratingHeader" : "Cum a lucrat?",
+        "reference" : "number",
+        "rowsAreParts" : true
+      },
+      "visit" : "repair"
+    },
+    {
+      "completing" : "ownService",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          true,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a făcut",
+        "provider" : "Cine a lucrat",
+        "rating" : "job",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : true
+      },
+      "visit" : "upkeep"
+    },
+    {
+      "completing" : "ownService",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          true,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a făcut",
+        "provider" : "Medicul sau clinica",
+        "rating" : "job",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : true
+      },
+      "visit" : "doctor"
+    },
+    {
+      "completing" : "ownService",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          true,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce i s-a făcut",
+        "provider" : "Veterinarul",
+        "rating" : "job",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : true
+      },
+      "visit" : "vet"
+    },
+    {
+      "completing" : "ownService",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          true,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a făcut",
+        "provider" : "Cine a lucrat",
+        "rating" : "job",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : true
+      },
+      "visit" : "note"
+    },
+    {
+      "completing" : "ownService",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          true,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a făcut",
+        "provider" : "Cine a lucrat",
+        "rating" : "job",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : true
+      },
+      "visit" : "none"
+    },
+    {
+      "completing" : "bill",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          false,
+          false,
+          false
+        ],
+        "items" : "Ce cuprinde",
+        "provider" : "Cui ai plătit",
+        "rating" : "never",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "invoice",
+        "rowsAreParts" : false
+      },
+      "visit" : null
+    },
+    {
+      "completing" : "bill",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          false,
+          false,
+          false
+        ],
+        "items" : "Ce cuprinde",
+        "provider" : "Cui ai plătit",
+        "rating" : "never",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "invoice",
+        "rowsAreParts" : false
+      },
+      "visit" : "service"
+    },
+    {
+      "completing" : "bill",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          false,
+          false,
+          false
+        ],
+        "items" : "Ce cuprinde",
+        "provider" : "Cui ai plătit",
+        "rating" : "never",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "invoice",
+        "rowsAreParts" : false
+      },
+      "visit" : "job"
+    },
+    {
+      "completing" : "bill",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          false,
+          false,
+          false
+        ],
+        "items" : "Ce cuprinde",
+        "provider" : "Cui ai plătit",
+        "rating" : "never",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "invoice",
+        "rowsAreParts" : false
+      },
+      "visit" : "repair"
+    },
+    {
+      "completing" : "bill",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          false,
+          false,
+          false
+        ],
+        "items" : "Ce cuprinde",
+        "provider" : "Cui ai plătit",
+        "rating" : "never",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "invoice",
+        "rowsAreParts" : false
+      },
+      "visit" : "upkeep"
+    },
+    {
+      "completing" : "bill",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          false,
+          false,
+          false
+        ],
+        "items" : "Ce cuprinde",
+        "provider" : "Cui ai plătit",
+        "rating" : "never",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "invoice",
+        "rowsAreParts" : false
+      },
+      "visit" : "doctor"
+    },
+    {
+      "completing" : "bill",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          false,
+          false,
+          false
+        ],
+        "items" : "Ce cuprinde",
+        "provider" : "Cui ai plătit",
+        "rating" : "never",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "invoice",
+        "rowsAreParts" : false
+      },
+      "visit" : "vet"
+    },
+    {
+      "completing" : "bill",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          false,
+          false,
+          false
+        ],
+        "items" : "Ce cuprinde",
+        "provider" : "Cui ai plătit",
+        "rating" : "never",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "invoice",
+        "rowsAreParts" : false
+      },
+      "visit" : "note"
+    },
+    {
+      "completing" : "bill",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          false,
+          false,
+          false
+        ],
+        "items" : "Ce cuprinde",
+        "provider" : "Cui ai plătit",
+        "rating" : "never",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "invoice",
+        "rowsAreParts" : false
+      },
+      "visit" : "none"
+    },
+    {
+      "completing" : "buildingTax",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          false,
+          false,
+          false
+        ],
+        "items" : "Ce ai plătit",
+        "provider" : "Cui ai plătit",
+        "rating" : "never",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : null
+    },
+    {
+      "completing" : "buildingTax",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          false,
+          false,
+          false
+        ],
+        "items" : "Ce ai plătit",
+        "provider" : "Cui ai plătit",
+        "rating" : "never",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "service"
+    },
+    {
+      "completing" : "buildingTax",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          false,
+          false,
+          false
+        ],
+        "items" : "Ce ai plătit",
+        "provider" : "Cui ai plătit",
+        "rating" : "never",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "job"
+    },
+    {
+      "completing" : "buildingTax",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          false,
+          false,
+          false
+        ],
+        "items" : "Ce ai plătit",
+        "provider" : "Cui ai plătit",
+        "rating" : "never",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "repair"
+    },
+    {
+      "completing" : "buildingTax",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          false,
+          false,
+          false
+        ],
+        "items" : "Ce ai plătit",
+        "provider" : "Cui ai plătit",
+        "rating" : "never",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "upkeep"
+    },
+    {
+      "completing" : "buildingTax",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          false,
+          false,
+          false
+        ],
+        "items" : "Ce ai plătit",
+        "provider" : "Cui ai plătit",
+        "rating" : "never",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "doctor"
+    },
+    {
+      "completing" : "buildingTax",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          false,
+          false,
+          false
+        ],
+        "items" : "Ce ai plătit",
+        "provider" : "Cui ai plătit",
+        "rating" : "never",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "vet"
+    },
+    {
+      "completing" : "buildingTax",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          false,
+          false,
+          false
+        ],
+        "items" : "Ce ai plătit",
+        "provider" : "Cui ai plătit",
+        "rating" : "never",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "note"
+    },
+    {
+      "completing" : "buildingTax",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          false,
+          false,
+          false
+        ],
+        "items" : "Ce ai plătit",
+        "provider" : "Cui ai plătit",
+        "rating" : "never",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "none"
+    },
+    {
+      "completing" : "rentalDeclaration",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          false,
+          false,
+          false
+        ],
+        "items" : "Ce ai plătit",
+        "provider" : "Cui ai plătit",
+        "rating" : "never",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : null
+    },
+    {
+      "completing" : "rentalDeclaration",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          false,
+          false,
+          false
+        ],
+        "items" : "Ce ai plătit",
+        "provider" : "Cui ai plătit",
+        "rating" : "never",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "service"
+    },
+    {
+      "completing" : "rentalDeclaration",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          false,
+          false,
+          false
+        ],
+        "items" : "Ce ai plătit",
+        "provider" : "Cui ai plătit",
+        "rating" : "never",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "job"
+    },
+    {
+      "completing" : "rentalDeclaration",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          false,
+          false,
+          false
+        ],
+        "items" : "Ce ai plătit",
+        "provider" : "Cui ai plătit",
+        "rating" : "never",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "repair"
+    },
+    {
+      "completing" : "rentalDeclaration",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          false,
+          false,
+          false
+        ],
+        "items" : "Ce ai plătit",
+        "provider" : "Cui ai plătit",
+        "rating" : "never",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "upkeep"
+    },
+    {
+      "completing" : "rentalDeclaration",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          false,
+          false,
+          false
+        ],
+        "items" : "Ce ai plătit",
+        "provider" : "Cui ai plătit",
+        "rating" : "never",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "doctor"
+    },
+    {
+      "completing" : "rentalDeclaration",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          false,
+          false,
+          false
+        ],
+        "items" : "Ce ai plătit",
+        "provider" : "Cui ai plătit",
+        "rating" : "never",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "vet"
+    },
+    {
+      "completing" : "rentalDeclaration",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          false,
+          false,
+          false
+        ],
+        "items" : "Ce ai plătit",
+        "provider" : "Cui ai plătit",
+        "rating" : "never",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "note"
+    },
+    {
+      "completing" : "rentalDeclaration",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          false,
+          false,
+          false
+        ],
+        "items" : "Ce ai plătit",
+        "provider" : "Cui ai plătit",
+        "rating" : "never",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "none"
+    },
+    {
+      "completing" : "ownTax",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          false,
+          false,
+          false
+        ],
+        "items" : "Ce ai plătit",
+        "provider" : "Cui ai plătit",
+        "rating" : "never",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : null
+    },
+    {
+      "completing" : "ownTax",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          false,
+          false,
+          false
+        ],
+        "items" : "Ce ai plătit",
+        "provider" : "Cui ai plătit",
+        "rating" : "never",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "service"
+    },
+    {
+      "completing" : "ownTax",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          false,
+          false,
+          false
+        ],
+        "items" : "Ce ai plătit",
+        "provider" : "Cui ai plătit",
+        "rating" : "never",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "job"
+    },
+    {
+      "completing" : "ownTax",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          false,
+          false,
+          false
+        ],
+        "items" : "Ce ai plătit",
+        "provider" : "Cui ai plătit",
+        "rating" : "never",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "repair"
+    },
+    {
+      "completing" : "ownTax",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          false,
+          false,
+          false
+        ],
+        "items" : "Ce ai plătit",
+        "provider" : "Cui ai plătit",
+        "rating" : "never",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "upkeep"
+    },
+    {
+      "completing" : "ownTax",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          false,
+          false,
+          false
+        ],
+        "items" : "Ce ai plătit",
+        "provider" : "Cui ai plătit",
+        "rating" : "never",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "doctor"
+    },
+    {
+      "completing" : "ownTax",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          false,
+          false,
+          false
+        ],
+        "items" : "Ce ai plătit",
+        "provider" : "Cui ai plătit",
+        "rating" : "never",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "vet"
+    },
+    {
+      "completing" : "ownTax",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          false,
+          false,
+          false
+        ],
+        "items" : "Ce ai plătit",
+        "provider" : "Cui ai plătit",
+        "rating" : "never",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "note"
+    },
+    {
+      "completing" : "ownTax",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          false,
+          false,
+          false
+        ],
+        "items" : "Ce ai plătit",
+        "provider" : "Cui ai plătit",
+        "rating" : "never",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "none"
+    },
+    {
+      "completing" : "newDocument",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          false,
+          false,
+          false
+        ],
+        "items" : "Ce s-a făcut",
+        "provider" : "Cine l-a emis",
+        "rating" : "never",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : null
+    },
+    {
+      "completing" : "newDocument",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          false,
+          false,
+          false
+        ],
+        "items" : "Ce s-a făcut",
+        "provider" : "Cine l-a emis",
+        "rating" : "never",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "service"
+    },
+    {
+      "completing" : "newDocument",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          false,
+          false,
+          false
+        ],
+        "items" : "Ce s-a făcut",
+        "provider" : "Cine l-a emis",
+        "rating" : "never",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "job"
+    },
+    {
+      "completing" : "newDocument",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          false,
+          false,
+          false
+        ],
+        "items" : "Ce s-a făcut",
+        "provider" : "Cine l-a emis",
+        "rating" : "never",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "repair"
+    },
+    {
+      "completing" : "newDocument",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          false,
+          false,
+          false
+        ],
+        "items" : "Ce s-a făcut",
+        "provider" : "Cine l-a emis",
+        "rating" : "never",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "upkeep"
+    },
+    {
+      "completing" : "newDocument",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          false,
+          false,
+          false
+        ],
+        "items" : "Ce s-a făcut",
+        "provider" : "Cine l-a emis",
+        "rating" : "never",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "doctor"
+    },
+    {
+      "completing" : "newDocument",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          false,
+          false,
+          false
+        ],
+        "items" : "Ce s-a făcut",
+        "provider" : "Cine l-a emis",
+        "rating" : "never",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "vet"
+    },
+    {
+      "completing" : "newDocument",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          false,
+          false,
+          false
+        ],
+        "items" : "Ce s-a făcut",
+        "provider" : "Cine l-a emis",
+        "rating" : "never",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "note"
+    },
+    {
+      "completing" : "newDocument",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          false,
+          false,
+          false
+        ],
+        "items" : "Ce s-a făcut",
+        "provider" : "Cine l-a emis",
+        "rating" : "never",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "none"
+    },
+    {
+      "completing" : "documentReplaced",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          false,
+          false,
+          false
+        ],
+        "items" : "Ce s-a făcut",
+        "provider" : "Cine l-a emis",
+        "rating" : "never",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : null
+    },
+    {
+      "completing" : "documentReplaced",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          false,
+          false,
+          false
+        ],
+        "items" : "Ce s-a făcut",
+        "provider" : "Cine l-a emis",
+        "rating" : "never",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "service"
+    },
+    {
+      "completing" : "documentReplaced",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          false,
+          false,
+          false
+        ],
+        "items" : "Ce s-a făcut",
+        "provider" : "Cine l-a emis",
+        "rating" : "never",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "job"
+    },
+    {
+      "completing" : "documentReplaced",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          false,
+          false,
+          false
+        ],
+        "items" : "Ce s-a făcut",
+        "provider" : "Cine l-a emis",
+        "rating" : "never",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "repair"
+    },
+    {
+      "completing" : "documentReplaced",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          false,
+          false,
+          false
+        ],
+        "items" : "Ce s-a făcut",
+        "provider" : "Cine l-a emis",
+        "rating" : "never",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "upkeep"
+    },
+    {
+      "completing" : "documentReplaced",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          false,
+          false,
+          false
+        ],
+        "items" : "Ce s-a făcut",
+        "provider" : "Cine l-a emis",
+        "rating" : "never",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "doctor"
+    },
+    {
+      "completing" : "documentReplaced",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          false,
+          false,
+          false
+        ],
+        "items" : "Ce s-a făcut",
+        "provider" : "Cine l-a emis",
+        "rating" : "never",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "vet"
+    },
+    {
+      "completing" : "documentReplaced",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          false,
+          false,
+          false
+        ],
+        "items" : "Ce s-a făcut",
+        "provider" : "Cine l-a emis",
+        "rating" : "never",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "note"
+    },
+    {
+      "completing" : "documentReplaced",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          false,
+          false,
+          false
+        ],
+        "items" : "Ce s-a făcut",
+        "provider" : "Cine l-a emis",
+        "rating" : "never",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "none"
+    },
+    {
+      "completing" : "newHealthCard",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          false,
+          false,
+          false
+        ],
+        "items" : "Ce s-a făcut",
+        "provider" : "Cine l-a emis",
+        "rating" : "never",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : null
+    },
+    {
+      "completing" : "newHealthCard",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          false,
+          false,
+          false
+        ],
+        "items" : "Ce s-a făcut",
+        "provider" : "Cine l-a emis",
+        "rating" : "never",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "service"
+    },
+    {
+      "completing" : "newHealthCard",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          false,
+          false,
+          false
+        ],
+        "items" : "Ce s-a făcut",
+        "provider" : "Cine l-a emis",
+        "rating" : "never",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "job"
+    },
+    {
+      "completing" : "newHealthCard",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          false,
+          false,
+          false
+        ],
+        "items" : "Ce s-a făcut",
+        "provider" : "Cine l-a emis",
+        "rating" : "never",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "repair"
+    },
+    {
+      "completing" : "newHealthCard",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          false,
+          false,
+          false
+        ],
+        "items" : "Ce s-a făcut",
+        "provider" : "Cine l-a emis",
+        "rating" : "never",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "upkeep"
+    },
+    {
+      "completing" : "newHealthCard",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          false,
+          false,
+          false
+        ],
+        "items" : "Ce s-a făcut",
+        "provider" : "Cine l-a emis",
+        "rating" : "never",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "doctor"
+    },
+    {
+      "completing" : "newHealthCard",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          false,
+          false,
+          false
+        ],
+        "items" : "Ce s-a făcut",
+        "provider" : "Cine l-a emis",
+        "rating" : "never",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "vet"
+    },
+    {
+      "completing" : "newHealthCard",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          false,
+          false,
+          false
+        ],
+        "items" : "Ce s-a făcut",
+        "provider" : "Cine l-a emis",
+        "rating" : "never",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "note"
+    },
+    {
+      "completing" : "newHealthCard",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          false,
+          false,
+          false
+        ],
+        "items" : "Ce s-a făcut",
+        "provider" : "Cine l-a emis",
+        "rating" : "never",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "none"
+    },
+    {
+      "completing" : "newContract",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          false,
+          false,
+          false
+        ],
+        "items" : "Ce s-a făcut",
+        "provider" : "Cu cine l-ai semnat",
+        "rating" : "never",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : null
+    },
+    {
+      "completing" : "newContract",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          false,
+          false,
+          false
+        ],
+        "items" : "Ce s-a făcut",
+        "provider" : "Cu cine l-ai semnat",
+        "rating" : "never",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "service"
+    },
+    {
+      "completing" : "newContract",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          false,
+          false,
+          false
+        ],
+        "items" : "Ce s-a făcut",
+        "provider" : "Cu cine l-ai semnat",
+        "rating" : "never",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "job"
+    },
+    {
+      "completing" : "newContract",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          false,
+          false,
+          false
+        ],
+        "items" : "Ce s-a făcut",
+        "provider" : "Cu cine l-ai semnat",
+        "rating" : "never",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "repair"
+    },
+    {
+      "completing" : "newContract",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          false,
+          false,
+          false
+        ],
+        "items" : "Ce s-a făcut",
+        "provider" : "Cu cine l-ai semnat",
+        "rating" : "never",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "upkeep"
+    },
+    {
+      "completing" : "newContract",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          false,
+          false,
+          false
+        ],
+        "items" : "Ce s-a făcut",
+        "provider" : "Cu cine l-ai semnat",
+        "rating" : "never",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "doctor"
+    },
+    {
+      "completing" : "newContract",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          false,
+          false,
+          false
+        ],
+        "items" : "Ce s-a făcut",
+        "provider" : "Cu cine l-ai semnat",
+        "rating" : "never",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "vet"
+    },
+    {
+      "completing" : "newContract",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          false,
+          false,
+          false
+        ],
+        "items" : "Ce s-a făcut",
+        "provider" : "Cu cine l-ai semnat",
+        "rating" : "never",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "note"
+    },
+    {
+      "completing" : "newContract",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          false,
+          false,
+          false
+        ],
+        "items" : "Ce s-a făcut",
+        "provider" : "Cu cine l-ai semnat",
+        "rating" : "never",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "none"
+    },
+    {
+      "completing" : "newLease",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          false,
+          false,
+          false
+        ],
+        "items" : "Ce s-a făcut",
+        "provider" : "Cu cine l-ai semnat",
+        "rating" : "never",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : null
+    },
+    {
+      "completing" : "newLease",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          false,
+          false,
+          false
+        ],
+        "items" : "Ce s-a făcut",
+        "provider" : "Cu cine l-ai semnat",
+        "rating" : "never",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "service"
+    },
+    {
+      "completing" : "newLease",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          false,
+          false,
+          false
+        ],
+        "items" : "Ce s-a făcut",
+        "provider" : "Cu cine l-ai semnat",
+        "rating" : "never",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "job"
+    },
+    {
+      "completing" : "newLease",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          false,
+          false,
+          false
+        ],
+        "items" : "Ce s-a făcut",
+        "provider" : "Cu cine l-ai semnat",
+        "rating" : "never",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "repair"
+    },
+    {
+      "completing" : "newLease",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          false,
+          false,
+          false
+        ],
+        "items" : "Ce s-a făcut",
+        "provider" : "Cu cine l-ai semnat",
+        "rating" : "never",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "upkeep"
+    },
+    {
+      "completing" : "newLease",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          false,
+          false,
+          false
+        ],
+        "items" : "Ce s-a făcut",
+        "provider" : "Cu cine l-ai semnat",
+        "rating" : "never",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "doctor"
+    },
+    {
+      "completing" : "newLease",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          false,
+          false,
+          false
+        ],
+        "items" : "Ce s-a făcut",
+        "provider" : "Cu cine l-ai semnat",
+        "rating" : "never",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "vet"
+    },
+    {
+      "completing" : "newLease",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          false,
+          false,
+          false
+        ],
+        "items" : "Ce s-a făcut",
+        "provider" : "Cu cine l-ai semnat",
+        "rating" : "never",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "note"
+    },
+    {
+      "completing" : "newLease",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          false,
+          false,
+          false
+        ],
+        "items" : "Ce s-a făcut",
+        "provider" : "Cu cine l-ai semnat",
+        "rating" : "never",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "none"
+    },
+    {
+      "completing" : "policy",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          false,
+          false,
+          false
+        ],
+        "items" : "Ce acoperă",
+        "provider" : "Asigurătorul",
+        "rating" : "never",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "policy",
+        "rowsAreParts" : false
+      },
+      "visit" : null
+    },
+    {
+      "completing" : "policy",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          false,
+          false,
+          false
+        ],
+        "items" : "Ce acoperă",
+        "provider" : "Asigurătorul",
+        "rating" : "never",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "policy",
+        "rowsAreParts" : false
+      },
+      "visit" : "service"
+    },
+    {
+      "completing" : "policy",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          false,
+          false,
+          false
+        ],
+        "items" : "Ce acoperă",
+        "provider" : "Asigurătorul",
+        "rating" : "never",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "policy",
+        "rowsAreParts" : false
+      },
+      "visit" : "job"
+    },
+    {
+      "completing" : "policy",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          false,
+          false,
+          false
+        ],
+        "items" : "Ce acoperă",
+        "provider" : "Asigurătorul",
+        "rating" : "never",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "policy",
+        "rowsAreParts" : false
+      },
+      "visit" : "repair"
+    },
+    {
+      "completing" : "policy",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          false,
+          false,
+          false
+        ],
+        "items" : "Ce acoperă",
+        "provider" : "Asigurătorul",
+        "rating" : "never",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "policy",
+        "rowsAreParts" : false
+      },
+      "visit" : "upkeep"
+    },
+    {
+      "completing" : "policy",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          false,
+          false,
+          false
+        ],
+        "items" : "Ce acoperă",
+        "provider" : "Asigurătorul",
+        "rating" : "never",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "policy",
+        "rowsAreParts" : false
+      },
+      "visit" : "doctor"
+    },
+    {
+      "completing" : "policy",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          false,
+          false,
+          false
+        ],
+        "items" : "Ce acoperă",
+        "provider" : "Asigurătorul",
+        "rating" : "never",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "policy",
+        "rowsAreParts" : false
+      },
+      "visit" : "vet"
+    },
+    {
+      "completing" : "policy",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          false,
+          false,
+          false
+        ],
+        "items" : "Ce acoperă",
+        "provider" : "Asigurătorul",
+        "rating" : "never",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "policy",
+        "rowsAreParts" : false
+      },
+      "visit" : "note"
+    },
+    {
+      "completing" : "policy",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          false,
+          false,
+          false
+        ],
+        "items" : "Ce acoperă",
+        "provider" : "Asigurătorul",
+        "rating" : "never",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "policy",
+        "rowsAreParts" : false
+      },
+      "visit" : "none"
+    },
+    {
+      "completing" : "itp",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a verificat",
+        "provider" : "Cine a verificat",
+        "rating" : "withSomeone",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : null
+    },
+    {
+      "completing" : "itp",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a verificat",
+        "provider" : "Cine a verificat",
+        "rating" : "withSomeone",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "service"
+    },
+    {
+      "completing" : "itp",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a verificat",
+        "provider" : "Cine a verificat",
+        "rating" : "withSomeone",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "job"
+    },
+    {
+      "completing" : "itp",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a verificat",
+        "provider" : "Cine a verificat",
+        "rating" : "withSomeone",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "repair"
+    },
+    {
+      "completing" : "itp",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a verificat",
+        "provider" : "Cine a verificat",
+        "rating" : "withSomeone",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "upkeep"
+    },
+    {
+      "completing" : "itp",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a verificat",
+        "provider" : "Cine a verificat",
+        "rating" : "withSomeone",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "doctor"
+    },
+    {
+      "completing" : "itp",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a verificat",
+        "provider" : "Cine a verificat",
+        "rating" : "withSomeone",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "vet"
+    },
+    {
+      "completing" : "itp",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a verificat",
+        "provider" : "Cine a verificat",
+        "rating" : "withSomeone",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "note"
+    },
+    {
+      "completing" : "itp",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a verificat",
+        "provider" : "Cine a verificat",
+        "rating" : "withSomeone",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "none"
+    },
+    {
+      "completing" : "vignette",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          false,
+          false,
+          false
+        ],
+        "items" : "Ce ai cumpărat",
+        "provider" : "De unde",
+        "rating" : "never",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "invoice",
+        "rowsAreParts" : false
+      },
+      "visit" : null
+    },
+    {
+      "completing" : "vignette",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          false,
+          false,
+          false
+        ],
+        "items" : "Ce ai cumpărat",
+        "provider" : "De unde",
+        "rating" : "never",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "invoice",
+        "rowsAreParts" : false
+      },
+      "visit" : "service"
+    },
+    {
+      "completing" : "vignette",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          false,
+          false,
+          false
+        ],
+        "items" : "Ce ai cumpărat",
+        "provider" : "De unde",
+        "rating" : "never",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "invoice",
+        "rowsAreParts" : false
+      },
+      "visit" : "job"
+    },
+    {
+      "completing" : "vignette",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          false,
+          false,
+          false
+        ],
+        "items" : "Ce ai cumpărat",
+        "provider" : "De unde",
+        "rating" : "never",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "invoice",
+        "rowsAreParts" : false
+      },
+      "visit" : "repair"
+    },
+    {
+      "completing" : "vignette",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          false,
+          false,
+          false
+        ],
+        "items" : "Ce ai cumpărat",
+        "provider" : "De unde",
+        "rating" : "never",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "invoice",
+        "rowsAreParts" : false
+      },
+      "visit" : "upkeep"
+    },
+    {
+      "completing" : "vignette",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          false,
+          false,
+          false
+        ],
+        "items" : "Ce ai cumpărat",
+        "provider" : "De unde",
+        "rating" : "never",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "invoice",
+        "rowsAreParts" : false
+      },
+      "visit" : "doctor"
+    },
+    {
+      "completing" : "vignette",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          false,
+          false,
+          false
+        ],
+        "items" : "Ce ai cumpărat",
+        "provider" : "De unde",
+        "rating" : "never",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "invoice",
+        "rowsAreParts" : false
+      },
+      "visit" : "vet"
+    },
+    {
+      "completing" : "vignette",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          false,
+          false,
+          false
+        ],
+        "items" : "Ce ai cumpărat",
+        "provider" : "De unde",
+        "rating" : "never",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "invoice",
+        "rowsAreParts" : false
+      },
+      "visit" : "note"
+    },
+    {
+      "completing" : "vignette",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          false,
+          false,
+          false
+        ],
+        "items" : "Ce ai cumpărat",
+        "provider" : "De unde",
+        "rating" : "never",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "invoice",
+        "rowsAreParts" : false
+      },
+      "visit" : "none"
+    },
+    {
+      "completing" : "safetyKit",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          false,
+          false,
+          false
+        ],
+        "items" : "Ce ai cumpărat",
+        "provider" : "De unde",
+        "rating" : "never",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "invoice",
+        "rowsAreParts" : false
+      },
+      "visit" : null
+    },
+    {
+      "completing" : "safetyKit",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          false,
+          false,
+          false
+        ],
+        "items" : "Ce ai cumpărat",
+        "provider" : "De unde",
+        "rating" : "never",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "invoice",
+        "rowsAreParts" : false
+      },
+      "visit" : "service"
+    },
+    {
+      "completing" : "safetyKit",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          false,
+          false,
+          false
+        ],
+        "items" : "Ce ai cumpărat",
+        "provider" : "De unde",
+        "rating" : "never",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "invoice",
+        "rowsAreParts" : false
+      },
+      "visit" : "job"
+    },
+    {
+      "completing" : "safetyKit",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          false,
+          false,
+          false
+        ],
+        "items" : "Ce ai cumpărat",
+        "provider" : "De unde",
+        "rating" : "never",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "invoice",
+        "rowsAreParts" : false
+      },
+      "visit" : "repair"
+    },
+    {
+      "completing" : "safetyKit",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          false,
+          false,
+          false
+        ],
+        "items" : "Ce ai cumpărat",
+        "provider" : "De unde",
+        "rating" : "never",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "invoice",
+        "rowsAreParts" : false
+      },
+      "visit" : "upkeep"
+    },
+    {
+      "completing" : "safetyKit",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          false,
+          false,
+          false
+        ],
+        "items" : "Ce ai cumpărat",
+        "provider" : "De unde",
+        "rating" : "never",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "invoice",
+        "rowsAreParts" : false
+      },
+      "visit" : "doctor"
+    },
+    {
+      "completing" : "safetyKit",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          false,
+          false,
+          false
+        ],
+        "items" : "Ce ai cumpărat",
+        "provider" : "De unde",
+        "rating" : "never",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "invoice",
+        "rowsAreParts" : false
+      },
+      "visit" : "vet"
+    },
+    {
+      "completing" : "safetyKit",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          false,
+          false,
+          false
+        ],
+        "items" : "Ce ai cumpărat",
+        "provider" : "De unde",
+        "rating" : "never",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "invoice",
+        "rowsAreParts" : false
+      },
+      "visit" : "note"
+    },
+    {
+      "completing" : "safetyKit",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          false,
+          false,
+          false
+        ],
+        "items" : "Ce ai cumpărat",
+        "provider" : "De unde",
+        "rating" : "never",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "invoice",
+        "rowsAreParts" : false
+      },
+      "visit" : "none"
+    },
+    {
+      "completing" : "boilerCheck",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a verificat",
+        "provider" : "Cine a verificat",
+        "rating" : "withSomeone",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : null
+    },
+    {
+      "completing" : "boilerCheck",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a verificat",
+        "provider" : "Cine a verificat",
+        "rating" : "withSomeone",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "service"
+    },
+    {
+      "completing" : "boilerCheck",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a verificat",
+        "provider" : "Cine a verificat",
+        "rating" : "withSomeone",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "job"
+    },
+    {
+      "completing" : "boilerCheck",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a verificat",
+        "provider" : "Cine a verificat",
+        "rating" : "withSomeone",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "repair"
+    },
+    {
+      "completing" : "boilerCheck",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a verificat",
+        "provider" : "Cine a verificat",
+        "rating" : "withSomeone",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "upkeep"
+    },
+    {
+      "completing" : "boilerCheck",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a verificat",
+        "provider" : "Cine a verificat",
+        "rating" : "withSomeone",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "doctor"
+    },
+    {
+      "completing" : "boilerCheck",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a verificat",
+        "provider" : "Cine a verificat",
+        "rating" : "withSomeone",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "vet"
+    },
+    {
+      "completing" : "boilerCheck",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a verificat",
+        "provider" : "Cine a verificat",
+        "rating" : "withSomeone",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "note"
+    },
+    {
+      "completing" : "boilerCheck",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a verificat",
+        "provider" : "Cine a verificat",
+        "rating" : "withSomeone",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "none"
+    },
+    {
+      "completing" : "gasCheck",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a verificat",
+        "provider" : "Cine a verificat",
+        "rating" : "withSomeone",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : null
+    },
+    {
+      "completing" : "gasCheck",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a verificat",
+        "provider" : "Cine a verificat",
+        "rating" : "withSomeone",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "service"
+    },
+    {
+      "completing" : "gasCheck",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a verificat",
+        "provider" : "Cine a verificat",
+        "rating" : "withSomeone",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "job"
+    },
+    {
+      "completing" : "gasCheck",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a verificat",
+        "provider" : "Cine a verificat",
+        "rating" : "withSomeone",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "repair"
+    },
+    {
+      "completing" : "gasCheck",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a verificat",
+        "provider" : "Cine a verificat",
+        "rating" : "withSomeone",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "upkeep"
+    },
+    {
+      "completing" : "gasCheck",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a verificat",
+        "provider" : "Cine a verificat",
+        "rating" : "withSomeone",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "doctor"
+    },
+    {
+      "completing" : "gasCheck",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a verificat",
+        "provider" : "Cine a verificat",
+        "rating" : "withSomeone",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "vet"
+    },
+    {
+      "completing" : "gasCheck",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a verificat",
+        "provider" : "Cine a verificat",
+        "rating" : "withSomeone",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "note"
+    },
+    {
+      "completing" : "gasCheck",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a verificat",
+        "provider" : "Cine a verificat",
+        "rating" : "withSomeone",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "none"
+    },
+    {
+      "completing" : "ownLegal",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a verificat",
+        "provider" : "Cine a verificat",
+        "rating" : "withSomeone",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : null
+    },
+    {
+      "completing" : "ownLegal",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a verificat",
+        "provider" : "Cine a verificat",
+        "rating" : "withSomeone",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "service"
+    },
+    {
+      "completing" : "ownLegal",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a verificat",
+        "provider" : "Cine a verificat",
+        "rating" : "withSomeone",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "job"
+    },
+    {
+      "completing" : "ownLegal",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a verificat",
+        "provider" : "Cine a verificat",
+        "rating" : "withSomeone",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "repair"
+    },
+    {
+      "completing" : "ownLegal",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a verificat",
+        "provider" : "Cine a verificat",
+        "rating" : "withSomeone",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "upkeep"
+    },
+    {
+      "completing" : "ownLegal",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a verificat",
+        "provider" : "Cine a verificat",
+        "rating" : "withSomeone",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "doctor"
+    },
+    {
+      "completing" : "ownLegal",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a verificat",
+        "provider" : "Cine a verificat",
+        "rating" : "withSomeone",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "vet"
+    },
+    {
+      "completing" : "ownLegal",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a verificat",
+        "provider" : "Cine a verificat",
+        "rating" : "withSomeone",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "note"
+    },
+    {
+      "completing" : "ownLegal",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a verificat",
+        "provider" : "Cine a verificat",
+        "rating" : "withSomeone",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "none"
+    },
+    {
+      "completing" : "petVaccine",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a făcut",
+        "provider" : "Cine s-a ocupat",
+        "rating" : "withSomeone",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : null
+    },
+    {
+      "completing" : "petVaccine",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a făcut",
+        "provider" : "Service-ul",
+        "rating" : "withSomeone",
+        "ratingHeader" : "Cum a lucrat?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "service"
+    },
+    {
+      "completing" : "petVaccine",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a lucrat",
+        "provider" : "Cine a lucrat",
+        "rating" : "withSomeone",
+        "ratingHeader" : "Cum a lucrat?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "job"
+    },
+    {
+      "completing" : "petVaccine",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a făcut",
+        "provider" : "Cine a reparat",
+        "rating" : "withSomeone",
+        "ratingHeader" : "Cum a lucrat?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "repair"
+    },
+    {
+      "completing" : "petVaccine",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a făcut",
+        "provider" : "Cine s-a ocupat",
+        "rating" : "withSomeone",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "upkeep"
+    },
+    {
+      "completing" : "petVaccine",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a făcut",
+        "provider" : "Medicul sau clinica",
+        "rating" : "withSomeone",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "doctor"
+    },
+    {
+      "completing" : "petVaccine",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce i s-a făcut",
+        "provider" : "Veterinarul",
+        "rating" : "withSomeone",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "vet"
+    },
+    {
+      "completing" : "petVaccine",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a făcut",
+        "provider" : "Cine s-a ocupat",
+        "rating" : "withSomeone",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "note"
+    },
+    {
+      "completing" : "petVaccine",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a făcut",
+        "provider" : "Cine s-a ocupat",
+        "rating" : "withSomeone",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "none"
+    },
+    {
+      "completing" : "checkup",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a făcut",
+        "provider" : "Cine s-a ocupat",
+        "rating" : "withSomeone",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : null
+    },
+    {
+      "completing" : "checkup",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a făcut",
+        "provider" : "Service-ul",
+        "rating" : "withSomeone",
+        "ratingHeader" : "Cum a lucrat?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "service"
+    },
+    {
+      "completing" : "checkup",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a lucrat",
+        "provider" : "Cine a lucrat",
+        "rating" : "withSomeone",
+        "ratingHeader" : "Cum a lucrat?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "job"
+    },
+    {
+      "completing" : "checkup",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a făcut",
+        "provider" : "Cine a reparat",
+        "rating" : "withSomeone",
+        "ratingHeader" : "Cum a lucrat?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "repair"
+    },
+    {
+      "completing" : "checkup",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a făcut",
+        "provider" : "Cine s-a ocupat",
+        "rating" : "withSomeone",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "upkeep"
+    },
+    {
+      "completing" : "checkup",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a făcut",
+        "provider" : "Medicul sau clinica",
+        "rating" : "withSomeone",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "doctor"
+    },
+    {
+      "completing" : "checkup",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce i s-a făcut",
+        "provider" : "Veterinarul",
+        "rating" : "withSomeone",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "vet"
+    },
+    {
+      "completing" : "checkup",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a făcut",
+        "provider" : "Cine s-a ocupat",
+        "rating" : "withSomeone",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "note"
+    },
+    {
+      "completing" : "checkup",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a făcut",
+        "provider" : "Cine s-a ocupat",
+        "rating" : "withSomeone",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "none"
+    },
+    {
+      "completing" : "dentist",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a făcut",
+        "provider" : "Cine s-a ocupat",
+        "rating" : "withSomeone",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : null
+    },
+    {
+      "completing" : "dentist",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a făcut",
+        "provider" : "Service-ul",
+        "rating" : "withSomeone",
+        "ratingHeader" : "Cum a lucrat?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "service"
+    },
+    {
+      "completing" : "dentist",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a lucrat",
+        "provider" : "Cine a lucrat",
+        "rating" : "withSomeone",
+        "ratingHeader" : "Cum a lucrat?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "job"
+    },
+    {
+      "completing" : "dentist",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a făcut",
+        "provider" : "Cine a reparat",
+        "rating" : "withSomeone",
+        "ratingHeader" : "Cum a lucrat?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "repair"
+    },
+    {
+      "completing" : "dentist",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a făcut",
+        "provider" : "Cine s-a ocupat",
+        "rating" : "withSomeone",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "upkeep"
+    },
+    {
+      "completing" : "dentist",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a făcut",
+        "provider" : "Medicul sau clinica",
+        "rating" : "withSomeone",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "doctor"
+    },
+    {
+      "completing" : "dentist",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce i s-a făcut",
+        "provider" : "Veterinarul",
+        "rating" : "withSomeone",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "vet"
+    },
+    {
+      "completing" : "dentist",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a făcut",
+        "provider" : "Cine s-a ocupat",
+        "rating" : "withSomeone",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "note"
+    },
+    {
+      "completing" : "dentist",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a făcut",
+        "provider" : "Cine s-a ocupat",
+        "rating" : "withSomeone",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "none"
+    },
+    {
+      "completing" : "vaccine",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a făcut",
+        "provider" : "Cine s-a ocupat",
+        "rating" : "withSomeone",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : null
+    },
+    {
+      "completing" : "vaccine",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a făcut",
+        "provider" : "Service-ul",
+        "rating" : "withSomeone",
+        "ratingHeader" : "Cum a lucrat?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "service"
+    },
+    {
+      "completing" : "vaccine",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a lucrat",
+        "provider" : "Cine a lucrat",
+        "rating" : "withSomeone",
+        "ratingHeader" : "Cum a lucrat?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "job"
+    },
+    {
+      "completing" : "vaccine",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a făcut",
+        "provider" : "Cine a reparat",
+        "rating" : "withSomeone",
+        "ratingHeader" : "Cum a lucrat?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "repair"
+    },
+    {
+      "completing" : "vaccine",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a făcut",
+        "provider" : "Cine s-a ocupat",
+        "rating" : "withSomeone",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "upkeep"
+    },
+    {
+      "completing" : "vaccine",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a făcut",
+        "provider" : "Medicul sau clinica",
+        "rating" : "withSomeone",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "doctor"
+    },
+    {
+      "completing" : "vaccine",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce i s-a făcut",
+        "provider" : "Veterinarul",
+        "rating" : "withSomeone",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "vet"
+    },
+    {
+      "completing" : "vaccine",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a făcut",
+        "provider" : "Cine s-a ocupat",
+        "rating" : "withSomeone",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "note"
+    },
+    {
+      "completing" : "vaccine",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a făcut",
+        "provider" : "Cine s-a ocupat",
+        "rating" : "withSomeone",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "none"
+    },
+    {
+      "completing" : "ownHealth",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a făcut",
+        "provider" : "Cine s-a ocupat",
+        "rating" : "withSomeone",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : null
+    },
+    {
+      "completing" : "ownHealth",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a făcut",
+        "provider" : "Service-ul",
+        "rating" : "withSomeone",
+        "ratingHeader" : "Cum a lucrat?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "service"
+    },
+    {
+      "completing" : "ownHealth",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a lucrat",
+        "provider" : "Cine a lucrat",
+        "rating" : "withSomeone",
+        "ratingHeader" : "Cum a lucrat?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "job"
+    },
+    {
+      "completing" : "ownHealth",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a făcut",
+        "provider" : "Cine a reparat",
+        "rating" : "withSomeone",
+        "ratingHeader" : "Cum a lucrat?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "repair"
+    },
+    {
+      "completing" : "ownHealth",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a făcut",
+        "provider" : "Cine s-a ocupat",
+        "rating" : "withSomeone",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "upkeep"
+    },
+    {
+      "completing" : "ownHealth",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a făcut",
+        "provider" : "Medicul sau clinica",
+        "rating" : "withSomeone",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "doctor"
+    },
+    {
+      "completing" : "ownHealth",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce i s-a făcut",
+        "provider" : "Veterinarul",
+        "rating" : "withSomeone",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "vet"
+    },
+    {
+      "completing" : "ownHealth",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a făcut",
+        "provider" : "Cine s-a ocupat",
+        "rating" : "withSomeone",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "note"
+    },
+    {
+      "completing" : "ownHealth",
+      "listsParts" : true,
+      "shape" : {
+        "asksRating" : [
+          false,
+          true,
+          false,
+          true
+        ],
+        "items" : "Ce s-a făcut",
+        "provider" : "Cine s-a ocupat",
+        "rating" : "withSomeone",
+        "ratingHeader" : "Cum a fost?",
+        "reference" : "number",
+        "rowsAreParts" : false
+      },
+      "visit" : "none"
+    },
+    {
+      "name" : "the words",
+      "words" : {
+        "boughtFrom" : "De unde",
+        "from" : {
+          "issued.feminine" : "Cine a emis-o",
+          "issued.masculine" : "Cine l-a emis",
+          "issued.plural" : "Cine le-a emis",
+          "none" : "Cine l-a emis",
+          "signed.feminine" : "Cu cine ai semnat-o",
+          "signed.masculine" : "Cu cine l-ai semnat",
+          "signed.plural" : "Cu cine le-ai semnat"
+        },
+        "howItWent" : "Cum a fost?",
+        "insurer" : "Asigurătorul",
+        "paidTo" : "Cui ai plătit",
+        "visits" : {
+          "doctor" : {
+            "provider" : "Medicul sau clinica",
+            "rating" : "Cum a fost?",
+            "work" : null
+          },
+          "job" : {
+            "provider" : "Cine a lucrat",
+            "rating" : "Cum a lucrat?",
+            "work" : "Ce s-a lucrat"
+          },
+          "repair" : {
+            "provider" : "Cine a reparat",
+            "rating" : "Cum a lucrat?",
+            "work" : null
+          },
+          "service" : {
+            "provider" : "Service-ul",
+            "rating" : "Cum a lucrat?",
+            "work" : "Ce s-a făcut"
+          },
+          "upkeep" : {
+            "provider" : null,
+            "rating" : null,
+            "work" : "Ce s-a făcut"
+          },
+          "vet" : {
+            "provider" : "Veterinarul",
+            "rating" : "Cum a fost?",
+            "work" : "Ce i s-a făcut"
+          }
+        },
+        "whatItCovers" : "Ce acoperă",
+        "whatTheBillHolds" : "Ce cuprinde",
+        "whatWasBought" : "Ce ai cumpărat",
+        "whatWasChecked" : "Ce s-a verificat",
+        "whatWasDone" : "Ce s-a făcut",
+        "whatWasNoted" : "Ce ai notat",
+        "whatWasPaid" : "Ce ai plătit",
+        "whatWasRepaired" : "Ce s-a reparat",
+        "whoChecked" : "Cine a verificat",
+        "whoGaveIt" : "Cine s-a ocupat",
+        "whoWorked" : "Cine a lucrat"
+      }
+    }
+  ],
+  "rule" : "HistoryEntryShape.make(_:visit:listsParts:), make(completing:stored:visit:listsParts:) and asksRating(isCompletion:hasSomeone:)",
+  "shape" : "historyKind or completing: a record's kind, or the completion it closed, in a category whose visits are visit (null: none) and list parts when listsParts. shape: what its page says above its rows (items), above who did it (provider, null for no one), before its paper's number (reference), when it asks for stars (rating) and above them (ratingHeader), whether its rows are parts, and asksRating for (not a completion, no one), (not a completion, someone), (a completion, no one), (a completion, someone). words: the iOS words of each header kind, each visit kind's own (work, provider, rating) and who a renewed paper comes from by its origin and gender (\"none\": no paper), which the Android test words its shapes with.",
+  "source" : "ios/DosarCuSina/Services/History/HistoryEntryShape.swift",
+  "writtenBy" : "ios/DosarCuSinaTests/HistoryVectorsTests.swift"
+}
