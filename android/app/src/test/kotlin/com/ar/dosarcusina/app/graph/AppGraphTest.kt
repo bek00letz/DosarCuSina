@@ -62,7 +62,8 @@ class AppGraphTest {
         } finally {
             background.shutdown()
         }
-        assertEquals(listOf("p4wiring-background"), openedOn)
+        // Coroutines name the thread after the work it runs too („… @coroutine#2”) while assertions are on.
+        assertTrue(openedOn.single().startsWith("p4wiring-background"), openedOn.toString())
         val binder = assertInstanceOf(BinderState.Ready::class.java, graph.binder.value).binder
         // Launch installed the built-in categories before the binder was ready.
         assertTrue(templateIds(binder).isNotEmpty())
