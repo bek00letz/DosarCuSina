@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Romanian is the app's language: these are the default resources.
+     The words here are Android's own and in no iOS String Catalog: the app's name (iOS keeps
+     it in its project settings) and the placeholder screen's line, which goes with that
+     screen. Every other word is generated from the catalogs into strings.xml
+     (scripts/android-words.py): never add a word here that a catalog has. -->
+<resources xmlns:tools="http://schemas.android.com/tools" tools:locale="ro">
+    <string name="app_name">Dosar cu Șină</string>
+    <string name="placeholder_line">Versiunea pentru Android e în lucru.</string>
+</resources>

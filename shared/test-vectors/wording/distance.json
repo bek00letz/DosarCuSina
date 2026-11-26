@@ -1,0 +1,1898 @@
+{
+  "cases" : [
+    {
+      "days" : 0,
+      "distance" : "0 zile",
+      "inside" : "în 0 zile",
+      "insideStartingSentence" : "În 0 zile",
+      "today" : "2026-11-26"
+    },
+    {
+      "days" : 1,
+      "distance" : "o zi",
+      "inside" : "într-o zi",
+      "insideStartingSentence" : "Într-o zi",
+      "today" : "2026-11-26"
+    },
+    {
+      "days" : 2,
+      "distance" : "2 zile",
+      "inside" : "în 2 zile",
+      "insideStartingSentence" : "În 2 zile",
+      "today" : "2026-11-26"
+    },
+    {
+      "days" : 7,
+      "distance" : "7 zile",
+      "inside" : "în 7 zile",
+      "insideStartingSentence" : "În 7 zile",
+      "today" : "2026-11-26"
+    },
+    {
+      "days" : 20,
+      "distance" : "20 de zile",
+      "inside" : "în 20 de zile",
+      "insideStartingSentence" : "În 20 de zile",
+      "today" : "2026-11-26"
+    },
+    {
+      "days" : 21,
+      "distance" : "3 săptămâni",
+      "inside" : "în 3 săptămâni",
+      "insideStartingSentence" : "În 3 săptămâni",
+      "today" : "2026-11-26"
+    },
+    {
+      "days" : 22,
+      "distance" : "3 săptămâni",
+      "inside" : "în 3 săptămâni",
+      "insideStartingSentence" : "În 3 săptămâni",
+      "today" : "2026-11-26"
+    },
+    {
+      "days" : 27,
+      "distance" : "3 săptămâni",
+      "inside" : "în 3 săptămâni",
+      "insideStartingSentence" : "În 3 săptămâni",
+      "today" : "2026-11-26"
+    },
+    {
+      "days" : 28,
+      "distance" : "4 săptămâni",
+      "inside" : "în 4 săptămâni",
+      "insideStartingSentence" : "În 4 săptămâni",
+      "today" : "2026-11-26"
+    },
+    {
+      "days" : 29,
+      "distance" : "4 săptămâni",
+      "inside" : "în 4 săptămâni",
+      "insideStartingSentence" : "În 4 săptămâni",
+      "today" : "2026-11-26"
+    },
+    {
+      "days" : 30,
+      "distance" : "o lună",
+      "inside" : "într-o lună",
+      "insideStartingSentence" : "Într-o lună",
+      "today" : "2026-11-26"
+    },
+    {
+      "days" : 31,
+      "distance" : "o lună",
+      "inside" : "într-o lună",
+      "insideStartingSentence" : "Într-o lună",
+      "today" : "2026-11-26"
+    },
+    {
+      "days" : 35,
+      "distance" : "o lună",
+      "inside" : "într-o lună",
+      "insideStartingSentence" : "Într-o lună",
+      "today" : "2026-11-26"
+    },
+    {
+      "days" : 41,
+      "distance" : "o lună și o săptămână",
+      "inside" : "într-o lună și o săptămână",
+      "insideStartingSentence" : "Într-o lună și o săptămână",
+      "today" : "2026-11-26"
+    },
+    {
+      "days" : 42,
+      "distance" : "o lună și o săptămână",
+      "inside" : "într-o lună și o săptămână",
+      "insideStartingSentence" : "Într-o lună și o săptămână",
+      "today" : "2026-11-26"
+    },
+    {
+      "days" : 59,
+      "distance" : "o lună și 4 săptămâni",
+      "inside" : "într-o lună și 4 săptămâni",
+      "insideStartingSentence" : "Într-o lună și 4 săptămâni",
+      "today" : "2026-11-26"
+    },
+    {
+      "days" : 60,
+      "distance" : "o lună și 4 săptămâni",
+      "inside" : "într-o lună și 4 săptămâni",
+      "insideStartingSentence" : "Într-o lună și 4 săptămâni",
+      "today" : "2026-11-26"
+    },
+    {
+      "days" : 61,
+      "distance" : "2 luni",
+      "inside" : "în 2 luni",
+      "insideStartingSentence" : "În 2 luni",
+      "today" : "2026-11-26"
+    },
+    {
+      "days" : 62,
+      "distance" : "2 luni",
+      "inside" : "în 2 luni",
+      "insideStartingSentence" : "În 2 luni",
+      "today" : "2026-11-26"
+    },
+    {
+      "days" : 89,
+      "distance" : "2 luni și 4 săptămâni",
+      "inside" : "în 2 luni și 4 săptămâni",
+      "insideStartingSentence" : "În 2 luni și 4 săptămâni",
+      "today" : "2026-11-26"
+    },
+    {
+      "days" : 90,
+      "distance" : "2 luni și 4 săptămâni",
+      "inside" : "în 2 luni și 4 săptămâni",
+      "insideStartingSentence" : "În 2 luni și 4 săptămâni",
+      "today" : "2026-11-26"
+    },
+    {
+      "days" : 91,
+      "distance" : "2 luni și 4 săptămâni",
+      "inside" : "în 2 luni și 4 săptămâni",
+      "insideStartingSentence" : "În 2 luni și 4 săptămâni",
+      "today" : "2026-11-26"
+    },
+    {
+      "days" : 120,
+      "distance" : "4 luni",
+      "inside" : "în 4 luni",
+      "insideStartingSentence" : "În 4 luni",
+      "today" : "2026-11-26"
+    },
+    {
+      "days" : 180,
+      "distance" : "5 luni și 4 săptămâni",
+      "inside" : "în 5 luni și 4 săptămâni",
+      "insideStartingSentence" : "În 5 luni și 4 săptămâni",
+      "today" : "2026-11-26"
+    },
+    {
+      "days" : 334,
+      "distance" : "11 luni",
+      "inside" : "în 11 luni",
+      "insideStartingSentence" : "În 11 luni",
+      "today" : "2026-11-26"
+    },
+    {
+      "days" : 364,
+      "distance" : "11 luni și 4 săptămâni",
+      "inside" : "în 11 luni și 4 săptămâni",
+      "insideStartingSentence" : "În 11 luni și 4 săptămâni",
+      "today" : "2026-11-26"
+    },
+    {
+      "days" : 365,
+      "distance" : "un an",
+      "inside" : "într-un an",
+      "insideStartingSentence" : "Într-un an",
+      "today" : "2026-11-26"
+    },
+    {
+      "days" : 366,
+      "distance" : "un an",
+      "inside" : "într-un an",
+      "insideStartingSentence" : "Într-un an",
+      "today" : "2026-11-26"
+    },
+    {
+      "days" : 371,
+      "distance" : "un an",
+      "inside" : "într-un an",
+      "insideStartingSentence" : "Într-un an",
+      "today" : "2026-11-26"
+    },
+    {
+      "days" : 400,
+      "distance" : "un an și o lună",
+      "inside" : "într-un an și o lună",
+      "insideStartingSentence" : "Într-un an și o lună",
+      "today" : "2026-11-26"
+    },
+    {
+      "days" : 500,
+      "distance" : "un an și 4 luni",
+      "inside" : "într-un an și 4 luni",
+      "insideStartingSentence" : "Într-un an și 4 luni",
+      "today" : "2026-11-26"
+    },
+    {
+      "days" : 729,
+      "distance" : "un an și 11 luni",
+      "inside" : "într-un an și 11 luni",
+      "insideStartingSentence" : "Într-un an și 11 luni",
+      "today" : "2026-11-26"
+    },
+    {
+      "days" : 730,
+      "distance" : "un an și 11 luni",
+      "inside" : "într-un an și 11 luni",
+      "insideStartingSentence" : "Într-un an și 11 luni",
+      "today" : "2026-11-26"
+    },
+    {
+      "days" : 731,
+      "distance" : "2 ani",
+      "inside" : "în 2 ani",
+      "insideStartingSentence" : "În 2 ani",
+      "today" : "2026-11-26"
+    },
+    {
+      "days" : 760,
+      "distance" : "2 ani",
+      "inside" : "în 2 ani",
+      "insideStartingSentence" : "În 2 ani",
+      "today" : "2026-11-26"
+    },
+    {
+      "days" : 1000,
+      "distance" : "2 ani și 8 luni",
+      "inside" : "în 2 ani și 8 luni",
+      "insideStartingSentence" : "În 2 ani și 8 luni",
+      "today" : "2026-11-26"
+    },
+    {
+      "days" : 1094,
+      "distance" : "2 ani și 11 luni",
+      "inside" : "în 2 ani și 11 luni",
+      "insideStartingSentence" : "În 2 ani și 11 luni",
+      "today" : "2026-11-26"
+    },
+    {
+      "days" : 1095,
+      "distance" : "2 ani și 11 luni",
+      "inside" : "în 2 ani și 11 luni",
+      "insideStartingSentence" : "În 2 ani și 11 luni",
+      "today" : "2026-11-26"
+    },
+    {
+      "days" : 1096,
+      "distance" : "3 ani",
+      "inside" : "în 3 ani",
+      "insideStartingSentence" : "În 3 ani",
+      "today" : "2026-11-26"
+    },
+    {
+      "days" : 1460,
+      "distance" : "3 ani",
+      "inside" : "în 3 ani",
+      "insideStartingSentence" : "În 3 ani",
+      "today" : "2026-11-26"
+    },
+    {
+      "days" : 3650,
+      "distance" : "9 ani",
+      "inside" : "în 9 ani",
+      "insideStartingSentence" : "În 9 ani",
+      "today" : "2026-11-26"
+    },
+    {
+      "days" : -1,
+      "distance" : "o zi",
+      "inside" : "într-o zi",
+      "insideStartingSentence" : "Într-o zi",
+      "today" : "2026-11-26"
+    },
+    {
+      "days" : -21,
+      "distance" : "3 săptămâni",
+      "inside" : "în 3 săptămâni",
+      "insideStartingSentence" : "În 3 săptămâni",
+      "today" : "2026-11-26"
+    },
+    {
+      "days" : -45,
+      "distance" : "o lună și 2 săptămâni",
+      "inside" : "într-o lună și 2 săptămâni",
+      "insideStartingSentence" : "Într-o lună și 2 săptămâni",
+      "today" : "2026-11-26"
+    },
+    {
+      "days" : -400,
+      "distance" : "un an și o lună",
+      "inside" : "într-un an și o lună",
+      "insideStartingSentence" : "Într-un an și o lună",
+      "today" : "2026-11-26"
+    },
+    {
+      "days" : 0,
+      "distance" : "0 zile",
+      "inside" : "în 0 zile",
+      "insideStartingSentence" : "În 0 zile",
+      "today" : "2026-01-31"
+    },
+    {
+      "days" : 1,
+      "distance" : "o zi",
+      "inside" : "într-o zi",
+      "insideStartingSentence" : "Într-o zi",
+      "today" : "2026-01-31"
+    },
+    {
+      "days" : 2,
+      "distance" : "2 zile",
+      "inside" : "în 2 zile",
+      "insideStartingSentence" : "În 2 zile",
+      "today" : "2026-01-31"
+    },
+    {
+      "days" : 7,
+      "distance" : "7 zile",
+      "inside" : "în 7 zile",
+      "insideStartingSentence" : "În 7 zile",
+      "today" : "2026-01-31"
+    },
+    {
+      "days" : 20,
+      "distance" : "20 de zile",
+      "inside" : "în 20 de zile",
+      "insideStartingSentence" : "În 20 de zile",
+      "today" : "2026-01-31"
+    },
+    {
+      "days" : 21,
+      "distance" : "3 săptămâni",
+      "inside" : "în 3 săptămâni",
+      "insideStartingSentence" : "În 3 săptămâni",
+      "today" : "2026-01-31"
+    },
+    {
+      "days" : 22,
+      "distance" : "3 săptămâni",
+      "inside" : "în 3 săptămâni",
+      "insideStartingSentence" : "În 3 săptămâni",
+      "today" : "2026-01-31"
+    },
+    {
+      "days" : 27,
+      "distance" : "3 săptămâni",
+      "inside" : "în 3 săptămâni",
+      "insideStartingSentence" : "În 3 săptămâni",
+      "today" : "2026-01-31"
+    },
+    {
+      "days" : 28,
+      "distance" : "o lună",
+      "inside" : "într-o lună",
+      "insideStartingSentence" : "Într-o lună",
+      "today" : "2026-01-31"
+    },
+    {
+      "days" : 29,
+      "distance" : "o lună",
+      "inside" : "într-o lună",
+      "insideStartingSentence" : "Într-o lună",
+      "today" : "2026-01-31"
+    },
+    {
+      "days" : 30,
+      "distance" : "o lună",
+      "inside" : "într-o lună",
+      "insideStartingSentence" : "Într-o lună",
+      "today" : "2026-01-31"
+    },
+    {
+      "days" : 31,
+      "distance" : "o lună",
+      "inside" : "într-o lună",
+      "insideStartingSentence" : "Într-o lună",
+      "today" : "2026-01-31"
+    },
+    {
+      "days" : 35,
+      "distance" : "o lună și o săptămână",
+      "inside" : "într-o lună și o săptămână",
+      "insideStartingSentence" : "Într-o lună și o săptămână",
+      "today" : "2026-01-31"
+    },
+    {
+      "days" : 41,
+      "distance" : "o lună și o săptămână",
+      "inside" : "într-o lună și o săptămână",
+      "insideStartingSentence" : "Într-o lună și o săptămână",
+      "today" : "2026-01-31"
+    },
+    {
+      "days" : 42,
+      "distance" : "o lună și 2 săptămâni",
+      "inside" : "într-o lună și 2 săptămâni",
+      "insideStartingSentence" : "Într-o lună și 2 săptămâni",
+      "today" : "2026-01-31"
+    },
+    {
+      "days" : 59,
+      "distance" : "2 luni",
+      "inside" : "în 2 luni",
+      "insideStartingSentence" : "În 2 luni",
+      "today" : "2026-01-31"
+    },
+    {
+      "days" : 60,
+      "distance" : "2 luni",
+      "inside" : "în 2 luni",
+      "insideStartingSentence" : "În 2 luni",
+      "today" : "2026-01-31"
+    },
+    {
+      "days" : 61,
+      "distance" : "2 luni",
+      "inside" : "în 2 luni",
+      "insideStartingSentence" : "În 2 luni",
+      "today" : "2026-01-31"
+    },
+    {
+      "days" : 62,
+      "distance" : "2 luni",
+      "inside" : "în 2 luni",
+      "insideStartingSentence" : "În 2 luni",
+      "today" : "2026-01-31"
+    },
+    {
+      "days" : 89,
+      "distance" : "3 luni",
+      "inside" : "în 3 luni",
+      "insideStartingSentence" : "În 3 luni",
+      "today" : "2026-01-31"
+    },
+    {
+      "days" : 90,
+      "distance" : "3 luni",
+      "inside" : "în 3 luni",
+      "insideStartingSentence" : "În 3 luni",
+      "today" : "2026-01-31"
+    },
+    {
+      "days" : 91,
+      "distance" : "3 luni",
+      "inside" : "în 3 luni",
+      "insideStartingSentence" : "În 3 luni",
+      "today" : "2026-01-31"
+    },
+    {
+      "days" : 120,
+      "distance" : "4 luni",
+      "inside" : "în 4 luni",
+      "insideStartingSentence" : "În 4 luni",
+      "today" : "2026-01-31"
+    },
+    {
+      "days" : 180,
+      "distance" : "5 luni și 4 săptămâni",
+      "inside" : "în 5 luni și 4 săptămâni",
+      "insideStartingSentence" : "În 5 luni și 4 săptămâni",
+      "today" : "2026-01-31"
+    },
+    {
+      "days" : 334,
+      "distance" : "11 luni",
+      "inside" : "în 11 luni",
+      "insideStartingSentence" : "În 11 luni",
+      "today" : "2026-01-31"
+    },
+    {
+      "days" : 364,
+      "distance" : "11 luni și 4 săptămâni",
+      "inside" : "în 11 luni și 4 săptămâni",
+      "insideStartingSentence" : "În 11 luni și 4 săptămâni",
+      "today" : "2026-01-31"
+    },
+    {
+      "days" : 365,
+      "distance" : "un an",
+      "inside" : "într-un an",
+      "insideStartingSentence" : "Într-un an",
+      "today" : "2026-01-31"
+    },
+    {
+      "days" : 366,
+      "distance" : "un an",
+      "inside" : "într-un an",
+      "insideStartingSentence" : "Într-un an",
+      "today" : "2026-01-31"
+    },
+    {
+      "days" : 371,
+      "distance" : "un an",
+      "inside" : "într-un an",
+      "insideStartingSentence" : "Într-un an",
+      "today" : "2026-01-31"
+    },
+    {
+      "days" : 400,
+      "distance" : "un an și o lună",
+      "inside" : "într-un an și o lună",
+      "insideStartingSentence" : "Într-un an și o lună",
+      "today" : "2026-01-31"
+    },
+    {
+      "days" : 500,
+      "distance" : "un an și 4 luni",
+      "inside" : "într-un an și 4 luni",
+      "insideStartingSentence" : "Într-un an și 4 luni",
+      "today" : "2026-01-31"
+    },
+    {
+      "days" : 729,
+      "distance" : "un an și 11 luni",
+      "inside" : "într-un an și 11 luni",
+      "insideStartingSentence" : "Într-un an și 11 luni",
+      "today" : "2026-01-31"
+    },
+    {
+      "days" : 730,
+      "distance" : "2 ani",
+      "inside" : "în 2 ani",
+      "insideStartingSentence" : "În 2 ani",
+      "today" : "2026-01-31"
+    },
+    {
+      "days" : 731,
+      "distance" : "2 ani",
+      "inside" : "în 2 ani",
+      "insideStartingSentence" : "În 2 ani",
+      "today" : "2026-01-31"
+    },
+    {
+      "days" : 760,
+      "distance" : "2 ani și o lună",
+      "inside" : "în 2 ani și o lună",
+      "insideStartingSentence" : "În 2 ani și o lună",
+      "today" : "2026-01-31"
+    },
+    {
+      "days" : 1000,
+      "distance" : "2 ani și 8 luni",
+      "inside" : "în 2 ani și 8 luni",
+      "insideStartingSentence" : "În 2 ani și 8 luni",
+      "today" : "2026-01-31"
+    },
+    {
+      "days" : 1094,
+      "distance" : "2 ani și 11 luni",
+      "inside" : "în 2 ani și 11 luni",
+      "insideStartingSentence" : "În 2 ani și 11 luni",
+      "today" : "2026-01-31"
+    },
+    {
+      "days" : 1095,
+      "distance" : "2 ani și 11 luni",
+      "inside" : "în 2 ani și 11 luni",
+      "insideStartingSentence" : "În 2 ani și 11 luni",
+      "today" : "2026-01-31"
+    },
+    {
+      "days" : 1096,
+      "distance" : "3 ani",
+      "inside" : "în 3 ani",
+      "insideStartingSentence" : "În 3 ani",
+      "today" : "2026-01-31"
+    },
+    {
+      "days" : 1460,
+      "distance" : "3 ani",
+      "inside" : "în 3 ani",
+      "insideStartingSentence" : "În 3 ani",
+      "today" : "2026-01-31"
+    },
+    {
+      "days" : 3650,
+      "distance" : "9 ani",
+      "inside" : "în 9 ani",
+      "insideStartingSentence" : "În 9 ani",
+      "today" : "2026-01-31"
+    },
+    {
+      "days" : -1,
+      "distance" : "o zi",
+      "inside" : "într-o zi",
+      "insideStartingSentence" : "Într-o zi",
+      "today" : "2026-01-31"
+    },
+    {
+      "days" : -21,
+      "distance" : "3 săptămâni",
+      "inside" : "în 3 săptămâni",
+      "insideStartingSentence" : "În 3 săptămâni",
+      "today" : "2026-01-31"
+    },
+    {
+      "days" : -45,
+      "distance" : "o lună și 2 săptămâni",
+      "inside" : "într-o lună și 2 săptămâni",
+      "insideStartingSentence" : "Într-o lună și 2 săptămâni",
+      "today" : "2026-01-31"
+    },
+    {
+      "days" : -400,
+      "distance" : "un an și o lună",
+      "inside" : "într-un an și o lună",
+      "insideStartingSentence" : "Într-un an și o lună",
+      "today" : "2026-01-31"
+    },
+    {
+      "days" : 0,
+      "distance" : "0 zile",
+      "inside" : "în 0 zile",
+      "insideStartingSentence" : "În 0 zile",
+      "today" : "2025-01-31"
+    },
+    {
+      "days" : 1,
+      "distance" : "o zi",
+      "inside" : "într-o zi",
+      "insideStartingSentence" : "Într-o zi",
+      "today" : "2025-01-31"
+    },
+    {
+      "days" : 2,
+      "distance" : "2 zile",
+      "inside" : "în 2 zile",
+      "insideStartingSentence" : "În 2 zile",
+      "today" : "2025-01-31"
+    },
+    {
+      "days" : 7,
+      "distance" : "7 zile",
+      "inside" : "în 7 zile",
+      "insideStartingSentence" : "În 7 zile",
+      "today" : "2025-01-31"
+    },
+    {
+      "days" : 20,
+      "distance" : "20 de zile",
+      "inside" : "în 20 de zile",
+      "insideStartingSentence" : "În 20 de zile",
+      "today" : "2025-01-31"
+    },
+    {
+      "days" : 21,
+      "distance" : "3 săptămâni",
+      "inside" : "în 3 săptămâni",
+      "insideStartingSentence" : "În 3 săptămâni",
+      "today" : "2025-01-31"
+    },
+    {
+      "days" : 22,
+      "distance" : "3 săptămâni",
+      "inside" : "în 3 săptămâni",
+      "insideStartingSentence" : "În 3 săptămâni",
+      "today" : "2025-01-31"
+    },
+    {
+      "days" : 27,
+      "distance" : "3 săptămâni",
+      "inside" : "în 3 săptămâni",
+      "insideStartingSentence" : "În 3 săptămâni",
+      "today" : "2025-01-31"
+    },
+    {
+      "days" : 28,
+      "distance" : "o lună",
+      "inside" : "într-o lună",
+      "insideStartingSentence" : "Într-o lună",
+      "today" : "2025-01-31"
+    },
+    {
+      "days" : 29,
+      "distance" : "o lună",
+      "inside" : "într-o lună",
+      "insideStartingSentence" : "Într-o lună",
+      "today" : "2025-01-31"
+    },
+    {
+      "days" : 30,
+      "distance" : "o lună",
+      "inside" : "într-o lună",
+      "insideStartingSentence" : "Într-o lună",
+      "today" : "2025-01-31"
+    },
+    {
+      "days" : 31,
+      "distance" : "o lună",
+      "inside" : "într-o lună",
+      "insideStartingSentence" : "Într-o lună",
+      "today" : "2025-01-31"
+    },
+    {
+      "days" : 35,
+      "distance" : "o lună și o săptămână",
+      "inside" : "într-o lună și o săptămână",
+      "insideStartingSentence" : "Într-o lună și o săptămână",
+      "today" : "2025-01-31"
+    },
+    {
+      "days" : 41,
+      "distance" : "o lună și o săptămână",
+      "inside" : "într-o lună și o săptămână",
+      "insideStartingSentence" : "Într-o lună și o săptămână",
+      "today" : "2025-01-31"
+    },
+    {
+      "days" : 42,
+      "distance" : "o lună și 2 săptămâni",
+      "inside" : "într-o lună și 2 săptămâni",
+      "insideStartingSentence" : "Într-o lună și 2 săptămâni",
+      "today" : "2025-01-31"
+    },
+    {
+      "days" : 59,
+      "distance" : "2 luni",
+      "inside" : "în 2 luni",
+      "insideStartingSentence" : "În 2 luni",
+      "today" : "2025-01-31"
+    },
+    {
+      "days" : 60,
+      "distance" : "2 luni",
+      "inside" : "în 2 luni",
+      "insideStartingSentence" : "În 2 luni",
+      "today" : "2025-01-31"
+    },
+    {
+      "days" : 61,
+      "distance" : "2 luni",
+      "inside" : "în 2 luni",
+      "insideStartingSentence" : "În 2 luni",
+      "today" : "2025-01-31"
+    },
+    {
+      "days" : 62,
+      "distance" : "2 luni",
+      "inside" : "în 2 luni",
+      "insideStartingSentence" : "În 2 luni",
+      "today" : "2025-01-31"
+    },
+    {
+      "days" : 89,
+      "distance" : "3 luni",
+      "inside" : "în 3 luni",
+      "insideStartingSentence" : "În 3 luni",
+      "today" : "2025-01-31"
+    },
+    {
+      "days" : 90,
+      "distance" : "3 luni",
+      "inside" : "în 3 luni",
+      "insideStartingSentence" : "În 3 luni",
+      "today" : "2025-01-31"
+    },
+    {
+      "days" : 91,
+      "distance" : "3 luni",
+      "inside" : "în 3 luni",
+      "insideStartingSentence" : "În 3 luni",
+      "today" : "2025-01-31"
+    },
+    {
+      "days" : 120,
+      "distance" : "4 luni",
+      "inside" : "în 4 luni",
+      "insideStartingSentence" : "În 4 luni",
+      "today" : "2025-01-31"
+    },
+    {
+      "days" : 180,
+      "distance" : "5 luni și 4 săptămâni",
+      "inside" : "în 5 luni și 4 săptămâni",
+      "insideStartingSentence" : "În 5 luni și 4 săptămâni",
+      "today" : "2025-01-31"
+    },
+    {
+      "days" : 334,
+      "distance" : "11 luni",
+      "inside" : "în 11 luni",
+      "insideStartingSentence" : "În 11 luni",
+      "today" : "2025-01-31"
+    },
+    {
+      "days" : 364,
+      "distance" : "11 luni și 4 săptămâni",
+      "inside" : "în 11 luni și 4 săptămâni",
+      "insideStartingSentence" : "În 11 luni și 4 săptămâni",
+      "today" : "2025-01-31"
+    },
+    {
+      "days" : 365,
+      "distance" : "un an",
+      "inside" : "într-un an",
+      "insideStartingSentence" : "Într-un an",
+      "today" : "2025-01-31"
+    },
+    {
+      "days" : 366,
+      "distance" : "un an",
+      "inside" : "într-un an",
+      "insideStartingSentence" : "Într-un an",
+      "today" : "2025-01-31"
+    },
+    {
+      "days" : 371,
+      "distance" : "un an",
+      "inside" : "într-un an",
+      "insideStartingSentence" : "Într-un an",
+      "today" : "2025-01-31"
+    },
+    {
+      "days" : 400,
+      "distance" : "un an și o lună",
+      "inside" : "într-un an și o lună",
+      "insideStartingSentence" : "Într-un an și o lună",
+      "today" : "2025-01-31"
+    },
+    {
+      "days" : 500,
+      "distance" : "un an și 4 luni",
+      "inside" : "într-un an și 4 luni",
+      "insideStartingSentence" : "Într-un an și 4 luni",
+      "today" : "2025-01-31"
+    },
+    {
+      "days" : 729,
+      "distance" : "un an și 11 luni",
+      "inside" : "într-un an și 11 luni",
+      "insideStartingSentence" : "Într-un an și 11 luni",
+      "today" : "2025-01-31"
+    },
+    {
+      "days" : 730,
+      "distance" : "2 ani",
+      "inside" : "în 2 ani",
+      "insideStartingSentence" : "În 2 ani",
+      "today" : "2025-01-31"
+    },
+    {
+      "days" : 731,
+      "distance" : "2 ani",
+      "inside" : "în 2 ani",
+      "insideStartingSentence" : "În 2 ani",
+      "today" : "2025-01-31"
+    },
+    {
+      "days" : 760,
+      "distance" : "2 ani și o lună",
+      "inside" : "în 2 ani și o lună",
+      "insideStartingSentence" : "În 2 ani și o lună",
+      "today" : "2025-01-31"
+    },
+    {
+      "days" : 1000,
+      "distance" : "2 ani și 8 luni",
+      "inside" : "în 2 ani și 8 luni",
+      "insideStartingSentence" : "În 2 ani și 8 luni",
+      "today" : "2025-01-31"
+    },
+    {
+      "days" : 1094,
+      "distance" : "2 ani și 11 luni",
+      "inside" : "în 2 ani și 11 luni",
+      "insideStartingSentence" : "În 2 ani și 11 luni",
+      "today" : "2025-01-31"
+    },
+    {
+      "days" : 1095,
+      "distance" : "3 ani",
+      "inside" : "în 3 ani",
+      "insideStartingSentence" : "În 3 ani",
+      "today" : "2025-01-31"
+    },
+    {
+      "days" : 1096,
+      "distance" : "3 ani",
+      "inside" : "în 3 ani",
+      "insideStartingSentence" : "În 3 ani",
+      "today" : "2025-01-31"
+    },
+    {
+      "days" : 1460,
+      "distance" : "3 ani",
+      "inside" : "în 3 ani",
+      "insideStartingSentence" : "În 3 ani",
+      "today" : "2025-01-31"
+    },
+    {
+      "days" : 3650,
+      "distance" : "9 ani",
+      "inside" : "în 9 ani",
+      "insideStartingSentence" : "În 9 ani",
+      "today" : "2025-01-31"
+    },
+    {
+      "days" : -1,
+      "distance" : "o zi",
+      "inside" : "într-o zi",
+      "insideStartingSentence" : "Într-o zi",
+      "today" : "2025-01-31"
+    },
+    {
+      "days" : -21,
+      "distance" : "3 săptămâni",
+      "inside" : "în 3 săptămâni",
+      "insideStartingSentence" : "În 3 săptămâni",
+      "today" : "2025-01-31"
+    },
+    {
+      "days" : -45,
+      "distance" : "o lună și 2 săptămâni",
+      "inside" : "într-o lună și 2 săptămâni",
+      "insideStartingSentence" : "Într-o lună și 2 săptămâni",
+      "today" : "2025-01-31"
+    },
+    {
+      "days" : -400,
+      "distance" : "un an și o lună",
+      "inside" : "într-un an și o lună",
+      "insideStartingSentence" : "Într-un an și o lună",
+      "today" : "2025-01-31"
+    },
+    {
+      "days" : 0,
+      "distance" : "0 zile",
+      "inside" : "în 0 zile",
+      "insideStartingSentence" : "În 0 zile",
+      "today" : "2024-02-29"
+    },
+    {
+      "days" : 1,
+      "distance" : "o zi",
+      "inside" : "într-o zi",
+      "insideStartingSentence" : "Într-o zi",
+      "today" : "2024-02-29"
+    },
+    {
+      "days" : 2,
+      "distance" : "2 zile",
+      "inside" : "în 2 zile",
+      "insideStartingSentence" : "În 2 zile",
+      "today" : "2024-02-29"
+    },
+    {
+      "days" : 7,
+      "distance" : "7 zile",
+      "inside" : "în 7 zile",
+      "insideStartingSentence" : "În 7 zile",
+      "today" : "2024-02-29"
+    },
+    {
+      "days" : 20,
+      "distance" : "20 de zile",
+      "inside" : "în 20 de zile",
+      "insideStartingSentence" : "În 20 de zile",
+      "today" : "2024-02-29"
+    },
+    {
+      "days" : 21,
+      "distance" : "3 săptămâni",
+      "inside" : "în 3 săptămâni",
+      "insideStartingSentence" : "În 3 săptămâni",
+      "today" : "2024-02-29"
+    },
+    {
+      "days" : 22,
+      "distance" : "3 săptămâni",
+      "inside" : "în 3 săptămâni",
+      "insideStartingSentence" : "În 3 săptămâni",
+      "today" : "2024-02-29"
+    },
+    {
+      "days" : 27,
+      "distance" : "3 săptămâni",
+      "inside" : "în 3 săptămâni",
+      "insideStartingSentence" : "În 3 săptămâni",
+      "today" : "2024-02-29"
+    },
+    {
+      "days" : 28,
+      "distance" : "4 săptămâni",
+      "inside" : "în 4 săptămâni",
+      "insideStartingSentence" : "În 4 săptămâni",
+      "today" : "2024-02-29"
+    },
+    {
+      "days" : 29,
+      "distance" : "o lună",
+      "inside" : "într-o lună",
+      "insideStartingSentence" : "Într-o lună",
+      "today" : "2024-02-29"
+    },
+    {
+      "days" : 30,
+      "distance" : "o lună",
+      "inside" : "într-o lună",
+      "insideStartingSentence" : "Într-o lună",
+      "today" : "2024-02-29"
+    },
+    {
+      "days" : 31,
+      "distance" : "o lună",
+      "inside" : "într-o lună",
+      "insideStartingSentence" : "Într-o lună",
+      "today" : "2024-02-29"
+    },
+    {
+      "days" : 35,
+      "distance" : "o lună",
+      "inside" : "într-o lună",
+      "insideStartingSentence" : "Într-o lună",
+      "today" : "2024-02-29"
+    },
+    {
+      "days" : 41,
+      "distance" : "o lună și o săptămână",
+      "inside" : "într-o lună și o săptămână",
+      "insideStartingSentence" : "Într-o lună și o săptămână",
+      "today" : "2024-02-29"
+    },
+    {
+      "days" : 42,
+      "distance" : "o lună și o săptămână",
+      "inside" : "într-o lună și o săptămână",
+      "insideStartingSentence" : "Într-o lună și o săptămână",
+      "today" : "2024-02-29"
+    },
+    {
+      "days" : 59,
+      "distance" : "o lună și 4 săptămâni",
+      "inside" : "într-o lună și 4 săptămâni",
+      "insideStartingSentence" : "Într-o lună și 4 săptămâni",
+      "today" : "2024-02-29"
+    },
+    {
+      "days" : 60,
+      "distance" : "2 luni",
+      "inside" : "în 2 luni",
+      "insideStartingSentence" : "În 2 luni",
+      "today" : "2024-02-29"
+    },
+    {
+      "days" : 61,
+      "distance" : "2 luni",
+      "inside" : "în 2 luni",
+      "insideStartingSentence" : "În 2 luni",
+      "today" : "2024-02-29"
+    },
+    {
+      "days" : 62,
+      "distance" : "2 luni",
+      "inside" : "în 2 luni",
+      "insideStartingSentence" : "În 2 luni",
+      "today" : "2024-02-29"
+    },
+    {
+      "days" : 89,
+      "distance" : "2 luni și 4 săptămâni",
+      "inside" : "în 2 luni și 4 săptămâni",
+      "insideStartingSentence" : "În 2 luni și 4 săptămâni",
+      "today" : "2024-02-29"
+    },
+    {
+      "days" : 90,
+      "distance" : "3 luni",
+      "inside" : "în 3 luni",
+      "insideStartingSentence" : "În 3 luni",
+      "today" : "2024-02-29"
+    },
+    {
+      "days" : 91,
+      "distance" : "3 luni",
+      "inside" : "în 3 luni",
+      "insideStartingSentence" : "În 3 luni",
+      "today" : "2024-02-29"
+    },
+    {
+      "days" : 120,
+      "distance" : "3 luni și 4 săptămâni",
+      "inside" : "în 3 luni și 4 săptămâni",
+      "insideStartingSentence" : "În 3 luni și 4 săptămâni",
+      "today" : "2024-02-29"
+    },
+    {
+      "days" : 180,
+      "distance" : "5 luni și 4 săptămâni",
+      "inside" : "în 5 luni și 4 săptămâni",
+      "insideStartingSentence" : "În 5 luni și 4 săptămâni",
+      "today" : "2024-02-29"
+    },
+    {
+      "days" : 334,
+      "distance" : "10 luni și 4 săptămâni",
+      "inside" : "în 10 luni și 4 săptămâni",
+      "insideStartingSentence" : "În 10 luni și 4 săptămâni",
+      "today" : "2024-02-29"
+    },
+    {
+      "days" : 364,
+      "distance" : "11 luni și 4 săptămâni",
+      "inside" : "în 11 luni și 4 săptămâni",
+      "insideStartingSentence" : "În 11 luni și 4 săptămâni",
+      "today" : "2024-02-29"
+    },
+    {
+      "days" : 365,
+      "distance" : "un an",
+      "inside" : "într-un an",
+      "insideStartingSentence" : "Într-un an",
+      "today" : "2024-02-29"
+    },
+    {
+      "days" : 366,
+      "distance" : "un an",
+      "inside" : "într-un an",
+      "insideStartingSentence" : "Într-un an",
+      "today" : "2024-02-29"
+    },
+    {
+      "days" : 371,
+      "distance" : "un an",
+      "inside" : "într-un an",
+      "insideStartingSentence" : "Într-un an",
+      "today" : "2024-02-29"
+    },
+    {
+      "days" : 400,
+      "distance" : "un an și o lună",
+      "inside" : "într-un an și o lună",
+      "insideStartingSentence" : "Într-un an și o lună",
+      "today" : "2024-02-29"
+    },
+    {
+      "days" : 500,
+      "distance" : "un an și 4 luni",
+      "inside" : "într-un an și 4 luni",
+      "insideStartingSentence" : "Într-un an și 4 luni",
+      "today" : "2024-02-29"
+    },
+    {
+      "days" : 729,
+      "distance" : "un an și 11 luni",
+      "inside" : "într-un an și 11 luni",
+      "insideStartingSentence" : "Într-un an și 11 luni",
+      "today" : "2024-02-29"
+    },
+    {
+      "days" : 730,
+      "distance" : "2 ani",
+      "inside" : "în 2 ani",
+      "insideStartingSentence" : "În 2 ani",
+      "today" : "2024-02-29"
+    },
+    {
+      "days" : 731,
+      "distance" : "2 ani",
+      "inside" : "în 2 ani",
+      "insideStartingSentence" : "În 2 ani",
+      "today" : "2024-02-29"
+    },
+    {
+      "days" : 760,
+      "distance" : "2 ani și o lună",
+      "inside" : "în 2 ani și o lună",
+      "insideStartingSentence" : "În 2 ani și o lună",
+      "today" : "2024-02-29"
+    },
+    {
+      "days" : 1000,
+      "distance" : "2 ani și 8 luni",
+      "inside" : "în 2 ani și 8 luni",
+      "insideStartingSentence" : "În 2 ani și 8 luni",
+      "today" : "2024-02-29"
+    },
+    {
+      "days" : 1094,
+      "distance" : "2 ani și 11 luni",
+      "inside" : "în 2 ani și 11 luni",
+      "insideStartingSentence" : "În 2 ani și 11 luni",
+      "today" : "2024-02-29"
+    },
+    {
+      "days" : 1095,
+      "distance" : "3 ani",
+      "inside" : "în 3 ani",
+      "insideStartingSentence" : "În 3 ani",
+      "today" : "2024-02-29"
+    },
+    {
+      "days" : 1096,
+      "distance" : "3 ani",
+      "inside" : "în 3 ani",
+      "insideStartingSentence" : "În 3 ani",
+      "today" : "2024-02-29"
+    },
+    {
+      "days" : 1460,
+      "distance" : "3 ani",
+      "inside" : "în 3 ani",
+      "insideStartingSentence" : "În 3 ani",
+      "today" : "2024-02-29"
+    },
+    {
+      "days" : 3650,
+      "distance" : "9 ani",
+      "inside" : "în 9 ani",
+      "insideStartingSentence" : "În 9 ani",
+      "today" : "2024-02-29"
+    },
+    {
+      "days" : -1,
+      "distance" : "o zi",
+      "inside" : "într-o zi",
+      "insideStartingSentence" : "Într-o zi",
+      "today" : "2024-02-29"
+    },
+    {
+      "days" : -21,
+      "distance" : "3 săptămâni",
+      "inside" : "în 3 săptămâni",
+      "insideStartingSentence" : "În 3 săptămâni",
+      "today" : "2024-02-29"
+    },
+    {
+      "days" : -45,
+      "distance" : "o lună și 2 săptămâni",
+      "inside" : "într-o lună și 2 săptămâni",
+      "insideStartingSentence" : "Într-o lună și 2 săptămâni",
+      "today" : "2024-02-29"
+    },
+    {
+      "days" : -400,
+      "distance" : "un an și o lună",
+      "inside" : "într-un an și o lună",
+      "insideStartingSentence" : "Într-un an și o lună",
+      "today" : "2024-02-29"
+    },
+    {
+      "days" : 0,
+      "distance" : "0 zile",
+      "inside" : "în 0 zile",
+      "insideStartingSentence" : "În 0 zile",
+      "today" : "2026-12-31"
+    },
+    {
+      "days" : 1,
+      "distance" : "o zi",
+      "inside" : "într-o zi",
+      "insideStartingSentence" : "Într-o zi",
+      "today" : "2026-12-31"
+    },
+    {
+      "days" : 2,
+      "distance" : "2 zile",
+      "inside" : "în 2 zile",
+      "insideStartingSentence" : "În 2 zile",
+      "today" : "2026-12-31"
+    },
+    {
+      "days" : 7,
+      "distance" : "7 zile",
+      "inside" : "în 7 zile",
+      "insideStartingSentence" : "În 7 zile",
+      "today" : "2026-12-31"
+    },
+    {
+      "days" : 20,
+      "distance" : "20 de zile",
+      "inside" : "în 20 de zile",
+      "insideStartingSentence" : "În 20 de zile",
+      "today" : "2026-12-31"
+    },
+    {
+      "days" : 21,
+      "distance" : "3 săptămâni",
+      "inside" : "în 3 săptămâni",
+      "insideStartingSentence" : "În 3 săptămâni",
+      "today" : "2026-12-31"
+    },
+    {
+      "days" : 22,
+      "distance" : "3 săptămâni",
+      "inside" : "în 3 săptămâni",
+      "insideStartingSentence" : "În 3 săptămâni",
+      "today" : "2026-12-31"
+    },
+    {
+      "days" : 27,
+      "distance" : "3 săptămâni",
+      "inside" : "în 3 săptămâni",
+      "insideStartingSentence" : "În 3 săptămâni",
+      "today" : "2026-12-31"
+    },
+    {
+      "days" : 28,
+      "distance" : "4 săptămâni",
+      "inside" : "în 4 săptămâni",
+      "insideStartingSentence" : "În 4 săptămâni",
+      "today" : "2026-12-31"
+    },
+    {
+      "days" : 29,
+      "distance" : "4 săptămâni",
+      "inside" : "în 4 săptămâni",
+      "insideStartingSentence" : "În 4 săptămâni",
+      "today" : "2026-12-31"
+    },
+    {
+      "days" : 30,
+      "distance" : "4 săptămâni",
+      "inside" : "în 4 săptămâni",
+      "insideStartingSentence" : "În 4 săptămâni",
+      "today" : "2026-12-31"
+    },
+    {
+      "days" : 31,
+      "distance" : "o lună",
+      "inside" : "într-o lună",
+      "insideStartingSentence" : "Într-o lună",
+      "today" : "2026-12-31"
+    },
+    {
+      "days" : 35,
+      "distance" : "o lună",
+      "inside" : "într-o lună",
+      "insideStartingSentence" : "Într-o lună",
+      "today" : "2026-12-31"
+    },
+    {
+      "days" : 41,
+      "distance" : "o lună și o săptămână",
+      "inside" : "într-o lună și o săptămână",
+      "insideStartingSentence" : "Într-o lună și o săptămână",
+      "today" : "2026-12-31"
+    },
+    {
+      "days" : 42,
+      "distance" : "o lună și o săptămână",
+      "inside" : "într-o lună și o săptămână",
+      "insideStartingSentence" : "Într-o lună și o săptămână",
+      "today" : "2026-12-31"
+    },
+    {
+      "days" : 59,
+      "distance" : "2 luni",
+      "inside" : "în 2 luni",
+      "insideStartingSentence" : "În 2 luni",
+      "today" : "2026-12-31"
+    },
+    {
+      "days" : 60,
+      "distance" : "2 luni",
+      "inside" : "în 2 luni",
+      "insideStartingSentence" : "În 2 luni",
+      "today" : "2026-12-31"
+    },
+    {
+      "days" : 61,
+      "distance" : "2 luni",
+      "inside" : "în 2 luni",
+      "insideStartingSentence" : "În 2 luni",
+      "today" : "2026-12-31"
+    },
+    {
+      "days" : 62,
+      "distance" : "2 luni",
+      "inside" : "în 2 luni",
+      "insideStartingSentence" : "În 2 luni",
+      "today" : "2026-12-31"
+    },
+    {
+      "days" : 89,
+      "distance" : "2 luni și 4 săptămâni",
+      "inside" : "în 2 luni și 4 săptămâni",
+      "insideStartingSentence" : "În 2 luni și 4 săptămâni",
+      "today" : "2026-12-31"
+    },
+    {
+      "days" : 90,
+      "distance" : "3 luni",
+      "inside" : "în 3 luni",
+      "insideStartingSentence" : "În 3 luni",
+      "today" : "2026-12-31"
+    },
+    {
+      "days" : 91,
+      "distance" : "3 luni",
+      "inside" : "în 3 luni",
+      "insideStartingSentence" : "În 3 luni",
+      "today" : "2026-12-31"
+    },
+    {
+      "days" : 120,
+      "distance" : "4 luni",
+      "inside" : "în 4 luni",
+      "insideStartingSentence" : "În 4 luni",
+      "today" : "2026-12-31"
+    },
+    {
+      "days" : 180,
+      "distance" : "5 luni și 4 săptămâni",
+      "inside" : "în 5 luni și 4 săptămâni",
+      "insideStartingSentence" : "În 5 luni și 4 săptămâni",
+      "today" : "2026-12-31"
+    },
+    {
+      "days" : 334,
+      "distance" : "11 luni",
+      "inside" : "în 11 luni",
+      "insideStartingSentence" : "În 11 luni",
+      "today" : "2026-12-31"
+    },
+    {
+      "days" : 364,
+      "distance" : "11 luni și 4 săptămâni",
+      "inside" : "în 11 luni și 4 săptămâni",
+      "insideStartingSentence" : "În 11 luni și 4 săptămâni",
+      "today" : "2026-12-31"
+    },
+    {
+      "days" : 365,
+      "distance" : "un an",
+      "inside" : "într-un an",
+      "insideStartingSentence" : "Într-un an",
+      "today" : "2026-12-31"
+    },
+    {
+      "days" : 366,
+      "distance" : "un an",
+      "inside" : "într-un an",
+      "insideStartingSentence" : "Într-un an",
+      "today" : "2026-12-31"
+    },
+    {
+      "days" : 371,
+      "distance" : "un an",
+      "inside" : "într-un an",
+      "insideStartingSentence" : "Într-un an",
+      "today" : "2026-12-31"
+    },
+    {
+      "days" : 400,
+      "distance" : "un an și o lună",
+      "inside" : "într-un an și o lună",
+      "insideStartingSentence" : "Într-un an și o lună",
+      "today" : "2026-12-31"
+    },
+    {
+      "days" : 500,
+      "distance" : "un an și 4 luni",
+      "inside" : "într-un an și 4 luni",
+      "insideStartingSentence" : "Într-un an și 4 luni",
+      "today" : "2026-12-31"
+    },
+    {
+      "days" : 729,
+      "distance" : "un an și 11 luni",
+      "inside" : "într-un an și 11 luni",
+      "insideStartingSentence" : "Într-un an și 11 luni",
+      "today" : "2026-12-31"
+    },
+    {
+      "days" : 730,
+      "distance" : "un an și 11 luni",
+      "inside" : "într-un an și 11 luni",
+      "insideStartingSentence" : "Într-un an și 11 luni",
+      "today" : "2026-12-31"
+    },
+    {
+      "days" : 731,
+      "distance" : "2 ani",
+      "inside" : "în 2 ani",
+      "insideStartingSentence" : "În 2 ani",
+      "today" : "2026-12-31"
+    },
+    {
+      "days" : 760,
+      "distance" : "2 ani",
+      "inside" : "în 2 ani",
+      "insideStartingSentence" : "În 2 ani",
+      "today" : "2026-12-31"
+    },
+    {
+      "days" : 1000,
+      "distance" : "2 ani și 8 luni",
+      "inside" : "în 2 ani și 8 luni",
+      "insideStartingSentence" : "În 2 ani și 8 luni",
+      "today" : "2026-12-31"
+    },
+    {
+      "days" : 1094,
+      "distance" : "2 ani și 11 luni",
+      "inside" : "în 2 ani și 11 luni",
+      "insideStartingSentence" : "În 2 ani și 11 luni",
+      "today" : "2026-12-31"
+    },
+    {
+      "days" : 1095,
+      "distance" : "2 ani și 11 luni",
+      "inside" : "în 2 ani și 11 luni",
+      "insideStartingSentence" : "În 2 ani și 11 luni",
+      "today" : "2026-12-31"
+    },
+    {
+      "days" : 1096,
+      "distance" : "3 ani",
+      "inside" : "în 3 ani",
+      "insideStartingSentence" : "În 3 ani",
+      "today" : "2026-12-31"
+    },
+    {
+      "days" : 1460,
+      "distance" : "3 ani",
+      "inside" : "în 3 ani",
+      "insideStartingSentence" : "În 3 ani",
+      "today" : "2026-12-31"
+    },
+    {
+      "days" : 3650,
+      "distance" : "9 ani",
+      "inside" : "în 9 ani",
+      "insideStartingSentence" : "În 9 ani",
+      "today" : "2026-12-31"
+    },
+    {
+      "days" : -1,
+      "distance" : "o zi",
+      "inside" : "într-o zi",
+      "insideStartingSentence" : "Într-o zi",
+      "today" : "2026-12-31"
+    },
+    {
+      "days" : -21,
+      "distance" : "3 săptămâni",
+      "inside" : "în 3 săptămâni",
+      "insideStartingSentence" : "În 3 săptămâni",
+      "today" : "2026-12-31"
+    },
+    {
+      "days" : -45,
+      "distance" : "o lună și 2 săptămâni",
+      "inside" : "într-o lună și 2 săptămâni",
+      "insideStartingSentence" : "Într-o lună și 2 săptămâni",
+      "today" : "2026-12-31"
+    },
+    {
+      "days" : -400,
+      "distance" : "un an și o lună",
+      "inside" : "într-un an și o lună",
+      "insideStartingSentence" : "Într-un an și o lună",
+      "today" : "2026-12-31"
+    },
+    {
+      "days" : 0,
+      "distance" : "0 zile",
+      "inside" : "în 0 zile",
+      "insideStartingSentence" : "În 0 zile",
+      "today" : "2026-03-29"
+    },
+    {
+      "days" : 1,
+      "distance" : "o zi",
+      "inside" : "într-o zi",
+      "insideStartingSentence" : "Într-o zi",
+      "today" : "2026-03-29"
+    },
+    {
+      "days" : 2,
+      "distance" : "2 zile",
+      "inside" : "în 2 zile",
+      "insideStartingSentence" : "În 2 zile",
+      "today" : "2026-03-29"
+    },
+    {
+      "days" : 7,
+      "distance" : "7 zile",
+      "inside" : "în 7 zile",
+      "insideStartingSentence" : "În 7 zile",
+      "today" : "2026-03-29"
+    },
+    {
+      "days" : 20,
+      "distance" : "20 de zile",
+      "inside" : "în 20 de zile",
+      "insideStartingSentence" : "În 20 de zile",
+      "today" : "2026-03-29"
+    },
+    {
+      "days" : 21,
+      "distance" : "3 săptămâni",
+      "inside" : "în 3 săptămâni",
+      "insideStartingSentence" : "În 3 săptămâni",
+      "today" : "2026-03-29"
+    },
+    {
+      "days" : 22,
+      "distance" : "3 săptămâni",
+      "inside" : "în 3 săptămâni",
+      "insideStartingSentence" : "În 3 săptămâni",
+      "today" : "2026-03-29"
+    },
+    {
+      "days" : 27,
+      "distance" : "3 săptămâni",
+      "inside" : "în 3 săptămâni",
+      "insideStartingSentence" : "În 3 săptămâni",
+      "today" : "2026-03-29"
+    },
+    {
+      "days" : 28,
+      "distance" : "4 săptămâni",
+      "inside" : "în 4 săptămâni",
+      "insideStartingSentence" : "În 4 săptămâni",
+      "today" : "2026-03-29"
+    },
+    {
+      "days" : 29,
+      "distance" : "4 săptămâni",
+      "inside" : "în 4 săptămâni",
+      "insideStartingSentence" : "În 4 săptămâni",
+      "today" : "2026-03-29"
+    },
+    {
+      "days" : 30,
+      "distance" : "4 săptămâni",
+      "inside" : "în 4 săptămâni",
+      "insideStartingSentence" : "În 4 săptămâni",
+      "today" : "2026-03-29"
+    },
+    {
+      "days" : 31,
+      "distance" : "o lună",
+      "inside" : "într-o lună",
+      "insideStartingSentence" : "Într-o lună",
+      "today" : "2026-03-29"
+    },
+    {
+      "days" : 35,
+      "distance" : "o lună",
+      "inside" : "într-o lună",
+      "insideStartingSentence" : "Într-o lună",
+      "today" : "2026-03-29"
+    },
+    {
+      "days" : 41,
+      "distance" : "o lună și o săptămână",
+      "inside" : "într-o lună și o săptămână",
+      "insideStartingSentence" : "Într-o lună și o săptămână",
+      "today" : "2026-03-29"
+    },
+    {
+      "days" : 42,
+      "distance" : "o lună și o săptămână",
+      "inside" : "într-o lună și o săptămână",
+      "insideStartingSentence" : "Într-o lună și o săptămână",
+      "today" : "2026-03-29"
+    },
+    {
+      "days" : 59,
+      "distance" : "o lună și 4 săptămâni",
+      "inside" : "într-o lună și 4 săptămâni",
+      "insideStartingSentence" : "Într-o lună și 4 săptămâni",
+      "today" : "2026-03-29"
+    },
+    {
+      "days" : 60,
+      "distance" : "o lună și 4 săptămâni",
+      "inside" : "într-o lună și 4 săptămâni",
+      "insideStartingSentence" : "Într-o lună și 4 săptămâni",
+      "today" : "2026-03-29"
+    },
+    {
+      "days" : 61,
+      "distance" : "2 luni",
+      "inside" : "în 2 luni",
+      "insideStartingSentence" : "În 2 luni",
+      "today" : "2026-03-29"
+    },
+    {
+      "days" : 62,
+      "distance" : "2 luni",
+      "inside" : "în 2 luni",
+      "insideStartingSentence" : "În 2 luni",
+      "today" : "2026-03-29"
+    },
+    {
+      "days" : 89,
+      "distance" : "2 luni și 4 săptămâni",
+      "inside" : "în 2 luni și 4 săptămâni",
+      "insideStartingSentence" : "În 2 luni și 4 săptămâni",
+      "today" : "2026-03-29"
+    },
+    {
+      "days" : 90,
+      "distance" : "2 luni și 4 săptămâni",
+      "inside" : "în 2 luni și 4 săptămâni",
+      "insideStartingSentence" : "În 2 luni și 4 săptămâni",
+      "today" : "2026-03-29"
+    },
+    {
+      "days" : 91,
+      "distance" : "2 luni și 4 săptămâni",
+      "inside" : "în 2 luni și 4 săptămâni",
+      "insideStartingSentence" : "În 2 luni și 4 săptămâni",
+      "today" : "2026-03-29"
+    },
+    {
+      "days" : 120,
+      "distance" : "3 luni și 4 săptămâni",
+      "inside" : "în 3 luni și 4 săptămâni",
+      "insideStartingSentence" : "În 3 luni și 4 săptămâni",
+      "today" : "2026-03-29"
+    },
+    {
+      "days" : 180,
+      "distance" : "5 luni și 3 săptămâni",
+      "inside" : "în 5 luni și 3 săptămâni",
+      "insideStartingSentence" : "În 5 luni și 3 săptămâni",
+      "today" : "2026-03-29"
+    },
+    {
+      "days" : 334,
+      "distance" : "10 luni și 4 săptămâni",
+      "inside" : "în 10 luni și 4 săptămâni",
+      "insideStartingSentence" : "În 10 luni și 4 săptămâni",
+      "today" : "2026-03-29"
+    },
+    {
+      "days" : 364,
+      "distance" : "11 luni și 4 săptămâni",
+      "inside" : "în 11 luni și 4 săptămâni",
+      "insideStartingSentence" : "În 11 luni și 4 săptămâni",
+      "today" : "2026-03-29"
+    },
+    {
+      "days" : 365,
+      "distance" : "un an",
+      "inside" : "într-un an",
+      "insideStartingSentence" : "Într-un an",
+      "today" : "2026-03-29"
+    },
+    {
+      "days" : 366,
+      "distance" : "un an",
+      "inside" : "într-un an",
+      "insideStartingSentence" : "Într-un an",
+      "today" : "2026-03-29"
+    },
+    {
+      "days" : 371,
+      "distance" : "un an",
+      "inside" : "într-un an",
+      "insideStartingSentence" : "Într-un an",
+      "today" : "2026-03-29"
+    },
+    {
+      "days" : 400,
+      "distance" : "un an și o lună",
+      "inside" : "într-un an și o lună",
+      "insideStartingSentence" : "Într-un an și o lună",
+      "today" : "2026-03-29"
+    },
+    {
+      "days" : 500,
+      "distance" : "un an și 4 luni",
+      "inside" : "într-un an și 4 luni",
+      "insideStartingSentence" : "Într-un an și 4 luni",
+      "today" : "2026-03-29"
+    },
+    {
+      "days" : 729,
+      "distance" : "un an și 11 luni",
+      "inside" : "într-un an și 11 luni",
+      "insideStartingSentence" : "Într-un an și 11 luni",
+      "today" : "2026-03-29"
+    },
+    {
+      "days" : 730,
+      "distance" : "un an și 11 luni",
+      "inside" : "într-un an și 11 luni",
+      "insideStartingSentence" : "Într-un an și 11 luni",
+      "today" : "2026-03-29"
+    },
+    {
+      "days" : 731,
+      "distance" : "2 ani",
+      "inside" : "în 2 ani",
+      "insideStartingSentence" : "În 2 ani",
+      "today" : "2026-03-29"
+    },
+    {
+      "days" : 760,
+      "distance" : "2 ani",
+      "inside" : "în 2 ani",
+      "insideStartingSentence" : "În 2 ani",
+      "today" : "2026-03-29"
+    },
+    {
+      "days" : 1000,
+      "distance" : "2 ani și 8 luni",
+      "inside" : "în 2 ani și 8 luni",
+      "insideStartingSentence" : "În 2 ani și 8 luni",
+      "today" : "2026-03-29"
+    },
+    {
+      "days" : 1094,
+      "distance" : "2 ani și 11 luni",
+      "inside" : "în 2 ani și 11 luni",
+      "insideStartingSentence" : "În 2 ani și 11 luni",
+      "today" : "2026-03-29"
+    },
+    {
+      "days" : 1095,
+      "distance" : "2 ani și 11 luni",
+      "inside" : "în 2 ani și 11 luni",
+      "insideStartingSentence" : "În 2 ani și 11 luni",
+      "today" : "2026-03-29"
+    },
+    {
+      "days" : 1096,
+      "distance" : "3 ani",
+      "inside" : "în 3 ani",
+      "insideStartingSentence" : "În 3 ani",
+      "today" : "2026-03-29"
+    },
+    {
+      "days" : 1460,
+      "distance" : "3 ani",
+      "inside" : "în 3 ani",
+      "insideStartingSentence" : "În 3 ani",
+      "today" : "2026-03-29"
+    },
+    {
+      "days" : 3650,
+      "distance" : "9 ani",
+      "inside" : "în 9 ani",
+      "insideStartingSentence" : "În 9 ani",
+      "today" : "2026-03-29"
+    },
+    {
+      "days" : -1,
+      "distance" : "o zi",
+      "inside" : "într-o zi",
+      "insideStartingSentence" : "Într-o zi",
+      "today" : "2026-03-29"
+    },
+    {
+      "days" : -21,
+      "distance" : "3 săptămâni",
+      "inside" : "în 3 săptămâni",
+      "insideStartingSentence" : "În 3 săptămâni",
+      "today" : "2026-03-29"
+    },
+    {
+      "days" : -45,
+      "distance" : "o lună și 2 săptămâni",
+      "inside" : "într-o lună și 2 săptămâni",
+      "insideStartingSentence" : "Într-o lună și 2 săptămâni",
+      "today" : "2026-03-29"
+    },
+    {
+      "days" : -400,
+      "distance" : "un an și o lună",
+      "inside" : "într-un an și o lună",
+      "insideStartingSentence" : "Într-un an și o lună",
+      "today" : "2026-03-29"
+    }
+  ],
+  "rule" : "DurationWording.distance(days:from:calendar:) and inside(_:startsSentence:)",
+  "shape" : "today: the day counted from; days: how far (its sign ignored); distance: the words; inside: after „în” („într-o lună”); insideStartingSentence: the same starting a sentence.",
+  "source" : "ios/Shared/DurationWording.swift",
+  "writtenBy" : "ios/DosarCuSinaTests/WordingVectorsTests.swift"
+}

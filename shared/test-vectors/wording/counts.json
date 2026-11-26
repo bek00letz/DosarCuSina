@@ -1,0 +1,428 @@
+{
+  "cases" : [
+    {
+      "count" : 0,
+      "text" : "0 zile",
+      "unit" : "days"
+    },
+    {
+      "count" : 1,
+      "text" : "o zi",
+      "unit" : "days"
+    },
+    {
+      "count" : 2,
+      "text" : "2 zile",
+      "unit" : "days"
+    },
+    {
+      "count" : 3,
+      "text" : "3 zile",
+      "unit" : "days"
+    },
+    {
+      "count" : 19,
+      "text" : "19 zile",
+      "unit" : "days"
+    },
+    {
+      "count" : 20,
+      "text" : "20 de zile",
+      "unit" : "days"
+    },
+    {
+      "count" : 21,
+      "text" : "21 de zile",
+      "unit" : "days"
+    },
+    {
+      "count" : 99,
+      "text" : "99 de zile",
+      "unit" : "days"
+    },
+    {
+      "count" : 100,
+      "text" : "100 de zile",
+      "unit" : "days"
+    },
+    {
+      "count" : 101,
+      "text" : "101 zile",
+      "unit" : "days"
+    },
+    {
+      "count" : 102,
+      "text" : "102 zile",
+      "unit" : "days"
+    },
+    {
+      "count" : 110,
+      "text" : "110 zile",
+      "unit" : "days"
+    },
+    {
+      "count" : 119,
+      "text" : "119 zile",
+      "unit" : "days"
+    },
+    {
+      "count" : 120,
+      "text" : "120 de zile",
+      "unit" : "days"
+    },
+    {
+      "count" : 121,
+      "text" : "121 de zile",
+      "unit" : "days"
+    },
+    {
+      "count" : 1000,
+      "text" : "1.000 de zile",
+      "unit" : "days"
+    },
+    {
+      "count" : 1001,
+      "text" : "1.001 zile",
+      "unit" : "days"
+    },
+    {
+      "count" : 1250,
+      "text" : "1.250 de zile",
+      "unit" : "days"
+    },
+    {
+      "count" : 1000000,
+      "text" : "1.000.000 de zile",
+      "unit" : "days"
+    },
+    {
+      "count" : -1,
+      "text" : "o zi",
+      "unit" : "days"
+    },
+    {
+      "count" : -20,
+      "text" : "20 de zile",
+      "unit" : "days"
+    },
+    {
+      "count" : 0,
+      "text" : "0 săptămâni",
+      "unit" : "weeks"
+    },
+    {
+      "count" : 1,
+      "text" : "o săptămână",
+      "unit" : "weeks"
+    },
+    {
+      "count" : 2,
+      "text" : "2 săptămâni",
+      "unit" : "weeks"
+    },
+    {
+      "count" : 3,
+      "text" : "3 săptămâni",
+      "unit" : "weeks"
+    },
+    {
+      "count" : 19,
+      "text" : "19 săptămâni",
+      "unit" : "weeks"
+    },
+    {
+      "count" : 20,
+      "text" : "20 de săptămâni",
+      "unit" : "weeks"
+    },
+    {
+      "count" : 21,
+      "text" : "21 de săptămâni",
+      "unit" : "weeks"
+    },
+    {
+      "count" : 99,
+      "text" : "99 de săptămâni",
+      "unit" : "weeks"
+    },
+    {
+      "count" : 100,
+      "text" : "100 de săptămâni",
+      "unit" : "weeks"
+    },
+    {
+      "count" : 101,
+      "text" : "101 săptămâni",
+      "unit" : "weeks"
+    },
+    {
+      "count" : 102,
+      "text" : "102 săptămâni",
+      "unit" : "weeks"
+    },
+    {
+      "count" : 110,
+      "text" : "110 săptămâni",
+      "unit" : "weeks"
+    },
+    {
+      "count" : 119,
+      "text" : "119 săptămâni",
+      "unit" : "weeks"
+    },
+    {
+      "count" : 120,
+      "text" : "120 de săptămâni",
+      "unit" : "weeks"
+    },
+    {
+      "count" : 121,
+      "text" : "121 de săptămâni",
+      "unit" : "weeks"
+    },
+    {
+      "count" : 1000,
+      "text" : "1.000 de săptămâni",
+      "unit" : "weeks"
+    },
+    {
+      "count" : 1001,
+      "text" : "1.001 săptămâni",
+      "unit" : "weeks"
+    },
+    {
+      "count" : 1250,
+      "text" : "1.250 de săptămâni",
+      "unit" : "weeks"
+    },
+    {
+      "count" : 1000000,
+      "text" : "1.000.000 de săptămâni",
+      "unit" : "weeks"
+    },
+    {
+      "count" : -1,
+      "text" : "o săptămână",
+      "unit" : "weeks"
+    },
+    {
+      "count" : -20,
+      "text" : "20 de săptămâni",
+      "unit" : "weeks"
+    },
+    {
+      "count" : 0,
+      "text" : "0 luni",
+      "unit" : "months"
+    },
+    {
+      "count" : 1,
+      "text" : "o lună",
+      "unit" : "months"
+    },
+    {
+      "count" : 2,
+      "text" : "2 luni",
+      "unit" : "months"
+    },
+    {
+      "count" : 3,
+      "text" : "3 luni",
+      "unit" : "months"
+    },
+    {
+      "count" : 19,
+      "text" : "19 luni",
+      "unit" : "months"
+    },
+    {
+      "count" : 20,
+      "text" : "20 de luni",
+      "unit" : "months"
+    },
+    {
+      "count" : 21,
+      "text" : "21 de luni",
+      "unit" : "months"
+    },
+    {
+      "count" : 99,
+      "text" : "99 de luni",
+      "unit" : "months"
+    },
+    {
+      "count" : 100,
+      "text" : "100 de luni",
+      "unit" : "months"
+    },
+    {
+      "count" : 101,
+      "text" : "101 luni",
+      "unit" : "months"
+    },
+    {
+      "count" : 102,
+      "text" : "102 luni",
+      "unit" : "months"
+    },
+    {
+      "count" : 110,
+      "text" : "110 luni",
+      "unit" : "months"
+    },
+    {
+      "count" : 119,
+      "text" : "119 luni",
+      "unit" : "months"
+    },
+    {
+      "count" : 120,
+      "text" : "120 de luni",
+      "unit" : "months"
+    },
+    {
+      "count" : 121,
+      "text" : "121 de luni",
+      "unit" : "months"
+    },
+    {
+      "count" : 1000,
+      "text" : "1.000 de luni",
+      "unit" : "months"
+    },
+    {
+      "count" : 1001,
+      "text" : "1.001 luni",
+      "unit" : "months"
+    },
+    {
+      "count" : 1250,
+      "text" : "1.250 de luni",
+      "unit" : "months"
+    },
+    {
+      "count" : 1000000,
+      "text" : "1.000.000 de luni",
+      "unit" : "months"
+    },
+    {
+      "count" : -1,
+      "text" : "o lună",
+      "unit" : "months"
+    },
+    {
+      "count" : -20,
+      "text" : "20 de luni",
+      "unit" : "months"
+    },
+    {
+      "count" : 0,
+      "text" : "0 ani",
+      "unit" : "years"
+    },
+    {
+      "count" : 1,
+      "text" : "un an",
+      "unit" : "years"
+    },
+    {
+      "count" : 2,
+      "text" : "2 ani",
+      "unit" : "years"
+    },
+    {
+      "count" : 3,
+      "text" : "3 ani",
+      "unit" : "years"
+    },
+    {
+      "count" : 19,
+      "text" : "19 ani",
+      "unit" : "years"
+    },
+    {
+      "count" : 20,
+      "text" : "20 de ani",
+      "unit" : "years"
+    },
+    {
+      "count" : 21,
+      "text" : "21 de ani",
+      "unit" : "years"
+    },
+    {
+      "count" : 99,
+      "text" : "99 de ani",
+      "unit" : "years"
+    },
+    {
+      "count" : 100,
+      "text" : "100 de ani",
+      "unit" : "years"
+    },
+    {
+      "count" : 101,
+      "text" : "101 ani",
+      "unit" : "years"
+    },
+    {
+      "count" : 102,
+      "text" : "102 ani",
+      "unit" : "years"
+    },
+    {
+      "count" : 110,
+      "text" : "110 ani",
+      "unit" : "years"
+    },
+    {
+      "count" : 119,
+      "text" : "119 ani",
+      "unit" : "years"
+    },
+    {
+      "count" : 120,
+      "text" : "120 de ani",
+      "unit" : "years"
+    },
+    {
+      "count" : 121,
+      "text" : "121 de ani",
+      "unit" : "years"
+    },
+    {
+      "count" : 1000,
+      "text" : "1.000 de ani",
+      "unit" : "years"
+    },
+    {
+      "count" : 1001,
+      "text" : "1.001 ani",
+      "unit" : "years"
+    },
+    {
+      "count" : 1250,
+      "text" : "1.250 de ani",
+      "unit" : "years"
+    },
+    {
+      "count" : 1000000,
+      "text" : "1.000.000 de ani",
+      "unit" : "years"
+    },
+    {
+      "count" : -1,
+      "text" : "un an",
+      "unit" : "years"
+    },
+    {
+      "count" : -20,
+      "text" : "20 de ani",
+      "unit" : "years"
+    }
+  ],
+  "rule" : "DayCount.phrase and CalendarCount.weeks, months and years",
+  "shape" : "unit: days, weeks, months or years; count: the number (its sign ignored); text: the words.",
+  "source" : "ios/Shared/DurationWording.swift",
+  "writtenBy" : "ios/DosarCuSinaTests/WordingVectorsTests.swift"
+}
