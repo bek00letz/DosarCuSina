@@ -173,6 +173,25 @@
     },
     {
       "sanitized" : {
+        "x.label" : "•••• 4444",
+        "x.note" : "Card •••• 1111, din 01.02.2026"
+      },
+      "sealed" : [
+
+      ],
+      "values" : {
+        "x.label" : {
+          "text" : "5555/5555/5555/4444",
+          "type" : "text"
+        },
+        "x.note" : {
+          "text" : "Card 4111  1111  1111  1111, din 01.02.2026",
+          "type" : "longText"
+        }
+      }
+    },
+    {
+      "sanitized" : {
 
       },
       "sealed" : [
