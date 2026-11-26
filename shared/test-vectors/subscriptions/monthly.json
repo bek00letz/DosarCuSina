@@ -1,0 +1,359 @@
+{
+  "cases" : [
+    {
+      "every" : {
+        "every" : 1,
+        "unit" : "week"
+      },
+      "monthly" : {
+        "amount" : "52",
+        "currency" : "RON"
+      },
+      "price" : {
+        "amount" : "12",
+        "currency" : "RON"
+      }
+    },
+    {
+      "every" : {
+        "every" : 1,
+        "unit" : "week"
+      },
+      "monthly" : {
+        "amount" : "216.62",
+        "currency" : "RON"
+      },
+      "price" : {
+        "amount" : "49.99",
+        "currency" : "RON"
+      }
+    },
+    {
+      "every" : {
+        "every" : 2,
+        "unit" : "week"
+      },
+      "monthly" : {
+        "amount" : "16.25",
+        "currency" : "RON"
+      },
+      "price" : {
+        "amount" : "7.5",
+        "currency" : "RON"
+      }
+    },
+    {
+      "every" : {
+        "every" : 1,
+        "unit" : "month"
+      },
+      "monthly" : {
+        "amount" : "39.9",
+        "currency" : "RON"
+      },
+      "price" : {
+        "amount" : "39.9",
+        "currency" : "RON"
+      }
+    },
+    {
+      "every" : {
+        "every" : 3,
+        "unit" : "month"
+      },
+      "monthly" : {
+        "amount" : "30",
+        "currency" : "RON"
+      },
+      "price" : {
+        "amount" : "90",
+        "currency" : "RON"
+      }
+    },
+    {
+      "every" : {
+        "every" : 3,
+        "unit" : "month"
+      },
+      "monthly" : {
+        "amount" : "43.33",
+        "currency" : "RON"
+      },
+      "price" : {
+        "amount" : "129.99",
+        "currency" : "RON"
+      }
+    },
+    {
+      "every" : {
+        "every" : 2,
+        "unit" : "month"
+      },
+      "monthly" : {
+        "amount" : "50",
+        "currency" : "RON"
+      },
+      "price" : {
+        "amount" : "100",
+        "currency" : "RON"
+      }
+    },
+    {
+      "every" : {
+        "every" : 1,
+        "unit" : "year"
+      },
+      "monthly" : {
+        "amount" : "10",
+        "currency" : "RON"
+      },
+      "price" : {
+        "amount" : "120",
+        "currency" : "RON"
+      }
+    },
+    {
+      "every" : {
+        "every" : 1,
+        "unit" : "year"
+      },
+      "monthly" : {
+        "amount" : "8.33",
+        "currency" : "RON"
+      },
+      "price" : {
+        "amount" : "99.99",
+        "currency" : "RON"
+      }
+    },
+    {
+      "every" : {
+        "every" : 1,
+        "unit" : "year"
+      },
+      "monthly" : {
+        "amount" : "0.03",
+        "currency" : "RON"
+      },
+      "price" : {
+        "amount" : "0.3",
+        "currency" : "RON"
+      }
+    },
+    {
+      "every" : {
+        "every" : 1,
+        "unit" : "year"
+      },
+      "monthly" : {
+        "amount" : "0.13",
+        "currency" : "RON"
+      },
+      "price" : {
+        "amount" : "1.5",
+        "currency" : "RON"
+      }
+    },
+    {
+      "every" : {
+        "every" : 2,
+        "unit" : "year"
+      },
+      "monthly" : {
+        "amount" : "0",
+        "currency" : "RON"
+      },
+      "price" : {
+        "amount" : "0.06",
+        "currency" : "RON"
+      }
+    },
+    {
+      "every" : {
+        "every" : 1,
+        "unit" : "day"
+      },
+      "monthly" : {
+        "amount" : "304.17",
+        "currency" : "RON"
+      },
+      "price" : {
+        "amount" : "10",
+        "currency" : "RON"
+      }
+    },
+    {
+      "every" : {
+        "every" : 30,
+        "unit" : "day"
+      },
+      "monthly" : {
+        "amount" : "1.01",
+        "currency" : "RON"
+      },
+      "price" : {
+        "amount" : "1",
+        "currency" : "RON"
+      }
+    },
+    {
+      "every" : {
+        "every" : 1,
+        "unit" : "month"
+      },
+      "monthly" : {
+        "amount" : "9.99",
+        "currency" : "EUR"
+      },
+      "price" : {
+        "amount" : "9.99",
+        "currency" : "EUR"
+      }
+    },
+    {
+      "every" : {
+        "every" : 1,
+        "unit" : "week"
+      },
+      "monthly" : {
+        "amount" : "12.96",
+        "currency" : "EUR"
+      },
+      "price" : {
+        "amount" : "2.99",
+        "currency" : "EUR"
+      }
+    },
+    {
+      "every" : {
+        "every" : 1,
+        "unit" : "month"
+      },
+      "monthly" : {
+        "amount" : "0",
+        "currency" : "RON"
+      },
+      "price" : {
+        "amount" : "0",
+        "currency" : "RON"
+      }
+    },
+    {
+      "every" : {
+        "every" : 1,
+        "unit" : "week"
+      },
+      "monthly" : {
+        "amount" : "5349794.19",
+        "currency" : "RON"
+      },
+      "price" : {
+        "amount" : "1234567.89",
+        "currency" : "RON"
+      }
+    },
+    {
+      "equivalentOf" : {
+        "cycle" : "billing.weekly",
+        "lastBill" : null,
+        "price" : {
+          "amount" : "12",
+          "currency" : "RON"
+        },
+        "usingLastBill" : true
+      },
+      "monthly" : {
+        "amount" : "52",
+        "currency" : "RON"
+      }
+    },
+    {
+      "equivalentOf" : {
+        "cycle" : "billing.quarterly",
+        "lastBill" : {
+          "amount" : "200",
+          "currency" : "RON"
+        },
+        "price" : {
+          "amount" : "90",
+          "currency" : "RON"
+        },
+        "usingLastBill" : true
+      },
+      "monthly" : {
+        "amount" : "30",
+        "currency" : "RON"
+      }
+    },
+    {
+      "equivalentOf" : {
+        "cycle" : null,
+        "lastBill" : {
+          "amount" : "245.3",
+          "currency" : "RON"
+        },
+        "price" : null,
+        "usingLastBill" : true
+      },
+      "monthly" : {
+        "amount" : "245.3",
+        "currency" : "RON"
+      }
+    },
+    {
+      "equivalentOf" : {
+        "cycle" : "billing.monthly",
+        "lastBill" : {
+          "amount" : "245.3",
+          "currency" : "RON"
+        },
+        "price" : null,
+        "usingLastBill" : false
+      },
+      "monthly" : null
+    },
+    {
+      "equivalentOf" : {
+        "cycle" : "billing.yearly",
+        "lastBill" : null,
+        "price" : null,
+        "usingLastBill" : true
+      },
+      "monthly" : null
+    },
+    {
+      "equivalentOf" : {
+        "cycle" : "Anual",
+        "lastBill" : null,
+        "price" : {
+          "amount" : "99.99",
+          "currency" : "RON"
+        },
+        "usingLastBill" : true
+      },
+      "monthly" : {
+        "amount" : "8.33",
+        "currency" : "RON"
+      }
+    },
+    {
+      "equivalentOf" : {
+        "cycle" : "bogus",
+        "lastBill" : null,
+        "price" : {
+          "amount" : "19.99",
+          "currency" : "RON"
+        },
+        "usingLastBill" : true
+      },
+      "monthly" : {
+        "amount" : "19.99",
+        "currency" : "RON"
+      }
+    }
+  ],
+  "rule" : "SubscriptionMath.monthly(_:every:) and monthlyEquivalent(_:usingLastBill:)",
+  "shape" : "price: an amount (as Foundation's Decimal writes it) and its currency; every: how often it is paid; monthly: what it comes to a month, rounded to two decimals, half away from zero. Or equivalentOf: a subscription's price and last bill (null for none), its stored cycle (null for none) and whether its last bill may stand in; monthly: what it comes to a month, null without a price.",
+  "source" : "ios/DosarCuSina/Services/Templates/SubscriptionMath.swift",
+  "writtenBy" : "ios/DosarCuSinaTests/SubscriptionVectorsTests.swift"
+}

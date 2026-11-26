@@ -2,7 +2,8 @@ package com.ar.dosarcusina.archive.v3
 
 import com.ar.dosarcusina.core.values.JsonCodec
 import com.ar.dosarcusina.core.values.Money
-import com.ar.dosarcusina.core.values.RomanianText
+import com.ar.dosarcusina.core.values.NamedChoice
+import com.ar.dosarcusina.core.values.option
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
@@ -55,18 +56,11 @@ data class Condition(val field: String, val oneOf: List<String>, val orWhenEmpty
 
 /** An option of a choice field: its key, its label, older spellings, and when it is offered. */
 data class ChoiceOption(
-    val key: String,
-    val label: String,
-    val aliases: List<String> = emptyList(),
+    override val key: String,
+    override val label: String,
+    override val aliases: List<String> = emptyList(),
     val appliesWhen: JsonElement? = null,
-) {
-    /** Whether [text] names it: its key, or its label or an alias without case or diacritics. */
-    fun matches(text: String): Boolean {
-        if (text == key) return true
-        val needle = fold(text)
-        return needle.isNotEmpty() && (listOf(label) + aliases).any { fold(it) == needle }
-    }
-
+) : NamedChoice {
     fun toJson(): JsonObject = jsonObject {
         put("key", key)
         put("label", label)
@@ -75,10 +69,6 @@ data class ChoiceOption(
     }
 
     companion object {
-        /** Folded, whitespace collapsed, signs kept ("A+" and "A-" stay apart). */
-        private fun fold(text: String): String =
-            RomanianText.fold(text).split(Regex("\\s+")).filter { it.isNotEmpty() }.joinToString(" ")
-
         /** An option as stored, or a plain string as older definitions listed them (its key and label). */
         fun read(json: JsonElement): ChoiceOption {
             if (json is JsonPrimitive && json.isString) return ChoiceOption(json.content, json.content)
@@ -127,7 +117,7 @@ data class FieldDefinition(
      * written.
      */
     fun choiceKey(text: String): String =
-        (options?.firstOrNull { it.key == text } ?: options?.firstOrNull { it.matches(text) })?.key ?: text
+        options?.option(text)?.key ?: text
 
     companion object {
         const val SECRET = "secret"

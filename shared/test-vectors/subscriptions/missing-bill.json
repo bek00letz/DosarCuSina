@@ -1,0 +1,376 @@
+{
+  "cases" : [
+    {
+      "cycle" : {
+        "every" : 1,
+        "unit" : "month"
+      },
+      "days" : [
+        "2026-07-20",
+        "2026-08-20",
+        "2026-09-20"
+      ],
+      "missing" : {
+        "expectedDay" : "2026-10-20",
+        "lastDay" : "2026-09-20"
+      },
+      "today" : "2026-11-10"
+    },
+    {
+      "cycle" : {
+        "every" : 1,
+        "unit" : "month"
+      },
+      "days" : [
+        "2026-11-05"
+      ],
+      "missing" : null,
+      "today" : "2026-11-10"
+    },
+    {
+      "cycle" : {
+        "every" : 1,
+        "unit" : "month"
+      },
+      "days" : [
+        "2026-10-05"
+      ],
+      "missing" : null,
+      "today" : "2026-11-10"
+    },
+    {
+      "cycle" : {
+        "every" : 1,
+        "unit" : "month"
+      },
+      "days" : [
+        "2026-10-01"
+      ],
+      "missing" : null,
+      "today" : "2026-11-10"
+    },
+    {
+      "cycle" : {
+        "every" : 1,
+        "unit" : "month"
+      },
+      "days" : [
+        "2026-09-30"
+      ],
+      "missing" : {
+        "expectedDay" : "2026-10-30",
+        "lastDay" : "2026-09-30"
+      },
+      "today" : "2026-11-10"
+    },
+    {
+      "cycle" : {
+        "every" : 1,
+        "unit" : "month"
+      },
+      "days" : [
+        "2026-07-17",
+        "2026-08-29",
+        "2026-09-29"
+      ],
+      "missing" : null,
+      "today" : "2026-11-10"
+    },
+    {
+      "cycle" : {
+        "every" : 1,
+        "unit" : "month"
+      },
+      "days" : [
+        "2026-07-05",
+        "2026-08-30",
+        "2026-09-29"
+      ],
+      "missing" : null,
+      "today" : "2026-11-10"
+    },
+    {
+      "cycle" : {
+        "every" : 1,
+        "unit" : "month"
+      },
+      "days" : [
+        "2026-08-25"
+      ],
+      "missing" : {
+        "expectedDay" : "2026-09-25",
+        "lastDay" : "2026-08-25"
+      },
+      "today" : "2026-11-10"
+    },
+    {
+      "cycle" : {
+        "every" : 1,
+        "unit" : "month"
+      },
+      "days" : [
+        "2026-08-09"
+      ],
+      "missing" : null,
+      "today" : "2026-11-10"
+    },
+    {
+      "cycle" : {
+        "every" : 1,
+        "unit" : "month"
+      },
+      "days" : [
+        "2026-08-10"
+      ],
+      "missing" : null,
+      "today" : "2026-11-10"
+    },
+    {
+      "cycle" : {
+        "every" : 1,
+        "unit" : "month"
+      },
+      "days" : [
+        "2026-08-11"
+      ],
+      "missing" : {
+        "expectedDay" : "2026-09-11",
+        "lastDay" : "2026-08-11"
+      },
+      "today" : "2026-11-10"
+    },
+    {
+      "cycle" : {
+        "every" : 1,
+        "unit" : "month"
+      },
+      "days" : [
+        "2026-01-31"
+      ],
+      "missing" : {
+        "expectedDay" : "2026-02-28",
+        "lastDay" : "2026-01-31"
+      },
+      "today" : "2026-03-11"
+    },
+    {
+      "cycle" : {
+        "every" : 1,
+        "unit" : "month"
+      },
+      "days" : [
+        "2026-01-31"
+      ],
+      "missing" : null,
+      "today" : "2026-03-10"
+    },
+    {
+      "cycle" : {
+        "every" : 1,
+        "unit" : "month"
+      },
+      "days" : [
+        "2028-01-31"
+      ],
+      "missing" : null,
+      "today" : "2028-03-10"
+    },
+    {
+      "cycle" : {
+        "every" : 1,
+        "unit" : "month"
+      },
+      "days" : [
+        "2026-01-31",
+        "2026-02-28",
+        "2026-03-31"
+      ],
+      "missing" : null,
+      "today" : "2026-05-12"
+    },
+    {
+      "cycle" : {
+        "every" : 3,
+        "unit" : "month"
+      },
+      "days" : [
+        "2026-07-21"
+      ],
+      "missing" : null,
+      "today" : "2026-11-10"
+    },
+    {
+      "cycle" : {
+        "every" : 3,
+        "unit" : "month"
+      },
+      "days" : [
+        "2026-07-05"
+      ],
+      "missing" : {
+        "expectedDay" : "2026-10-05",
+        "lastDay" : "2026-07-05"
+      },
+      "today" : "2026-11-10"
+    },
+    {
+      "cycle" : {
+        "every" : 3,
+        "unit" : "month"
+      },
+      "days" : [
+        "2026-04-05",
+        "2026-07-15"
+      ],
+      "missing" : null,
+      "today" : "2026-11-10"
+    },
+    {
+      "cycle" : {
+        "every" : 1,
+        "unit" : "week"
+      },
+      "days" : [
+        "2026-10-06",
+        "2026-10-13",
+        "2026-10-20",
+        "2026-10-27"
+      ],
+      "missing" : {
+        "expectedDay" : "2026-11-03",
+        "lastDay" : "2026-10-27"
+      },
+      "today" : "2026-11-10"
+    },
+    {
+      "cycle" : {
+        "every" : 1,
+        "unit" : "week"
+      },
+      "days" : [
+        "2026-11-02"
+      ],
+      "missing" : null,
+      "today" : "2026-11-10"
+    },
+    {
+      "cycle" : {
+        "every" : 1,
+        "unit" : "week"
+      },
+      "days" : [
+        "2026-11-06"
+      ],
+      "missing" : null,
+      "today" : "2026-11-10"
+    },
+    {
+      "cycle" : {
+        "every" : 2,
+        "unit" : "week"
+      },
+      "days" : [
+        "2026-10-20"
+      ],
+      "missing" : {
+        "expectedDay" : "2026-11-03",
+        "lastDay" : "2026-10-20"
+      },
+      "today" : "2026-11-10"
+    },
+    {
+      "cycle" : {
+        "every" : 1,
+        "unit" : "year"
+      },
+      "days" : [
+        "2025-10-01"
+      ],
+      "missing" : {
+        "expectedDay" : "2026-10-01",
+        "lastDay" : "2025-10-01"
+      },
+      "today" : "2026-11-10"
+    },
+    {
+      "cycle" : {
+        "every" : 1,
+        "unit" : "year"
+      },
+      "days" : [
+        "2025-10-15"
+      ],
+      "missing" : null,
+      "today" : "2026-11-10"
+    },
+    {
+      "cycle" : {
+        "every" : 1,
+        "unit" : "year"
+      },
+      "days" : [
+        "2028-02-29"
+      ],
+      "missing" : {
+        "expectedDay" : "2029-02-28",
+        "lastDay" : "2028-02-29"
+      },
+      "today" : "2029-03-31"
+    },
+    {
+      "cycle" : {
+        "every" : 10,
+        "unit" : "day"
+      },
+      "days" : [
+        "2026-10-25"
+      ],
+      "missing" : {
+        "expectedDay" : "2026-11-04",
+        "lastDay" : "2026-10-25"
+      },
+      "today" : "2026-11-10"
+    },
+    {
+      "cycle" : {
+        "every" : 1,
+        "unit" : "month"
+      },
+      "days" : [
+        "2026-09-20",
+        "2026-09-20"
+      ],
+      "missing" : {
+        "expectedDay" : "2026-10-20",
+        "lastDay" : "2026-09-20"
+      },
+      "today" : "2026-11-10"
+    },
+    {
+      "cycle" : {
+        "every" : 1,
+        "unit" : "month"
+      },
+      "days" : [
+
+      ],
+      "missing" : null,
+      "today" : "2026-11-10"
+    },
+    {
+      "cycle" : {
+        "every" : 1,
+        "unit" : "month"
+      },
+      "days" : [
+        "2026-12-01"
+      ],
+      "missing" : null,
+      "today" : "2026-11-10"
+    }
+  ],
+  "rule" : "BillHistory.missing(_:cycle:today:calendar:)",
+  "shape" : "today, how often the bills come (cycle) and the days its bills came; missing: the last one's day and the day the next was expected, or null when none is missing.",
+  "source" : "ios/DosarCuSina/Services/Subscriptions/BillHistory.swift",
+  "writtenBy" : "ios/DosarCuSinaTests/SubscriptionVectorsTests.swift"
+}

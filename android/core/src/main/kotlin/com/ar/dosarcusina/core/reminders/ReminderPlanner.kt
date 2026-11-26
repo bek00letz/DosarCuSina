@@ -1,9 +1,9 @@
 package com.ar.dosarcusina.core.reminders
 
 import com.ar.dosarcusina.core.urgency.DeadlineSnapshot
-import com.ar.dosarcusina.core.urgency.DeadlineStatus
 import com.ar.dosarcusina.core.urgency.ReminderLead
 import com.ar.dosarcusina.core.values.CalendarDay
+import com.ar.dosarcusina.core.values.ObligationStatus
 import java.time.Instant
 import java.time.ZoneId
 
@@ -58,7 +58,7 @@ object ReminderPlanner {
         limit: Int = DEFAULT_LIMIT,
     ): List<PlannedReminder> {
         val perDeadline = deadlines
-            .filter { it.status == DeadlineStatus.ACTIVE && !it.isExample }
+            .filter { it.status == ObligationStatus.ACTIVE && !it.isExample }
             .mapNotNull { deadline ->
                 val reminders = candidates(deadline, now, zone, defaultMinuteOfDay).sortedWith(BY_TIME)
                 if (reminders.isEmpty()) null else deadline.reminders.consequence.weight to reminders

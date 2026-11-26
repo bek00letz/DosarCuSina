@@ -1,0 +1,449 @@
+{
+  "cases" : [
+    {
+      "bills" : [
+        {
+          "amount" : {
+            "amount" : "213.2",
+            "currency" : "RON"
+          },
+          "day" : "2026-09-05"
+        },
+        {
+          "amount" : {
+            "amount" : "245.3",
+            "currency" : "RON"
+          },
+          "day" : "2026-10-05"
+        }
+      ],
+      "today" : "2026-11-10",
+      "trend" : {
+        "averageLastYear" : [
+          {
+            "amount" : "229.25",
+            "currency" : "RON"
+          }
+        ],
+        "change" : {
+          "amount" : "32.1",
+          "currency" : "RON"
+        },
+        "direction" : "up",
+        "last" : {
+          "amount" : {
+            "amount" : "245.3",
+            "currency" : "RON"
+          },
+          "day" : "2026-10-05"
+        }
+      }
+    },
+    {
+      "bills" : [
+        {
+          "amount" : {
+            "amount" : "245.3",
+            "currency" : "RON"
+          },
+          "day" : "2026-10-05"
+        },
+        {
+          "amount" : {
+            "amount" : "213.2",
+            "currency" : "RON"
+          },
+          "day" : "2026-09-05"
+        },
+        {
+          "amount" : {
+            "amount" : "200",
+            "currency" : "RON"
+          },
+          "day" : "2026-11-05"
+        }
+      ],
+      "today" : "2026-11-10",
+      "trend" : {
+        "averageLastYear" : [
+          {
+            "amount" : "219.5",
+            "currency" : "RON"
+          }
+        ],
+        "change" : {
+          "amount" : "-45.3",
+          "currency" : "RON"
+        },
+        "direction" : "down",
+        "last" : {
+          "amount" : {
+            "amount" : "200",
+            "currency" : "RON"
+          },
+          "day" : "2026-11-05"
+        }
+      }
+    },
+    {
+      "bills" : [
+        {
+          "amount" : {
+            "amount" : "100",
+            "currency" : "RON"
+          },
+          "day" : "2026-10-05"
+        },
+        {
+          "amount" : {
+            "amount" : "100",
+            "currency" : "RON"
+          },
+          "day" : "2026-11-05"
+        }
+      ],
+      "today" : "2026-11-10",
+      "trend" : {
+        "averageLastYear" : [
+          {
+            "amount" : "100",
+            "currency" : "RON"
+          }
+        ],
+        "change" : {
+          "amount" : "0",
+          "currency" : "RON"
+        },
+        "direction" : "same",
+        "last" : {
+          "amount" : {
+            "amount" : "100",
+            "currency" : "RON"
+          },
+          "day" : "2026-11-05"
+        }
+      }
+    },
+    {
+      "bills" : [
+        {
+          "amount" : {
+            "amount" : "100",
+            "currency" : "RON"
+          },
+          "day" : "2026-09-05"
+        },
+        {
+          "amount" : {
+            "amount" : "10",
+            "currency" : "EUR"
+          },
+          "day" : "2026-10-05"
+        }
+      ],
+      "today" : "2026-11-10",
+      "trend" : {
+        "averageLastYear" : [
+          {
+            "amount" : "10",
+            "currency" : "EUR"
+          },
+          {
+            "amount" : "100",
+            "currency" : "RON"
+          }
+        ],
+        "change" : null,
+        "direction" : null,
+        "last" : {
+          "amount" : {
+            "amount" : "10",
+            "currency" : "EUR"
+          },
+          "day" : "2026-10-05"
+        }
+      }
+    },
+    {
+      "bills" : [
+        {
+          "amount" : {
+            "amount" : "50",
+            "currency" : "RON"
+          },
+          "day" : "2026-08-05"
+        },
+        {
+          "amount" : {
+            "amount" : "10",
+            "currency" : "EUR"
+          },
+          "day" : "2026-09-05"
+        },
+        {
+          "amount" : {
+            "amount" : "70",
+            "currency" : "RON"
+          },
+          "day" : "2026-10-05"
+        }
+      ],
+      "today" : "2026-11-10",
+      "trend" : {
+        "averageLastYear" : [
+          {
+            "amount" : "10",
+            "currency" : "EUR"
+          },
+          {
+            "amount" : "60",
+            "currency" : "RON"
+          }
+        ],
+        "change" : {
+          "amount" : "20",
+          "currency" : "RON"
+        },
+        "direction" : "up",
+        "last" : {
+          "amount" : {
+            "amount" : "70",
+            "currency" : "RON"
+          },
+          "day" : "2026-10-05"
+        }
+      }
+    },
+    {
+      "bills" : [
+        {
+          "amount" : null,
+          "day" : "2026-11-05"
+        }
+      ],
+      "today" : "2026-11-10",
+      "trend" : null
+    },
+    {
+      "bills" : [
+        {
+          "amount" : {
+            "amount" : "80",
+            "currency" : "RON"
+          },
+          "day" : "2026-10-05"
+        },
+        {
+          "amount" : null,
+          "day" : "2026-11-05"
+        }
+      ],
+      "today" : "2026-11-10",
+      "trend" : {
+        "averageLastYear" : [
+          {
+            "amount" : "80",
+            "currency" : "RON"
+          }
+        ],
+        "change" : null,
+        "direction" : null,
+        "last" : {
+          "amount" : {
+            "amount" : "80",
+            "currency" : "RON"
+          },
+          "day" : "2026-10-05"
+        }
+      }
+    },
+    {
+      "bills" : [
+
+      ],
+      "today" : "2026-11-10",
+      "trend" : null
+    },
+    {
+      "bills" : [
+        {
+          "amount" : {
+            "amount" : "300",
+            "currency" : "RON"
+          },
+          "day" : "2025-11-10"
+        },
+        {
+          "amount" : {
+            "amount" : "100",
+            "currency" : "RON"
+          },
+          "day" : "2025-11-11"
+        },
+        {
+          "amount" : {
+            "amount" : "101",
+            "currency" : "RON"
+          },
+          "day" : "2026-11-01"
+        }
+      ],
+      "today" : "2026-11-10",
+      "trend" : {
+        "averageLastYear" : [
+          {
+            "amount" : "100.5",
+            "currency" : "RON"
+          }
+        ],
+        "change" : {
+          "amount" : "1",
+          "currency" : "RON"
+        },
+        "direction" : "up",
+        "last" : {
+          "amount" : {
+            "amount" : "101",
+            "currency" : "RON"
+          },
+          "day" : "2026-11-01"
+        }
+      }
+    },
+    {
+      "bills" : [
+        {
+          "amount" : {
+            "amount" : "90",
+            "currency" : "RON"
+          },
+          "day" : "2027-03-01"
+        },
+        {
+          "amount" : {
+            "amount" : "10.01",
+            "currency" : "RON"
+          },
+          "day" : "2027-03-02"
+        },
+        {
+          "amount" : {
+            "amount" : "10.02",
+            "currency" : "RON"
+          },
+          "day" : "2028-02-29"
+        }
+      ],
+      "today" : "2028-03-01",
+      "trend" : {
+        "averageLastYear" : [
+          {
+            "amount" : "10.02",
+            "currency" : "RON"
+          }
+        ],
+        "change" : {
+          "amount" : "0.01",
+          "currency" : "RON"
+        },
+        "direction" : "up",
+        "last" : {
+          "amount" : {
+            "amount" : "10.02",
+            "currency" : "RON"
+          },
+          "day" : "2028-02-29"
+        }
+      }
+    },
+    {
+      "bills" : [
+        {
+          "amount" : {
+            "amount" : "33.33",
+            "currency" : "RON"
+          },
+          "day" : "2026-07-05"
+        },
+        {
+          "amount" : {
+            "amount" : "33.33",
+            "currency" : "RON"
+          },
+          "day" : "2026-08-05"
+        },
+        {
+          "amount" : {
+            "amount" : "33.34",
+            "currency" : "RON"
+          },
+          "day" : "2026-09-05"
+        }
+      ],
+      "today" : "2026-11-10",
+      "trend" : {
+        "averageLastYear" : [
+          {
+            "amount" : "33.33",
+            "currency" : "RON"
+          }
+        ],
+        "change" : {
+          "amount" : "0.01",
+          "currency" : "RON"
+        },
+        "direction" : "up",
+        "last" : {
+          "amount" : {
+            "amount" : "33.34",
+            "currency" : "RON"
+          },
+          "day" : "2026-09-05"
+        }
+      }
+    },
+    {
+      "bills" : [
+        {
+          "amount" : {
+            "amount" : "0.01",
+            "currency" : "RON"
+          },
+          "day" : "2026-10-05"
+        },
+        {
+          "amount" : {
+            "amount" : "0.02",
+            "currency" : "RON"
+          },
+          "day" : "2026-11-05"
+        }
+      ],
+      "today" : "2026-11-10",
+      "trend" : {
+        "averageLastYear" : [
+          {
+            "amount" : "0.02",
+            "currency" : "RON"
+          }
+        ],
+        "change" : {
+          "amount" : "0.01",
+          "currency" : "RON"
+        },
+        "direction" : "up",
+        "last" : {
+          "amount" : {
+            "amount" : "0.02",
+            "currency" : "RON"
+          },
+          "day" : "2026-11-05"
+        }
+      }
+    }
+  ],
+  "rule" : "BillHistory.trend(_:today:calendar:)",
+  "shape" : "today and a subscription's bills (each its day and amount, null for none); trend: the newest bill with an amount, how much more or less it is than the one before it in the same currency (null for none), its direction (up, down, same; null for none) and the average over the last 365 days, one per currency in the currencies' order; null without a bill with an amount.",
+  "source" : "ios/DosarCuSina/Services/Subscriptions/BillHistory.swift",
+  "writtenBy" : "ios/DosarCuSinaTests/SubscriptionVectorsTests.swift"
+}

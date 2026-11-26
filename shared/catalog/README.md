@@ -13,6 +13,7 @@ The categories that ship with the app (Mașini, Locuințe, Acte and the rest), d
 | [`keys.json`](keys.json) | The built-in field, deadline and category keys the code names. |
 | [`ownCategories.json`](ownCategories.json) | What a category of one's own is made of besides the answers to its switches. |
 | [`household.json`](household.json) | The household's own deadlines, which belong to no section. |
+| [`subscriptions/subscriptions.json`](subscriptions/subscriptions.json) | What a subscription can be: its services, codes, groups and billing cycles. Written by [`SubscriptionCatalogExportTests`](../../ios/DosarCuSinaTests/SubscriptionCatalogExportTests.swift) (see below). |
 
 All five are machine JSON, written by `MachineText` with their keys sorted, so a diff shows only what changed.
 
@@ -53,6 +54,19 @@ What a category of one's own is made of besides the answers to its few questions
 
 - **`blueprints`:** the household's own deadlines (`HouseholdRules.blueprints`), each as a template's `blueprints` writes one: today the rental income declaration (`household.rentalDeclaration`), made while the household has a tenancy (`HouseholdRules.reconcile`).
 - **`writtenBy`:** the test that writes the files.
+
+### `subscriptions/subscriptions.json`
+
+What a subscription can be, declared once in the iOS code (`ServiceKind.services`, `SubscriptionGroup` and `BillingCycle` in [`ChoiceOptions.swift`](../../ios/DosarCuSina/Models/Fields/ChoiceOptions.swift), `SubscriptionCode` in [`SubscriptionFields.swift`](../../ios/DosarCuSina/Services/Subscriptions/SubscriptionFields.swift)), in a folder of its own so it is written and checked apart from the built-in catalog:
+
+- **`services`:** in the order they are offered, each with its `key` (stored), `label` and `aliases` (what stored or typed text it is found by), its `group`, its `codes` (by name, most specific first: the only ones read, shown and asked), `isTiedToHome` (supplied at an address: the contract lives under the home), `sendsRegularBills` (one bill per billing cycle), `meter` (a `MeasurementKind`, or null) and `modelDescription` (what a language model is told it is).
+- **`unspecifiedService`:** the service that says nothing about which contract a paper is: its codes are what any contract has, and it is never told apart from another service.
+- **`codes`:** in the edit form's order, each with its `name`, `family` (`consumptionPoint`, `customer`, `contract`, `line`), `fieldKey` (the subscription's field that keeps it), `captureKey` (what capture reads it as), `weight` (how much an agreeing one says), `namesOnePoint` (a different one is a different contract), `homeFieldKeys` (a home's own fields for the same code), `comparedAs` (`compact`, or `nationalPhoneNumber`) and `editFormCondition` (when the edit form shows it, as a template writes a condition).
+- **`groups`:** in the order subscriptions are listed under them, each its `key` and `label`; **`unspecifiedGroup`:** the group of a service that isn't known.
+- **`billingCycles`:** in the order they are offered, each its `key`, `label`, `aliases` and `interval` (`every` and `unit`); **`unknownCycle`:** what a cycle that isn't known lasts.
+- **`writtenBy`:** the test that writes the file.
+
+[`SubscriptionCatalogExportTests`](../../ios/DosarCuSinaTests/SubscriptionCatalogExportTests.swift) writes it fresh or fails, by the same switch (`TEST_RUNNER_CATALOG_WRITE=1`, or `CATALOG_WRITE=1` in Xcode, running `SubscriptionCatalogExportTests`); a failed run on GitHub keeps it made afresh in `test-results` as `catalog/subscriptions/`. Android's `core` module copies it into its resources (the `subscriptionCatalogResources` task) and reads it into `SubscriptionCatalog.builtIn` ([`core.subscriptions`](../../android/core/src/main/kotlin/com/ar/dosarcusina/core/subscriptions)); every part must read whole, and no Android code tests for a named service.
 
 ## Fresh or failing
 
