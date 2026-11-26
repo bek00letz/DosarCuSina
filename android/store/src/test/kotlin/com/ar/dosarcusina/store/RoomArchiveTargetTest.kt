@@ -13,6 +13,7 @@ import com.ar.dosarcusina.archive.moment
 import com.ar.dosarcusina.archive.sha256
 import com.ar.dosarcusina.archive.unpackArchive
 import com.ar.dosarcusina.catalog.Catalog
+import com.ar.dosarcusina.store.locks.confirmed
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
@@ -21,6 +22,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.io.TempDir
 import java.io.File
+import java.io.IOException
 import java.time.Clock
 import java.time.ZoneId
 import java.time.ZoneOffset
@@ -132,11 +134,81 @@ class RoomArchiveTargetTest {
         binder.failsNextWrite = true
         assertThrows<IllegalStateException> { import(binder) }
         assertEquals(emptyList<String>(), binder.store.files.folder.list().orEmpty().toList(), "Its files went")
-        assertEquals(emptyMap<String, Boolean>(), binder.locks.choices)
+        assertEquals(emptyMap<String, Boolean>(), binder.sectionLocks.all)
         assertEquals(Binder(), binder.snapshot())
-        binder.locks.failsNextWrite = true
-        assertThrows<IllegalStateException> { import(binder) }
+        // This phone's locks can't be written: their folder takes no new file.
+        assertTrue(binder.lockFolder.setWritable(false))
+        try {
+            assertThrows<IOException> { import(binder) }
+        } finally {
+            binder.lockFolder.setWritable(true)
+        }
         assertEquals(Binder(), binder.snapshot(), "Locks that can't be kept keep nothing of the import")
+        assertEquals(emptyMap<String, Boolean>(), binder.sectionLocks.all)
+    }
+
+    @Test
+    fun anImportLocksWhatItRaisesEverywhereAndNeverOpens() {
+        val binder = household()
+        val database = binder.store.database
+        val vehicle = runBlocking { database.templates().all().single { it.key == "vehicle" } }
+        assertEquals(false, binder.snapshot().locks["vehicle"])
+        assertEquals(null, vehicle.lockedEverywhereAt)
+        assertEquals(true, binder.snapshot().locks["documents"], "Locked as the catalog says")
+
+        // A backup that locks the cars.
+        val locked = binder.snapshot().let { it.copy(templates = it.templates.filter { t -> t.key == "vehicle" }) }
+        binder.apply(BinderChanges(locked, Removed(), mapOf("vehicle" to true, "documents" to false)))
+        val raised = runBlocking { database.templates().all().single { it.key == "vehicle" } }
+        assertEquals(true, binder.snapshot().locks["vehicle"])
+        assertTrue(raised.lockedEverywhereAt != null, "Raised by a backup, the lock travels as one made here")
+        assertEquals(vehicle.updatedAt, raised.updatedAt, "It gives no change time")
+        assertEquals(true, binder.snapshot().locks["documents"], "Never opened by an import")
+        assertEquals(true, binder.sectionLocks.lockedHere("documents")?.locked, "Its choice stays as it was")
+        val custom = binder.snapshot().templates.first { !it.isBuiltIn }.key
+        assertEquals(false, binder.snapshot().locks[custom])
+        assertEquals(null, binder.sectionLocks.lockedHere(custom), "An open category needs no choice")
+
+        // Raised again: nothing more changes.
+        binder.apply(BinderChanges(locked, Removed(), mapOf("vehicle" to true)))
+        val again = runBlocking { database.templates().all().single { it.key == "vehicle" } }
+        assertEquals(raised.lockedEverywhereAt, again.lockedEverywhereAt)
+    }
+
+    @Test
+    fun aBackupMayLockACategoryHereButNeverOpenOne() {
+        val source = household()
+        val at = clock.instant()
+        runBlocking {
+            for (row in source.store.database.templates().all()) {
+                val saved = when (row.key) {
+                    "vehicle" -> source.locks.setLock(row, locked = true, lowering = null, now = at)
+                    "documents" -> source.locks.setLock(row, locked = false, lowering = confirmed(), now = at)
+                    else -> row
+                }
+                if (saved != row) source.store.database.templates().update(saved)
+            }
+        }
+        assertEquals(false, source.snapshot().locks["documents"])
+        val sink = MemoryByteSink()
+        DossierArchiveWriter("1.0", clock.instant(), bucharest).write(source.snapshot(), sink)
+
+        for (mode in ArchiveImportMode.entries) {
+            val here = RoomTestBinder(Binder())
+            DossierArchiveService(here, Catalog.builtIn, clock = clock, zone = { bucharest })
+                .importArchive(MemoryByteSource(sink.data), mode = mode, staging = staging)
+            assertEquals(true, here.snapshot().locks["vehicle"], "$mode: locked in the backup, locked here too")
+            assertEquals(true, here.snapshot().locks["documents"], "$mode: open in the backup, still locked here")
+        }
+    }
+
+    @Test
+    fun aCategoryAnImportTakesOutKeepsThisPhonesLock() {
+        val binder = household()
+        val custom = runBlocking { binder.store.database.templates().all().first { !it.isBuiltIn } }
+        binder.apply(BinderChanges(Binder(), Removed(), mapOf(custom.key to true)))
+        binder.apply(BinderChanges(Binder(), Removed(templates = setOf(custom.key)), emptyMap()))
+        assertEquals(true, binder.sectionLocks.lockedHere(custom.key)?.locked, "Locked if it ever comes back")
     }
 
     @Test

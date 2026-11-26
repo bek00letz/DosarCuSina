@@ -1,6 +1,7 @@
 package com.ar.dosarcusina.store.locks
 
 import com.ar.dosarcusina.archive.binder.BuiltIns
+import com.ar.dosarcusina.store.DeviceLocks
 import com.ar.dosarcusina.store.schema.CategoryTemplate
 import com.ar.dosarcusina.store.schema.StoredMoment
 import java.time.Instant
@@ -21,7 +22,7 @@ class CategoryLocks(
     val choices: SectionLocks,
     /** The app's built-in categories, for which of them the catalog locks. */
     private val builtIns: BuiltIns,
-) {
+) : DeviceLocks {
     /** The built-in categories locked until this phone decides otherwise (Acte and Sănătate). */
     val lockedByDefault: Set<String> = builtIns.all.filter { it.isSensitiveByDefault }.map { it.key }.toSet()
 
@@ -56,8 +57,7 @@ class CategoryLocks(
     /** The same answer, from the categories by key. */
     fun isSensitive(key: String, among: Map<String, CategoryTemplate>): Boolean = isSensitive(key, among[key])
 
-    /** Whether each of [templates] is locked here, by key; two copies of one are locked if either is. */
-    fun locked(templates: List<CategoryTemplate>): Map<String, Boolean> =
+    override fun locked(templates: List<CategoryTemplate>): Map<String, Boolean> =
         templates.groupBy { it.key }.mapValues { (_, copies) -> copies.any(::isSensitive) }
 
     /**
@@ -77,15 +77,10 @@ class CategoryLocks(
         return if (locked && !wasLocked) template.copy(lockedEverywhereAt = StoredMoment.kept(now)) else template
     }
 
-    /** Locks [template] here, as chosen at [now] ([setLock]): locking needs no confirmation. */
-    fun lock(template: CategoryTemplate, now: Instant): CategoryTemplate =
+    override fun lock(template: CategoryTemplate, now: Instant): CategoryTemplate =
         setLock(template, locked = true, lowering = null, now = now)
 
-    /**
-     * Keeps the lock a new category is made with as this phone's choice, unless this phone already
-     * chose for its key, before the save that makes it; gives its row to save.
-     */
-    fun madeWith(template: CategoryTemplate, locked: Boolean, now: Instant): CategoryTemplate {
+    override fun madeWith(template: CategoryTemplate, locked: Boolean, now: Instant): CategoryTemplate {
         choices.adopt(mapOf(template.key to locked))
         // One of the person's own made locked is locked on every phone; a built-in's lock is the
         // catalog's, the same everywhere already.
