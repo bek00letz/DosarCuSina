@@ -1,11 +1,13 @@
 package com.ar.dosarcusina.store.repairs
 
 import com.ar.dosarcusina.archive.v3.FieldDefinition
+import com.ar.dosarcusina.archive.v3.ReminderProfile
 import com.ar.dosarcusina.catalog.Role
 import com.ar.dosarcusina.core.values.CalendarDay
 import com.ar.dosarcusina.core.values.MeasurementUnit
 import com.ar.dosarcusina.store.BinderView
 import com.ar.dosarcusina.store.Tables
+import com.ar.dosarcusina.store.obligations.LikelyDoubleCompletions
 import com.ar.dosarcusina.store.schema.CategoryTemplate
 import com.ar.dosarcusina.store.schema.keptSections
 import java.util.Locale
@@ -104,6 +106,37 @@ sealed interface DataRepairSubject {
         val unit: MeasurementUnit?,
         val section: String,
     ) : DataRepairSubject
+
+    /**
+     * A deadline an old reminder may have closed twice, as the iOS app's `.doubleCompletion`: „[deadline]”
+     * la [section] pare închis de două ori, la câteva zile distanță. Anulez a doua oară?
+     */
+    data class DoubleCompletion(
+        val candidate: LikelyDoubleCompletions.Candidate,
+        val deadline: String,
+        val section: String,
+    ) : DataRepairSubject
+
+    /**
+     * A deadline gets the travel margin its document gives, as the iOS app's `.travelCutoff`, worded by
+     * [reminders] (the sentence of when it reminds): with a margin, „[section]” e bun de călătorit doar până
+     * pe [cutoff], cu [marginDays] înainte să expire. Schimb când te anunț?; without one, La „[section]”
+     * contează doar data de expirare. Schimb când te anunț?
+     */
+    data class TravelCutoff(
+        val obligationId: UUID,
+        val marginDays: Int,
+        val section: String,
+        val reminders: ReminderProfile,
+        val cutoff: CalendarDay?,
+    ) : DataRepairSubject
+
+    /**
+     * A deadline that closes when its document is replaced stops repeating, as the iOS app's
+     * `.stopsRepeating`: La „[section]”, „[deadline]” spune că se repetă, dar se închide când îl bifezi:
+     * documentul nou are termenul lui. Opresc repetarea?
+     */
+    data class StopsRepeating(val obligationId: UUID, val deadline: String, val section: String) : DataRepairSubject
 
     /**
      * A section standing on its own is offered to move under the household's only section of the part

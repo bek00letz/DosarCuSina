@@ -17,6 +17,8 @@ import java.util.regex.Pattern
  *   section's own typed values keep whole (a pet's microchip) is searched as it is stored
  *   ([KeptWhole]), by the same rule the save uses;
  * - sealed text (a secret) is never indexed or remembered;
+ * - the line a result shows under its title holds none of them either, while what is already masked
+ *   shows as the record's page shows it ([shown]);
  * - words kept on this phone outside the binder (recent searches, a trip's plan) are kept only when
  *   [mayRemember] allows them, checked again when they are read back;
  * - a query that found anything in a locked section is never remembered;
@@ -33,18 +35,50 @@ object SearchPrivacy {
     /** What a removed value leaves behind at either end: "Pașaport – " reads "Pașaport". */
     private const val DANGLING = "–—-·,:;/|#"
 
+    /** What joins the parts of a result's line ("VW Golf · 3 martie"). */
+    private const val MIDDLE_DOT = "·"
+
     /**
-     * [text] with every CNP-shaped number, every card number and every sealed value taken out. A card
-     * number is never searched, even by its last four digits. What the record's section keeps whole
-     * ([keeping]) stays, as it stays where it is stored.
+     * [text] with every CNP-shaped number, every card number and every sealed value taken out: what
+     * can be matched. A card number is never searched, even by its last four digits, so a masked one
+     * ("•••• 4821") goes too, and so does any mask. What the record's section keeps whole ([keeping])
+     * stays, as it stays where it is stored. The same rule as [shown], with what is masked taken out
+     * as well.
      */
     fun redacting(text: String, keeping: KeptWhole = KeptWhole.NOTHING): String {
         val characters = TextRules.characters(text)
         val worthLooking = characters.any(TextRules::isNumber) ||
             text.contains(SealedText.PREFIX) || text.contains(PaymentCardNumbers.MASK)
         if (!worthLooking) return text
-        var result = withoutCnpShaped(characters)
-        result = removing(PaymentCardNumbers.MASKED_PATTERN, PaymentCardNumbers.redact(result, keeping = keeping))
+        return takingOut(characters, keeping, masked = true)
+    }
+
+    /**
+     * A line a result shows (the one under its title, for every kind of result), as it may be shown:
+     * every CNP-shaped number and sealed value taken out and a card number masked, by the same rule
+     * as [redacting], while what is already masked stays as the record's page shows it (a secret's
+     * "••••", a card's "•••• 4821"): the line is shown, never matched. A line with nothing taken out is
+     * left exactly as it was; one with something taken out loses the spaces and the dots ("·") it
+     * leaves behind.
+     */
+    fun shown(text: String, keeping: KeptWhole = KeptWhole.NOTHING): String {
+        val characters = TextRules.characters(text)
+        if (characters.none(TextRules::isNumber) && !text.contains(SealedText.PREFIX)) return text
+        val result = takingOut(characters, keeping, masked = false)
+        if (result == text) return text
+        return TextRules.trimming(words(result).joinToString(" ")) {
+            TextRules.isWhitespace(it) || Character.toString(it) == MIDDLE_DOT
+        }
+    }
+
+    /**
+     * The one rule behind [redacting] and [shown]: CNP-shaped numbers out, card numbers masked
+     * ([PaymentCardNumbers], keeping what the section keeps whole), sealed values out, and with
+     * [masked], what is masked out too.
+     */
+    private fun takingOut(characters: List<String>, keeping: KeptWhole, masked: Boolean): String {
+        var result = PaymentCardNumbers.redact(withoutCnpShaped(characters), keeping = keeping)
+        if (masked) result = removing(PaymentCardNumbers.MASKED_PATTERN, result)
         if (result.contains(SealedText.PREFIX)) {
             result = piecesKeepingEmpty(result).filterNot(SealedText::isSealed).joinToString(" ")
         }

@@ -1,0 +1,880 @@
+{
+  "cases" : [
+    {
+      "defaultProfile" : {
+        "consequence" : "legal",
+        "followUpAfterLapse" : true,
+        "graceDays" : 0,
+        "leadDays" : [
+          30,
+          7,
+          0
+        ]
+      },
+      "historyKindOfOwn" : "inspection",
+      "missedCyclesStayOwed" : false,
+      "obligationKind" : "legal",
+      "own" : "ownLegal"
+    },
+    {
+      "defaultProfile" : {
+        "consequence" : "financial",
+        "followUpAfterLapse" : true,
+        "graceDays" : 0,
+        "leadDays" : [
+          14,
+          1
+        ]
+      },
+      "historyKindOfOwn" : "payment",
+      "missedCyclesStayOwed" : true,
+      "obligationKind" : "tax",
+      "own" : "ownTax"
+    },
+    {
+      "defaultProfile" : {
+        "consequence" : "legal",
+        "followUpAfterLapse" : true,
+        "graceDays" : 0,
+        "leadDays" : [
+          30,
+          7,
+          0
+        ]
+      },
+      "historyKindOfOwn" : "payment",
+      "missedCyclesStayOwed" : false,
+      "obligationKind" : "insurance",
+      "own" : "policy"
+    },
+    {
+      "defaultProfile" : {
+        "consequence" : "health",
+        "followUpAfterLapse" : false,
+        "graceDays" : 7,
+        "leadDays" : [
+          7,
+          1
+        ]
+      },
+      "historyKindOfOwn" : "treatment",
+      "missedCyclesStayOwed" : false,
+      "obligationKind" : "health",
+      "own" : "ownHealth"
+    },
+    {
+      "defaultProfile" : {
+        "consequence" : "legal",
+        "followUpAfterLapse" : true,
+        "graceDays" : 0,
+        "leadDays" : [
+          60,
+          30
+        ]
+      },
+      "historyKindOfOwn" : "note",
+      "missedCyclesStayOwed" : false,
+      "obligationKind" : "renewal",
+      "own" : "newDocument"
+    },
+    {
+      "defaultProfile" : {
+        "consequence" : "financial",
+        "followUpAfterLapse" : true,
+        "graceDays" : 0,
+        "leadDays" : [
+          2,
+          0
+        ]
+      },
+      "historyKindOfOwn" : "payment",
+      "missedCyclesStayOwed" : true,
+      "obligationKind" : "payment",
+      "own" : "bill"
+    },
+    {
+      "defaultProfile" : {
+        "consequence" : "comfort",
+        "followUpAfterLapse" : false,
+        "graceDays" : 14,
+        "leadDays" : [
+          14,
+          1
+        ]
+      },
+      "historyKindOfOwn" : "maintenance",
+      "missedCyclesStayOwed" : false,
+      "obligationKind" : "maintenance",
+      "own" : "ownService"
+    },
+    {
+      "defaultProfile" : {
+        "consequence" : "comfort",
+        "followUpAfterLapse" : false,
+        "graceDays" : 3,
+        "leadDays" : [
+          0
+        ]
+      },
+      "historyKindOfOwn" : "maintenance",
+      "missedCyclesStayOwed" : false,
+      "obligationKind" : "routine",
+      "own" : "chore"
+    },
+    {
+      "reads" : "legal",
+      "storedKind" : "legal"
+    },
+    {
+      "reads" : "routine",
+      "storedKind" : "routine"
+    },
+    {
+      "reads" : "legal",
+      "storedKind" : "Routine"
+    },
+    {
+      "reads" : "legal",
+      "storedKind" : "chore"
+    },
+    {
+      "reads" : "legal",
+      "storedKind" : ""
+    },
+    {
+      "reads" : "legal",
+      "storedKind" : null
+    },
+    {
+      "completionKind" : "chore",
+      "historyKind" : "maintenance",
+      "record" : "atHome",
+      "shape" : {
+        "asksDate" : false,
+        "asksNewExpiry" : false,
+        "asksNote" : false,
+        "asksReading" : false,
+        "closesOutsideTheApp" : true,
+        "cost" : null,
+        "counter" : null,
+        "isOneTap" : true,
+        "newEnd" : null,
+        "offersNoteAfter" : true,
+        "paper" : null,
+        "replacement" : null,
+        "replacesDocument" : false,
+        "replacesSection" : false
+      }
+    },
+    {
+      "completionKind" : "acknowledged",
+      "historyKind" : "note",
+      "record" : "acknowledged",
+      "shape" : {
+        "asksDate" : false,
+        "asksNewExpiry" : false,
+        "asksNote" : false,
+        "asksReading" : false,
+        "closesOutsideTheApp" : true,
+        "cost" : null,
+        "counter" : null,
+        "isOneTap" : true,
+        "newEnd" : null,
+        "offersNoteAfter" : true,
+        "paper" : null,
+        "replacement" : null,
+        "replacesDocument" : false,
+        "replacesSection" : false
+      }
+    },
+    {
+      "completionKind" : "vehicleService",
+      "historyKind" : "maintenance",
+      "record" : "job",
+      "shape" : {
+        "asksDate" : true,
+        "asksNewExpiry" : false,
+        "asksNote" : false,
+        "asksReading" : true,
+        "closesOutsideTheApp" : true,
+        "cost" : "cost",
+        "counter" : "section",
+        "isOneTap" : false,
+        "newEnd" : null,
+        "offersNoteAfter" : false,
+        "paper" : {
+          "gender" : "feminine",
+          "origin" : "issued",
+          "use" : "history"
+        },
+        "replacement" : null,
+        "replacesDocument" : false,
+        "replacesSection" : false
+      }
+    },
+    {
+      "completionKind" : "tyreChange",
+      "historyKind" : "maintenance",
+      "record" : "job",
+      "shape" : {
+        "asksDate" : true,
+        "asksNewExpiry" : false,
+        "asksNote" : false,
+        "asksReading" : true,
+        "closesOutsideTheApp" : true,
+        "cost" : "cost",
+        "counter" : "section",
+        "isOneTap" : false,
+        "newEnd" : null,
+        "offersNoteAfter" : false,
+        "paper" : {
+          "gender" : "feminine",
+          "origin" : "issued",
+          "use" : "history"
+        },
+        "replacement" : null,
+        "replacesDocument" : false,
+        "replacesSection" : false
+      }
+    },
+    {
+      "completionKind" : "bikeService",
+      "historyKind" : "maintenance",
+      "record" : "job",
+      "shape" : {
+        "asksDate" : true,
+        "asksNewExpiry" : false,
+        "asksNote" : false,
+        "asksReading" : true,
+        "closesOutsideTheApp" : true,
+        "cost" : "cost",
+        "counter" : "section",
+        "isOneTap" : false,
+        "newEnd" : null,
+        "offersNoteAfter" : false,
+        "paper" : {
+          "gender" : "feminine",
+          "origin" : "issued",
+          "use" : "history"
+        },
+        "replacement" : null,
+        "replacesDocument" : false,
+        "replacesSection" : false
+      }
+    },
+    {
+      "completionKind" : "chimneySweep",
+      "historyKind" : "maintenance",
+      "record" : "job",
+      "shape" : {
+        "asksDate" : true,
+        "asksNewExpiry" : false,
+        "asksNote" : false,
+        "asksReading" : false,
+        "closesOutsideTheApp" : true,
+        "cost" : "cost",
+        "counter" : null,
+        "isOneTap" : false,
+        "newEnd" : null,
+        "offersNoteAfter" : false,
+        "paper" : {
+          "gender" : "feminine",
+          "origin" : "issued",
+          "use" : "history"
+        },
+        "replacement" : null,
+        "replacesDocument" : false,
+        "replacesSection" : false
+      }
+    },
+    {
+      "completionKind" : "doneAtHome",
+      "historyKind" : "maintenance",
+      "record" : "atHome",
+      "shape" : {
+        "asksDate" : true,
+        "asksNewExpiry" : false,
+        "asksNote" : false,
+        "asksReading" : true,
+        "closesOutsideTheApp" : true,
+        "cost" : "cost",
+        "counter" : "countedOn",
+        "isOneTap" : false,
+        "newEnd" : null,
+        "offersNoteAfter" : false,
+        "paper" : null,
+        "replacement" : null,
+        "replacesDocument" : false,
+        "replacesSection" : false
+      }
+    },
+    {
+      "completionKind" : "ownService",
+      "historyKind" : "maintenance",
+      "record" : "job",
+      "shape" : {
+        "asksDate" : true,
+        "asksNewExpiry" : false,
+        "asksNote" : false,
+        "asksReading" : true,
+        "closesOutsideTheApp" : true,
+        "cost" : "cost",
+        "counter" : "section",
+        "isOneTap" : false,
+        "newEnd" : null,
+        "offersNoteAfter" : false,
+        "paper" : {
+          "gender" : "feminine",
+          "origin" : "issued",
+          "use" : "history"
+        },
+        "replacement" : null,
+        "replacesDocument" : false,
+        "replacesSection" : false
+      }
+    },
+    {
+      "completionKind" : "bill",
+      "historyKind" : "payment",
+      "record" : "bill",
+      "shape" : {
+        "asksDate" : true,
+        "asksNewExpiry" : false,
+        "asksNote" : false,
+        "asksReading" : false,
+        "closesOutsideTheApp" : true,
+        "cost" : "paid",
+        "counter" : null,
+        "isOneTap" : false,
+        "newEnd" : null,
+        "offersNoteAfter" : false,
+        "paper" : {
+          "gender" : "feminine",
+          "origin" : "issued",
+          "use" : "logged"
+        },
+        "replacement" : null,
+        "replacesDocument" : false,
+        "replacesSection" : false
+      }
+    },
+    {
+      "completionKind" : "buildingTax",
+      "historyKind" : "payment",
+      "record" : "tax",
+      "shape" : {
+        "asksDate" : true,
+        "asksNewExpiry" : false,
+        "asksNote" : false,
+        "asksReading" : false,
+        "closesOutsideTheApp" : true,
+        "cost" : "paid",
+        "counter" : null,
+        "isOneTap" : false,
+        "newEnd" : null,
+        "offersNoteAfter" : false,
+        "paper" : {
+          "gender" : "feminine",
+          "origin" : "issued",
+          "use" : "keep"
+        },
+        "replacement" : null,
+        "replacesDocument" : false,
+        "replacesSection" : false
+      }
+    },
+    {
+      "completionKind" : "rentalDeclaration",
+      "historyKind" : "payment",
+      "record" : "tax",
+      "shape" : {
+        "asksDate" : true,
+        "asksNewExpiry" : false,
+        "asksNote" : false,
+        "asksReading" : false,
+        "closesOutsideTheApp" : true,
+        "cost" : "paid",
+        "counter" : null,
+        "isOneTap" : false,
+        "newEnd" : null,
+        "offersNoteAfter" : false,
+        "paper" : {
+          "gender" : "feminine",
+          "origin" : "issued",
+          "use" : "keep"
+        },
+        "replacement" : null,
+        "replacesDocument" : false,
+        "replacesSection" : false
+      }
+    },
+    {
+      "completionKind" : "ownTax",
+      "historyKind" : "payment",
+      "record" : "tax",
+      "shape" : {
+        "asksDate" : true,
+        "asksNewExpiry" : false,
+        "asksNote" : false,
+        "asksReading" : false,
+        "closesOutsideTheApp" : true,
+        "cost" : "paid",
+        "counter" : null,
+        "isOneTap" : false,
+        "newEnd" : null,
+        "offersNoteAfter" : false,
+        "paper" : {
+          "gender" : "feminine",
+          "origin" : "issued",
+          "use" : "keep"
+        },
+        "replacement" : null,
+        "replacesDocument" : false,
+        "replacesSection" : false
+      }
+    },
+    {
+      "completionKind" : "newDocument",
+      "historyKind" : "note",
+      "record" : "renewal",
+      "shape" : {
+        "asksDate" : true,
+        "asksNewExpiry" : true,
+        "asksNote" : false,
+        "asksReading" : false,
+        "closesOutsideTheApp" : false,
+        "cost" : null,
+        "counter" : null,
+        "isOneTap" : false,
+        "newEnd" : "expires",
+        "offersNoteAfter" : false,
+        "paper" : {
+          "gender" : "masculine",
+          "origin" : "issued",
+          "use" : "expiry"
+        },
+        "replacement" : null,
+        "replacesDocument" : false,
+        "replacesSection" : false
+      }
+    },
+    {
+      "completionKind" : "documentReplaced",
+      "historyKind" : "note",
+      "record" : "renewal",
+      "shape" : {
+        "asksDate" : true,
+        "asksNewExpiry" : false,
+        "asksNote" : false,
+        "asksReading" : false,
+        "closesOutsideTheApp" : false,
+        "cost" : "cost",
+        "counter" : null,
+        "isOneTap" : false,
+        "newEnd" : null,
+        "offersNoteAfter" : false,
+        "paper" : null,
+        "replacement" : {
+          "holdersDocumentType" : null,
+          "replacesItsSection" : true
+        },
+        "replacesDocument" : true,
+        "replacesSection" : true
+      }
+    },
+    {
+      "completionKind" : "newHealthCard",
+      "historyKind" : "note",
+      "record" : "renewal",
+      "shape" : {
+        "asksDate" : true,
+        "asksNewExpiry" : false,
+        "asksNote" : false,
+        "asksReading" : false,
+        "closesOutsideTheApp" : false,
+        "cost" : null,
+        "counter" : null,
+        "isOneTap" : false,
+        "newEnd" : null,
+        "offersNoteAfter" : false,
+        "paper" : null,
+        "replacement" : {
+          "holdersDocumentType" : "documentType.euHealthCard",
+          "replacesItsSection" : false
+        },
+        "replacesDocument" : true,
+        "replacesSection" : false
+      }
+    },
+    {
+      "completionKind" : "newContract",
+      "historyKind" : "note",
+      "record" : "renewal",
+      "shape" : {
+        "asksDate" : true,
+        "asksNewExpiry" : true,
+        "asksNote" : false,
+        "asksReading" : false,
+        "closesOutsideTheApp" : false,
+        "cost" : null,
+        "counter" : null,
+        "isOneTap" : false,
+        "newEnd" : "ends",
+        "offersNoteAfter" : false,
+        "paper" : {
+          "gender" : "masculine",
+          "origin" : "signed",
+          "use" : "end"
+        },
+        "replacement" : null,
+        "replacesDocument" : false,
+        "replacesSection" : false
+      }
+    },
+    {
+      "completionKind" : "newLease",
+      "historyKind" : "note",
+      "record" : "renewal",
+      "shape" : {
+        "asksDate" : true,
+        "asksNewExpiry" : true,
+        "asksNote" : false,
+        "asksReading" : false,
+        "closesOutsideTheApp" : false,
+        "cost" : null,
+        "counter" : null,
+        "isOneTap" : false,
+        "newEnd" : "ends",
+        "offersNoteAfter" : false,
+        "paper" : {
+          "gender" : "masculine",
+          "origin" : "signed",
+          "use" : "end"
+        },
+        "replacement" : null,
+        "replacesDocument" : false,
+        "replacesSection" : false
+      }
+    },
+    {
+      "completionKind" : "policy",
+      "historyKind" : "payment",
+      "record" : "policy",
+      "shape" : {
+        "asksDate" : true,
+        "asksNewExpiry" : false,
+        "asksNote" : false,
+        "asksReading" : false,
+        "closesOutsideTheApp" : true,
+        "cost" : "cost",
+        "counter" : null,
+        "isOneTap" : false,
+        "newEnd" : null,
+        "offersNoteAfter" : false,
+        "paper" : {
+          "gender" : "feminine",
+          "origin" : "issued",
+          "use" : "nextDate"
+        },
+        "replacement" : null,
+        "replacesDocument" : false,
+        "replacesSection" : false
+      }
+    },
+    {
+      "completionKind" : "itp",
+      "historyKind" : "inspection",
+      "record" : "check",
+      "shape" : {
+        "asksDate" : true,
+        "asksNewExpiry" : false,
+        "asksNote" : false,
+        "asksReading" : false,
+        "closesOutsideTheApp" : true,
+        "cost" : "cost",
+        "counter" : null,
+        "isOneTap" : false,
+        "newEnd" : null,
+        "offersNoteAfter" : false,
+        "paper" : {
+          "gender" : "masculine",
+          "origin" : "issued",
+          "use" : "nextDate"
+        },
+        "replacement" : null,
+        "replacesDocument" : false,
+        "replacesSection" : false
+      }
+    },
+    {
+      "completionKind" : "vignette",
+      "historyKind" : "purchase",
+      "record" : "purchase",
+      "shape" : {
+        "asksDate" : true,
+        "asksNewExpiry" : false,
+        "asksNote" : false,
+        "asksReading" : false,
+        "closesOutsideTheApp" : true,
+        "cost" : "cost",
+        "counter" : null,
+        "isOneTap" : false,
+        "newEnd" : null,
+        "offersNoteAfter" : false,
+        "paper" : {
+          "gender" : "feminine",
+          "origin" : "issued",
+          "use" : "nextDate"
+        },
+        "replacement" : null,
+        "replacesDocument" : false,
+        "replacesSection" : false
+      }
+    },
+    {
+      "completionKind" : "safetyKit",
+      "historyKind" : "purchase",
+      "record" : "purchase",
+      "shape" : {
+        "asksDate" : true,
+        "asksNewExpiry" : true,
+        "asksNote" : false,
+        "asksReading" : false,
+        "closesOutsideTheApp" : false,
+        "cost" : "cost",
+        "counter" : null,
+        "isOneTap" : false,
+        "newEnd" : "expires",
+        "offersNoteAfter" : false,
+        "paper" : null,
+        "replacement" : null,
+        "replacesDocument" : false,
+        "replacesSection" : false
+      }
+    },
+    {
+      "completionKind" : "boilerCheck",
+      "historyKind" : "inspection",
+      "record" : "check",
+      "shape" : {
+        "asksDate" : true,
+        "asksNewExpiry" : false,
+        "asksNote" : false,
+        "asksReading" : false,
+        "closesOutsideTheApp" : true,
+        "cost" : "cost",
+        "counter" : null,
+        "isOneTap" : false,
+        "newEnd" : null,
+        "offersNoteAfter" : false,
+        "paper" : {
+          "gender" : "masculine",
+          "origin" : "issued",
+          "use" : "nextDate"
+        },
+        "replacement" : null,
+        "replacesDocument" : false,
+        "replacesSection" : false
+      }
+    },
+    {
+      "completionKind" : "gasCheck",
+      "historyKind" : "inspection",
+      "record" : "check",
+      "shape" : {
+        "asksDate" : true,
+        "asksNewExpiry" : false,
+        "asksNote" : false,
+        "asksReading" : false,
+        "closesOutsideTheApp" : true,
+        "cost" : "cost",
+        "counter" : null,
+        "isOneTap" : false,
+        "newEnd" : null,
+        "offersNoteAfter" : false,
+        "paper" : {
+          "gender" : "masculine",
+          "origin" : "issued",
+          "use" : "nextDate"
+        },
+        "replacement" : null,
+        "replacesDocument" : false,
+        "replacesSection" : false
+      }
+    },
+    {
+      "completionKind" : "ownLegal",
+      "historyKind" : "inspection",
+      "record" : "check",
+      "shape" : {
+        "asksDate" : true,
+        "asksNewExpiry" : false,
+        "asksNote" : false,
+        "asksReading" : false,
+        "closesOutsideTheApp" : true,
+        "cost" : "cost",
+        "counter" : null,
+        "isOneTap" : false,
+        "newEnd" : null,
+        "offersNoteAfter" : false,
+        "paper" : {
+          "gender" : "feminine",
+          "origin" : "issued",
+          "use" : "nextDate"
+        },
+        "replacement" : null,
+        "replacesDocument" : false,
+        "replacesSection" : false
+      }
+    },
+    {
+      "completionKind" : "petVaccine",
+      "historyKind" : "vaccination",
+      "record" : "vaccination",
+      "shape" : {
+        "asksDate" : true,
+        "asksNewExpiry" : false,
+        "asksNote" : false,
+        "asksReading" : false,
+        "closesOutsideTheApp" : true,
+        "cost" : "cost",
+        "counter" : null,
+        "isOneTap" : false,
+        "newEnd" : null,
+        "offersNoteAfter" : false,
+        "paper" : {
+          "gender" : "masculine",
+          "origin" : "issued",
+          "use" : "nextDate"
+        },
+        "replacement" : null,
+        "replacesDocument" : false,
+        "replacesSection" : false
+      }
+    },
+    {
+      "completionKind" : "checkup",
+      "historyKind" : "treatment",
+      "record" : "care",
+      "shape" : {
+        "asksDate" : true,
+        "asksNewExpiry" : false,
+        "asksNote" : true,
+        "asksReading" : false,
+        "closesOutsideTheApp" : true,
+        "cost" : "cost",
+        "counter" : null,
+        "isOneTap" : false,
+        "newEnd" : null,
+        "offersNoteAfter" : false,
+        "paper" : {
+          "gender" : "plural",
+          "origin" : "issued",
+          "use" : "keep"
+        },
+        "replacement" : null,
+        "replacesDocument" : false,
+        "replacesSection" : false
+      }
+    },
+    {
+      "completionKind" : "dentist",
+      "historyKind" : "treatment",
+      "record" : "care",
+      "shape" : {
+        "asksDate" : true,
+        "asksNewExpiry" : false,
+        "asksNote" : true,
+        "asksReading" : false,
+        "closesOutsideTheApp" : true,
+        "cost" : "cost",
+        "counter" : null,
+        "isOneTap" : false,
+        "newEnd" : null,
+        "offersNoteAfter" : false,
+        "paper" : null,
+        "replacement" : null,
+        "replacesDocument" : false,
+        "replacesSection" : false
+      }
+    },
+    {
+      "completionKind" : "vaccine",
+      "historyKind" : "vaccination",
+      "record" : "vaccination",
+      "shape" : {
+        "asksDate" : true,
+        "asksNewExpiry" : false,
+        "asksNote" : false,
+        "asksReading" : false,
+        "closesOutsideTheApp" : true,
+        "cost" : "cost",
+        "counter" : null,
+        "isOneTap" : false,
+        "newEnd" : null,
+        "offersNoteAfter" : false,
+        "paper" : {
+          "gender" : "feminine",
+          "origin" : "issued",
+          "use" : "keep"
+        },
+        "replacement" : null,
+        "replacesDocument" : false,
+        "replacesSection" : false
+      }
+    },
+    {
+      "completionKind" : "ownHealth",
+      "historyKind" : "treatment",
+      "record" : "care",
+      "shape" : {
+        "asksDate" : true,
+        "asksNewExpiry" : false,
+        "asksNote" : true,
+        "asksReading" : false,
+        "closesOutsideTheApp" : true,
+        "cost" : "cost",
+        "counter" : null,
+        "isOneTap" : false,
+        "newEnd" : null,
+        "offersNoteAfter" : false,
+        "paper" : {
+          "gender" : "masculine",
+          "origin" : "issued",
+          "use" : "keep"
+        },
+        "replacement" : null,
+        "replacesDocument" : false,
+        "replacesSection" : false
+      }
+    },
+    {
+      "reads" : "itp",
+      "storedCompletion" : "itp"
+    },
+    {
+      "reads" : "policy",
+      "storedCompletion" : "policy"
+    },
+    {
+      "reads" : null,
+      "storedCompletion" : "ITP"
+    },
+    {
+      "reads" : null,
+      "storedCompletion" : "newer"
+    },
+    {
+      "reads" : null,
+      "storedCompletion" : ""
+    },
+    {
+      "reads" : null,
+      "storedCompletion" : null
+    }
+  ],
+  "rule" : "ObligationKind (stored, missedCyclesStayOwed, defaultProfile), CompletionKind (own, stored, shape, record), CompletionRecord.historyKind, HistoryKind.forCompleting",
+  "shape" : "obligationKind: a kind, whether its missed cycles stay owed, the reminders it starts from (archive form), what a deadline of one's own of it completes as, and the history kind that writes. storedKind: a stored text and the kind it reads as. completionKind: a kind, its record and history kind, and what closing it asks (asksDate; cost: cost or paid; paper: gender, use, origin; newEnd: expires or ends; asksNote; counter: section or countedOn; replacement: whether it is the section, the holder's document type), with what follows from it. storedCompletion: a stored text and the kind it reads as, null for none.",
+  "source" : "ios/DosarCuSina/Models/Obligations/ObligationTypes.swift, CompletionKind.swift, CompletionShape.swift, ios/DosarCuSina/Models/Schema/HistoryModel.swift",
+  "writtenBy" : "ios/DosarCuSinaTests/DeadlineVectorsTests.swift"
+}

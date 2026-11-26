@@ -1,0 +1,128 @@
+{
+  "cases" : [
+    {
+      "day" : "2026-01-31",
+      "dayOfMonth" : null,
+      "every" : 1,
+      "heldTo" : 1,
+      "result" : "2026-02-28",
+      "unit" : "month"
+    },
+    {
+      "day" : "2026-01-31",
+      "dayOfMonth" : 31,
+      "every" : 1,
+      "heldTo" : 1,
+      "result" : "2026-02-28",
+      "unit" : "month"
+    },
+    {
+      "day" : "2026-02-28",
+      "dayOfMonth" : 31,
+      "every" : 1,
+      "heldTo" : 1,
+      "result" : "2026-03-31",
+      "unit" : "month"
+    },
+    {
+      "day" : "2026-02-28",
+      "dayOfMonth" : 30,
+      "every" : 1,
+      "heldTo" : 1,
+      "result" : "2026-03-30",
+      "unit" : "month"
+    },
+    {
+      "day" : "2028-02-29",
+      "dayOfMonth" : null,
+      "every" : 1,
+      "heldTo" : 1,
+      "result" : "2029-02-28",
+      "unit" : "year"
+    },
+    {
+      "day" : "2027-02-28",
+      "dayOfMonth" : 29,
+      "every" : 1,
+      "heldTo" : 1,
+      "result" : "2028-02-29",
+      "unit" : "year"
+    },
+    {
+      "day" : "2028-02-29",
+      "dayOfMonth" : null,
+      "every" : 4,
+      "heldTo" : 4,
+      "result" : "2032-02-29",
+      "unit" : "year"
+    },
+    {
+      "day" : "2026-01-31",
+      "dayOfMonth" : null,
+      "every" : 13,
+      "heldTo" : 13,
+      "result" : "2027-02-28",
+      "unit" : "month"
+    },
+    {
+      "day" : "2026-12-25",
+      "dayOfMonth" : null,
+      "every" : 2,
+      "heldTo" : 2,
+      "result" : "2027-01-08",
+      "unit" : "week"
+    },
+    {
+      "day" : "2026-12-25",
+      "dayOfMonth" : null,
+      "every" : 10,
+      "heldTo" : 10,
+      "result" : "2027-01-04",
+      "unit" : "day"
+    },
+    {
+      "day" : "2026-12-25",
+      "dayOfMonth" : null,
+      "every" : 0,
+      "heldTo" : 1,
+      "result" : "2026-12-26",
+      "unit" : "day"
+    },
+    {
+      "day" : "2026-12-25",
+      "dayOfMonth" : null,
+      "every" : -3,
+      "heldTo" : 1,
+      "result" : "2027-01-25",
+      "unit" : "month"
+    },
+    {
+      "day" : "2026-12-25",
+      "dayOfMonth" : null,
+      "every" : 200,
+      "heldTo" : 100,
+      "result" : "2126-12-25",
+      "unit" : "year"
+    },
+    {
+      "day" : "2026-12-25",
+      "dayOfMonth" : null,
+      "every" : 40000,
+      "heldTo" : 36500,
+      "result" : "2126-12-01",
+      "unit" : "day"
+    },
+    {
+      "day" : "2026-03-15",
+      "dayOfMonth" : 31,
+      "every" : 1,
+      "heldTo" : 1,
+      "result" : "2026-04-30",
+      "unit" : "month"
+    }
+  ],
+  "rule" : "RecurrenceInterval(every:unit:) held to its bounds and RecurrenceEngine.add(_:to:dayOfMonth:calendar:), the one calendar step",
+  "shape" : "every and unit: an interval as written, from outside. heldTo: its every once made (at least one, a hundred years at most). day: the day moved. dayOfMonth: the day a series keeps, or null. result: the day it lands on.",
+  "source" : "ios/DosarCuSina/Models/Obligations/ObligationTypes.swift, ios/DosarCuSina/Services/Obligations/RecurrenceEngine.swift",
+  "writtenBy" : "ios/DosarCuSinaTests/RecurrenceVectorsTests.swift"
+}

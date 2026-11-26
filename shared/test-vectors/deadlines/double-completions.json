@@ -1,0 +1,134 @@
+{
+  "cases" : [
+    {
+      "isLikely" : true,
+      "latest" : {
+        "cycle" : "2026-12-05",
+        "next" : "2027-01-05",
+        "occurredAt" : 1793786400
+      },
+      "name" : "a stale tap the next day",
+      "previous" : {
+        "cycle" : "2026-11-05",
+        "next" : "2026-12-05",
+        "occurredAt" : 1793700000
+      }
+    },
+    {
+      "isLikely" : false,
+      "latest" : {
+        "cycle" : "2026-12-05",
+        "next" : "2027-01-05",
+        "occurredAt" : 1796378400
+      },
+      "name" : "a month apart is two real payments",
+      "previous" : {
+        "cycle" : "2026-11-05",
+        "next" : "2026-12-05",
+        "occurredAt" : 1793700000
+      }
+    },
+    {
+      "isLikely" : false,
+      "latest" : {
+        "cycle" : "2026-12-20",
+        "next" : "2027-01-20",
+        "occurredAt" : 1793786400
+      },
+      "name" : "only consecutive cycles",
+      "previous" : {
+        "cycle" : "2026-11-05",
+        "next" : "2026-12-05",
+        "occurredAt" : 1793700000
+      }
+    },
+    {
+      "isLikely" : false,
+      "latest" : {
+        "cycle" : "2026-11-05",
+        "next" : "2026-12-05",
+        "occurredAt" : 1793786400
+      },
+      "name" : "catching up on a late month is real",
+      "previous" : {
+        "cycle" : "2026-10-05",
+        "next" : "2026-11-05",
+        "occurredAt" : 1793700000
+      }
+    },
+    {
+      "isLikely" : true,
+      "latest" : {
+        "cycle" : "2026-12-05",
+        "next" : "2027-01-05",
+        "occurredAt" : 1794304800
+      },
+      "name" : "seven days apart",
+      "previous" : {
+        "cycle" : "2026-11-05",
+        "next" : "2026-12-05",
+        "occurredAt" : 1793700000
+      }
+    },
+    {
+      "isLikely" : false,
+      "latest" : {
+        "cycle" : "2026-12-05",
+        "next" : "2027-01-05",
+        "occurredAt" : 1794391200
+      },
+      "name" : "eight days apart",
+      "previous" : {
+        "cycle" : "2026-11-05",
+        "next" : "2026-12-05",
+        "occurredAt" : 1793700000
+      }
+    },
+    {
+      "isLikely" : true,
+      "latest" : {
+        "cycle" : "2026-12-05",
+        "next" : "2027-01-05",
+        "occurredAt" : 1795773600
+      },
+      "name" : "the cycle only a week ahead",
+      "previous" : {
+        "cycle" : "2026-11-05",
+        "next" : "2026-12-05",
+        "occurredAt" : 1795687200
+      }
+    },
+    {
+      "isLikely" : true,
+      "latest" : {
+        "cycle" : "2026-12-05",
+        "next" : "2027-01-05",
+        "occurredAt" : 1795773600
+      },
+      "name" : "the cycle eight days ahead",
+      "previous" : {
+        "cycle" : "2026-11-05",
+        "next" : "2026-12-05",
+        "occurredAt" : 1795773600
+      }
+    },
+    {
+      "isLikely" : false,
+      "latest" : {
+        "cycle" : null,
+        "next" : "2027-01-05",
+        "occurredAt" : 1793786400
+      },
+      "name" : "no cycle",
+      "previous" : {
+        "cycle" : "2026-11-05",
+        "next" : "2026-12-05",
+        "occurredAt" : 1793700000
+      }
+    }
+  ],
+  "rule" : "LikelyDoubleCompletions.isLikely(latest:previous:calendar:)",
+  "shape" : "latest and previous: a deadline's two latest completions, newest first (when recorded, the cycle it closed, the day it moved to). isLikely: whether they look like one real tap and one stale one.",
+  "source" : "ios/DosarCuSina/Intents/LikelyDoubleCompletions.swift",
+  "writtenBy" : "ios/DosarCuSinaTests/DeadlineVectorsTests.swift"
+}

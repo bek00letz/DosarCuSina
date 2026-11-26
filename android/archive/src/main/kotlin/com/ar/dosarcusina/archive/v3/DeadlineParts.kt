@@ -1,5 +1,6 @@
 package com.ar.dosarcusina.archive.v3
 
+import com.ar.dosarcusina.core.urgency.Consequence
 import com.ar.dosarcusina.core.values.JsonCodec
 import com.ar.dosarcusina.core.values.MachineText
 import com.ar.dosarcusina.core.values.MeasurementUnit
@@ -8,6 +9,7 @@ import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonPrimitive
 import kotlin.math.abs
+import com.ar.dosarcusina.core.urgency.ReminderProfile as ReminderRule
 
 /**
  * When a deadline reminds, as the iOS app's `ReminderProfile`: `{"leadDays": [30, 7, 0],
@@ -45,7 +47,27 @@ class ReminderProfile(
 
     override fun toString(): String = toJson().toString()
 
+    /**
+     * This profile as the rules read it (`core.urgency.ReminderProfile`): a consequence a newer build
+     * wrote reads as the loudest ([Consequence.stored]); the stored text stays as it was here.
+     */
+    val rule: ReminderRule
+        get() = ReminderRule(leadDays, Consequence.stored(consequence), graceDays, followUpAfterLapse, travelMarginDays)
+
+    /** The same profile with other leads, everything else kept (the travel margin included). */
+    fun withLeadDays(leads: List<Int>): ReminderProfile =
+        ReminderProfile(leads, consequence, graceDays, followUpAfterLapse, travelMarginDays)
+
+    /** The same profile with another travel margin, everything else kept. */
+    fun withTravelMarginDays(days: Int): ReminderProfile =
+        ReminderProfile(leadDays, consequence, graceDays, followUpAfterLapse, days)
+
     companion object {
+        /** The stored form of a profile the rules made ([rule] the other way). */
+        fun of(rule: ReminderRule): ReminderProfile = ReminderProfile(
+            rule.leadDays, rule.consequence.stored, rule.graceDays, rule.followUpAfterLapse, rule.travelMarginDays,
+        )
+
         /** A hundred years: the longest length the app counts with (`ReminderLead.longestDays`). */
         const val LONGEST_DAYS = 36_500
 

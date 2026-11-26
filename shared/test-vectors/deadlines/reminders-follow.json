@@ -1,0 +1,192 @@
+{
+  "cases" : [
+    {
+      "changed" : 1,
+      "from" : {
+        "document.expiry" : {
+          "type" : "date",
+          "value" : "2027-08-12"
+        },
+        "document.type" : {
+          "type" : "text",
+          "value" : "documentType.passport"
+        }
+      },
+      "name" : "a passport turned into an identity card",
+      "reminders" : {
+        "consequence" : "legal",
+        "followUpAfterLapse" : true,
+        "graceDays" : 0,
+        "leadDays" : [
+          90,
+          30
+        ]
+      },
+      "remindersCustomized" : false,
+      "setByThePerson" : null,
+      "to" : {
+        "document.expiry" : {
+          "type" : "date",
+          "value" : "2027-08-12"
+        },
+        "document.type" : {
+          "type" : "text",
+          "value" : "documentType.idCard"
+        }
+      }
+    },
+    {
+      "changed" : 1,
+      "from" : {
+        "document.expiry" : {
+          "type" : "date",
+          "value" : "2027-08-12"
+        },
+        "document.type" : {
+          "type" : "text",
+          "value" : "documentType.idCard"
+        }
+      },
+      "name" : "an identity card turned into a passport",
+      "reminders" : {
+        "consequence" : "legal",
+        "followUpAfterLapse" : true,
+        "graceDays" : 0,
+        "leadDays" : [
+          90,
+          0
+        ],
+        "travelMarginDays" : 180
+      },
+      "remindersCustomized" : false,
+      "setByThePerson" : null,
+      "to" : {
+        "document.expiry" : {
+          "type" : "date",
+          "value" : "2027-08-12"
+        },
+        "document.type" : {
+          "type" : "text",
+          "value" : "documentType.passport"
+        }
+      }
+    },
+    {
+      "changed" : 1,
+      "from" : {
+        "document.expiry" : {
+          "type" : "date",
+          "value" : "2027-08-12"
+        },
+        "document.type" : {
+          "type" : "text",
+          "value" : "documentType.passport"
+        }
+      },
+      "name" : "a passport whose reminders the person set keeps them, without the cut-off",
+      "reminders" : {
+        "consequence" : "legal",
+        "followUpAfterLapse" : true,
+        "graceDays" : 0,
+        "leadDays" : [
+          200
+        ]
+      },
+      "remindersCustomized" : true,
+      "setByThePerson" : [
+        200
+      ],
+      "to" : {
+        "document.expiry" : {
+          "type" : "date",
+          "value" : "2027-08-12"
+        },
+        "document.type" : {
+          "type" : "text",
+          "value" : "documentType.idCard"
+        }
+      }
+    },
+    {
+      "changed" : 1,
+      "from" : {
+        "document.expiry" : {
+          "type" : "date",
+          "value" : "2027-08-12"
+        },
+        "document.type" : {
+          "type" : "text",
+          "value" : "documentType.idCard"
+        }
+      },
+      "name" : "an identity card whose reminders the person set gets the cut-off",
+      "reminders" : {
+        "consequence" : "legal",
+        "followUpAfterLapse" : true,
+        "graceDays" : 0,
+        "leadDays" : [
+          200
+        ],
+        "travelMarginDays" : 180
+      },
+      "remindersCustomized" : true,
+      "setByThePerson" : [
+        200
+      ],
+      "to" : {
+        "document.expiry" : {
+          "type" : "date",
+          "value" : "2027-08-12"
+        },
+        "document.type" : {
+          "type" : "text",
+          "value" : "documentType.passport"
+        }
+      }
+    },
+    {
+      "changed" : 0,
+      "from" : {
+        "document.expiry" : {
+          "type" : "date",
+          "value" : "2027-08-12"
+        },
+        "document.type" : {
+          "type" : "text",
+          "value" : "documentType.passport"
+        }
+      },
+      "name" : "a value the profile doesn't read changes nothing",
+      "reminders" : {
+        "consequence" : "legal",
+        "followUpAfterLapse" : true,
+        "graceDays" : 0,
+        "leadDays" : [
+          90,
+          0
+        ],
+        "travelMarginDays" : 180
+      },
+      "remindersCustomized" : false,
+      "setByThePerson" : null,
+      "to" : {
+        "document.expiry" : {
+          "type" : "date",
+          "value" : "2027-08-12"
+        },
+        "document.issuer" : {
+          "type" : "text",
+          "value" : "SPCLEP Exemplu"
+        },
+        "document.type" : {
+          "type" : "text",
+          "value" : "documentType.passport"
+        }
+      }
+    }
+  ],
+  "rule" : "DeadlineReminders.follow(_:template:from:) and expected(for:blueprint:values:), over a personal document's renewal",
+  "shape" : "from and to: a personal document's values before and after a change. setByThePerson: the leads the person set on its renewal deadline first (setReminders), or null. changed: how many deadlines took another profile. reminders: the renewal's reminders after, in the archive's form; remindersCustomized: whether they are the person's own.",
+  "source" : "ios/DosarCuSina/Services/Obligations/DeadlineReminders.swift",
+  "writtenBy" : "ios/DosarCuSinaTests/DeadlineVectorsTests.swift"
+}

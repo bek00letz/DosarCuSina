@@ -7,6 +7,8 @@ import Foundation
 ///   section's own typed values keep whole (a pet's microchip) is searched as it is stored
 ///   (`PaymentCardNumbers.KeptWhole`), by the same rule the save uses;
 /// - sealed text (a secret) is never indexed or remembered;
+/// - the line a result shows under its title holds none of them either, while what is already
+///   masked shows as the record's page shows it (`shown`);
 /// - words kept on this phone outside the binder (recent searches, a trip's plan) are
 ///   kept only when `mayRemember` allows them, checked again when they are read back;
 /// - a query that found anything in a locked section is never remembered;
@@ -15,15 +17,41 @@ import Foundation
 ///   out of search (`mayShowOutside`, `outsideText`).
 public enum SearchPrivacy {
     /// The text with every CNP-shaped number, every card number and every sealed value
-    /// taken out. A card number is never searched, even by its last four digits. What the
-    /// record's section keeps whole (`kept`) stays, as it stays where it is stored.
+    /// taken out: what can be matched. A card number is never searched, even by its last four
+    /// digits, so a masked one („•••• 4821”) goes too, and so does any mask. What the record's
+    /// section keeps whole (`kept`) stays, as it stays where it is stored. The same rule as
+    /// `shown`, with what is masked taken out as well.
     public static func redacting(_ text: String, keeping kept: PaymentCardNumbers.KeptWhole = .nothing) -> String {
         guard text.contains(where: \.isNumber) || text.contains(SecretSealer.prefix) || text.contains(PaymentCardNumbers.mask) else { return text }
+        return takingOut(text, keeping: kept, masked: true)
+    }
+
+    /// A line a result shows (the one under its title, for every kind of result), as it may be
+    /// shown: every CNP-shaped number and sealed value taken out and a card number masked, by the
+    /// same rule as `redacting`, while what is already masked stays as the record's page shows it
+    /// (a secret's „••••”, a card's „•••• 4821”): the line is shown, never matched. A line with
+    /// nothing taken out is left exactly as it was; one with something taken out loses the spaces
+    /// and the dots („·”) it leaves behind.
+    public static func shown(_ text: String, keeping kept: PaymentCardNumbers.KeptWhole = .nothing) -> String {
+        guard text.contains(where: \.isNumber) || text.contains(SecretSealer.prefix) else { return text }
+        let result = takingOut(text, keeping: kept, masked: false)
+        guard result != text else { return text }
+        return result.split(whereSeparator: \.isWhitespace).joined(separator: " ")
+            .trimmingCharacters(in: CharacterSet.whitespaces.union(CharacterSet(charactersIn: "·")))
+    }
+
+    /// The one rule behind `redacting` and `shown`: CNP-shaped numbers out, card numbers masked
+    /// (`PaymentCardNumbers`, keeping what the section keeps whole), sealed values out, and with
+    /// `masked`, what is masked out too.
+    private static func takingOut(_ text: String, keeping kept: PaymentCardNumbers.KeptWhole, masked: Bool) -> String {
         var result = text
         for range in cnpShapedRanges(in: result).reversed() {
             result.replaceSubrange(range, with: "")
         }
-        result = PaymentCardNumbers.redact(result, keeping: kept).replacingOccurrences(of: PaymentCardNumbers.maskedPattern, with: "", options: .regularExpression)
+        result = PaymentCardNumbers.redact(result, keeping: kept)
+        if masked {
+            result = result.replacingOccurrences(of: PaymentCardNumbers.maskedPattern, with: "", options: .regularExpression)
+        }
         if result.contains(SecretSealer.prefix) {
             result = result.split(separator: " ", omittingEmptySubsequences: false)
                 .filter { !SecretSealer.isSealed(String($0)) }

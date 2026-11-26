@@ -3,6 +3,7 @@ package com.ar.dosarcusina.catalog
 import com.ar.dosarcusina.archive.v3.FieldValues
 import com.ar.dosarcusina.core.values.CalendarDay
 import com.ar.dosarcusina.core.values.MonthDay
+import com.ar.dosarcusina.core.values.RecurrenceInterval
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Test
@@ -107,7 +108,7 @@ class BoxGroupingTest {
         )
         assertEquals(
             CalendarDay(2028, 2, 29),
-            RecurrenceEngine.add(1, "year", CalendarDay(2027, 2, 28), dayOfMonth = 29),
+            RecurrenceEngine.add(RecurrenceInterval.years(1), CalendarDay(2027, 2, 28), dayOfMonth = 29),
         )
     }
 }
