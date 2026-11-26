@@ -30,6 +30,10 @@ subprojects {
         buildUponDefaultConfig.set(true)
         config.setFrom(rootProject.file("config/detekt/detekt.yml"))
     }
+    // The app's own rules (android/detekt-rules), on every module but the rules themselves.
+    if (path != ":detekt-rules") {
+        dependencies.add("detektPlugins", project(":detekt-rules"))
+    }
 
     configurations
         .matching { it.name == "runtimeClasspath" || it.name.endsWith("RuntimeClasspath") }

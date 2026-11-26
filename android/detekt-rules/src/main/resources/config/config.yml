@@ -1,0 +1,12 @@
+dosar:
+  active: true
+  DosarHandWrittenPlural:
+    active: true
+  DosarTextInComposable:
+    active: true
+  DosarSheetOutsideRouter:
+    active: true
+  DosarAnimationOutsideMotion:
+    active: true
+  DosarBareProgress:
+    active: true
