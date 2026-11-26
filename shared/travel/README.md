@@ -28,7 +28,12 @@ All three are machine JSON, written by `MachineText` with their keys sorted, so 
 
 - **`typeField`** and **`variantField`:** the fields that hold a personal document's type and its variant.
 - **`types`:** each document type's key, name and other spellings (as the catalog's `document.type` options), and its `travelMarginDays` (a passport: 180, six calendar months before its expiry it stops being good for travel).
-- **`variants`:** each variant's type, key, whether it `travels` at all (the simple identity card doesn't) and the last day it is good for travel whatever its printed expiry (`travelEnds`: an identity card without a chip, 2 August 2031).
+- **`variants`:** each variant's type, key, `label` (how it is offered), whether it `travels` at all (the simple identity card doesn't), the last day it is good for travel whatever its printed expiry (`travelEnds`: an identity card without a chip, 2 August 2031), and the name a document of that variant takes when it isn't its type's (`documentName`: „Cazier fiscal”; null for the type's own).
+- **`unnamed`:** what a document of no type this build knows is called.
+- **`keepsBackSide`**, **`readOnPhoneOnly`** and **`sharedWithCare`:** the types each rule holds for (a back worth adding; read only on the phone; sent only to someone trusted).
+- **`validityMonthsAfterIssue`:** how long a type or a variant is valid after it is issued, in months (a cazier judiciar, six).
+
+The document types are read here once for the whole app, by the checks and by the section actions (a document's name, its back, its validity after issue): Android's `core.readiness.DocumentTypes`.
 
 ## Fresh or failing
 

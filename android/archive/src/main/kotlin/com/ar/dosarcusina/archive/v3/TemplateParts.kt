@@ -243,7 +243,7 @@ data class ObligationBlueprint(
                     reminderVariants = record.element("reminderVariants"),
                     appliesWhen = record.element("appliesWhen"),
                     estimatedCost = record.moneyOrNull("estimatedCost"),
-                    isSuggested = record.boolOrNull("isSuggested") ?: false,
+                    isSuggested = record.boolOrNull("isSuggested") ?: true,
                     note = record.stringOrNull("note"),
                     facts = record.element("facts"),
                 )
