@@ -6,7 +6,8 @@ import Testing
 /// The example household declared as data (`ExampleHousehold.standard`) makes exactly the records the
 /// hand-written loader made before it: the same sections, deadlines and their dates, history, firms
 /// and readings. `Fixtures/examples-before-the-household-data.json` is what the hand-written loader
-/// left in an empty binder, written once by it on GitHub's Mac and never changed to match; the
+/// left in an empty binder, written once by it on GitHub's Mac (a verbatim copy of main's loader at
+/// c1086db2, run in this pull request's commit 410c5dc8, then removed) and never changed to match; the
 /// binder is written as `ExampleVectorsTests` writes one (as a backup writes it, ids by place,
 /// `createdAt` as `<made>`), today 2026-11-26 at noon in Bucharest.
 @MainActor
@@ -54,17 +55,5 @@ struct ExamplesBeforeTheHouseholdDataTests {
                 }
             }
         }
-    }
-
-    /// Temporary, removed in the next commit: writes what the hand-written loader leaves, for the fixture.
-    @Test func writeWhatTheHandWrittenLoaderLeaves() throws {
-        let now = ExampleVectorsTests.now()
-        let binder = try Self.binder { try HandWrittenExamples(context: $0, calendar: ExampleVectorsTests.calendar, now: { now }).loadExamples() }
-        if let out = ProcessInfo.processInfo.environment["VECTORS_OUT"], !out.isEmpty {
-            let folder = URL(filePath: out, directoryHint: .isDirectory).appending(path: "examples-before")
-            try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
-            try Self.text(binder).write(to: folder.appending(path: "examples-before-the-household-data.json"), atomically: true, encoding: .utf8)
-        }
-        Issue.record("Written on purpose, so the run keeps it in test-results/test-vectors/examples-before/")
     }
 }
