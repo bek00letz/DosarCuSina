@@ -18,16 +18,8 @@ class WaitingStep internal constructor(
 
 /** The steps that wait, each as the iOS app declares it. */
 object WaitingSteps {
-    private const val CAPTURE_REPAIRS = "CaptureRepairs and the document and visit actions (Phase 3)"
     private const val POLICIES = "capture's reading of a policy's cover (InsuranceCover.read, capture, Phase 5)"
-    private const val PAPERS = "PaperIdentity and the history actions (Phase 3)"
 
-    val staleDocumentLinks = WaitingStep(
-        DataRepairStepId.STALE_DOCUMENT_LINKS, DataRepairGroup.MOVED_DOCUMENTS, CAPTURE_REPAIRS,
-    )
-    val visitsWithoutInvoice = WaitingStep(
-        DataRepairStepId.VISITS_WITHOUT_INVOICE, DataRepairGroup.VISITS_WITHOUT_INVOICE, CAPTURE_REPAIRS,
-    )
     val cascoInRcaFields = WaitingStep(DataRepairStepId.CASCO_IN_RCA_FIELDS, DataRepairGroup.CASCO_IN_RCA, POLICIES)
     val homePolicyWithoutDeadline = WaitingStep(
         DataRepairStepId.HOME_POLICY_WITHOUT_DEADLINE, DataRepairGroup.POLICIES_WITHOUT_DEADLINE,
@@ -42,8 +34,11 @@ object WaitingSteps {
         DataRepairStepId.BILL_NUMBERS, DataRepairGroup.BILL_NUMBERS,
         "capture's bill reader (BillReader, Phase 3)", runsByItself = true,
     )
-    val sameBillTwice = WaitingStep(DataRepairStepId.SAME_BILL_TWICE, DataRepairGroup.BILLS_LOGGED_TWICE, PAPERS)
-    val sameVisitTwice = WaitingStep(DataRepairStepId.SAME_VISIT_TWICE, DataRepairGroup.VISITS_LOGGED_TWICE, PAPERS)
+    val sameBillTwice = WaitingStep(
+        DataRepairStepId.SAME_BILL_TWICE, DataRepairGroup.BILLS_LOGGED_TWICE,
+        "a bill as capture files it (CaptureFiler.logBill and finishBill: the meter reading its paper records " +
+            "and its „Factura de plătit”, which the join keeps once; capture, Phase 5)",
+    )
     val estimatedBillReadings = WaitingStep(
         DataRepairStepId.ESTIMATED_BILL_READINGS, DataRepairGroup.ESTIMATED_INDEXES,
         "capture's bill reader (BillReader: the bill's layout, its meter index and how it says the index " +
@@ -56,9 +51,5 @@ object WaitingSteps {
     val citizenships = WaitingStep(
         DataRepairStepId.CITIZENSHIPS, DataRepairGroup.CITIZENSHIPS,
         "Citizenship (reading one off a document, keeping them on the person; Phase 3)",
-    )
-    val labourParts = WaitingStep(
-        DataRepairStepId.LABOUR_PARTS, DataRepairGroup.LABOUR,
-        "LabourLine and CaptureLexicon.labourWords (Phase 3)",
     )
 }
