@@ -43,6 +43,15 @@ public struct BoxStatus: Hashable, Sendable {
         make(obligations.filter { $0.assetId.map(ids.contains) ?? false }, now: now, calendar: calendar)
     }
 
+    /// Whether the line may name its deadline, the rule `line` writes by: not in a box behind a
+    /// lock (`isSensitive`), nor when the deadline belongs to a section filed in the box whose own
+    /// category is locked and closed right now (`isLocked`). False with nothing to name. The data
+    /// the Android app's `BoxStatus.showsTitle` is pinned against (`AttentionVectorsTests`).
+    public func showsTitle(isSensitive: Bool, isLocked: (_ sectionIsSensitive: Bool) -> Bool = { $0 }) -> Bool {
+        guard let entry else { return false }
+        return !(isSensitive || isLocked(entry.obligation.isSensitive))
+    }
+
     /// The line to show. In a box behind a lock (`isSensitive`, the box's own lock as it is now)
     /// the obligation's title is replaced, so the line never reveals what is inside; and so it is
     /// when the obligation shown belongs to a section filed in the box whose own category is
@@ -52,8 +61,9 @@ public struct BoxStatus: Hashable, Sendable {
     public func line(isSensitive: Bool, isLocked: (_ sectionIsSensitive: Bool) -> Bool = { $0 },
                      now: Date = Date(), calendar: Calendar = .dosar) -> String {
         guard let entry else { return String(localized: "Totul e în regulă", comment: "Box status when nothing needs attention") }
-        let hidden = isSensitive || isLocked(entry.obligation.isSensitive)
-        let title = hidden ? String(localized: "Un termen", comment: "Box status title in a locked section") : entry.obligation.title
+        let title = showsTitle(isSensitive: isSensitive, isLocked: isLocked)
+            ? entry.obligation.title
+            : String(localized: "Un termen", comment: "Box status title in a locked section")
         let when = WhenWording.phrase(entry.urgency, daysRemaining: entry.daysRemaining, from: now, calendar: calendar)
         return String(localized: "\(title) · \(when)", comment: "Box status: the obligation, then when it is due, e.g. 'ITP · în 5 zile'.")
     }

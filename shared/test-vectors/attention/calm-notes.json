@@ -1,0 +1,203 @@
+{
+  "cases" : [
+    {
+      "name" : "bills that haven't come, then one suggestion",
+      "notes" : [
+        {
+          "detail" : "Abonament · Apartament Exemplu. Ultima a venit pe 5 iulie.",
+          "expectedDay" : "2026-10-05",
+          "isWeekly" : false,
+          "monthsApart" : 3,
+          "opens" : {
+            "section" : "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbb0003"
+          },
+          "title" : "Factura de la ENGIE n-a venit încă"
+        },
+        {
+          "detail" : "Ultima a venit pe 10 septembrie.",
+          "expectedDay" : "2026-10-10",
+          "isWeekly" : false,
+          "monthsApart" : 1,
+          "opens" : {
+            "section" : "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbb0002"
+          },
+          "title" : "O factură n-a venit încă"
+        },
+        {
+          "detail" : "Abonament · Apartament Exemplu. Ultima a venit pe 20 septembrie.",
+          "expectedDay" : "2026-10-20",
+          "isWeekly" : false,
+          "monthsApart" : 1,
+          "opens" : {
+            "section" : "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbb0001"
+          },
+          "title" : "Factura de la ENGIE n-a venit luna asta"
+        },
+        {
+          "detail" : "Ce ține de altă secțiune. Nu schimb nimic fără tine.",
+          "expectedDay" : null,
+          "opens" : "suggestions",
+          "title" : "O sugestie pentru dosar"
+        }
+      ],
+      "subscriptions" : [
+        {
+          "cycle" : {
+            "every" : 1,
+            "unit" : "month"
+          },
+          "days" : [
+            "2026-09-20"
+          ],
+          "id" : "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbb0001",
+          "isExample" : false,
+          "isSensitive" : false,
+          "service" : "service.gas"
+        },
+        {
+          "cycle" : {
+            "every" : 1,
+            "unit" : "month"
+          },
+          "days" : [
+            "2026-09-10"
+          ],
+          "id" : "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbb0002",
+          "isExample" : false,
+          "isSensitive" : true,
+          "service" : "service.mobile"
+        },
+        {
+          "cycle" : {
+            "every" : 3,
+            "unit" : "month"
+          },
+          "days" : [
+            "2026-07-05"
+          ],
+          "id" : "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbb0003",
+          "isExample" : false,
+          "isSensitive" : false,
+          "service" : "service.water"
+        },
+        {
+          "cycle" : {
+            "every" : 1,
+            "unit" : "month"
+          },
+          "days" : [
+            "2026-11-01"
+          ],
+          "id" : "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbb0004",
+          "isExample" : false,
+          "isSensitive" : false,
+          "service" : "service.electricity"
+        }
+      ],
+      "suggestions" : {
+        "count" : 1,
+        "topics" : [
+          "Ce ține de altă secțiune"
+        ]
+      },
+      "today" : "2026-11-10"
+    },
+    {
+      "name" : "a weekly bill and several suggestions",
+      "notes" : [
+        {
+          "detail" : "Abonament · Apartament Exemplu. Ultima a venit pe 27 octombrie.",
+          "expectedDay" : "2026-11-03",
+          "isWeekly" : true,
+          "monthsApart" : 0,
+          "opens" : {
+            "section" : "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbb0005"
+          },
+          "title" : "Factura de la ENGIE n-a venit săptămâna asta"
+        },
+        {
+          "detail" : "Ce ține de altă secțiune și Plante fără locuință. Nu schimb nimic fără tine.",
+          "expectedDay" : null,
+          "opens" : "suggestions",
+          "title" : "3 sugestii pentru dosar"
+        }
+      ],
+      "subscriptions" : [
+        {
+          "cycle" : {
+            "every" : 1,
+            "unit" : "week"
+          },
+          "days" : [
+            "2026-10-27"
+          ],
+          "id" : "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbb0005",
+          "isExample" : false,
+          "isSensitive" : false,
+          "service" : "service.gas"
+        }
+      ],
+      "suggestions" : {
+        "count" : 3,
+        "topics" : [
+          "Ce ține de altă secțiune",
+          "Plante fără locuință"
+        ]
+      },
+      "today" : "2026-11-10"
+    },
+    {
+      "name" : "only suggestions",
+      "notes" : [
+        {
+          "detail" : "Nu schimb nimic fără tine.",
+          "expectedDay" : null,
+          "opens" : "suggestions",
+          "title" : "2 sugestii pentru dosar"
+        }
+      ],
+      "subscriptions" : [
+
+      ],
+      "suggestions" : {
+        "count" : 2,
+        "topics" : [
+
+        ]
+      },
+      "today" : "2026-11-10"
+    },
+    {
+      "name" : "nothing",
+      "notes" : [
+
+      ],
+      "subscriptions" : [
+        {
+          "cycle" : {
+            "every" : 1,
+            "unit" : "month"
+          },
+          "days" : [
+            "2026-09-20"
+          ],
+          "id" : "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbb0006",
+          "isExample" : false,
+          "isSensitive" : false,
+          "service" : "service.streaming"
+        }
+      ],
+      "suggestions" : {
+        "count" : 0,
+        "topics" : [
+          "Ce ține de altă secțiune"
+        ]
+      },
+      "today" : "2026-11-10"
+    }
+  ],
+  "rule" : "AttentionModel.calmNotes(missingBills:suggestions:) over missingBills(_:now:calendar:locale:) and suggestionNote(count:topics:)",
+  "shape" : "today, the binder's subscriptions (as in the subscription vectors' missing-bills) and the suggestions waiting (how many, and the steps' topics); notes: Din timp's notes in order, each what it opens ({section: id}, or \"suggestions\") and the day its bill was expected (null for the suggestions); a bill's whether it comes weekly and how many months its bills come apart (which pick its title's words). title and detail are the words.",
+  "source" : "ios/DosarCuSina/Services/Attention/MissingBills.swift",
+  "writtenBy" : "ios/DosarCuSinaTests/AttentionVectorsTests.swift"
+}
