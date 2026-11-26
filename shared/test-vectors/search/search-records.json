@@ -1,0 +1,1759 @@
+{
+  "built" : "A token in a case's text is a number that passes its check, built when the test runs so the repository never holds one. {luhn:DIGITS}: DIGITS as written with the Luhn check digit after them. {iban:CC:BBAN}: CC, the two ISO 13616 check digits (98 minus BBAN + CC + \"00\" mod 97, letters as A=10 … Z=35), then BBAN. {iban4:CC:BBAN}: the same, in groups of four with a space between. {fours:DIGITS}: DIGITS in groups of four with a space between. Answers name the same tokens.",
+  "cases" : [
+    {
+      "documents" : [
+        {
+          "date" : "2026-02-01T10:00:00Z",
+          "fields" : [
+            {
+              "text" : "VW Golf",
+              "weight" : 10
+            },
+            {
+              "text" : "Mașini",
+              "weight" : 6
+            },
+            {
+              "text" : "Număr B-123-ABC",
+              "weight" : 8
+            },
+            {
+              "text" : "b123abc",
+              "weight" : 8
+            },
+            {
+              "text" : "Serie șasiu WVWZZZ1KZAW000000",
+              "weight" : 8
+            },
+            {
+              "text" : "WVWZZZ1KZAW000000",
+              "weight" : 8
+            },
+            {
+              "text" : "Marcă Volkswagen",
+              "weight" : 6
+            },
+            {
+              "text" : "Model Golf",
+              "weight" : 6
+            },
+            {
+              "text" : "Cont RO49 AAAA 1B31 0075 9384 0000",
+              "weight" : 4
+            },
+            {
+              "text" : "RO49AAAA1B31007593840000",
+              "weight" : 4
+            },
+            {
+              "text" : "Kilometraj 125.000",
+              "weight" : 4
+            },
+            {
+              "text" : "Culoare gri, card ",
+              "weight" : 4
+            },
+            {
+              "text" : "Parcare Locul 12, nivelul -1",
+              "weight" : 4
+            },
+            {
+              "text" : "Plătit cu  la service; CNP  pe talon",
+              "weight" : 3
+            }
+          ],
+          "id" : "asset:5E000000-AB00-4C00-8D00-E00000001001",
+          "isSensitive" : false,
+          "kind" : "asset",
+          "route" : {
+            "id" : "5E000000-AB00-4C00-8D00-E00000001001",
+            "kind" : "asset"
+          },
+          "subtitle" : "Volkswagen Golf",
+          "title" : "VW Golf"
+        },
+        {
+          "date" : "2026-02-02T10:00:00Z",
+          "fields" : [
+            {
+              "text" : "Rex",
+              "weight" : 10
+            },
+            {
+              "text" : "Animale",
+              "weight" : 6
+            },
+            {
+              "text" : "Microcip {luhn:64200000000123}",
+              "weight" : 8
+            },
+            {
+              "text" : "Rasă Europeană tărcată",
+              "weight" : 6
+            },
+            {
+              "text" : "Medic Cabinet Veterinar Exemplu",
+              "weight" : 6
+            },
+            {
+              "text" : "Microcip {luhn:64200000000123} citit la vaccin",
+              "weight" : 3
+            }
+          ],
+          "id" : "asset:5E000000-AB00-4C00-8D00-E00000001002",
+          "isSensitive" : false,
+          "kind" : "asset",
+          "route" : {
+            "id" : "5E000000-AB00-4C00-8D00-E00000001002",
+            "kind" : "asset"
+          },
+          "subtitle" : "Europeană tărcată",
+          "title" : "Rex"
+        },
+        {
+          "date" : "2026-02-03T10:00:00Z",
+          "fields" : [
+            {
+              "text" : "Pașaport Ana",
+              "weight" : 10
+            },
+            {
+              "text" : "Acte",
+              "weight" : 6
+            },
+            {
+              "text" : "Titular Ana Exemplu",
+              "weight" : 6
+            },
+            {
+              "text" : "Ține-l în sertar",
+              "weight" : 3
+            }
+          ],
+          "id" : "asset:5E000000-AB00-4C00-8D00-E00000001003",
+          "isSensitive" : true,
+          "kind" : "asset",
+          "route" : {
+            "id" : "5E000000-AB00-4C00-8D00-E00000001003",
+            "kind" : "asset"
+          },
+          "subtitle" : "Acte",
+          "title" : "Pașaport Ana"
+        },
+        {
+          "date" : "2026-02-04T10:00:00Z",
+          "fields" : [
+            {
+              "text" : "Secțiune fără categorie",
+              "weight" : 10
+            },
+            {
+              "text" : "",
+              "weight" : 6
+            },
+            {
+              "text" : "sosește mai târziu",
+              "weight" : 3
+            }
+          ],
+          "id" : "asset:5E000000-AB00-4C00-8D00-E00000001004",
+          "isSensitive" : true,
+          "kind" : "asset",
+          "route" : {
+            "id" : "5E000000-AB00-4C00-8D00-E00000001004",
+            "kind" : "asset"
+          },
+          "subtitle" : null,
+          "title" : "Secțiune fără categorie"
+        },
+        {
+          "date" : "2026-03-03T10:00:00Z",
+          "fields" : [
+            {
+              "text" : "Plăcuțe frână față",
+              "weight" : 10
+            },
+            {
+              "text" : "Frâne placute frana fata",
+              "weight" : 6
+            },
+            {
+              "text" : "VW Golf",
+              "weight" : 6
+            },
+            {
+              "text" : "Bosch 0 986 Piese Exemplu Service Exemplu S.R.L.",
+              "weight" : 4
+            }
+          ],
+          "id" : "component:5E000000-AB00-4C00-8D00-E00000001001:brakes.front",
+          "isSensitive" : false,
+          "kind" : "component",
+          "route" : {
+            "id" : "5E000000-AB00-4C00-8D00-E00000001031",
+            "kind" : "historyEntry"
+          },
+          "subtitle" : "VW Golf · 3 mar. 2026",
+          "title" : "Plăcuțe frână față"
+        },
+        {
+          "date" : "2026-02-20T10:00:00Z",
+          "fields" : [
+            {
+              "text" : "Ștergătoare",
+              "weight" : 10
+            },
+            {
+              "text" : "",
+              "weight" : 6
+            },
+            {
+              "text" : "VW Golf",
+              "weight" : 6
+            },
+            {
+              "text" : "",
+              "weight" : 4
+            }
+          ],
+          "id" : "component:5E000000-AB00-4C00-8D00-E00000001001:custom.stergatoare",
+          "isSensitive" : false,
+          "kind" : "component",
+          "route" : {
+            "id" : "5E000000-AB00-4C00-8D00-E00000001035",
+            "kind" : "historyEntry"
+          },
+          "subtitle" : "VW Golf · 20 feb. 2026",
+          "title" : "Ștergătoare"
+        },
+        {
+          "date" : "2026-01-10T10:00:00Z",
+          "fields" : [
+            {
+              "text" : "Poliță RCA 2026",
+              "weight" : 10
+            },
+            {
+              "text" : "polita.pdf",
+              "weight" : 6
+            },
+            {
+              "text" : "VW Golf",
+              "weight" : 6
+            },
+            {
+              "text" : "Daune 021 000 0000, plătit cu ",
+              "weight" : 1
+            }
+          ],
+          "id" : "document:5E000000-AB00-4C00-8D00-E00000001051",
+          "isSensitive" : false,
+          "kind" : "document",
+          "route" : {
+            "id" : "5E000000-AB00-4C00-8D00-E00000001051",
+            "kind" : "document"
+          },
+          "subtitle" : "VW Golf",
+          "title" : "Poliță RCA 2026"
+        },
+        {
+          "date" : "2026-06-02T09:00:00Z",
+          "fields" : [
+            {
+              "text" : "polita-veche.pdf",
+              "weight" : 10
+            },
+            {
+              "text" : "polita-veche.pdf",
+              "weight" : 6
+            },
+            {
+              "text" : "VW Golf",
+              "weight" : 6
+            },
+            {
+              "text" : "Poliță RCA 2025 POL-000000",
+              "weight" : 1
+            }
+          ],
+          "id" : "document:5E000000-AB00-4C00-8D00-E00000001052",
+          "isSensitive" : false,
+          "kind" : "document",
+          "route" : {
+            "id" : "5E000000-AB00-4C00-8D00-E00000001052",
+            "kind" : "document"
+          },
+          "subtitle" : "VW Golf · arhivat",
+          "title" : "polita-veche.pdf"
+        },
+        {
+          "date" : "2026-06-03T09:00:00Z",
+          "fields" : [
+            {
+              "text" : "Factură plăcuțe",
+              "weight" : 10
+            },
+            {
+              "text" : "factura.pdf",
+              "weight" : 6
+            },
+            {
+              "text" : "VW Golf",
+              "weight" : 6
+            },
+            {
+              "text" : "Total 450 lei, card ",
+              "weight" : 1
+            }
+          ],
+          "id" : "document:5E000000-AB00-4C00-8D00-E00000001053",
+          "isSensitive" : false,
+          "kind" : "document",
+          "route" : {
+            "id" : "5E000000-AB00-4C00-8D00-E00000001053",
+            "kind" : "document"
+          },
+          "subtitle" : "VW Golf",
+          "title" : "Factură plăcuțe"
+        },
+        {
+          "date" : "2026-06-04T09:00:00Z",
+          "fields" : [
+            {
+              "text" : "Bon revizie",
+              "weight" : 10
+            },
+            {
+              "text" : "bon.jpg",
+              "weight" : 6
+            },
+            {
+              "text" : "VW Golf",
+              "weight" : 6
+            },
+            {
+              "text" : "Revizie la 120.000 km",
+              "weight" : 1
+            }
+          ],
+          "id" : "document:5E000000-AB00-4C00-8D00-E00000001054",
+          "isSensitive" : false,
+          "kind" : "document",
+          "route" : {
+            "id" : "5E000000-AB00-4C00-8D00-E00000001054",
+            "kind" : "document"
+          },
+          "subtitle" : "VW Golf",
+          "title" : "Bon revizie"
+        },
+        {
+          "date" : "2026-04-04T09:00:00Z",
+          "fields" : [
+            {
+              "text" : "Carnet de sănătate",
+              "weight" : 10
+            },
+            {
+              "text" : "carnet.pdf",
+              "weight" : 6
+            },
+            {
+              "text" : "Rex",
+              "weight" : 6
+            },
+            {
+              "text" : "Microcip {luhn:64200000000123}, card ",
+              "weight" : 1
+            }
+          ],
+          "id" : "document:5E000000-AB00-4C00-8D00-E00000001055",
+          "isSensitive" : false,
+          "kind" : "document",
+          "route" : {
+            "id" : "5E000000-AB00-4C00-8D00-E00000001055",
+            "kind" : "document"
+          },
+          "subtitle" : "Rex",
+          "title" : "Carnet de sănătate"
+        },
+        {
+          "date" : "2026-06-06T09:00:00Z",
+          "fields" : [
+            {
+              "text" : "Pașaport",
+              "weight" : 10
+            },
+            {
+              "text" : "pasaport.jpg",
+              "weight" : 6
+            },
+            {
+              "text" : "Pașaport Ana",
+              "weight" : 6
+            },
+            {
+              "text" : "",
+              "weight" : 1
+            }
+          ],
+          "id" : "document:5E000000-AB00-4C00-8D00-E00000001056",
+          "isSensitive" : true,
+          "kind" : "document",
+          "route" : {
+            "id" : "5E000000-AB00-4C00-8D00-E00000001056",
+            "kind" : "document"
+          },
+          "subtitle" : "Pașaport Ana",
+          "title" : "Pașaport"
+        },
+        {
+          "date" : "2026-06-07T09:00:00Z",
+          "fields" : [
+            {
+              "text" : "Copie buletin",
+              "weight" : 10
+            },
+            {
+              "text" : "buletin.jpg",
+              "weight" : 6
+            },
+            {
+              "text" : "VW Golf",
+              "weight" : 6
+            },
+            {
+              "text" : "",
+              "weight" : 1
+            }
+          ],
+          "id" : "document:5E000000-AB00-4C00-8D00-E00000001057",
+          "isSensitive" : false,
+          "kind" : "document",
+          "route" : {
+            "id" : "5E000000-AB00-4C00-8D00-E00000001057",
+            "kind" : "document"
+          },
+          "subtitle" : "VW Golf",
+          "title" : "Copie buletin"
+        },
+        {
+          "date" : "2026-06-08T09:00:00Z",
+          "fields" : [
+            {
+              "text" : "Contract chirie",
+              "weight" : 10
+            },
+            {
+              "text" : "chirie.pdf",
+              "weight" : 6
+            },
+            {
+              "text" : "",
+              "weight" : 6
+            },
+            {
+              "text" : "Chiria se plătește lunar",
+              "weight" : 1
+            }
+          ],
+          "id" : "document:5E000000-AB00-4C00-8D00-E00000001058",
+          "isSensitive" : false,
+          "kind" : "document",
+          "route" : {
+            "id" : "5E000000-AB00-4C00-8D00-E00000001058",
+            "kind" : "document"
+          },
+          "subtitle" : "",
+          "title" : "Contract chirie"
+        },
+        {
+          "date" : "2026-06-09T09:00:00Z",
+          "fields" : [
+            {
+              "text" : "scan.pdf",
+              "weight" : 10
+            },
+            {
+              "text" : "scan.pdf",
+              "weight" : 6
+            },
+            {
+              "text" : "",
+              "weight" : 6
+            },
+            {
+              "text" : "Pagina 1",
+              "weight" : 1
+            }
+          ],
+          "id" : "document:5E000000-AB00-4C00-8D00-E00000001059",
+          "isSensitive" : false,
+          "kind" : "document",
+          "route" : {
+            "id" : "5E000000-AB00-4C00-8D00-E00000001059",
+            "kind" : "document"
+          },
+          "subtitle" : "",
+          "title" : "scan.pdf"
+        },
+        {
+          "date" : "2026-03-03T10:00:00Z",
+          "fields" : [
+            {
+              "text" : "Schimb plăcuțe",
+              "weight" : 10
+            },
+            {
+              "text" : "Placute frana fata",
+              "weight" : 6
+            },
+            {
+              "text" : "Service Exemplu S.R.L.",
+              "weight" : 6
+            },
+            {
+              "text" : "VW Golf",
+              "weight" : 6
+            },
+            {
+              "text" : "Bosch 0 986 Piese Exemplu",
+              "weight" : 4
+            },
+            {
+              "text" : "Plătit cu ",
+              "weight" : 3
+            },
+            {
+              "text" : "F-123",
+              "weight" : 4
+            }
+          ],
+          "id" : "historyEntry:5E000000-AB00-4C00-8D00-E00000001031",
+          "isSensitive" : false,
+          "kind" : "historyEntry",
+          "route" : {
+            "id" : "5E000000-AB00-4C00-8D00-E00000001031",
+            "kind" : "historyEntry"
+          },
+          "subtitle" : "VW Golf · 3 mar. 2026",
+          "title" : "Schimb plăcuțe"
+        },
+        {
+          "date" : "2025-10-10T09:00:00Z",
+          "fields" : [
+            {
+              "text" : "Revizie",
+              "weight" : 10
+            },
+            {
+              "text" : "Plăcuțe față",
+              "weight" : 6
+            },
+            {
+              "text" : "",
+              "weight" : 6
+            },
+            {
+              "text" : "VW Golf",
+              "weight" : 6
+            },
+            {
+              "text" : "ATE",
+              "weight" : 4
+            },
+            {
+              "text" : "",
+              "weight" : 3
+            },
+            {
+              "text" : "",
+              "weight" : 4
+            }
+          ],
+          "id" : "historyEntry:5E000000-AB00-4C00-8D00-E00000001032",
+          "isSensitive" : false,
+          "kind" : "historyEntry",
+          "route" : {
+            "id" : "5E000000-AB00-4C00-8D00-E00000001032",
+            "kind" : "historyEntry"
+          },
+          "subtitle" : "VW Golf · 10 oct. 2025",
+          "title" : "Revizie"
+        },
+        {
+          "date" : "2026-04-04T09:00:00Z",
+          "fields" : [
+            {
+              "text" : "Vaccin anual",
+              "weight" : 10
+            },
+            {
+              "text" : "",
+              "weight" : 6
+            },
+            {
+              "text" : "",
+              "weight" : 6
+            },
+            {
+              "text" : "Rex",
+              "weight" : 6
+            },
+            {
+              "text" : "",
+              "weight" : 4
+            },
+            {
+              "text" : "Cip {luhn:64200000000123} verificat",
+              "weight" : 3
+            },
+            {
+              "text" : "",
+              "weight" : 4
+            }
+          ],
+          "id" : "historyEntry:5E000000-AB00-4C00-8D00-E00000001033",
+          "isSensitive" : false,
+          "kind" : "historyEntry",
+          "route" : {
+            "id" : "5E000000-AB00-4C00-8D00-E00000001033",
+            "kind" : "historyEntry"
+          },
+          "subtitle" : "Rex · 4 apr. 2026",
+          "title" : "Vaccin anual"
+        },
+        {
+          "date" : "2026-05-05T09:00:00Z",
+          "fields" : [
+            {
+              "text" : "Programare ghișeu",
+              "weight" : 10
+            },
+            {
+              "text" : "",
+              "weight" : 6
+            },
+            {
+              "text" : "",
+              "weight" : 6
+            },
+            {
+              "text" : "Pașaport Ana",
+              "weight" : 6
+            },
+            {
+              "text" : "",
+              "weight" : 4
+            },
+            {
+              "text" : "Adus actele",
+              "weight" : 3
+            },
+            {
+              "text" : "",
+              "weight" : 4
+            }
+          ],
+          "id" : "historyEntry:5E000000-AB00-4C00-8D00-E00000001034",
+          "isSensitive" : true,
+          "kind" : "historyEntry",
+          "route" : {
+            "id" : "5E000000-AB00-4C00-8D00-E00000001034",
+            "kind" : "historyEntry"
+          },
+          "subtitle" : "Pașaport Ana · 5 mai 2026",
+          "title" : "Programare ghișeu"
+        },
+        {
+          "date" : "2026-02-20T10:00:00Z",
+          "fields" : [
+            {
+              "text" : "Schimb ștergătoare",
+              "weight" : 10
+            },
+            {
+              "text" : "Ștergătoare",
+              "weight" : 6
+            },
+            {
+              "text" : "",
+              "weight" : 6
+            },
+            {
+              "text" : "VW Golf",
+              "weight" : 6
+            },
+            {
+              "text" : "",
+              "weight" : 4
+            },
+            {
+              "text" : "",
+              "weight" : 3
+            },
+            {
+              "text" : "",
+              "weight" : 4
+            }
+          ],
+          "id" : "historyEntry:5E000000-AB00-4C00-8D00-E00000001035",
+          "isSensitive" : false,
+          "kind" : "historyEntry",
+          "route" : {
+            "id" : "5E000000-AB00-4C00-8D00-E00000001035",
+            "kind" : "historyEntry"
+          },
+          "subtitle" : "VW Golf · 20 feb. 2026",
+          "title" : "Schimb ștergătoare"
+        },
+        {
+          "date" : "2025-06-06T09:00:00Z",
+          "fields" : [
+            {
+              "text" : "Schimb ulei",
+              "weight" : 10
+            },
+            {
+              "text" : "Ulei motor",
+              "weight" : 6
+            },
+            {
+              "text" : "",
+              "weight" : 6
+            },
+            {
+              "text" : "VW Golf",
+              "weight" : 6
+            },
+            {
+              "text" : "",
+              "weight" : 4
+            },
+            {
+              "text" : "",
+              "weight" : 3
+            },
+            {
+              "text" : "",
+              "weight" : 4
+            }
+          ],
+          "id" : "historyEntry:5E000000-AB00-4C00-8D00-E00000001036",
+          "isSensitive" : false,
+          "kind" : "historyEntry",
+          "route" : {
+            "id" : "5E000000-AB00-4C00-8D00-E00000001036",
+            "kind" : "historyEntry"
+          },
+          "subtitle" : "VW Golf · 6 iun. 2025",
+          "title" : "Schimb ulei"
+        },
+        {
+          "date" : "2027-01-10T10:00:00Z",
+          "fields" : [
+            {
+              "text" : "RCA",
+              "weight" : 10
+            },
+            {
+              "text" : "POL-000000",
+              "weight" : 8
+            },
+            {
+              "text" : "Asigurări Exemplu S.A.",
+              "weight" : 6
+            },
+            {
+              "text" : "VW Golf",
+              "weight" : 6
+            },
+            {
+              "text" : "Golful din garaj",
+              "weight" : 3
+            }
+          ],
+          "id" : "obligation:5E000000-AB00-4C00-8D00-E00000001021",
+          "isSensitive" : false,
+          "kind" : "obligation",
+          "route" : {
+            "id" : "5E000000-AB00-4C00-8D00-E00000001021",
+            "kind" : "obligation"
+          },
+          "subtitle" : "VW Golf · 10 ian. 2027",
+          "title" : "RCA"
+        },
+        {
+          "date" : "2026-12-01T10:00:00Z",
+          "fields" : [
+            {
+              "text" : "Rovinietă VW Golf",
+              "weight" : 10
+            },
+            {
+              "text" : "",
+              "weight" : 8
+            },
+            {
+              "text" : "",
+              "weight" : 6
+            },
+            {
+              "text" : "VW Golf",
+              "weight" : 6
+            },
+            {
+              "text" : "",
+              "weight" : 3
+            }
+          ],
+          "id" : "obligation:5E000000-AB00-4C00-8D00-E00000001022",
+          "isSensitive" : false,
+          "kind" : "obligation",
+          "route" : {
+            "id" : "5E000000-AB00-4C00-8D00-E00000001022",
+            "kind" : "obligation"
+          },
+          "subtitle" : "VW Golf · 1 dec. 2026",
+          "title" : "Rovinietă VW Golf"
+        },
+        {
+          "date" : "2028-05-05T09:00:00Z",
+          "fields" : [
+            {
+              "text" : "Reînnoire pașaport",
+              "weight" : 10
+            },
+            {
+              "text" : "",
+              "weight" : 8
+            },
+            {
+              "text" : "",
+              "weight" : 6
+            },
+            {
+              "text" : "Pașaport Ana",
+              "weight" : 6
+            },
+            {
+              "text" : "la ghișeu, cu ",
+              "weight" : 3
+            }
+          ],
+          "id" : "obligation:5E000000-AB00-4C00-8D00-E00000001023",
+          "isSensitive" : true,
+          "kind" : "obligation",
+          "route" : {
+            "id" : "5E000000-AB00-4C00-8D00-E00000001023",
+            "kind" : "obligation"
+          },
+          "subtitle" : "Pașaport Ana · 5 mai 2028",
+          "title" : "Reînnoire pașaport"
+        },
+        {
+          "date" : "2027-03-31T09:00:00Z",
+          "fields" : [
+            {
+              "text" : "Impozit locuință",
+              "weight" : 10
+            },
+            {
+              "text" : "",
+              "weight" : 8
+            },
+            {
+              "text" : "",
+              "weight" : 6
+            },
+            {
+              "text" : "",
+              "weight" : 6
+            },
+            {
+              "text" : "Card ",
+              "weight" : 3
+            }
+          ],
+          "id" : "obligation:5E000000-AB00-4C00-8D00-E00000001024",
+          "isSensitive" : false,
+          "kind" : "obligation",
+          "route" : {
+            "id" : "5E000000-AB00-4C00-8D00-E00000001024",
+            "kind" : "obligation"
+          },
+          "subtitle" : "31 mar. 2027",
+          "title" : "Impozit locuință"
+        },
+        {
+          "date" : "2027-02-02T10:00:00Z",
+          "fields" : [
+            {
+              "text" : "Termen fără categorie",
+              "weight" : 10
+            },
+            {
+              "text" : "",
+              "weight" : 8
+            },
+            {
+              "text" : "",
+              "weight" : 6
+            },
+            {
+              "text" : "Secțiune fără categorie",
+              "weight" : 6
+            },
+            {
+              "text" : "",
+              "weight" : 3
+            }
+          ],
+          "id" : "obligation:5E000000-AB00-4C00-8D00-E00000001025",
+          "isSensitive" : true,
+          "kind" : "obligation",
+          "route" : {
+            "id" : "5E000000-AB00-4C00-8D00-E00000001025",
+            "kind" : "obligation"
+          },
+          "subtitle" : "Secțiune fără categorie · 2 feb. 2027",
+          "title" : "Termen fără categorie"
+        },
+        {
+          "date" : "2026-02-10T10:00:00Z",
+          "fields" : [
+            {
+              "text" : "Service Exemplu S.R.L.",
+              "weight" : 10
+            },
+            {
+              "text" : "Mecanic Vulcanizare",
+              "weight" : 6
+            },
+            {
+              "text" : "0722 123 456",
+              "weight" : 8
+            },
+            {
+              "text" : "VW Golf",
+              "weight" : 4
+            },
+            {
+              "text" : "Str. Exemplu 1, București Întreabă de Ștefan",
+              "weight" : 3
+            }
+          ],
+          "id" : "provider:5E000000-AB00-4C00-8D00-E00000001011",
+          "isSensitive" : false,
+          "kind" : "provider",
+          "route" : {
+            "id" : "5E000000-AB00-4C00-8D00-E00000001011",
+            "kind" : "provider"
+          },
+          "subtitle" : "Mecanic și Vulcanizare",
+          "title" : "Service Exemplu S.R.L."
+        },
+        {
+          "date" : "2026-02-11T10:00:00Z",
+          "fields" : [
+            {
+              "text" : "Piese Exemplu",
+              "weight" : 10
+            },
+            {
+              "text" : "",
+              "weight" : 6
+            },
+            {
+              "text" : "",
+              "weight" : 8
+            },
+            {
+              "text" : "",
+              "weight" : 4
+            },
+            {
+              "text" : "",
+              "weight" : 3
+            }
+          ],
+          "id" : "provider:5E000000-AB00-4C00-8D00-E00000001012",
+          "isSensitive" : false,
+          "kind" : "provider",
+          "route" : {
+            "id" : "5E000000-AB00-4C00-8D00-E00000001012",
+            "kind" : "provider"
+          },
+          "subtitle" : "",
+          "title" : "Piese Exemplu"
+        },
+        {
+          "date" : "2026-02-12T10:00:00Z",
+          "fields" : [
+            {
+              "text" : "Ștefan Instalații",
+              "weight" : 10
+            },
+            {
+              "text" : "Instalator",
+              "weight" : 6
+            },
+            {
+              "text" : "0700 000 000",
+              "weight" : 8
+            },
+            {
+              "text" : "",
+              "weight" : 4
+            },
+            {
+              "text" : "",
+              "weight" : 3
+            }
+          ],
+          "id" : "provider:5E000000-AB00-4C00-8D00-E00000001013",
+          "isSensitive" : false,
+          "kind" : "provider",
+          "route" : {
+            "id" : "5E000000-AB00-4C00-8D00-E00000001013",
+            "kind" : "provider"
+          },
+          "subtitle" : "Instalator",
+          "title" : "Ștefan Instalații"
+        }
+      ],
+      "household" : {
+        "assets" : [
+          {
+            "facts" : [
+              {
+                "id" : "5E000000-AB00-4C00-8D00-E00000001901",
+                "isSecret" : true,
+                "isSensitive" : true,
+                "label" : "Cod alarmă",
+                "value" : "sealed:v1:AAAA"
+              },
+              {
+                "id" : "5E000000-AB00-4C00-8D00-E00000001902",
+                "isSecret" : false,
+                "isSensitive" : false,
+                "label" : "Parcare",
+                "value" : "Locul 12, nivelul -1"
+              },
+              {
+                "id" : "5E000000-AB00-4C00-8D00-E00000001903",
+                "isSecret" : false,
+                "isSensitive" : true,
+                "label" : "Notă privată",
+                "value" : "ascuns"
+              }
+            ],
+            "id" : "5E000000-AB00-4C00-8D00-E00000001001",
+            "name" : "VW Golf",
+            "notes" : "Plătit cu 4111 1111 1111 1111 la service; CNP 1800101990006 pe talon",
+            "templateKey" : "search.car",
+            "updatedAt" : "2026-02-01T10:00:00Z",
+            "values" : {
+              "car.color" : {
+                "shown" : "gri, card 4111 1111 1111 1111",
+                "value" : {
+                  "type" : "text",
+                  "value" : "gri, card 4111 1111 1111 1111"
+                }
+              },
+              "car.iban" : {
+                "shown" : "RO49 AAAA 1B31 0075 9384 0000",
+                "value" : {
+                  "type" : "text",
+                  "value" : "RO49AAAA1B31007593840000"
+                }
+              },
+              "car.km" : {
+                "shown" : "125.000",
+                "value" : {
+                  "type" : "number",
+                  "value" : 125000
+                }
+              },
+              "car.make" : {
+                "shown" : "Volkswagen",
+                "value" : {
+                  "type" : "text",
+                  "value" : "Volkswagen"
+                }
+              },
+              "car.model" : {
+                "shown" : "Golf",
+                "value" : {
+                  "type" : "text",
+                  "value" : "Golf"
+                }
+              },
+              "car.ownerCNP" : {
+                "shown" : "1800101990006",
+                "value" : {
+                  "type" : "text",
+                  "value" : "1800101990006"
+                }
+              },
+              "car.pin" : {
+                "shown" : "••••",
+                "value" : {
+                  "type" : "text",
+                  "value" : "sealed:v1:AAAA"
+                }
+              },
+              "car.plate" : {
+                "shown" : "B-123-ABC",
+                "value" : {
+                  "type" : "text",
+                  "value" : "b 123 abc"
+                }
+              },
+              "car.vin" : {
+                "shown" : "WVWZZZ1KZAW000000",
+                "value" : {
+                  "type" : "text",
+                  "value" : "WVWZZZ1KZAW000000"
+                }
+              }
+            }
+          },
+          {
+            "facts" : [
+
+            ],
+            "id" : "5E000000-AB00-4C00-8D00-E00000001002",
+            "name" : "Rex",
+            "notes" : "Microcip {luhn:64200000000123} citit la vaccin",
+            "templateKey" : "search.pet",
+            "updatedAt" : "2026-02-02T10:00:00Z",
+            "values" : {
+              "pet.breed" : {
+                "shown" : "Europeană tărcată",
+                "value" : {
+                  "type" : "text",
+                  "value" : "breed.tabby"
+                }
+              },
+              "pet.chip" : {
+                "shown" : "{luhn:64200000000123}",
+                "value" : {
+                  "type" : "text",
+                  "value" : "{luhn:64200000000123}"
+                }
+              },
+              "pet.vet" : {
+                "shown" : "Cabinet Veterinar Exemplu",
+                "value" : {
+                  "type" : "text",
+                  "value" : "Cabinet Veterinar Exemplu"
+                }
+              }
+            }
+          },
+          {
+            "facts" : [
+
+            ],
+            "id" : "5E000000-AB00-4C00-8D00-E00000001003",
+            "name" : "Pașaport Ana",
+            "notes" : "Ține-l în sertar",
+            "templateKey" : "search.papers",
+            "updatedAt" : "2026-02-03T10:00:00Z",
+            "values" : {
+              "paper.holder" : {
+                "shown" : "Ana Exemplu",
+                "value" : {
+                  "type" : "text",
+                  "value" : "Ana Exemplu"
+                }
+              },
+              "paper.number" : {
+                "shown" : "RX 123456",
+                "value" : {
+                  "type" : "text",
+                  "value" : "RX 123456"
+                }
+              }
+            }
+          },
+          {
+            "facts" : [
+
+            ],
+            "id" : "5E000000-AB00-4C00-8D00-E00000001004",
+            "name" : "Secțiune fără categorie",
+            "notes" : "sosește mai târziu",
+            "templateKey" : "search.absent",
+            "updatedAt" : "2026-02-04T10:00:00Z",
+            "values" : {
+
+            }
+          }
+        ],
+        "attachments" : [
+          {
+            "assetId" : "5E000000-AB00-4C00-8D00-E00000001001",
+            "createdAt" : "2026-06-01T09:00:00Z",
+            "documentDay" : "2026-01-10",
+            "extractedText" : "Daune 021 000 0000, plătit cu 4111111111111111",
+            "fileName" : "polita.pdf",
+            "historyEntryId" : null,
+            "id" : "5E000000-AB00-4C00-8D00-E00000001051",
+            "isArchived" : false,
+            "kind" : "policy",
+            "obligationId" : null,
+            "serviceItemId" : null,
+            "title" : "Poliță RCA 2026"
+          },
+          {
+            "assetId" : null,
+            "createdAt" : "2026-06-02T09:00:00Z",
+            "documentDay" : null,
+            "extractedText" : "Poliță RCA 2025 POL-000000",
+            "fileName" : "polita-veche.pdf",
+            "historyEntryId" : null,
+            "id" : "5E000000-AB00-4C00-8D00-E00000001052",
+            "isArchived" : true,
+            "kind" : "policy",
+            "obligationId" : "5E000000-AB00-4C00-8D00-E00000001021",
+            "serviceItemId" : null,
+            "title" : null
+          },
+          {
+            "assetId" : null,
+            "createdAt" : "2026-06-03T09:00:00Z",
+            "documentDay" : null,
+            "extractedText" : "Total 450 lei, card 4111 1111 1111 1111",
+            "fileName" : "factura.pdf",
+            "historyEntryId" : null,
+            "id" : "5E000000-AB00-4C00-8D00-E00000001053",
+            "isArchived" : false,
+            "kind" : "invoice",
+            "obligationId" : null,
+            "serviceItemId" : "5E000000-AB00-4C00-8D00-E00000001041",
+            "title" : "Factură plăcuțe"
+          },
+          {
+            "assetId" : null,
+            "createdAt" : "2026-06-04T09:00:00Z",
+            "documentDay" : null,
+            "extractedText" : "Revizie la 120.000 km",
+            "fileName" : "bon.jpg",
+            "historyEntryId" : "5E000000-AB00-4C00-8D00-E00000001032",
+            "id" : "5E000000-AB00-4C00-8D00-E00000001054",
+            "isArchived" : false,
+            "kind" : "receipt",
+            "obligationId" : null,
+            "serviceItemId" : null,
+            "title" : "Bon revizie"
+          },
+          {
+            "assetId" : "5E000000-AB00-4C00-8D00-E00000001002",
+            "createdAt" : "2026-06-05T09:00:00Z",
+            "documentDay" : "2026-04-04",
+            "extractedText" : "Microcip {luhn:64200000000123}, card 5555555555554444",
+            "fileName" : "carnet.pdf",
+            "historyEntryId" : null,
+            "id" : "5E000000-AB00-4C00-8D00-E00000001055",
+            "isArchived" : false,
+            "kind" : "other",
+            "obligationId" : null,
+            "serviceItemId" : null,
+            "title" : "Carnet de sănătate"
+          },
+          {
+            "assetId" : "5E000000-AB00-4C00-8D00-E00000001003",
+            "createdAt" : "2026-06-06T09:00:00Z",
+            "documentDay" : null,
+            "extractedText" : "P<ROUEXEMPLU<<ANA 1800101990006",
+            "fileName" : "pasaport.jpg",
+            "historyEntryId" : null,
+            "id" : "5E000000-AB00-4C00-8D00-E00000001056",
+            "isArchived" : false,
+            "kind" : "identity",
+            "obligationId" : null,
+            "serviceItemId" : null,
+            "title" : "Pașaport"
+          },
+          {
+            "assetId" : "5E000000-AB00-4C00-8D00-E00000001001",
+            "createdAt" : "2026-06-07T09:00:00Z",
+            "documentDay" : null,
+            "extractedText" : "CNP 1800101990006 IDROU",
+            "fileName" : "buletin.jpg",
+            "historyEntryId" : null,
+            "id" : "5E000000-AB00-4C00-8D00-E00000001057",
+            "isArchived" : false,
+            "kind" : "identity",
+            "obligationId" : null,
+            "serviceItemId" : null,
+            "title" : "Copie buletin"
+          },
+          {
+            "assetId" : null,
+            "createdAt" : "2026-06-08T09:00:00Z",
+            "documentDay" : null,
+            "extractedText" : "Chiria se plătește lunar",
+            "fileName" : "chirie.pdf",
+            "historyEntryId" : null,
+            "id" : "5E000000-AB00-4C00-8D00-E00000001058",
+            "isArchived" : false,
+            "kind" : "contract",
+            "obligationId" : "5E000000-AB00-4C00-8D00-E00000001024",
+            "serviceItemId" : null,
+            "title" : "Contract chirie"
+          },
+          {
+            "assetId" : null,
+            "createdAt" : "2026-06-09T09:00:00Z",
+            "documentDay" : null,
+            "extractedText" : "Pagina 1",
+            "fileName" : "scan.pdf",
+            "historyEntryId" : null,
+            "id" : "5E000000-AB00-4C00-8D00-E00000001059",
+            "isArchived" : false,
+            "kind" : "other",
+            "obligationId" : null,
+            "serviceItemId" : null,
+            "title" : null
+          }
+        ],
+        "historyEntries" : [
+          {
+            "assetId" : "5E000000-AB00-4C00-8D00-E00000001001",
+            "id" : "5E000000-AB00-4C00-8D00-E00000001031",
+            "items" : [
+              {
+                "componentKey" : "brakes.front",
+                "id" : "5E000000-AB00-4C00-8D00-E00000001041",
+                "name" : "Placute frana fata",
+                "partBrandOrCode" : "Bosch 0 986",
+                "supplierId" : "5E000000-AB00-4C00-8D00-E00000001012"
+              }
+            ],
+            "kind" : "repair",
+            "note" : "Plătit cu 5555 5555 5555 4444",
+            "occurredAt" : "2026-03-03T10:00:00Z",
+            "providerIds" : [
+              "5E000000-AB00-4C00-8D00-E00000001011"
+            ],
+            "reference" : "F-123",
+            "title" : "Schimb plăcuțe"
+          },
+          {
+            "assetId" : "5E000000-AB00-4C00-8D00-E00000001001",
+            "id" : "5E000000-AB00-4C00-8D00-E00000001032",
+            "items" : [
+              {
+                "componentKey" : "brakes.front",
+                "id" : "5E000000-AB00-4C00-8D00-E00000001043",
+                "name" : "Plăcuțe față",
+                "partBrandOrCode" : "ATE",
+                "supplierId" : null
+              }
+            ],
+            "kind" : "maintenance",
+            "note" : null,
+            "occurredAt" : "2025-10-10T09:00:00Z",
+            "providerIds" : [
+
+            ],
+            "reference" : null,
+            "title" : "Revizie"
+          },
+          {
+            "assetId" : "5E000000-AB00-4C00-8D00-E00000001002",
+            "id" : "5E000000-AB00-4C00-8D00-E00000001033",
+            "items" : [
+
+            ],
+            "kind" : "visit",
+            "note" : "Cip {luhn:64200000000123} verificat",
+            "occurredAt" : "2026-04-04T09:00:00Z",
+            "providerIds" : [
+
+            ],
+            "reference" : null,
+            "title" : "Vaccin anual"
+          },
+          {
+            "assetId" : "5E000000-AB00-4C00-8D00-E00000001003",
+            "id" : "5E000000-AB00-4C00-8D00-E00000001034",
+            "items" : [
+
+            ],
+            "kind" : "visit",
+            "note" : "Adus actele",
+            "occurredAt" : "2026-05-05T09:00:00Z",
+            "providerIds" : [
+
+            ],
+            "reference" : null,
+            "title" : "Programare ghișeu"
+          },
+          {
+            "assetId" : "5E000000-AB00-4C00-8D00-E00000001001",
+            "id" : "5E000000-AB00-4C00-8D00-E00000001035",
+            "items" : [
+              {
+                "componentKey" : "custom.stergatoare",
+                "id" : "5E000000-AB00-4C00-8D00-E00000001042",
+                "name" : "Ștergătoare",
+                "partBrandOrCode" : null,
+                "supplierId" : null
+              }
+            ],
+            "kind" : "repair",
+            "note" : null,
+            "occurredAt" : "2026-02-20T10:00:00Z",
+            "providerIds" : [
+
+            ],
+            "reference" : null,
+            "title" : "Schimb ștergătoare"
+          },
+          {
+            "assetId" : "5E000000-AB00-4C00-8D00-E00000001001",
+            "id" : "5E000000-AB00-4C00-8D00-E00000001036",
+            "items" : [
+              {
+                "componentKey" : null,
+                "id" : "5E000000-AB00-4C00-8D00-E00000001044",
+                "name" : "Ulei motor",
+                "partBrandOrCode" : null,
+                "supplierId" : null
+              }
+            ],
+            "kind" : "maintenance",
+            "note" : null,
+            "occurredAt" : "2025-06-06T09:00:00Z",
+            "providerIds" : [
+
+            ],
+            "reference" : null,
+            "title" : "Schimb ulei"
+          }
+        ],
+        "obligations" : [
+          {
+            "assetId" : "5E000000-AB00-4C00-8D00-E00000001001",
+            "dueDay" : "2027-01-10",
+            "id" : "5E000000-AB00-4C00-8D00-E00000001021",
+            "notes" : "Golful din garaj",
+            "provider" : "Asigurări Exemplu S.A.",
+            "reference" : "POL-000000",
+            "title" : "RCA"
+          },
+          {
+            "assetId" : "5E000000-AB00-4C00-8D00-E00000001001",
+            "dueDay" : "2026-12-01",
+            "id" : "5E000000-AB00-4C00-8D00-E00000001022",
+            "notes" : null,
+            "provider" : null,
+            "reference" : null,
+            "title" : "Rovinietă VW Golf"
+          },
+          {
+            "assetId" : "5E000000-AB00-4C00-8D00-E00000001003",
+            "dueDay" : "2028-05-05",
+            "id" : "5E000000-AB00-4C00-8D00-E00000001023",
+            "notes" : "la ghișeu, cu 1800101990006",
+            "provider" : null,
+            "reference" : null,
+            "title" : "Reînnoire pașaport"
+          },
+          {
+            "assetId" : null,
+            "dueDay" : "2027-03-31",
+            "id" : "5E000000-AB00-4C00-8D00-E00000001024",
+            "notes" : "Card 5555 5555 5555 4444",
+            "provider" : null,
+            "reference" : null,
+            "title" : "Impozit locuință"
+          },
+          {
+            "assetId" : "5E000000-AB00-4C00-8D00-E00000001004",
+            "dueDay" : "2027-02-02",
+            "id" : "5E000000-AB00-4C00-8D00-E00000001025",
+            "notes" : null,
+            "provider" : null,
+            "reference" : null,
+            "title" : "Termen fără categorie"
+          }
+        ],
+        "providers" : [
+          {
+            "address" : "Str. Exemplu 1, București",
+            "assetIds" : [
+              "5E000000-AB00-4C00-8D00-E00000001001"
+            ],
+            "id" : "5E000000-AB00-4C00-8D00-E00000001011",
+            "name" : "Service Exemplu S.R.L.",
+            "notes" : "Întreabă de Ștefan",
+            "phone" : "0722 123 456",
+            "trades" : [
+              "mechanic",
+              "tyreShop"
+            ],
+            "updatedAt" : "2026-02-10T10:00:00Z"
+          },
+          {
+            "address" : null,
+            "assetIds" : [
+
+            ],
+            "id" : "5E000000-AB00-4C00-8D00-E00000001012",
+            "name" : "Piese Exemplu",
+            "notes" : null,
+            "phone" : null,
+            "trades" : [
+
+            ],
+            "updatedAt" : "2026-02-11T10:00:00Z"
+          },
+          {
+            "address" : null,
+            "assetIds" : [
+
+            ],
+            "id" : "5E000000-AB00-4C00-8D00-E00000001013",
+            "name" : "Ștefan Instalații",
+            "notes" : null,
+            "phone" : "0700 000 000",
+            "trades" : [
+              "plumber"
+            ],
+            "updatedAt" : "2026-02-12T10:00:00Z"
+          }
+        ],
+        "templates" : [
+          {
+            "components" : [
+              {
+                "group" : "Frâne",
+                "key" : "brakes.front",
+                "name" : "Plăcuțe frână față",
+                "synonyms" : [
+                  "placute",
+                  "frana fata"
+                ]
+              }
+            ],
+            "fields" : [
+              {
+                "isSensitive" : false,
+                "key" : "car.plate",
+                "label" : "Număr",
+                "options" : [
+
+                ],
+                "role" : "identifier",
+                "type" : "plate"
+              },
+              {
+                "isSensitive" : false,
+                "key" : "car.vin",
+                "label" : "Serie șasiu",
+                "options" : [
+
+                ],
+                "role" : "keyFact",
+                "type" : "vin"
+              },
+              {
+                "isSensitive" : false,
+                "key" : "car.make",
+                "label" : "Marcă",
+                "options" : [
+
+                ],
+                "role" : "subtitle",
+                "type" : "text"
+              },
+              {
+                "isSensitive" : false,
+                "key" : "car.model",
+                "label" : "Model",
+                "options" : [
+
+                ],
+                "role" : "subtitle",
+                "type" : "text"
+              },
+              {
+                "isSensitive" : false,
+                "key" : "car.iban",
+                "label" : "Cont",
+                "options" : [
+
+                ],
+                "role" : null,
+                "type" : "iban"
+              },
+              {
+                "isSensitive" : true,
+                "key" : "car.ownerCNP",
+                "label" : "CNP proprietar",
+                "options" : [
+
+                ],
+                "role" : null,
+                "type" : "text"
+              },
+              {
+                "isSensitive" : false,
+                "key" : "car.pin",
+                "label" : "PIN",
+                "options" : [
+
+                ],
+                "role" : null,
+                "type" : "secret"
+              },
+              {
+                "isSensitive" : false,
+                "key" : "car.km",
+                "label" : "Kilometraj",
+                "options" : [
+
+                ],
+                "role" : null,
+                "type" : "number"
+              },
+              {
+                "isSensitive" : false,
+                "key" : "car.color",
+                "label" : "Culoare",
+                "options" : [
+
+                ],
+                "role" : null,
+                "type" : "text"
+              }
+            ],
+            "isLocked" : false,
+            "key" : "search.car",
+            "name" : "Mașini"
+          },
+          {
+            "components" : [
+
+            ],
+            "fields" : [
+              {
+                "isSensitive" : false,
+                "key" : "pet.chip",
+                "label" : "Microcip",
+                "options" : [
+
+                ],
+                "role" : "keyFact",
+                "type" : "microchip"
+              },
+              {
+                "isSensitive" : false,
+                "key" : "pet.breed",
+                "label" : "Rasă",
+                "options" : [
+                  {
+                    "key" : "breed.tabby",
+                    "label" : "Europeană tărcată"
+                  }
+                ],
+                "role" : "subtitle",
+                "type" : "choice"
+              },
+              {
+                "isSensitive" : false,
+                "key" : "pet.vet",
+                "label" : "Medic",
+                "options" : [
+
+                ],
+                "role" : "issuer",
+                "type" : "text"
+              }
+            ],
+            "isLocked" : false,
+            "key" : "search.pet",
+            "name" : "Animale"
+          },
+          {
+            "components" : [
+
+            ],
+            "fields" : [
+              {
+                "isSensitive" : true,
+                "key" : "paper.number",
+                "label" : "Număr",
+                "options" : [
+
+                ],
+                "role" : "documentNumber",
+                "type" : "text"
+              },
+              {
+                "isSensitive" : false,
+                "key" : "paper.holder",
+                "label" : "Titular",
+                "options" : [
+
+                ],
+                "role" : "holder",
+                "type" : "text"
+              }
+            ],
+            "isLocked" : true,
+            "key" : "search.papers",
+            "name" : "Acte"
+          }
+        ]
+      },
+      "words" : {
+        "archived" : "arhivat",
+        "days" : {
+          "2025-06-06" : "6 iun. 2025",
+          "2025-10-10" : "10 oct. 2025",
+          "2026-02-20" : "20 feb. 2026",
+          "2026-03-03" : "3 mar. 2026",
+          "2026-04-04" : "4 apr. 2026",
+          "2026-05-05" : "5 mai 2026",
+          "2026-12-01" : "1 dec. 2026",
+          "2027-01-10" : "10 ian. 2027",
+          "2027-02-02" : "2 feb. 2027",
+          "2027-03-31" : "31 mar. 2027",
+          "2028-05-05" : "5 mai 2028"
+        },
+        "trades" : {
+          "accountant" : "Contabil",
+          "bodyShop" : "Tinichigerie",
+          "boilerTechnician" : "Tehnician centrale",
+          "dentist" : "Stomatolog",
+          "doctor" : "Medic",
+          "electrician" : "Electrician",
+          "emergencyContact" : "Contact pentru urgențe",
+          "gasTechnician" : "Tehnician gaze",
+          "handyman" : "Meșter",
+          "hvacTechnician" : "Tehnician aer condiționat",
+          "inspectionStation" : "Stație ITP",
+          "insuranceAgent" : "Agent de asigurări",
+          "insurer" : "Asigurător",
+          "mechanic" : "Mecanic",
+          "other" : "Altceva",
+          "plumber" : "Instalator",
+          "tenant" : "Chiriaș",
+          "tyreShop" : "Vulcanizare",
+          "vet" : "Veterinar"
+        },
+        "zone" : "Europe/Bucharest"
+      }
+    }
+  ],
+  "rule" : "SearchIndexBuilder.buildByRecord(): what each record of a binder gives the index, secrets and what a category keeps out of search left out, CNP-shaped numbers, card numbers and sealed values taken out, a section's own typed values kept whole",
+  "shape" : "One case: household (its categories with their fields and components, and whether each is locked here; its sections with each value as stored and as shown; deadlines, records of history with their parts, firms and documents, linked by id), words (the time zone days were counted in, each day and trade as the rows say it, and the word for an archived document) and documents: every document the index holds, by id, with its route.",
+  "source" : "ios/DosarCuSina/Services/Search/SearchIndexBuilder.swift",
+  "writtenBy" : "ios/DosarCuSinaTests/SearchVectorsTests.swift"
+}
