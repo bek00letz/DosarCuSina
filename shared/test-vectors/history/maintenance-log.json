@@ -1,0 +1,439 @@
+{
+  "cases" : [
+    {
+      "components" : [
+        {
+          "key" : "brakes.padsFront",
+          "last" : {
+            "date" : 1673344800,
+            "daysSince" : 1096,
+            "metricAtTime" : 60000,
+            "metricSince" : null,
+            "name" : "Plăcuțe"
+          },
+          "next" : null,
+          "occurrences" : 1,
+          "typical" : null
+        }
+      ],
+      "currentMetric" : null,
+      "items" : [
+        {
+          "componentKey" : "brakes.padsFront",
+          "metricReading" : 60000,
+          "name" : "Plăcuțe",
+          "occurredAt" : 1673344800
+        }
+      ],
+      "monthlyRate" : null,
+      "name" : "one job is not a pattern",
+      "now" : 1768039200,
+      "readings" : [
+
+      ],
+      "tracked" : [
+        "brakes.padsFront"
+      ],
+      "trackedNewestFirst" : true
+    },
+    {
+      "components" : [
+        {
+          "key" : "brakes.padsFront",
+          "last" : {
+            "date" : 1736503200,
+            "daysSince" : 365,
+            "metricAtTime" : 90000,
+            "metricSince" : null,
+            "name" : "Plăcuțe"
+          },
+          "next" : {
+            "basis" : "time",
+            "day" : "2027-01-11",
+            "metric" : 120000,
+            "sampleCount" : 1
+          },
+          "occurrences" : 2,
+          "typical" : {
+            "days" : 731,
+            "metric" : 30000,
+            "sampleCount" : 1
+          }
+        }
+      ],
+      "currentMetric" : null,
+      "items" : [
+        {
+          "componentKey" : "brakes.padsFront",
+          "metricReading" : 60000,
+          "name" : "Plăcuțe",
+          "occurredAt" : 1673344800
+        },
+        {
+          "componentKey" : "brakes.padsFront",
+          "metricReading" : 90000,
+          "name" : "Plăcuțe",
+          "occurredAt" : 1736503200
+        }
+      ],
+      "monthlyRate" : null,
+      "name" : "by time without a pace",
+      "now" : 1768039200,
+      "readings" : [
+
+      ],
+      "tracked" : [
+        "brakes.padsFront"
+      ],
+      "trackedNewestFirst" : true
+    },
+    {
+      "components" : [
+        {
+          "key" : "brakes.padsFront",
+          "last" : {
+            "date" : 1736503200,
+            "daysSince" : 365,
+            "metricAtTime" : 90000,
+            "metricSince" : 16000,
+            "name" : "Plăcuțe"
+          },
+          "next" : {
+            "basis" : "distance",
+            "day" : "2027-03-06",
+            "metric" : 120000,
+            "sampleCount" : 1
+          },
+          "occurrences" : 2,
+          "typical" : {
+            "days" : 731,
+            "metric" : 30000,
+            "sampleCount" : 1
+          }
+        }
+      ],
+      "currentMetric" : 106000,
+      "items" : [
+        {
+          "componentKey" : "brakes.padsFront",
+          "metricReading" : 60000,
+          "name" : "Plăcuțe",
+          "occurredAt" : 1673344800
+        },
+        {
+          "componentKey" : "brakes.padsFront",
+          "metricReading" : 90000,
+          "name" : "Plăcuțe",
+          "occurredAt" : 1736503200
+        }
+      ],
+      "monthlyRate" : 1000.0000000000001,
+      "name" : "by distance and pace",
+      "now" : 1768039200,
+      "readings" : [
+        {
+          "at" : "2025-07-10T10:00:00Z",
+          "metric" : 100000,
+          "startsCounter" : false
+        },
+        {
+          "at" : "2026-01-06T10:00:00Z",
+          "metric" : 106000,
+          "startsCounter" : false
+        }
+      ],
+      "tracked" : [
+        "brakes.padsFront"
+      ],
+      "trackedNewestFirst" : true
+    },
+    {
+      "components" : [
+        {
+          "key" : "engine.oil",
+          "last" : {
+            "date" : 1736503200,
+            "daysSince" : 365,
+            "metricAtTime" : 110000,
+            "metricSince" : 1,
+            "name" : "Ulei"
+          },
+          "next" : {
+            "basis" : "time",
+            "day" : "2026-01-11",
+            "metric" : 120000,
+            "sampleCount" : 1
+          },
+          "occurrences" : 2,
+          "typical" : {
+            "days" : 366,
+            "metric" : 10000,
+            "sampleCount" : 1
+          }
+        }
+      ],
+      "currentMetric" : 110001,
+      "items" : [
+        {
+          "componentKey" : "engine.oil",
+          "metricReading" : 100000,
+          "name" : "Ulei",
+          "occurredAt" : 1704880800
+        },
+        {
+          "componentKey" : "engine.oil",
+          "metricReading" : 110000,
+          "name" : "Ulei",
+          "occurredAt" : 1736503200
+        }
+      ],
+      "monthlyRate" : 0.08310249307479224,
+      "name" : "a pace too slow to be honest goes by time",
+      "now" : 1768039200,
+      "readings" : [
+        {
+          "at" : "2025-01-10T10:00:00Z",
+          "metric" : 110000,
+          "startsCounter" : false
+        },
+        {
+          "at" : "2026-01-06T10:00:00Z",
+          "metric" : 110001,
+          "startsCounter" : false
+        }
+      ],
+      "tracked" : [
+        "engine.oil"
+      ],
+      "trackedNewestFirst" : true
+    },
+    {
+      "components" : [
+        {
+          "key" : "engine.oil",
+          "last" : {
+            "date" : 1736503200,
+            "daysSince" : 365,
+            "metricAtTime" : 195000,
+            "metricSince" : 12000,
+            "name" : "Ulei"
+          },
+          "next" : {
+            "basis" : "distance",
+            "day" : "2026-03-26",
+            "metric" : 16000,
+            "sampleCount" : 1
+          },
+          "occurrences" : 2,
+          "typical" : {
+            "days" : 366,
+            "metric" : 15000,
+            "sampleCount" : 1
+          }
+        }
+      ],
+      "currentMetric" : 13000,
+      "items" : [
+        {
+          "componentKey" : "engine.oil",
+          "metricReading" : 180000,
+          "name" : "Ulei",
+          "occurredAt" : 1704880800
+        },
+        {
+          "componentKey" : "engine.oil",
+          "metricReading" : 195000,
+          "name" : "Ulei",
+          "occurredAt" : 1736503200
+        }
+      ],
+      "monthlyRate" : 1205.357142857143,
+      "name" : "a new dashboard is never a drop",
+      "now" : 1768039200,
+      "readings" : [
+        {
+          "at" : "2024-01-10T10:00:00Z",
+          "metric" : 180000,
+          "startsCounter" : false
+        },
+        {
+          "at" : "2025-01-10T10:00:00Z",
+          "metric" : 195000,
+          "startsCounter" : false
+        },
+        {
+          "at" : "2025-03-01T10:00:00Z",
+          "metric" : 1000,
+          "startsCounter" : true
+        },
+        {
+          "at" : "2026-01-01T10:00:00Z",
+          "metric" : 13000,
+          "startsCounter" : false
+        }
+      ],
+      "tracked" : [
+        "engine.oil"
+      ],
+      "trackedNewestFirst" : true
+    },
+    {
+      "components" : [
+        {
+          "key" : "custom.odorizant",
+          "last" : {
+            "date" : 1738404000,
+            "daysSince" : 343,
+            "metricAtTime" : null,
+            "metricSince" : null,
+            "name" : "Odorizant"
+          },
+          "next" : null,
+          "occurrences" : 1,
+          "typical" : null
+        },
+        {
+          "key" : "engine.oil",
+          "last" : {
+            "date" : 1748768400,
+            "daysSince" : 223,
+            "metricAtTime" : null,
+            "metricSince" : null,
+            "name" : "Ulei"
+          },
+          "next" : {
+            "basis" : "time",
+            "day" : "2026-06-01",
+            "metric" : null,
+            "sampleCount" : 1
+          },
+          "occurrences" : 2,
+          "typical" : {
+            "days" : 365,
+            "metric" : null,
+            "sampleCount" : 1
+          }
+        },
+        {
+          "key" : "filters.air",
+          "last" : {
+            "date" : 1756717200,
+            "daysSince" : 131,
+            "metricAtTime" : null,
+            "metricSince" : null,
+            "name" : "Filtru de aer"
+          },
+          "next" : null,
+          "occurrences" : 1,
+          "typical" : null
+        }
+      ],
+      "currentMetric" : null,
+      "items" : [
+        {
+          "componentKey" : "engine.oil",
+          "metricReading" : null,
+          "name" : "Ulei",
+          "occurredAt" : 1748768400
+        },
+        {
+          "componentKey" : "filters.air",
+          "metricReading" : null,
+          "name" : "Filtru de aer",
+          "occurredAt" : 1756717200
+        },
+        {
+          "componentKey" : null,
+          "metricReading" : null,
+          "name" : "Manoperă",
+          "occurredAt" : 1759309200
+        },
+        {
+          "componentKey" : "engine.oil",
+          "metricReading" : null,
+          "name" : "Ulei",
+          "occurredAt" : 1717232400
+        },
+        {
+          "componentKey" : "custom.odorizant",
+          "metricReading" : null,
+          "name" : "Odorizant",
+          "occurredAt" : 1738404000
+        }
+      ],
+      "monthlyRate" : null,
+      "name" : "several parts, newest activity first",
+      "now" : 1768039200,
+      "readings" : [
+
+      ],
+      "tracked" : [
+        "custom.odorizant",
+        "engine.oil",
+        "filters.air"
+      ],
+      "trackedNewestFirst" : true
+    },
+    {
+      "components" : [
+        {
+          "key" : "tyres.winter",
+          "last" : {
+            "date" : 1763632800,
+            "daysSince" : 371,
+            "metricAtTime" : 70000,
+            "metricSince" : null,
+            "name" : "Anvelope"
+          },
+          "next" : {
+            "basis" : "time",
+            "day" : "2027-06-01",
+            "metric" : 85000,
+            "sampleCount" : 2
+          },
+          "occurrences" : 3,
+          "typical" : {
+            "days" : 558,
+            "metric" : 15000,
+            "sampleCount" : 2
+          }
+        }
+      ],
+      "currentMetric" : null,
+      "items" : [
+        {
+          "componentKey" : "tyres.winter",
+          "metricReading" : 40000,
+          "name" : "Anvelope",
+          "occurredAt" : 1667296800
+        },
+        {
+          "componentKey" : "tyres.winter",
+          "metricReading" : 52000,
+          "name" : "Anvelope",
+          "occurredAt" : 1699178400
+        },
+        {
+          "componentKey" : "tyres.winter",
+          "metricReading" : 70000,
+          "name" : "Anvelope",
+          "occurredAt" : 1763632800
+        }
+      ],
+      "monthlyRate" : null,
+      "name" : "three jobs, the median gap",
+      "now" : 1795687200,
+      "readings" : [
+
+      ],
+      "tracked" : [
+        "tyres.winter"
+      ],
+      "trackedNewestFirst" : true
+    }
+  ],
+  "rule" : "MaintenanceLog: trackedComponents, occurrences, lastOccurrence, typicalInterval, monthlyRate, nextEstimate",
+  "shape" : "items: a section's line items, each its part's key (null: none), name, when its record happened (seconds) and the counter then. readings: the section's counter readings (UTC moments), whether each starts a counter. currentMetric: the counter now; now: the clock (seconds), days counted in Bucharest. tracked: the parts with history, by key; trackedNewestFirst: whether trackedComponents gave them newest activity first. monthlyRate: how far the counter moves in 30 days. components: for each part, how many times it was done, its last occurrence (name, when, the counter then, how far it moved since, days since), the typical interval (median counter distance and days, how many gaps) and the next estimate (day, counter, distance or time, gaps), each null when none.",
+  "source" : "ios/DosarCuSina/Services/History/MaintenanceLog.swift",
+  "writtenBy" : "ios/DosarCuSinaTests/HistoryVectorsTests.swift"
+}

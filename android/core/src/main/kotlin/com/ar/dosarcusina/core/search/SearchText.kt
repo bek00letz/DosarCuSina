@@ -17,6 +17,20 @@ object SearchText {
     fun tokens(text: String): List<String> = RomanianText.words(text)
 
     /**
+     * Whether the words of the normalized [phrase] appear in order in the normalized [text], each as the
+     * start of a word, so Romanian endings still match ("ulei" finds "uleiul", "disc" finds "discurile"),
+     * as the iOS app's `SearchText.containsPhrase`. Both are already [normalize]d.
+     */
+    fun containsPhrase(text: String, phrase: String): Boolean {
+        val words = text.split(' ').filter { it.isNotEmpty() }
+        val needle = phrase.split(' ').filter { it.isNotEmpty() }
+        if (needle.isEmpty() || needle.size > words.size) return false
+        return (0..words.size - needle.size).any { start ->
+            needle.indices.all { index -> startsWith(words[start + index], needle[index]) }
+        }
+    }
+
+    /**
      * Whether [word] starts with [token], character by character as a person sees them (Swift's
      * `hasPrefix`): the end of [token] has to fall between two characters of [word].
      */

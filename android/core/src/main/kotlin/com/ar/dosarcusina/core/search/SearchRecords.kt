@@ -1,5 +1,6 @@
 package com.ar.dosarcusina.core.search
 
+import com.ar.dosarcusina.core.history.HistoryItemSnapshot
 import com.ar.dosarcusina.core.text.PaymentCardNumbers.KeptWhole
 import com.ar.dosarcusina.core.values.CalendarDay
 import java.time.Instant
@@ -28,7 +29,7 @@ data class SearchSection(
     /** Its category's parts and jobs (`ComponentDefinition`). */
     val components: List<SearchComponent> = emptyList(),
     /** Every part or job of its records of history. */
-    val parts: List<SearchPart> = emptyList(),
+    val parts: List<HistoryItemSnapshot> = emptyList(),
 )
 
 /** One field's value on a section. */
@@ -80,21 +81,6 @@ data class SearchFact(val label: String, val value: String, val isSensitive: Boo
 
 /** A part or a job a category knows (`ComponentDefinition`). */
 data class SearchComponent(val key: String, val name: String, val group: String, val synonyms: List<String>)
-
-/** A part or a job done in one of a section's records of history. */
-data class SearchPart(
-    /** The part it is: a catalog key or one of the person's own (`custom.…`); none for one not followed. */
-    val componentKey: String?,
-    val name: String,
-    /** The record of history it was done in. */
-    val entryId: UUID,
-    /** When that record happened. */
-    val occurredAt: Instant,
-    val partBrandOrCode: String?,
-    val supplierName: String?,
-    /** Who did the record's work, by name, in order. */
-    val providerNames: List<String>,
-)
 
 /** A deadline. */
 data class SearchDeadline(

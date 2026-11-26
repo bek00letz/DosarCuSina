@@ -1,0 +1,143 @@
+{
+  "cases" : [
+    {
+      "line" : "Manoperă 1,5 ore",
+      "matches" : true
+    },
+    {
+      "line" : "Manopera service",
+      "matches" : true
+    },
+    {
+      "line" : "MÂNĂ DE LUCRU",
+      "matches" : true
+    },
+    {
+      "line" : "Mana lucru",
+      "matches" : true
+    },
+    {
+      "line" : "Ore lucrate: 2",
+      "matches" : true
+    },
+    {
+      "line" : "Ore de muncă",
+      "matches" : true
+    },
+    {
+      "line" : "Analize de laborator",
+      "matches" : false
+    },
+    {
+      "line" : "Filtru ulei",
+      "matches" : false
+    },
+    {
+      "line" : "Labour",
+      "matches" : true
+    },
+    {
+      "line" : "Laborator",
+      "matches" : false
+    },
+    {
+      "line" : "manoperei aferente",
+      "matches" : false
+    },
+    {
+      "line" : "Plăcuțe frână față",
+      "matches" : false
+    },
+    {
+      "line" : "",
+      "matches" : false
+    },
+    {
+      "line" : "Lucru",
+      "matches" : false
+    },
+    {
+      "line" : "Ore",
+      "matches" : false
+    },
+    {
+      "names" : [
+        "Plăcuțe frână față",
+        "Manoperă"
+      ],
+      "work" : [
+        "Plăcuțe frână față"
+      ]
+    },
+    {
+      "names" : [
+        "Manoperă"
+      ],
+      "work" : [
+        "Manoperă"
+      ]
+    },
+    {
+      "names" : [
+        "Manoperă",
+        "Mână de lucru"
+      ],
+      "work" : [
+        "Manoperă",
+        "Mână de lucru"
+      ]
+    },
+    {
+      "names" : [
+
+      ],
+      "work" : [
+
+      ]
+    },
+    {
+      "names" : [
+        "Ulei",
+        "Bujii"
+      ],
+      "work" : [
+        "Ulei",
+        "Bujii"
+      ]
+    },
+    {
+      "category" : "vehicle",
+      "key" : "brakes.padsRear",
+      "partName" : "Plăcuțe frână spate"
+    },
+    {
+      "category" : "vehicle",
+      "key" : "brakes.padsRear",
+      "partName" : "placute de frana spate"
+    },
+    {
+      "category" : "vehicle",
+      "key" : "electrical.battery",
+      "partName" : "Baterie"
+    },
+    {
+      "category" : "vehicle",
+      "key" : "custom.odorizant",
+      "partName" : "Odorizant"
+    },
+    {
+      "category" : "vehicle",
+      "key" : "custom.item",
+      "partName" : "  "
+    },
+    {
+      "category" : "vehicle",
+      "key" : "engine.oil",
+      "partName" : "Schimb ulei motor"
+    }
+  ],
+  "rule" : "LabourLine.matches(_:) and work(_:), over CaptureLexicon.labourWords; ComponentCatalog.key(for:in:)",
+  "shape" : "line with matches: whether a line item's name is labour. names with work: what a visit's title counts of them. partName with category and key: the part a line names in the category's parts, or the key of a part of one's own.",
+  "source" : "ios/DosarCuSina/Services/Capture/CaptureComponentResolver.swift, CaptureLexicon.swift, ios/DosarCuSina/Models/Templates/ComponentCatalog.swift",
+  "writtenBy" : "ios/DosarCuSinaTests/HistoryVectorsTests.swift"
+}

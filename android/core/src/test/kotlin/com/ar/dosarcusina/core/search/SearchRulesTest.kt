@@ -1,5 +1,6 @@
 package com.ar.dosarcusina.core.search
 
+import com.ar.dosarcusina.core.history.HistoryItemSnapshot
 import com.ar.dosarcusina.core.text.PaymentCardNumbers.KeptWhole
 import com.ar.dosarcusina.core.text.StandardOrder
 import com.ar.dosarcusina.core.values.CalendarDay
@@ -63,7 +64,7 @@ class SearchRulesTest {
 
     @Test
     fun `each part followed gives one result, at its newest occurrence`() {
-        fun part(key: String?, day: String, brand: String) = SearchPart(
+        fun part(key: String?, day: String, brand: String) = HistoryItemSnapshot(
             componentKey = key, name = "Plăcuțe", entryId = UUID(1, day.hashCode().toLong()),
             occurredAt = Instant.parse("${day}T10:00:00Z"), partBrandOrCode = brand, supplierName = null,
             providerNames = emptyList(),
