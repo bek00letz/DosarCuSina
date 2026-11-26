@@ -1,0 +1,597 @@
+{
+  "cases" : [
+    {
+      "household" : [
+
+      ],
+      "made" : [
+        {
+          "name" : "VW Golf 2018",
+          "obligations" : [
+            {
+              "blueprintKey" : "vehicle.service",
+              "consequence" : "comfort",
+              "dueDay" : "2027-11-26",
+              "dueMetric" : 160000,
+              "estimatedCost" : null,
+              "followUpAfterLapse" : false,
+              "graceDays" : 30,
+              "isExample" : false,
+              "kind" : "maintenance",
+              "leadDays" : [
+                14,
+                1
+              ],
+              "notes" : null,
+              "recurrence" : {
+                "every" : 15000,
+                "fallbackEvery" : 1,
+                "fallbackUnit" : "year",
+                "type" : "metric",
+                "unit" : "km"
+              },
+              "title" : "Revizie periodică",
+              "travelMarginDays" : 0
+            },
+            {
+              "blueprintKey" : "vehicle.tyres",
+              "consequence" : "comfort",
+              "dueDay" : "2027-04-15",
+              "dueMetric" : null,
+              "estimatedCost" : null,
+              "followUpAfterLapse" : false,
+              "graceDays" : 14,
+              "isExample" : false,
+              "kind" : "maintenance",
+              "leadDays" : [
+                14
+              ],
+              "notes" : null,
+              "recurrence" : {
+                "dates" : [
+                  "04-15",
+                  "11-01"
+                ],
+                "type" : "fixedDates"
+              },
+              "title" : "Schimb de anvelope",
+              "travelMarginDays" : 0
+            }
+          ],
+          "parent" : null,
+          "readings" : [
+            {
+              "kind" : "odometer",
+              "unit" : "km",
+              "value" : 145000
+            }
+          ],
+          "values" : {
+            "vehicle.odometer" : {
+              "type" : "number",
+              "value" : 145000
+            },
+            "vehicle.plate" : {
+              "type" : "text",
+              "value" : "B-123-ABC"
+            }
+          }
+        }
+      ],
+      "name" : "a car with its odometer: the deadlines it starts with, and its first reading",
+      "sections" : [
+        {
+          "category" : "vehicle",
+          "name" : "VW Golf 2018",
+          "parent" : null,
+          "plan" : null,
+          "values" : {
+            "vehicle.odometer" : {
+              "type" : "number",
+              "value" : 145000
+            },
+            "vehicle.plate" : {
+              "type" : "text",
+              "value" : "B-123-ABC"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "household" : [
+
+      ],
+      "made" : [
+        {
+          "name" : "VW Golf 2018",
+          "obligations" : [
+            {
+              "blueprintKey" : "vehicle.itp",
+              "consequence" : "legal",
+              "dueDay" : "2027-01-20",
+              "dueMetric" : null,
+              "estimatedCost" : {
+                "amount" : "180",
+                "currency" : "RON"
+              },
+              "followUpAfterLapse" : true,
+              "graceDays" : 0,
+              "isExample" : false,
+              "kind" : "legal",
+              "leadDays" : [
+                30,
+                7
+              ],
+              "notes" : "Fără ITP valabil, înmatricularea se suspendă.",
+              "recurrence" : {
+                "rule" : "vehicleITP",
+                "type" : "legal"
+              },
+              "title" : "ITP",
+              "travelMarginDays" : 0
+            },
+            {
+              "blueprintKey" : "vehicle.service",
+              "consequence" : "comfort",
+              "dueDay" : "2027-11-26",
+              "dueMetric" : 160000,
+              "estimatedCost" : null,
+              "followUpAfterLapse" : false,
+              "graceDays" : 30,
+              "isExample" : false,
+              "kind" : "maintenance",
+              "leadDays" : [
+                14,
+                1
+              ],
+              "notes" : null,
+              "recurrence" : {
+                "every" : 15000,
+                "fallbackEvery" : 1,
+                "fallbackUnit" : "year",
+                "type" : "metric",
+                "unit" : "km"
+              },
+              "title" : "Revizie periodică",
+              "travelMarginDays" : 0
+            }
+          ],
+          "parent" : null,
+          "readings" : [
+            {
+              "kind" : "odometer",
+              "unit" : "km",
+              "value" : 145000
+            }
+          ],
+          "values" : {
+            "vehicle.odometer" : {
+              "type" : "number",
+              "value" : 145000
+            }
+          }
+        }
+      ],
+      "name" : "a car with its ITP ticked and dated by the person",
+      "sections" : [
+        {
+          "category" : "vehicle",
+          "name" : "VW Golf 2018",
+          "parent" : null,
+          "plan" : [
+            {
+              "firstDue" : "2027-01-20",
+              "isSelected" : true,
+              "key" : "vehicle.itp"
+            },
+            {
+              "firstDue" : null,
+              "isSelected" : true,
+              "key" : "vehicle.service"
+            },
+            {
+              "firstDue" : null,
+              "isSelected" : false,
+              "key" : "vehicle.tyres"
+            }
+          ],
+          "values" : {
+            "vehicle.odometer" : {
+              "type" : "number",
+              "value" : 145000
+            }
+          }
+        }
+      ]
+    },
+    {
+      "household" : [
+
+      ],
+      "made" : [
+        {
+          "name" : "Manole Corina",
+          "obligations" : [
+
+          ],
+          "parent" : null,
+          "readings" : [
+
+          ],
+          "values" : {
+
+          }
+        },
+        {
+          "name" : "Pașaport – Manole Corina",
+          "obligations" : [
+            {
+              "blueprintKey" : "document.renew",
+              "consequence" : "legal",
+              "dueDay" : "2031-05-10",
+              "dueMetric" : null,
+              "estimatedCost" : null,
+              "followUpAfterLapse" : true,
+              "graceDays" : 0,
+              "isExample" : false,
+              "kind" : "renewal",
+              "leadDays" : [
+                90,
+                0
+              ],
+              "notes" : "Programările durează. Pentru pașaport, multe țări cer 6 luni de valabilitate.",
+              "recurrence" : {
+                "type" : "none"
+              },
+              "title" : "Reînnoire",
+              "travelMarginDays" : 180
+            }
+          ],
+          "parent" : "Manole Corina",
+          "readings" : [
+
+          ],
+          "values" : {
+            "document.expiry" : {
+              "type" : "date",
+              "value" : "2031-05-10"
+            },
+            "document.type" : {
+              "type" : "text",
+              "value" : "documentType.passport"
+            }
+          }
+        }
+      ],
+      "name" : "a passport under its holder: its renewal by its expiry, reminding before the travel cut-off",
+      "sections" : [
+        {
+          "category" : "member",
+          "name" : "Manole Corina",
+          "parent" : null,
+          "plan" : null,
+          "values" : {
+
+          }
+        },
+        {
+          "category" : "documents",
+          "name" : "Pașaport – Manole Corina",
+          "parent" : "Manole Corina",
+          "plan" : null,
+          "values" : {
+            "document.expiry" : {
+              "type" : "date",
+              "value" : "2031-05-10"
+            },
+            "document.type" : {
+              "type" : "text",
+              "value" : "documentType.passport"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "household" : [
+        {
+          "blueprintKey" : "household.rentalDeclaration",
+          "consequence" : "legal",
+          "dueDay" : "2027-05-25",
+          "dueMetric" : null,
+          "estimatedCost" : null,
+          "followUpAfterLapse" : true,
+          "graceDays" : 0,
+          "isExample" : false,
+          "kind" : "tax",
+          "leadDays" : [
+            30,
+            7
+          ],
+          "notes" : "Venitul din chirii se declară la ANAF până pe 25 mai.",
+          "recurrence" : {
+            "dates" : [
+              "05-25"
+            ],
+            "type" : "fixedDates"
+          },
+          "title" : "Declarația unică pentru chirii",
+          "travelMarginDays" : 0
+        }
+      ],
+      "made" : [
+        {
+          "name" : "Apartament Exemplu",
+          "obligations" : [
+            {
+              "blueprintKey" : "home.buildingTax",
+              "consequence" : "financial",
+              "dueDay" : "2027-03-31",
+              "dueMetric" : null,
+              "estimatedCost" : null,
+              "followUpAfterLapse" : true,
+              "graceDays" : 0,
+              "isExample" : false,
+              "kind" : "tax",
+              "leadDays" : [
+                14,
+                1
+              ],
+              "notes" : "Plata integrală până la 31 martie poate aduce o reducere.",
+              "recurrence" : {
+                "dates" : [
+                  "03-31",
+                  "09-30"
+                ],
+                "type" : "fixedDates"
+              },
+              "title" : "Impozit pe clădire",
+              "travelMarginDays" : 0
+            }
+          ],
+          "parent" : null,
+          "readings" : [
+
+          ],
+          "values" : {
+
+          }
+        },
+        {
+          "name" : "Chiriaș etaj 2",
+          "obligations" : [
+            {
+              "blueprintKey" : "tenancy.end",
+              "consequence" : "financial",
+              "dueDay" : "2027-12-31",
+              "dueMetric" : null,
+              "estimatedCost" : null,
+              "followUpAfterLapse" : false,
+              "graceDays" : 0,
+              "isExample" : false,
+              "kind" : "renewal",
+              "leadDays" : [
+                60
+              ],
+              "notes" : "Timp să vorbiți despre prelungire sau să cauți alt chiriaș.",
+              "recurrence" : {
+                "type" : "none"
+              },
+              "title" : "Se termină contractul de închiriere",
+              "travelMarginDays" : 0
+            }
+          ],
+          "parent" : "Apartament Exemplu",
+          "readings" : [
+
+          ],
+          "values" : {
+            "tenancy.end" : {
+              "type" : "date",
+              "value" : "2027-12-31"
+            },
+            "tenancy.start" : {
+              "type" : "date",
+              "value" : "2026-01-01"
+            }
+          }
+        }
+      ],
+      "name" : "a tenancy brings the household's rental income declaration",
+      "sections" : [
+        {
+          "category" : "home",
+          "name" : "Apartament Exemplu",
+          "parent" : null,
+          "plan" : null,
+          "values" : {
+
+          }
+        },
+        {
+          "category" : "tenancy",
+          "name" : "Chiriaș etaj 2",
+          "parent" : "Apartament Exemplu",
+          "plan" : null,
+          "values" : {
+            "tenancy.end" : {
+              "type" : "date",
+              "value" : "2027-12-31"
+            },
+            "tenancy.start" : {
+              "type" : "date",
+              "value" : "2026-01-01"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "household" : [
+
+      ],
+      "made" : [
+        {
+          "name" : "Rex",
+          "obligations" : [
+            {
+              "blueprintKey" : "pet.dewormExternal",
+              "consequence" : "health",
+              "dueDay" : "2026-12-26",
+              "dueMetric" : null,
+              "estimatedCost" : null,
+              "followUpAfterLapse" : false,
+              "graceDays" : 7,
+              "isExample" : false,
+              "kind" : "health",
+              "leadDays" : [
+                1,
+                0
+              ],
+              "notes" : null,
+              "recurrence" : {
+                "anchor" : "completion",
+                "every" : 1,
+                "type" : "interval",
+                "unit" : "month"
+              },
+              "title" : "Deparazitare externă",
+              "travelMarginDays" : 0
+            },
+            {
+              "blueprintKey" : "pet.dewormInternal",
+              "consequence" : "health",
+              "dueDay" : "2027-02-26",
+              "dueMetric" : null,
+              "estimatedCost" : null,
+              "followUpAfterLapse" : false,
+              "graceDays" : 7,
+              "isExample" : false,
+              "kind" : "health",
+              "leadDays" : [
+                1,
+                0
+              ],
+              "notes" : null,
+              "recurrence" : {
+                "anchor" : "completion",
+                "every" : 3,
+                "type" : "interval",
+                "unit" : "month"
+              },
+              "title" : "Deparazitare internă",
+              "travelMarginDays" : 0
+            }
+          ],
+          "parent" : null,
+          "readings" : [
+            {
+              "kind" : "bodyWeight",
+              "unit" : "kg",
+              "value" : 18.5
+            }
+          ],
+          "values" : {
+            "pet.species" : {
+              "type" : "text",
+              "value" : "species.dog"
+            },
+            "pet.weight" : {
+              "type" : "number",
+              "value" : 18.5
+            }
+          }
+        }
+      ],
+      "name" : "a dog's weight is its first reading",
+      "sections" : [
+        {
+          "category" : "pet",
+          "name" : "Rex",
+          "parent" : null,
+          "plan" : null,
+          "values" : {
+            "pet.species" : {
+              "type" : "text",
+              "value" : "species.dog"
+            },
+            "pet.weight" : {
+              "type" : "number",
+              "value" : 18.5
+            }
+          }
+        }
+      ]
+    },
+    {
+      "household" : [
+
+      ],
+      "made" : [
+        {
+          "name" : "Mașină de spălat",
+          "obligations" : [
+            {
+              "blueprintKey" : "purchase.warrantyEnds",
+              "consequence" : "financial",
+              "dueDay" : "2028-11-01",
+              "dueMetric" : null,
+              "estimatedCost" : null,
+              "followUpAfterLapse" : false,
+              "graceDays" : 0,
+              "isExample" : false,
+              "kind" : "renewal",
+              "leadDays" : [
+                30
+              ],
+              "notes" : "Funcționează totul bine? Acum mai poți reclama gratuit un defect.",
+              "recurrence" : {
+                "type" : "none"
+              },
+              "title" : "Garanția se termină",
+              "travelMarginDays" : 0
+            }
+          ],
+          "parent" : null,
+          "readings" : [
+
+          ],
+          "values" : {
+            "purchase.date" : {
+              "type" : "date",
+              "value" : "2026-11-01"
+            },
+            "purchase.warrantyMonths" : {
+              "type" : "number",
+              "value" : 24
+            },
+            "purchase.warrantyUntil" : {
+              "type" : "date",
+              "value" : "2028-11-01"
+            }
+          }
+        }
+      ],
+      "name" : "a purchase's warranty is worked out and remembered",
+      "sections" : [
+        {
+          "category" : "purchase",
+          "name" : "Mașină de spălat",
+          "parent" : null,
+          "plan" : null,
+          "values" : {
+            "purchase.date" : {
+              "type" : "date",
+              "value" : "2026-11-01"
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "rule" : "AssetActions.create(name:template:values:notes:obligations:parent:newParent:isExample:), with HouseholdMutations.makeObligation and HouseholdRules.reconcile",
+  "shape" : "today is 2026-11-26 in Bucharest. sections: made in order, each its name, category, values, the name of its parent among those made before (null for none) and the plan it is made with (null: the usual plan; else each blueprint's key, ticked or not, and the day the person gave, null to keep the planned one). made: each section as saved: its values, its parent's name, its deadlines by blueprint key (title, kind, due day, the counter it is due at, its reminders, note, how it repeats as stored, estimated cost) and its readings. household: the deadlines that belong to no section, after the last one was made.",
+  "source" : "ios/DosarCuSina/Services/Obligations/AssetActions.swift, ios/DosarCuSina/Services/Templates/HouseholdRules.swift",
+  "writtenBy" : "ios/DosarCuSinaTests/SectionVectorsTests.swift"
+}

@@ -9,6 +9,7 @@ import com.ar.dosarcusina.archive.v3.FieldSection
 import com.ar.dosarcusina.archive.v3.ObligationBlueprint
 import com.ar.dosarcusina.core.values.JsonCodec
 import com.ar.dosarcusina.core.values.MachineText
+import java.util.UUID
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
@@ -122,6 +123,20 @@ class Catalog private constructor(
                 basePockets = own.list("basePockets").map { it.text("basePockets") },
                 fields = fields,
                 services = services,
+                recovered = recovered(own["recovered"]),
+            )
+        }
+
+        private fun recovered(element: JsonElement?): RecoveredCategory {
+            val recovered = element?.obj("recovered") ?: throw CatalogError("recovered is missing")
+            val sectionID = recovered.string("sectionID")
+            return RecoveredCategory(
+                key = recovered.string("key"),
+                name = recovered.string("name"),
+                symbol = recovered.string("symbol"),
+                pockets = recovered.list("pockets").map { it.text("recovered.pockets") },
+                sectionID = runCatching { UUID.fromString(sectionID) }.getOrNull()
+                    ?: throw CatalogError("recovered.sectionID isn't an id"),
             )
         }
 

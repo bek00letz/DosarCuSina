@@ -1,0 +1,402 @@
+{
+  "cases" : [
+    {
+      "documentName" : "Carte de identitate",
+      "isDatedByIssue" : false,
+      "keepsBackSide" : true,
+      "travelMarginDays" : 0,
+      "type" : "documentType.idCard",
+      "validityMonths" : null,
+      "variant" : null
+    },
+    {
+      "documentName" : "Carte de identitate",
+      "type" : "documentType.idCard",
+      "validityMonths" : null,
+      "variant" : "documentVariant.idCard.electronic"
+    },
+    {
+      "documentName" : "Carte de identitate",
+      "type" : "documentType.idCard",
+      "validityMonths" : null,
+      "variant" : "documentVariant.idCard.withoutChip"
+    },
+    {
+      "documentName" : "Carte de identitate simplă",
+      "type" : "documentType.idCard",
+      "validityMonths" : null,
+      "variant" : "documentVariant.idCard.simple"
+    },
+    {
+      "documentName" : "Pașaport",
+      "isDatedByIssue" : false,
+      "keepsBackSide" : false,
+      "travelMarginDays" : 180,
+      "type" : "documentType.passport",
+      "validityMonths" : null,
+      "variant" : null
+    },
+    {
+      "documentName" : "Pașaport",
+      "type" : "documentType.passport",
+      "validityMonths" : null,
+      "variant" : "documentVariant.passport.electronic"
+    },
+    {
+      "documentName" : "Pașaport temporar",
+      "type" : "documentType.passport",
+      "validityMonths" : null,
+      "variant" : "documentVariant.passport.temporary"
+    },
+    {
+      "documentName" : "Permis de ședere",
+      "isDatedByIssue" : false,
+      "keepsBackSide" : true,
+      "travelMarginDays" : 0,
+      "type" : "documentType.residencePermit",
+      "validityMonths" : null,
+      "variant" : null
+    },
+    {
+      "documentName" : "Carte de rezidență",
+      "type" : "documentType.residencePermit",
+      "validityMonths" : null,
+      "variant" : "documentVariant.residencePermit.residenceCard"
+    },
+    {
+      "documentName" : "Permis de ședere (Acordul de retragere)",
+      "type" : "documentType.residencePermit",
+      "validityMonths" : null,
+      "variant" : "documentVariant.residencePermit.withdrawalAgreement"
+    },
+    {
+      "documentName" : "Permis de conducere",
+      "isDatedByIssue" : false,
+      "keepsBackSide" : true,
+      "travelMarginDays" : 0,
+      "type" : "documentType.drivingLicence",
+      "validityMonths" : null,
+      "variant" : null
+    },
+    {
+      "documentName" : "Card european de sănătate",
+      "isDatedByIssue" : false,
+      "keepsBackSide" : true,
+      "travelMarginDays" : 0,
+      "type" : "documentType.euHealthCard",
+      "validityMonths" : null,
+      "variant" : null
+    },
+    {
+      "documentName" : "Card național de sănătate",
+      "isDatedByIssue" : false,
+      "keepsBackSide" : true,
+      "travelMarginDays" : 0,
+      "type" : "documentType.nationalHealthCard",
+      "validityMonths" : null,
+      "variant" : null
+    },
+    {
+      "documentName" : "Carte verde",
+      "isDatedByIssue" : false,
+      "keepsBackSide" : false,
+      "travelMarginDays" : 0,
+      "type" : "documentType.greenCard",
+      "validityMonths" : null,
+      "variant" : null
+    },
+    {
+      "documentName" : "Card bancar",
+      "isDatedByIssue" : false,
+      "keepsBackSide" : false,
+      "travelMarginDays" : 0,
+      "type" : "documentType.bankCard",
+      "validityMonths" : null,
+      "variant" : null
+    },
+    {
+      "documentName" : "Card de debit",
+      "type" : "documentType.bankCard",
+      "validityMonths" : null,
+      "variant" : "documentVariant.bankCard.debit"
+    },
+    {
+      "documentName" : "Card de credit",
+      "type" : "documentType.bankCard",
+      "validityMonths" : null,
+      "variant" : "documentVariant.bankCard.credit"
+    },
+    {
+      "documentName" : "Semnătură electronică",
+      "isDatedByIssue" : false,
+      "keepsBackSide" : false,
+      "travelMarginDays" : 0,
+      "type" : "documentType.eSignature",
+      "validityMonths" : null,
+      "variant" : null
+    },
+    {
+      "documentName" : "Cazier",
+      "isDatedByIssue" : true,
+      "keepsBackSide" : false,
+      "travelMarginDays" : 0,
+      "type" : "documentType.criminalRecord",
+      "validityMonths" : null,
+      "variant" : null
+    },
+    {
+      "documentName" : "Cazier judiciar",
+      "type" : "documentType.criminalRecord",
+      "validityMonths" : 6,
+      "variant" : "documentVariant.criminalRecord.judicial"
+    },
+    {
+      "documentName" : "Cazier fiscal",
+      "type" : "documentType.criminalRecord",
+      "validityMonths" : null,
+      "variant" : "documentVariant.criminalRecord.fiscal"
+    },
+    {
+      "documentName" : "Cazier auto",
+      "type" : "documentType.criminalRecord",
+      "validityMonths" : null,
+      "variant" : "documentVariant.criminalRecord.driving"
+    },
+    {
+      "documentName" : "Alt document",
+      "isDatedByIssue" : false,
+      "keepsBackSide" : true,
+      "travelMarginDays" : 0,
+      "type" : "documentType.other",
+      "validityMonths" : null,
+      "variant" : null
+    },
+    {
+      "keepsBackSide" : false,
+      "travelMarginDays" : 180,
+      "typeText" : "Pasaport"
+    },
+    {
+      "keepsBackSide" : true,
+      "travelMarginDays" : 0,
+      "typeText" : "buletin"
+    },
+    {
+      "keepsBackSide" : true,
+      "travelMarginDays" : 0,
+      "typeText" : "CEASS"
+    },
+    {
+      "keepsBackSide" : false,
+      "travelMarginDays" : 0,
+      "typeText" : "documentType.somethingNewer"
+    },
+    {
+      "keepsBackSide" : true,
+      "travelMarginDays" : 0,
+      "typeText" : ""
+    },
+    {
+      "nameFromValues" : "Pașaport",
+      "values" : {
+        "document.type" : {
+          "type" : "text",
+          "value" : "Pasaport"
+        }
+      }
+    },
+    {
+      "nameFromValues" : "Cazier fiscal",
+      "values" : {
+        "document.type" : {
+          "type" : "text",
+          "value" : "documentType.criminalRecord"
+        },
+        "document.variant" : {
+          "type" : "text",
+          "value" : "Fiscal"
+        }
+      }
+    },
+    {
+      "nameFromValues" : "Card de credit",
+      "values" : {
+        "document.type" : {
+          "type" : "text",
+          "value" : "documentType.bankCard"
+        },
+        "document.variant" : {
+          "type" : "text",
+          "value" : "documentVariant.bankCard.credit"
+        }
+      }
+    },
+    {
+      "nameFromValues" : null,
+      "values" : {
+        "document.type" : {
+          "type" : "text",
+          "value" : "documentType.somethingNewer"
+        }
+      }
+    },
+    {
+      "nameFromValues" : null,
+      "values" : {
+
+      }
+    },
+    {
+      "validUntil" : {
+        "issued" : "2026-08-31",
+        "type" : "documentType.criminalRecord",
+        "until" : "2027-02-28",
+        "variant" : "documentVariant.criminalRecord.judicial"
+      }
+    },
+    {
+      "name" : "Cazier judiciar – Manole Corina",
+      "nameOf" : {
+        "document" : "Cazier judiciar",
+        "holder" : "Manole Corina"
+      }
+    },
+    {
+      "name" : "Pașaport",
+      "nameOf" : {
+        "document" : "  Pașaport ",
+        "holder" : "  "
+      }
+    },
+    {
+      "name" : "Carte de identitate",
+      "nameOf" : {
+        "document" : "Carte de identitate",
+        "holder" : null
+      }
+    },
+    {
+      "name" : "Permis – Popescu Ion",
+      "nameOf" : {
+        "document" : "Permis",
+        "holder" : " Popescu Ion "
+      }
+    },
+    {
+      "renamed" : {
+        "from" : "Manole Corina",
+        "name" : "Carte de identitate – Manole Corina",
+        "to" : "Popescu Ion"
+      },
+      "result" : "Carte de identitate – Popescu Ion"
+    },
+    {
+      "renamed" : {
+        "from" : "Manole Corina",
+        "name" : "Pașaport – manole corina",
+        "to" : "Popescu Ion"
+      },
+      "result" : "Pașaport – Popescu Ion"
+    },
+    {
+      "renamed" : {
+        "from" : "Popescu Ion",
+        "name" : "Pașaport – Popescu Ion",
+        "to" : "Popescu Ion"
+      },
+      "result" : null
+    },
+    {
+      "renamed" : {
+        "from" : "Manole Corina",
+        "name" : "Buletinul vechi",
+        "to" : "Popescu Ion"
+      },
+      "result" : null
+    },
+    {
+      "renamed" : {
+        "from" : null,
+        "name" : "Pașaport – Manole Corina",
+        "to" : "Popescu Ion"
+      },
+      "result" : null
+    },
+    {
+      "renamed" : {
+        "from" : "Manole Corina",
+        "name" : "Pașaport – Manole Corina",
+        "to" : "  "
+      },
+      "result" : null
+    },
+    {
+      "renamed" : {
+        "from" : "Manole Corina",
+        "name" : " – Manole Corina",
+        "to" : "Popescu Ion"
+      },
+      "result" : null
+    },
+    {
+      "renamed" : {
+        "from" : "Manole Corina",
+        "name" : "Cazier – fiscal – Manole Corina",
+        "to" : "Popescu Ion"
+      },
+      "result" : "Cazier – fiscal – Popescu Ion"
+    },
+    {
+      "result" : "Pașaport – Manole Corina",
+      "retyped" : {
+        "from" : "Alt document",
+        "name" : "Alt document – Manole Corina",
+        "to" : "Pașaport"
+      }
+    },
+    {
+      "result" : "Pașaport",
+      "retyped" : {
+        "from" : "Alt document",
+        "name" : "alt document",
+        "to" : "Pașaport"
+      }
+    },
+    {
+      "result" : null,
+      "retyped" : {
+        "from" : "Carte de identitate",
+        "name" : "Buletinul vechi",
+        "to" : "Pașaport"
+      }
+    },
+    {
+      "result" : null,
+      "retyped" : {
+        "from" : "Pașaport",
+        "name" : "Pașaport – Manole Corina",
+        "to" : "pasaport"
+      }
+    },
+    {
+      "result" : null,
+      "retyped" : {
+        "from" : null,
+        "name" : "Cazier – Manole Corina",
+        "to" : "Cazier judiciar"
+      }
+    },
+    {
+      "result" : null,
+      "retyped" : {
+        "from" : "Cazier",
+        "name" : "Cazier – Manole Corina",
+        "to" : " "
+      }
+    }
+  ],
+  "rule" : "DocumentType (documentName, keepsBackSide, travelMarginDays, validityMonths, isDatedByIssue, validUntil), AssetActions.documentName(_:) and DocumentNaming (name, renamed, retyped)",
+  "shape" : "type: every type, with no variant (its name, whether it keeps a back, its travel margin, its validity after issue, whether it is dated by its issue) and with each of its variants (the name and validity). typeText: a type as text stored by an earlier version. values: a document's values and the name they give it (null: no type this build knows). validUntil: the last valid day of a cazier judiciar issued on a day. nameOf, renamed, retyped: DocumentNaming's inputs and its answer (null: the name isn't rewritten).",
+  "source" : "ios/DosarCuSina/Models/Fields/ChoiceOptions.swift, ios/DosarCuSina/Services/Documents/DocumentNaming.swift, ios/DosarCuSina/Services/Obligations/AssetActions+Document.swift",
+  "writtenBy" : "ios/DosarCuSinaTests/SectionVectorsTests.swift"
+}

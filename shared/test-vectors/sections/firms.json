@@ -1,0 +1,255 @@
+{
+  "cases" : [
+    {
+      "after" : [
+        {
+          "name" : "ENGIE Romania S.A.",
+          "taxID" : "12345678",
+          "trades" : [
+            "other"
+          ]
+        }
+      ],
+      "find" : {
+        "name" : "Furnizor Gaz Exemplu",
+        "taxID" : "RO 12345678",
+        "trade" : "mechanic"
+      },
+      "firms" : [
+        {
+          "name" : "ENGIE Romania S.A.",
+          "taxID" : "12345678"
+        }
+      ],
+      "found" : 0,
+      "name" : "found by its CUI, whatever its name says"
+    },
+    {
+      "after" : [
+        {
+          "name" : "Service Exemplu SRL",
+          "taxID" : "12345678",
+          "trades" : [
+            "other"
+          ]
+        }
+      ],
+      "find" : {
+        "name" : "  SERVICE exemplu   srl ",
+        "taxID" : "RO12345678",
+        "trade" : "mechanic"
+      },
+      "firms" : [
+        {
+          "name" : "Service Exemplu SRL",
+          "taxID" : null
+        }
+      ],
+      "found" : 0,
+      "name" : "found by its name, keeping the CUI it lacked"
+    },
+    {
+      "after" : [
+        {
+          "name" : "Service Exemplu SRL",
+          "taxID" : "87654321",
+          "trades" : [
+            "other"
+          ]
+        },
+        {
+          "name" : "Service Exemplu SRL",
+          "taxID" : "12345678",
+          "trades" : [
+            "mechanic"
+          ]
+        }
+      ],
+      "find" : {
+        "name" : "Service Exemplu SRL",
+        "taxID" : "12345678",
+        "trade" : "mechanic"
+      },
+      "firms" : [
+        {
+          "name" : "Service Exemplu SRL",
+          "taxID" : "87654321"
+        }
+      ],
+      "found" : "new",
+      "name" : "a name with another CUI is another firm"
+    },
+    {
+      "after" : [
+        {
+          "name" : "Firma Exemplu",
+          "taxID" : null,
+          "trades" : [
+            "other"
+          ]
+        },
+        {
+          "name" : "Altă firmă",
+          "taxID" : "12345678",
+          "trades" : [
+            "other"
+          ]
+        }
+      ],
+      "find" : {
+        "name" : "Firma Exemplu",
+        "taxID" : "12345678",
+        "trade" : "mechanic"
+      },
+      "firms" : [
+        {
+          "name" : "Firma Exemplu",
+          "taxID" : null
+        },
+        {
+          "name" : "Altă firmă",
+          "taxID" : "12345678"
+        }
+      ],
+      "found" : 1,
+      "name" : "the CUI wins over a firm with the same name"
+    },
+    {
+      "after" : [
+        {
+          "name" : "Firma Exemplu",
+          "taxID" : "12345678",
+          "trades" : [
+            "other"
+          ]
+        }
+      ],
+      "find" : {
+        "name" : "firma exemplu",
+        "taxID" : null,
+        "trade" : "mechanic"
+      },
+      "firms" : [
+        {
+          "name" : "Firma Exemplu",
+          "taxID" : "12345678"
+        }
+      ],
+      "found" : 0,
+      "name" : "by name, with no CUI read"
+    },
+    {
+      "after" : [
+        {
+          "name" : "Firma Exemplu",
+          "taxID" : null,
+          "trades" : [
+            "other"
+          ]
+        }
+      ],
+      "find" : {
+        "name" : "Firma Exemplu",
+        "taxID" : "RO1",
+        "trade" : "mechanic"
+      },
+      "firms" : [
+        {
+          "name" : "Firma Exemplu",
+          "taxID" : null
+        }
+      ],
+      "found" : 0,
+      "name" : "a CUI that isn't one is read as none"
+    },
+    {
+      "after" : [
+        {
+          "name" : "Instal Exemplu SRL",
+          "taxID" : "12345678",
+          "trades" : [
+            "mechanic"
+          ]
+        }
+      ],
+      "find" : {
+        "name" : "Instal Exemplu SRL",
+        "taxID" : "0012345678",
+        "trade" : "mechanic"
+      },
+      "firms" : [
+
+      ],
+      "found" : "new",
+      "name" : "a new firm, with its CUI"
+    },
+    {
+      "after" : [
+        {
+          "name" : "Firma Exemplu",
+          "taxID" : null,
+          "trades" : [
+            "other"
+          ]
+        }
+      ],
+      "find" : {
+        "name" : "   ",
+        "taxID" : "12345678",
+        "trade" : "mechanic"
+      },
+      "firms" : [
+        {
+          "name" : "Firma Exemplu",
+          "taxID" : null
+        }
+      ],
+      "found" : null,
+      "name" : "nothing in the name finds nothing"
+    },
+    {
+      "normalized" : "12345678",
+      "taxIDText" : "RO12345678"
+    },
+    {
+      "normalized" : "12345678",
+      "taxIDText" : "ro 1234 5678"
+    },
+    {
+      "normalized" : "12345678",
+      "taxIDText" : "0012345678"
+    },
+    {
+      "normalized" : "12345678",
+      "taxIDText" : "12.345.678"
+    },
+    {
+      "normalized" : "12345678",
+      "taxIDText" : "12-345-678"
+    },
+    {
+      "normalized" : null,
+      "taxIDText" : "1"
+    },
+    {
+      "normalized" : null,
+      "taxIDText" : "12345678901"
+    },
+    {
+      "normalized" : null,
+      "taxIDText" : "RO"
+    },
+    {
+      "normalized" : null,
+      "taxIDText" : "ABC"
+    },
+    {
+      "normalized" : "98765432",
+      "taxIDText" : "  98765432  "
+    }
+  ],
+  "rule" : "ProviderActions.findOrCreate(name:taxID:trade:phone:linkedTo:) and ProviderTaxID.normalized(_:)",
+  "shape" : "firms: the firms in the binder before, in the order they were made, each its name and CUI as stored. find: who issued a document, as capture reads it. found: the index of the firm found among firms, \"new\" for a firm made, null for none. after: every firm then, in the order they were made (a new one last), with its CUI and trades. taxIDText: a CUI as read or typed, and its stored form (null: it isn't one).",
+  "source" : "ios/DosarCuSina/Services/History/ProviderDirectory.swift, ios/DosarCuSina/Services/History/ProviderTaxID.swift",
+  "writtenBy" : "ios/DosarCuSinaTests/SectionVectorsTests.swift"
+}

@@ -1,0 +1,251 @@
+{
+  "cases" : [
+    {
+      "canMove" : false,
+      "destinations" : [
+
+      ],
+      "offersNewMember" : false,
+      "offersStandalone" : false,
+      "parentKeys" : [
+
+      ],
+      "renamedFor" : {
+        "Popescu Ion" : null
+      },
+      "section" : "Apartament"
+    },
+    {
+      "canMove" : true,
+      "destinations" : [
+        "Manole Corina",
+        "Popescu Ion"
+      ],
+      "offersNewMember" : true,
+      "offersStandalone" : false,
+      "parentKeys" : [
+        "member"
+      ],
+      "renamedFor" : {
+        "Popescu Ion" : null
+      },
+      "section" : "Buletinul vechi"
+    },
+    {
+      "canMove" : true,
+      "destinations" : [
+        "Popescu Ion"
+      ],
+      "offersNewMember" : true,
+      "offersStandalone" : false,
+      "parentKeys" : [
+        "member"
+      ],
+      "renamedFor" : {
+        "Popescu Ion" : "Carte de identitate – Popescu Ion"
+      },
+      "section" : "Carte de identitate – Manole Corina"
+    },
+    {
+      "canMove" : false,
+      "destinations" : [
+
+      ],
+      "offersNewMember" : false,
+      "offersStandalone" : false,
+      "parentKeys" : [
+
+      ],
+      "renamedFor" : {
+        "Popescu Ion" : null
+      },
+      "section" : "Casa de la țară"
+    },
+    {
+      "canMove" : true,
+      "destinations" : [
+        "Casa de la țară"
+      ],
+      "offersNewMember" : false,
+      "offersStandalone" : false,
+      "parentKeys" : [
+        "home"
+      ],
+      "renamedFor" : {
+        "Popescu Ion" : null
+      },
+      "section" : "Chiriaș etaj 2"
+    },
+    {
+      "canMove" : false,
+      "destinations" : [
+
+      ],
+      "offersNewMember" : false,
+      "offersStandalone" : false,
+      "parentKeys" : [
+
+      ],
+      "renamedFor" : {
+        "Popescu Ion" : null
+      },
+      "section" : "Exemplu Persoană"
+    },
+    {
+      "canMove" : true,
+      "destinations" : [
+        "Apartament",
+        "Casa de la țară"
+      ],
+      "offersNewMember" : false,
+      "offersStandalone" : false,
+      "parentKeys" : [
+        "home"
+      ],
+      "renamedFor" : {
+        "Popescu Ion" : null
+      },
+      "section" : "Ferigă"
+    },
+    {
+      "canMove" : true,
+      "destinations" : [
+        "Casa de la țară"
+      ],
+      "offersNewMember" : false,
+      "offersStandalone" : true,
+      "parentKeys" : [
+        "home"
+      ],
+      "renamedFor" : {
+        "Popescu Ion" : null
+      },
+      "section" : "Gaz"
+    },
+    {
+      "canMove" : false,
+      "destinations" : [
+
+      ],
+      "offersNewMember" : false,
+      "offersStandalone" : false,
+      "parentKeys" : [
+
+      ],
+      "renamedFor" : {
+        "Popescu Ion" : null
+      },
+      "section" : "Manole Corina"
+    },
+    {
+      "canMove" : false,
+      "destinations" : [
+
+      ],
+      "offersNewMember" : false,
+      "offersStandalone" : false,
+      "parentKeys" : [
+
+      ],
+      "renamedFor" : {
+        "Popescu Ion" : null
+      },
+      "section" : "Popescu Ion"
+    },
+    {
+      "canMove" : false,
+      "destinations" : [
+
+      ],
+      "offersNewMember" : false,
+      "offersStandalone" : false,
+      "parentKeys" : [
+
+      ],
+      "renamedFor" : {
+        "Popescu Ion" : null
+      },
+      "section" : "VW Golf 2018"
+    },
+    {
+      "move" : "a document to another person, renamed",
+      "name" : "Carte de identitate – Popescu Ion",
+      "newMember" : null,
+      "parent" : "Popescu Ion",
+      "parentCategory" : "member",
+      "people" : [
+        "Exemplu Persoană",
+        "Manole Corina",
+        "Popescu Ion"
+      ],
+      "renamingTo" : "Carte de identitate – Popescu Ion",
+      "section" : "Carte de identitate – Manole Corina",
+      "to" : "Popescu Ion"
+    },
+    {
+      "move" : "a document to a new person",
+      "name" : "Carte de identitate – Manole Ana",
+      "newMember" : "Manole Ana",
+      "parent" : "Manole Ana",
+      "parentCategory" : "member",
+      "people" : [
+        "Exemplu Persoană",
+        "Manole Ana",
+        "Manole Corina",
+        "Popescu Ion"
+      ],
+      "renamingTo" : "Carte de identitate – Manole Ana",
+      "section" : "Carte de identitate – Manole Corina",
+      "to" : null
+    },
+    {
+      "move" : "a tenancy to the other home, its name kept",
+      "name" : "Chiriaș etaj 2",
+      "newMember" : null,
+      "parent" : "Casa de la țară",
+      "parentCategory" : "home",
+      "people" : [
+        "Exemplu Persoană",
+        "Manole Corina",
+        "Popescu Ion"
+      ],
+      "renamingTo" : null,
+      "section" : "Chiriaș etaj 2",
+      "to" : "Casa de la țară"
+    },
+    {
+      "move" : "a subscription out of its home",
+      "name" : "Gaz",
+      "newMember" : null,
+      "parent" : null,
+      "parentCategory" : null,
+      "people" : [
+        "Exemplu Persoană",
+        "Manole Corina",
+        "Popescu Ion"
+      ],
+      "renamingTo" : null,
+      "section" : "Gaz",
+      "to" : null
+    },
+    {
+      "move" : "a plant into a home",
+      "name" : "Ferigă",
+      "newMember" : null,
+      "parent" : "Apartament",
+      "parentCategory" : "home",
+      "people" : [
+        "Exemplu Persoană",
+        "Manole Corina",
+        "Popescu Ion"
+      ],
+      "renamingTo" : null,
+      "section" : "Ferigă",
+      "to" : "Apartament"
+    }
+  ],
+  "rule" : "AssetActions.parentKeys(for:), canMove, offersNewMember, offersStandalone, moveDestinations(for:among:), renamedForHolder(_:newHolder:) and move(_:to:renamingTo:)",
+  "shape" : "One household, each section made in this order: Manole Corina, Popescu Ion, Exemplu Persoană (an example) (people); Carte de identitate – Manole Corina (an identity card under Manole Corina) and Buletinul vechi (one under no one); Apartament and Casa de la țară (homes); Chiriaș etaj 2 (a tenancy under Apartament); Gaz (a gas subscription under Apartament); Ferigă (a plant on its own); VW Golf 2018 (a car). section: each, by name, with the categories it can be filed under, whether it can move, whether a new person and standing on its own are offered, the sections it can move to in order, and the name it would take under Popescu Ion (null: it isn't named after its holder). move: one move from the household as made: the section, the section it goes to (to; null for none), or a new person (newMember), the name it takes (renamingTo), then its name, its parent and its parent's category after, and the people in the binder.",
+  "source" : "ios/DosarCuSina/Services/Obligations/AssetActions+Move.swift, ios/DosarCuSina/Services/Documents/DocumentNaming.swift",
+  "writtenBy" : "ios/DosarCuSinaTests/SectionVectorsTests.swift"
+}

@@ -8,7 +8,7 @@ import com.ar.dosarcusina.core.values.MeasurementUnit
 import com.ar.dosarcusina.store.Tables
 import com.ar.dosarcusina.store.TestBinderStore
 import com.ar.dosarcusina.store.noon
-import com.ar.dosarcusina.store.readings.AssetReadingActions
+import com.ar.dosarcusina.store.sections.AssetActions
 import com.ar.dosarcusina.store.schema.Asset
 import com.ar.dosarcusina.store.schema.HistoryEntry
 import com.ar.dosarcusina.store.schema.MeasurementLog
@@ -103,7 +103,7 @@ class CounterStepsTest {
     @Test
     fun aRepairNeverTakesTheNewCountersFirstReadingForALostDigit() {
         val car = binder.unit.perform { step -> step.insert(Asset(name = "VW Golf 2018", templateKey = "vehicle")) }
-        val actions = { day: String -> AssetReadingActions(binder.unit, now = { noon(day) }) }
+        val actions = { day: String -> AssetActions(binder.unit, now = { noon(day) }) }
         actions("2026-01-10").recordReading(car, 45_724.0, ReadingSource.PERSON)
         val newCounter = LowerReadingAnswer.NEW_COUNTER
         actions("2026-03-01").recordReading(car, 4_572.0, ReadingSource.PERSON, lowerReading = newCounter)

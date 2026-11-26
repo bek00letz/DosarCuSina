@@ -97,7 +97,7 @@ object ChoiceKeys {
  * A firm's tax ID (CUI) as stored, as the iOS app's `ProviderTaxID`: 2 to 10 digits without `RO` or leading zeros, or
  * none.
  */
-internal object ProviderTaxID {
+object ProviderTaxID {
     private val DIGIT_COUNT = 2..10
 
     fun normalized(text: String?): String? {
@@ -114,16 +114,18 @@ internal object ProviderTaxID {
  * `FirmCopies`: a detail the copy that stays lacks comes from the other, its trades are both
  * copies' trades and so are the sections it works on. Nothing is ever emptied.
  */
-internal object FirmCopies {
+object FirmCopies {
+    /** The details one copy of a firm brings. */
     data class Details(
-        val trades: List<String>,
-        val phone: String?,
-        val email: String?,
-        val address: String?,
-        val notes: String?,
-        val manualRating: Int?,
-        val wouldCallAgain: Boolean?,
-        val taxID: String?,
+        val trades: List<String> = emptyList(),
+        val phone: String? = null,
+        val email: String? = null,
+        val address: String? = null,
+        val notes: String? = null,
+        val manualRating: Int? = null,
+        val wouldCallAgain: Boolean? = null,
+        val taxID: String? = null,
+        /** The address book's link, which only the phone that made it reads: never in a backup. */
         val contactIdentifier: String? = null,
     )
 
@@ -137,9 +139,13 @@ internal object FirmCopies {
         archived.wouldCallAgain, ProviderTaxID.normalized(archived.taxID),
     )
 
-    fun gather(other: Details, kept: BinderProvider): BinderProvider {
+    /**
+     * [kept] with every detail it lacks from [other], and both copies' trades. A detail [kept] has
+     * stays as it is; nothing is ever emptied. The one rule, for a backup's copy and the repair list's join.
+     */
+    fun gather(other: Details, kept: Details): Details {
         val trades = kept.trades + other.trades.filter { it !in kept.trades }
-        return kept.copy(
+        return Details(
             trades = if (trades != kept.trades) trades.sorted() else kept.trades,
             phone = filled(kept.phone, other.phone),
             email = filled(kept.email, other.email),
@@ -149,6 +155,15 @@ internal object FirmCopies {
             wouldCallAgain = kept.wouldCallAgain ?: other.wouldCallAgain,
             taxID = filled(kept.taxID, other.taxID),
             contactIdentifier = filled(kept.contactIdentifier, other.contactIdentifier),
+        )
+    }
+
+    fun gather(other: Details, kept: BinderProvider): BinderProvider {
+        val gathered = gather(other, details(kept))
+        return kept.copy(
+            trades = gathered.trades, phone = gathered.phone, email = gathered.email, address = gathered.address,
+            notes = gathered.notes, manualRating = gathered.manualRating, wouldCallAgain = gathered.wouldCallAgain,
+            taxID = gathered.taxID, contactIdentifier = gathered.contactIdentifier,
         )
     }
 
