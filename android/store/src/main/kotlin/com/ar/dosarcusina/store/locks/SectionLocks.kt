@@ -280,10 +280,14 @@ class SectionLocks(
         /**
          * Whether this phone's choices were set aside with none written after them: by an older
          * build's "Începe din nou" ("unreadable-<when>-<file>"), or by a change that set an unread
-         * file aside and then couldn't write its own.
+         * file aside and then couldn't write its own. A folder that is there but can't be listed
+         * can't say it holds none, so it counts as set aside: every category stays locked until the
+         * locks are kept, as on the iPhone. A folder not made yet holds nothing.
          */
         private fun wasSetAside(file: File): Boolean {
-            val names = file.absoluteFile.parentFile?.list().orEmpty()
+            val folder = file.absoluteFile.parentFile ?: return false
+            if (!folder.exists()) return false
+            val names = folder.list() ?: return true
             return names.any {
                 (it.startsWith(MOVED_ASIDE) && it.endsWith("-" + file.name)) || it.startsWith(file.name + SET_ASIDE)
             }
