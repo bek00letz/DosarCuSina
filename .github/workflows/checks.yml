@@ -101,6 +101,30 @@ jobs:
           RESULTS_DIR: ${{ runner.temp }}/results
         run: ./tests/run_tests.sh
 
+      # A change to what an iOS backup holds (the built-in catalog, say) changes the iOS
+      # golden archives and, made from them, Android's: when GoldenArchiveTests left the iOS
+      # ones made afresh, Android's are made from them here too, so the one failed run's
+      # test-results holds both (golden-archives/ and golden-archives-android/), and the next
+      # push is green on both sides.
+      - name: Look for golden archives made afresh
+        id: golden
+        if: failure()
+        run: |
+          if [[ -d "$RUNNER_TEMP/results/golden-archives" ]]; then
+            echo "fresh=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Set up Java for Android's golden archives
+        if: failure() && steps.golden.outputs.fresh == 'true'
+        uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: "25"
+
+      - name: Make Android's golden archives from the iOS ones made afresh
+        if: failure() && steps.golden.outputs.fresh == 'true'
+        run: scripts/golden-android-from-ios.sh "$RUNNER_TEMP/results/golden-archives" "$RUNNER_TEMP/results/golden-archives-android"
+
       - name: Keep the log and results of a failed run
         if: failure()
         uses: actions/upload-artifact@v7
