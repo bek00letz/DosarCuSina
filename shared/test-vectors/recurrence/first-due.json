@@ -1,0 +1,304 @@
+{
+  "cases" : [
+    {
+      "blueprint" : {
+        "completion" : "newDocument",
+        "firstDue" : {
+          "field" : "document.expiry",
+          "offsetDays" : -30,
+          "type" : "field"
+        },
+        "key" : "test.deadline",
+        "kind" : "renewal",
+        "recurrence" : {
+          "type" : "none"
+        },
+        "title" : "Termen"
+      },
+      "day" : "2027-05-02",
+      "name" : "a field's day, a month before",
+      "today" : "2026-11-02",
+      "values" : {
+        "document.expiry" : {
+          "type" : "date",
+          "value" : "2027-06-01"
+        }
+      }
+    },
+    {
+      "blueprint" : {
+        "completion" : "newDocument",
+        "firstDue" : {
+          "field" : "document.expiry",
+          "type" : "field"
+        },
+        "key" : "test.deadline",
+        "kind" : "renewal",
+        "recurrence" : {
+          "type" : "none"
+        },
+        "title" : "Termen"
+      },
+      "day" : "2027-06-01",
+      "name" : "a field's day without an offset",
+      "today" : "2026-11-02",
+      "values" : {
+        "document.expiry" : {
+          "type" : "date",
+          "value" : "2027-06-01"
+        }
+      }
+    },
+    {
+      "blueprint" : {
+        "completion" : "newDocument",
+        "firstDue" : {
+          "field" : "document.expiry",
+          "offsetDays" : 0,
+          "type" : "field"
+        },
+        "key" : "test.deadline",
+        "kind" : "renewal",
+        "recurrence" : {
+          "type" : "none"
+        },
+        "title" : "Termen"
+      },
+      "day" : null,
+      "name" : "a field that is empty",
+      "today" : "2026-11-02",
+      "values" : {
+
+      }
+    },
+    {
+      "blueprint" : {
+        "completion" : "newDocument",
+        "firstDue" : {
+          "field" : "document.expiry",
+          "offsetDays" : 0,
+          "type" : "field"
+        },
+        "key" : "test.deadline",
+        "kind" : "renewal",
+        "recurrence" : {
+          "type" : "none"
+        },
+        "title" : "Termen"
+      },
+      "day" : null,
+      "name" : "a field that holds text",
+      "today" : "2026-11-02",
+      "values" : {
+        "document.expiry" : {
+          "type" : "text",
+          "value" : "2027-06-01"
+        }
+      }
+    },
+    {
+      "blueprint" : {
+        "completion" : "newDocument",
+        "firstDue" : {
+          "every" : 1,
+          "type" : "afterInterval",
+          "unit" : "year"
+        },
+        "key" : "test.deadline",
+        "kind" : "renewal",
+        "recurrence" : {
+          "type" : "none"
+        },
+        "title" : "Termen"
+      },
+      "day" : "2029-02-28",
+      "name" : "a year after 29 February",
+      "today" : "2028-02-29",
+      "values" : {
+
+      }
+    },
+    {
+      "blueprint" : {
+        "completion" : "newDocument",
+        "firstDue" : {
+          "every" : 1,
+          "type" : "afterInterval",
+          "unit" : "month"
+        },
+        "key" : "test.deadline",
+        "kind" : "renewal",
+        "recurrence" : {
+          "type" : "none"
+        },
+        "title" : "Termen"
+      },
+      "day" : "2026-02-28",
+      "name" : "a month after the 31st",
+      "today" : "2026-01-31",
+      "values" : {
+
+      }
+    },
+    {
+      "blueprint" : {
+        "completion" : "newDocument",
+        "firstDue" : {
+          "every" : 0,
+          "type" : "afterInterval",
+          "unit" : "week"
+        },
+        "key" : "test.deadline",
+        "kind" : "renewal",
+        "recurrence" : {
+          "type" : "none"
+        },
+        "title" : "Termen"
+      },
+      "day" : "2026-11-09",
+      "name" : "every 0 weeks after today is one",
+      "today" : "2026-11-02",
+      "values" : {
+
+      }
+    },
+    {
+      "blueprint" : {
+        "completion" : "newDocument",
+        "firstDue" : {
+          "every" : 1,
+          "type" : "afterInterval",
+          "unit" : "fortnight"
+        },
+        "key" : "test.deadline",
+        "kind" : "renewal",
+        "recurrence" : {
+          "type" : "none"
+        },
+        "title" : "Termen"
+      },
+      "day" : null,
+      "name" : "a unit a newer build wrote asks",
+      "today" : "2026-11-02",
+      "values" : {
+
+      }
+    },
+    {
+      "blueprint" : {
+        "completion" : "newDocument",
+        "firstDue" : {
+          "type" : "nextFixedDate"
+        },
+        "key" : "test.deadline",
+        "kind" : "renewal",
+        "recurrence" : {
+          "dates" : [
+            "03-31",
+            "09-30"
+          ],
+          "type" : "fixedDates"
+        },
+        "title" : "Termen"
+      },
+      "day" : "2027-03-31",
+      "name" : "the next fixed date",
+      "today" : "2026-11-02",
+      "values" : {
+
+      }
+    },
+    {
+      "blueprint" : {
+        "completion" : "newDocument",
+        "firstDue" : {
+          "type" : "nextFixedDate"
+        },
+        "key" : "test.deadline",
+        "kind" : "renewal",
+        "recurrence" : {
+          "dates" : [
+            "03-31",
+            "09-30"
+          ],
+          "type" : "fixedDates"
+        },
+        "title" : "Termen"
+      },
+      "day" : "2026-09-30",
+      "name" : "the next fixed date is today",
+      "today" : "2026-09-30",
+      "values" : {
+
+      }
+    },
+    {
+      "blueprint" : {
+        "completion" : "newDocument",
+        "firstDue" : {
+          "type" : "nextFixedDate"
+        },
+        "key" : "test.deadline",
+        "kind" : "renewal",
+        "recurrence" : {
+          "anchor" : "dueDate",
+          "every" : 1,
+          "type" : "interval",
+          "unit" : "year"
+        },
+        "title" : "Termen"
+      },
+      "day" : null,
+      "name" : "the next fixed date without fixed dates",
+      "today" : "2026-11-02",
+      "values" : {
+
+      }
+    },
+    {
+      "blueprint" : {
+        "completion" : "newDocument",
+        "firstDue" : {
+          "type" : "ask"
+        },
+        "key" : "test.deadline",
+        "kind" : "renewal",
+        "recurrence" : {
+          "rule" : "vehicleITP",
+          "type" : "legal"
+        },
+        "title" : "Termen"
+      },
+      "day" : null,
+      "name" : "asked",
+      "today" : "2026-11-02",
+      "values" : {
+
+      }
+    },
+    {
+      "blueprint" : {
+        "completion" : "newDocument",
+        "firstDue" : {
+          "type" : "fromSeason"
+        },
+        "key" : "test.deadline",
+        "kind" : "renewal",
+        "recurrence" : {
+          "type" : "none"
+        },
+        "title" : "Termen"
+      },
+      "day" : null,
+      "name" : "a rule a newer build wrote asks",
+      "today" : "2026-11-02",
+      "values" : {
+
+      }
+    }
+  ],
+  "rule" : "RecurrenceEngine.firstDue(for:values:today:calendar:)",
+  "shape" : "blueprint: a category's usual deadline as the archive writes it (its firstDue and recurrence are what count). values: the section's values in the archive's form. today: the day it is made. day: its first due day, or null when the person is asked.",
+  "source" : "ios/DosarCuSina/Services/Obligations/RecurrenceEngine.swift, ios/DosarCuSina/Models/Obligations/ObligationTypes.swift (FirstDueRule)",
+  "writtenBy" : "ios/DosarCuSinaTests/RecurrenceVectorsTests.swift"
+}
