@@ -78,15 +78,15 @@ public enum TravelRules {
     ]
 
     /// Where a region's countries take a citizenship's identity card instead of a passport, by
-    /// the citizenship's ISO code, with the requirement they set. Romania's Ministry of Foreign
-    /// Affairs, „Condiții de călătorie” (mae.ro/travel-conditions), read in November 2026:
-    /// Republica Moldova (3739), Serbia (3742), Muntenegru (3728), Macedonia de Nord (3721),
-    /// Albania (3664) and Bosnia și Herțegovina (3675) each let a Romanian citizen in with a
-    /// valid identity card or passport. Kosovo isn't among them: Serbia's and Montenegro's pages
-    /// send travellers there with a passport. Other EU citizens are not listed until their own
-    /// country's rules are checked, so they are asked for a passport.
-    static let identityCards: [TripPlan.Region: (citizens: Set<String>, requirement: TravelRequirement)] = [
-        .moldovaAndWesternBalkans: (["RO"], identityOrPassportPastReturn),
+    /// the citizenship's ISO code, with the requirement they set and where the rule comes from
+    /// (written to `shared/travel/` with it). Kosovo isn't among them: Serbia's and Montenegro's
+    /// pages send travellers there with a passport. Other EU citizens are not listed until their
+    /// own country's rules are checked, so they are asked for a passport.
+    static let identityCards: [TripPlan.Region: (citizens: Set<String>, requirement: TravelRequirement, source: String)] = [
+        .moldovaAndWesternBalkans: (["RO"], identityOrPassportPastReturn,
+                                    "Romania's Ministry of Foreign Affairs, „Condiții de călătorie” (mae.ro/travel-conditions), read in November 2026: "
+                                        + "Republica Moldova (3739), Serbia (3742), Muntenegru (3728), Macedonia de Nord (3721), Albania (3664) and "
+                                        + "Bosnia și Herțegovina (3675) each let a Romanian citizen in with a valid identity card or passport."),
     ]
 
     /// What a traveller of `group` carries in `region`, in the order the check lists it.
@@ -138,49 +138,38 @@ public enum TravelRules {
     }
 }
 
-/// What the trip check says about a need, declared once per need and document type.
+
+/// What the trip check says about a need, declared once per need and document type, as the
+/// kinds of `ReadinessWords`: which sentence is decided here, its words there.
 enum TravelWording {
     /// The title of a need nothing in the binder meets yet.
-    static func title(of requirement: TravelRequirement) -> String {
+    static func title(of requirement: TravelRequirement) -> ReadinessWords {
         switch requirement.need {
-        case .identity: String(localized: "Carte de identitate sau pașaport", comment: "Trip check: an EU citizen's identity document, either one.")
-        case .passport: DocumentType.label(for: DocumentType.passport) ?? ""
-        case .residencePermit: DocumentType.label(for: DocumentType.residencePermit) ?? ""
+        case .identity: .identityOrPassport
+        case .passport: .documentType(DocumentType.passport)
+        case .residencePermit: .documentType(DocumentType.residencePermit)
         }
-    }
-
-    /// "3 luni", for the months a destination asks after the trip.
-    private static func months(_ requirement: TravelRequirement) -> String {
-        CalendarCount.months(requirement.monthsValidAfterReturn)
     }
 
     /// A document that covers the whole trip. `instead` is set when an earlier choice of the
     /// need is in the binder but doesn't (the identity card ends before the passport).
-    static func valid(_ requirement: TravelRequirement, type: String, until: CalendarDay, instead: Bool) -> String {
-        let day = DosarFormat.longDay(until)
-        let past = requirement.monthsValidAfterReturn > 0
+    static func valid(_ requirement: TravelRequirement, type: String, until day: CalendarDay, instead: Bool) -> ReadinessWords {
+        let months = requirement.monthsValidAfterReturn
+        let past = months > 0
         switch (requirement.need, type) {
         case (.identity, DocumentType.idCard):
-            return past
-                ? String(localized: "Valabilă până pe \(day), și la \(months(requirement)) după ce te întorci, cât cer țările de acolo.", comment: "Trip check: an ID card valid long enough after a trip to Moldova or the Western Balkans. The second argument is a number of months.")
-                : String(localized: "Valabilă până pe \(day). Ajunge pentru toată UE.", comment: "Trip check: an ID card valid for the whole trip.")
+            return past ? .idCardValidPastReturn(day, months) : .idCardValid(day)
         case (.identity, _):
             switch (instead, past) {
-            case (true, true):
-                return String(localized: "Valabil până pe \(day). Ia-l pe el: cartea de identitate nu mai e valabilă la \(months(requirement)) după ce te întorci.", comment: "Trip check: the ID card isn't valid long enough after a trip to Moldova or the Western Balkans; the passport is. The second argument is a number of months.")
-            case (true, false):
-                return String(localized: "Valabil până pe \(day). Ia-l pe el: cartea de identitate nu mai e valabilă la întoarcere.", comment: "Trip check: the ID card ends before return, the passport covers the trip.")
-            case (false, true):
-                return String(localized: "Valabil până pe \(day), și la \(months(requirement)) după ce te întorci, cât cer țările de acolo.", comment: "Trip check: a passport valid long enough after a trip to Moldova or the Western Balkans. The second argument is a number of months.")
-            case (false, false):
-                return String(localized: "Valabil până pe \(day). În UE ajunge și pașaportul.", comment: "Trip check: no ID card, but the passport is valid inside the EU.")
+            case (true, true): return .passportInsteadPastReturn(day, months)
+            case (true, false): return .passportInstead(day)
+            case (false, true): return .passportValidPastReturn(day, months)
+            case (false, false): return .passportValidInEU(day)
             }
         case (.passport, _):
-            return requirement.countsTravelCutoff
-                ? String(localized: "Bun de călătorit până pe \(day), după ce te întorci.", comment: "Trip check: the passport is good for travel past the end of the trip.")
-                : String(localized: "Valabil până pe \(day).", comment: "Readiness: a deadline valid until a day.")
+            return requirement.countsTravelCutoff ? .passportGoodForTravel(day) : .validUntil(day)
         case (.residencePermit, _):
-            return String(localized: "Valabil până pe \(day). Ia-l cu tine: îți trebuie ca să intri înapoi în țară.", comment: "Trip check: the residence permit covers the trip; it is needed to come back.")
+            return .residencePermitValid(day)
         }
     }
 
@@ -188,95 +177,36 @@ enum TravelWording {
     /// for travel by its kind (`travelEnd`: an identity card without a chip), ends before the
     /// trip does, or before the months after it the destination asks. A day already passed is
     /// said as passed.
-    static func ends(_ requirement: TravelRequirement, type: String, expiry: CalendarDay, goodUntil: CalendarDay, today: CalendarDay) -> String {
-        let day = DosarFormat.longDay(expiry)
-        let good = DosarFormat.longDay(goodUntil)
+    static func ends(_ requirement: TravelRequirement, type: String, expiry: CalendarDay, goodUntil: CalendarDay, today: CalendarDay) -> ReadinessWords {
         let expired = expiry < today
-        let past = requirement.monthsValidAfterReturn > 0
+        let months = requirement.monthsValidAfterReturn
+        let past = months > 0
         switch (requirement.need, type) {
         case (.identity, DocumentType.idCard):
-            if expired {
-                return String(localized: "A expirat pe \(day). Fă-ți alta sau ia un pașaport valabil.", comment: "Trip check: the ID card has already expired.")
-            }
-            if goodUntil < expiry {
-                return String(localized: "Fără cip, e bună de călătorit doar până pe \(good). Fă-ți cartea electronică sau ia un pașaport valabil.", comment: "Trip check: an ID card without a chip stops being a travel document before the trip ends (EU rules).")
-            }
-            return past
-                ? String(localized: "Expiră pe \(day), la mai puțin de \(months(requirement)) după ce te întorci, iar țările de acolo o cer valabilă cel puțin atât. Fă-ți alta sau ia un pașaport valabil.", comment: "Trip check: the ID card isn't valid long enough after a trip to Moldova or the Western Balkans. The second argument is a number of months.")
-                : String(localized: "Expiră pe \(day), înainte să te întorci. Fă-ți alta sau ia un pașaport valabil.", comment: "Trip check: the ID card expires before the end of an EU trip.")
+            if expired { return .idCardExpired(expiry) }
+            if goodUntil < expiry { return .idCardWithoutChipEnds(goodUntil) }
+            return past ? .idCardEndsPastReturn(expiry, months) : .idCardEnds(expiry)
         case (.identity, _):
-            if expired {
-                return String(localized: "A expirat pe \(day). Fă-ți altul sau ia o carte de identitate valabilă.", comment: "Trip check: the passport, an EU citizen's only identity document, has already expired.")
-            }
-            return past
-                ? String(localized: "Expiră pe \(day), la mai puțin de \(months(requirement)) după ce te întorci, iar țările de acolo îl cer valabil cel puțin atât. Fă-ți altul sau ia o carte de identitate valabilă.", comment: "Trip check: the passport isn't valid long enough after a trip to Moldova or the Western Balkans. The second argument is a number of months.")
-                : String(localized: "Expiră pe \(day), înainte să te întorci. Fă-ți altul sau ia o carte de identitate valabilă.", comment: "Trip check: the passport, an EU citizen's only identity document, expires before the end of an EU trip.")
+            if expired { return .identityPassportExpired(expiry) }
+            return past ? .identityPassportEndsPastReturn(expiry, months) : .identityPassportEnds(expiry)
         case (.passport, _):
-            if expired {
-                return String(localized: "A expirat pe \(day). Fă-ți altul înainte de plecare.", comment: "Trip check: the passport has already expired.")
-            }
-            guard requirement.countsTravelCutoff else {
-                return String(localized: "Expiră pe \(day), înainte să te întorci. Fă-ți altul înainte de plecare.", comment: "Trip check: the passport expires before the end of an EU trip, for a citizen of a country outside the EU.")
-            }
-            return goodUntil < today
-                ? String(localized: "Era bun de călătorit doar până pe \(good). Expiră pe \(day), iar multe țări nu primesc un pașaport atât de aproape de expirare. Fă-ți altul înainte de plecare.", comment: "Trip check: the passport's travel cut-off has already passed, though it hasn't expired.")
-                : String(localized: "Bun de călătorit doar până pe \(good). Expiră pe \(day), iar multe țări nu primesc un pașaport atât de aproape de expirare. Fă-ți altul înainte de plecare.", comment: "Trip check: the passport's travel cut-off falls before the end of a trip outside the EU.")
+            if expired { return .passportExpired(expiry) }
+            guard requirement.countsTravelCutoff else { return .passportEnds(expiry) }
+            return goodUntil < today ? .passportCutoffPassed(goodUntil, expiry) : .passportCutoffBeforeReturn(goodUntil, expiry)
         case (.residencePermit, _):
-            return expired
-                ? String(localized: "A expirat pe \(day). Fără un permis valabil nu poți intra înapoi în țară. Întreabă la Imigrări ce poți face înainte de plecare.", comment: "Trip check: the residence permit has already expired.")
-                : String(localized: "Expiră pe \(day), înainte să te întorci. Cere prelungirea cu cel puțin 30 de zile înainte să expire.", comment: "Trip check: the residence permit expires before the end of the trip.")
+            return expired ? .residencePermitExpired(expiry) : .residencePermitEnds(expiry)
         }
     }
 
     /// Nothing in the binder meets the need.
-    static func missing(_ requirement: TravelRequirement) -> String {
+    static func missing(_ requirement: TravelRequirement) -> ReadinessWords {
         switch requirement.need {
         case .identity:
-            requirement.monthsValidAfterReturn > 0
-                ? String(localized: "Nu sunt în dosar. Acolo merge oricare, dacă e valabil și la \(months(requirement)) după ce te întorci. Adaugă-l cu o poză și verific.", comment: "Trip check: neither an ID card nor a passport in the binder, for a trip to Moldova or the Western Balkans. The argument is a number of months.")
-                : String(localized: "Nu sunt în dosar. Adaugă unul dintre ele cu o poză și verific până când e valabil.", comment: "Trip check: neither an ID card nor a passport in the binder, for an EU citizen.")
+            requirement.monthsValidAfterReturn > 0 ? .identityMissingPastReturn(requirement.monthsValidAfterReturn) : .identityMissing
         case .passport:
-            requirement.countsTravelCutoff
-                ? String(localized: "Nu e în dosar. Pentru drumul acesta ai nevoie de pașaport. Adaugă-l cu o poză și verific până când e bun.", comment: "Trip check: no passport for a trip outside the EU and the Schengen area.")
-                : String(localized: "Nu e în dosar. Fără cetățenie europeană, ai nevoie de pașaport și în UE. Adaugă-l cu o poză și verific până când e valabil.", comment: "Trip check: no passport for an EU trip, for a citizen of a country outside the EU.")
+            requirement.countsTravelCutoff ? .passportMissingForTravel : .passportMissingInEU
         case .residencePermit:
-            String(localized: "Nu e în dosar. Fără el nu poți intra înapoi în țară. Adaugă-l cu o poză și verific până când e valabil.", comment: "Trip check: no residence permit in the binder.")
+            .residencePermitMissing
         }
-    }
-
-    /// The only identity documents in the binder are no travel document (`TravelRules.notForTravel`).
-    static var notATravelDocument: String {
-        String(localized: "Cartea de identitate simplă nu e act de călătorie: e bună doar în țară. Ia un pașaport sau fă-ți cartea electronică.", comment: "Trip check: the simple identity card (CIS) isn't a travel document.")
-    }
-
-    /// A document of the need with no expiry written down.
-    static var undated: String {
-        String(localized: "Nu știu până când e valabil. Adaugă data de expirare.", comment: "Trip check: an identity document without an expiry date.")
-    }
-
-    // MARK: Citizenship
-
-    static var citizenshipTitle: String {
-        String(localized: "Cetățenia", comment: "Trip check: a traveller's citizenship, not known yet.")
-    }
-
-    /// The citizenship isn't known: asked once, kept on the person.
-    static var citizenshipAsked: String {
-        String(localized: "Spune-mi ce cetățenie are, ca să știu ce acte îi trebuie.", comment: "Trip check: a member's citizenship isn't known; tapping asks it.")
-    }
-
-    /// Documents filed under no one: their holder's citizenship can't be kept until they are.
-    static var citizenshipOfUnfiled: String {
-        String(localized: "Nu știu ce cetățenie are titularul. Mută actele la persoana lor și spune-mi ce cetățenie are.", comment: "Trip check: documents filed under no one, with no citizenship known.")
-    }
-
-    // MARK: Visa
-
-    static var visaTitle: String {
-        String(localized: "Viza pentru țara în care mergi", comment: "Trip reminder: look up the destination's visa rules.")
-    }
-
-    static var visaDetail: String {
-        String(localized: "Unele țări cer viză sau o autorizație de călătorie, după cetățenie. Verifică ce cere țara înainte de plecare.", comment: "Trip reminder: visa rules depend on the destination and the citizenship.")
     }
 }
