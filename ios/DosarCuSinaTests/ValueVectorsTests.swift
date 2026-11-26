@@ -925,7 +925,7 @@ struct ValueVectorsTests {
             name: "romanian-number-read",
             rule: "RomanianNumber.read(_:as:from:unit:)",
             source: "ios/DosarCuSina/Models/Values/RomanianNumber.swift",
-            shape: "input: text; origin: document or typed; unit: a field's unit as written (read with MeasurementUnit), or null. For each kind (money, count, meterIndex, kilometres): value (the number, as Foundation's Decimal writes it), ambiguous and needsCheck, or problem (empty, unreadable, negative, notWhole).",
+            shape: "input: text; origin: document or typed; unit: a field's unit as written (read with MeasurementUnit), or null. For each kind (money, count, meterIndex, kilometres): value (the number, as Foundation's Decimal writes it), ambiguous and needsCheck, or problem (empty, unreadable, negative, notWhole, tooManyDigits).",
             cases: cases
         )
     }
