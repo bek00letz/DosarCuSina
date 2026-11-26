@@ -88,6 +88,11 @@ struct SearchVectorsTests {
         return formatter
     }()
 
+    /// The calendar and the moment the household is worked out in, whatever the machine says: days
+    /// counted in Bucharest (the zone `noon` makes its moments in), so a runner in UTC writes the same file.
+    static let calendar = Calendar.dosar(in: TimeZone(identifier: "Europe/Bucharest") ?? .gmt)
+    static let now = noon("2026-11-26", calendar: calendar)
+
     static func moment(_ date: Date?) -> JSONValue { date.map { .string(moments.string(from: $0)) } ?? .null }
 
     // MARK: Numbers built when the test runs
@@ -378,7 +383,7 @@ struct SearchVectorsTests {
         )
         let templates = [car, pets, papers].enumerated().map { CategoryTemplate(definition: $1, isBuiltIn: false, homeOrder: $0) }
         templates.forEach(context.insert)
-        try templates[2].setLock(true)
+        try templates[2].setLock(true, now: now)
 
         let golf = Asset(id: id(1), name: "VW Golf", templateKey: car.key, values: FieldValues([
             "car.plate": .text("b 123 abc"), "car.vin": .text("WVWZZZ1KZAW000000"), "car.make": .text("Volkswagen"),
@@ -487,9 +492,8 @@ struct SearchVectorsTests {
         paper(58, title: "Contract chirie", file: "chirie.pdf", kind: .contract, text: "Chiria se plătește lunar").obligation = tax
         paper(59, title: nil, file: "scan.pdf", text: "Pagina 1")
 
-        let builder = SearchIndexBuilder(context: context)
+        let builder = SearchIndexBuilder(context: context, calendar: calendar)
         let documents = try builder.buildByRecord().values.flatMap { $0 }.sorted { $0.id < $1.id }
-        let calendar = Calendar.dosar
         var days: Set<CalendarDay> = []
         for obligation in [rca, vignette, renewal, tax, strayDeadline] { days.insert(obligation.dueDay) }
         for entry in [pads, revision, vaccine, counter, wiping, oilChange] { days.insert(CalendarDay(entry.occurredAt, calendar: calendar)) }

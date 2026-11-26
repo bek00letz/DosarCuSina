@@ -69,7 +69,8 @@ class SearchIndexerTest {
         binder.unit.perform { it.delete(binder.stored(itp)) }
         index = indexer.apply(SearchChanges(deleted = setOf(ref)))
         assertTrue(index.search("inspectia").isEmpty())
-        assertEquals(SearchIndexer(binder.store, binder.locks, Words).rebuild().count, index.count)
+        val fullRead = SearchIndexer(binder.store, binder.locks, Words, zone = { bucharest }).rebuild()
+        assertEquals(fullRead.count, index.count)
     }
 
     @Test
