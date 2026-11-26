@@ -1,0 +1,5770 @@
+[
+  {
+    "behavior" : {
+      "addedOnlyUnderParent" : false,
+      "box" : "perSection",
+      "goesUnderTheOnlyOne" : false,
+      "listing" : "plain",
+      "offerTitle" : "Mașină",
+      "role" : "vehicle",
+      "sectionNoun" : "car",
+      "shortlistOrder" : 1,
+      "singular" : {
+        "gender" : "feminine",
+        "name" : "Mașina"
+      },
+      "visit" : "service"
+    },
+    "blueprints" : [
+      {
+        "completion" : "itp",
+        "estimatedCost" : {
+          "amount" : "180",
+          "currency" : "RON"
+        },
+        "firstDue" : {
+          "type" : "ask"
+        },
+        "isSuggested" : true,
+        "key" : "vehicle.itp",
+        "kind" : "legal",
+        "note" : "Fără ITP valabil, înmatricularea se suspendă.",
+        "recurrence" : {
+          "rule" : "vehicleITP",
+          "type" : "legal"
+        },
+        "reminders" : {
+          "consequence" : "legal",
+          "followUpAfterLapse" : true,
+          "graceDays" : 0,
+          "leadDays" : [
+            30,
+            7
+          ]
+        },
+        "title" : "ITP"
+      },
+      {
+        "completion" : "policy",
+        "facts" : {
+          "claimsPhone" : "vehicle.claimsPhone",
+          "insurer" : "vehicle.insurer",
+          "policyNumber" : "vehicle.policyNumber",
+          "policyholder" : "vehicle.policyholder"
+        },
+        "firstDue" : {
+          "type" : "ask"
+        },
+        "isSuggested" : true,
+        "key" : "vehicle.rca",
+        "kind" : "insurance",
+        "note" : "Cere oferte cu o lună înainte, prețurile diferă mult.",
+        "recurrence" : {
+          "anchor" : "dueDate",
+          "every" : 1,
+          "type" : "interval",
+          "unit" : "year"
+        },
+        "reminders" : {
+          "consequence" : "legal",
+          "followUpAfterLapse" : true,
+          "graceDays" : 0,
+          "leadDays" : [
+            30,
+            7,
+            0
+          ]
+        },
+        "title" : "RCA"
+      },
+      {
+        "completion" : "vignette",
+        "firstDue" : {
+          "type" : "ask"
+        },
+        "isSuggested" : true,
+        "key" : "vehicle.vignette",
+        "kind" : "legal",
+        "recurrence" : {
+          "anchor" : "completion",
+          "every" : 12,
+          "type" : "interval",
+          "unit" : "month"
+        },
+        "reminders" : {
+          "consequence" : "legal",
+          "followUpAfterLapse" : true,
+          "graceDays" : 0,
+          "leadDays" : [
+            7,
+            0
+          ]
+        },
+        "title" : "Rovinietă"
+      },
+      {
+        "completion" : "vehicleService",
+        "firstDue" : {
+          "every" : 1,
+          "type" : "afterInterval",
+          "unit" : "year"
+        },
+        "isSuggested" : true,
+        "key" : "vehicle.service",
+        "kind" : "maintenance",
+        "recurrence" : {
+          "every" : 15000,
+          "fallbackEvery" : 1,
+          "fallbackUnit" : "year",
+          "type" : "metric",
+          "unit" : "km"
+        },
+        "reminders" : {
+          "consequence" : "comfort",
+          "followUpAfterLapse" : false,
+          "graceDays" : 30,
+          "leadDays" : [
+            14,
+            1
+          ]
+        },
+        "title" : "Revizie periodică"
+      },
+      {
+        "completion" : "tyreChange",
+        "firstDue" : {
+          "type" : "nextFixedDate"
+        },
+        "isSuggested" : true,
+        "key" : "vehicle.tyres",
+        "kind" : "maintenance",
+        "recurrence" : {
+          "dates" : [
+            "04-15",
+            "11-01"
+          ],
+          "type" : "fixedDates"
+        },
+        "reminders" : {
+          "consequence" : "comfort",
+          "followUpAfterLapse" : false,
+          "graceDays" : 14,
+          "leadDays" : [
+            14
+          ]
+        },
+        "title" : "Schimb de anvelope"
+      },
+      {
+        "completion" : "policy",
+        "facts" : {
+          "claimsPhone" : "vehicle.cascoClaimsPhone",
+          "insuredSum" : "vehicle.cascoInsuredSum",
+          "insurer" : "vehicle.cascoInsurer",
+          "policyNumber" : "vehicle.cascoPolicyNumber"
+        },
+        "firstDue" : {
+          "type" : "ask"
+        },
+        "isSuggested" : false,
+        "key" : "vehicle.casco",
+        "kind" : "insurance",
+        "recurrence" : {
+          "anchor" : "dueDate",
+          "every" : 1,
+          "type" : "interval",
+          "unit" : "year"
+        },
+        "reminders" : {
+          "consequence" : "financial",
+          "followUpAfterLapse" : true,
+          "graceDays" : 0,
+          "leadDays" : [
+            30,
+            7,
+            0
+          ]
+        },
+        "title" : "CASCO"
+      },
+      {
+        "completion" : "safetyKit",
+        "firstDue" : {
+          "type" : "ask"
+        },
+        "isSuggested" : false,
+        "key" : "vehicle.kit",
+        "kind" : "legal",
+        "note" : "Data expirării e pe ambalaj.",
+        "recurrence" : {
+          "type" : "none"
+        },
+        "reminders" : {
+          "consequence" : "legal",
+          "followUpAfterLapse" : true,
+          "graceDays" : 0,
+          "leadDays" : [
+            14,
+            0
+          ]
+        },
+        "title" : "Trusă medicală și stingător"
+      }
+    ],
+    "components" : [
+      {
+        "group" : "Frâne",
+        "key" : "brakes.padsFront",
+        "name" : "Plăcuțe frână față",
+        "synonyms" : [
+          "placute fata",
+          "placute de frana fata",
+          "pastile frana fata",
+          "pastile fata",
+          "brake pads front"
+        ]
+      },
+      {
+        "group" : "Frâne",
+        "key" : "brakes.padsRear",
+        "name" : "Plăcuțe frână spate",
+        "synonyms" : [
+          "placute spate",
+          "placute de frana spate",
+          "pastile frana spate",
+          "pastile spate",
+          "brake pads rear"
+        ]
+      },
+      {
+        "group" : "Frâne",
+        "key" : "brakes.discsFront",
+        "name" : "Discuri frână față",
+        "synonyms" : [
+          "discuri fata",
+          "discuri de frana fata",
+          "disc frana fata",
+          "disc fata"
+        ]
+      },
+      {
+        "group" : "Frâne",
+        "key" : "brakes.discsRear",
+        "name" : "Discuri frână spate",
+        "synonyms" : [
+          "discuri spate",
+          "discuri de frana spate",
+          "disc frana spate",
+          "disc spate"
+        ]
+      },
+      {
+        "group" : "Frâne",
+        "key" : "brakes.fluid",
+        "name" : "Lichid de frână",
+        "synonyms" : [
+          "lichid frana",
+          "dot 4",
+          "brake fluid"
+        ]
+      },
+      {
+        "group" : "Motor",
+        "key" : "engine.oil",
+        "name" : "Ulei și filtru de ulei",
+        "synonyms" : [
+          "schimb ulei",
+          "ulei motor",
+          "filtru ulei",
+          "oil change"
+        ]
+      },
+      {
+        "group" : "Filtre",
+        "key" : "filters.air",
+        "name" : "Filtru de aer",
+        "synonyms" : [
+          "filtru aer"
+        ]
+      },
+      {
+        "group" : "Filtre",
+        "key" : "filters.cabin",
+        "name" : "Filtru de habitaclu",
+        "synonyms" : [
+          "filtru polen",
+          "filtru habitaclu",
+          "filtru aer conditionat"
+        ]
+      },
+      {
+        "group" : "Filtre",
+        "key" : "filters.fuel",
+        "name" : "Filtru de combustibil",
+        "synonyms" : [
+          "filtru motorina",
+          "filtru benzina",
+          "filtru combustibil"
+        ]
+      },
+      {
+        "group" : "Motor",
+        "key" : "engine.timing",
+        "name" : "Distribuție (curea sau lanț)",
+        "synonyms" : [
+          "kit distributie",
+          "curea distributie",
+          "lant distributie",
+          "distributie"
+        ]
+      },
+      {
+        "group" : "Motor",
+        "key" : "engine.sparkPlugs",
+        "name" : "Bujii",
+        "synonyms" : [
+          "bujie"
+        ]
+      },
+      {
+        "group" : "Motor",
+        "key" : "engine.coolant",
+        "name" : "Lichid de răcire",
+        "synonyms" : [
+          "antigel",
+          "lichid racire"
+        ]
+      },
+      {
+        "group" : "Motor",
+        "key" : "engine.auxiliaryBelt",
+        "name" : "Curea de accesorii",
+        "synonyms" : [
+          "curea accesorii",
+          "curea alternator",
+          "curea transmisie"
+        ]
+      },
+      {
+        "group" : "Transmisie",
+        "key" : "transmission.clutch",
+        "name" : "Ambreiaj",
+        "synonyms" : [
+          "kit ambreiaj",
+          "volanta",
+          "volant masa dubla"
+        ]
+      },
+      {
+        "group" : "Transmisie",
+        "key" : "transmission.gearboxOil",
+        "name" : "Ulei cutie de viteze",
+        "synonyms" : [
+          "ulei cutie",
+          "ulei transmisie"
+        ]
+      },
+      {
+        "group" : "Suspensie",
+        "key" : "suspension.shockAbsorbers",
+        "name" : "Amortizoare",
+        "synonyms" : [
+          "amortizor"
+        ]
+      },
+      {
+        "group" : "Roți",
+        "key" : "tyres.summer",
+        "name" : "Anvelope de vară",
+        "synonyms" : [
+          "cauciucuri vara",
+          "anvelope vara"
+        ]
+      },
+      {
+        "group" : "Roți",
+        "key" : "tyres.winter",
+        "name" : "Anvelope de iarnă",
+        "synonyms" : [
+          "cauciucuri iarna",
+          "anvelope iarna"
+        ]
+      },
+      {
+        "group" : "Roți",
+        "key" : "tyres.alignment",
+        "name" : "Geometrie roți",
+        "synonyms" : [
+          "geometrie",
+          "aliniere"
+        ]
+      },
+      {
+        "group" : "Roți",
+        "key" : "tyres.balancing",
+        "name" : "Echilibrare roți",
+        "synonyms" : [
+          "echilibrare"
+        ]
+      },
+      {
+        "group" : "Electric",
+        "key" : "electrical.battery",
+        "name" : "Baterie",
+        "synonyms" : [
+          "acumulator"
+        ]
+      },
+      {
+        "group" : "Caroserie",
+        "key" : "body.wipers",
+        "name" : "Ștergătoare",
+        "synonyms" : [
+          "lamele stergator",
+          "stergatoare"
+        ]
+      },
+      {
+        "group" : "Climatizare",
+        "key" : "climate.acService",
+        "name" : "Încărcare aer condiționat",
+        "synonyms" : [
+          "freon",
+          "incarcare clima",
+          "igienizare clima"
+        ]
+      }
+    ],
+    "heroStyle" : "vehicle",
+    "isBuiltIn" : true,
+    "key" : "vehicle",
+    "name" : "Mașini",
+    "pockets" : [
+      "upcoming",
+      "documents",
+      "history",
+      "people",
+      "money",
+      "keyFacts"
+    ],
+    "sections" : [
+      {
+        "fields" : [
+          {
+            "isEssential" : true,
+            "isSensitive" : false,
+            "key" : "vehicle.plate",
+            "label" : "Număr de înmatriculare",
+            "placeholder" : "B-123-ABC",
+            "role" : "identifier",
+            "type" : "plate"
+          },
+          {
+            "isEssential" : true,
+            "isSensitive" : false,
+            "key" : "vehicle.make",
+            "label" : "Marcă",
+            "placeholder" : "Volkswagen",
+            "role" : "subtitle",
+            "type" : "text"
+          },
+          {
+            "isEssential" : true,
+            "isSensitive" : false,
+            "key" : "vehicle.model",
+            "label" : "Model",
+            "placeholder" : "Golf",
+            "role" : "subtitle",
+            "type" : "text"
+          },
+          {
+            "isEssential" : true,
+            "isSensitive" : false,
+            "key" : "vehicle.year",
+            "label" : "An de fabricație",
+            "placeholder" : "2018",
+            "role" : "subtitle",
+            "type" : "year"
+          },
+          {
+            "isEssential" : false,
+            "isSensitive" : false,
+            "key" : "vehicle.vin",
+            "label" : "Serie de șasiu (VIN)",
+            "role" : "keyFact",
+            "type" : "vin"
+          },
+          {
+            "isEssential" : false,
+            "isSensitive" : false,
+            "key" : "vehicle.civ",
+            "label" : "Serie CIV",
+            "type" : "text"
+          }
+        ],
+        "key" : "vehicle.identity",
+        "title" : "Identificare"
+      },
+      {
+        "fields" : [
+          {
+            "isEssential" : true,
+            "isSensitive" : false,
+            "key" : "vehicle.odometer",
+            "label" : "Kilometraj",
+            "role" : "heroMetric",
+            "type" : "metric",
+            "unit" : "km"
+          },
+          {
+            "isEssential" : false,
+            "isSensitive" : false,
+            "key" : "vehicle.fuel",
+            "label" : "Combustibil",
+            "options" : [
+              {
+                "aliases" : [
+                  "Benzina",
+                  "Petrol",
+                  "Gasoline"
+                ],
+                "key" : "fuel.petrol",
+                "label" : "Benzină"
+              },
+              {
+                "aliases" : [
+                  "Motorina",
+                  "Diesel"
+                ],
+                "key" : "fuel.diesel",
+                "label" : "Motorină"
+              },
+              {
+                "aliases" : [
+                  "Hybrid",
+                  "HEV"
+                ],
+                "key" : "fuel.hybrid",
+                "label" : "Hibrid"
+              },
+              {
+                "aliases" : [
+                  "Plug-in Hybrid",
+                  "PHEV"
+                ],
+                "key" : "fuel.plugInHybrid",
+                "label" : "Hibrid plug-in"
+              },
+              {
+                "aliases" : [
+                  "EV",
+                  "Electrică"
+                ],
+                "key" : "fuel.electric",
+                "label" : "Electric"
+              },
+              {
+                "aliases" : [
+                  "LPG"
+                ],
+                "key" : "fuel.lpg",
+                "label" : "GPL"
+              }
+            ],
+            "type" : "choice"
+          },
+          {
+            "isEssential" : false,
+            "isSensitive" : false,
+            "key" : "vehicle.engineCc",
+            "label" : "Capacitate cilindrică",
+            "type" : "number",
+            "unit" : "cm3"
+          },
+          {
+            "isEssential" : false,
+            "isSensitive" : false,
+            "key" : "vehicle.powerHp",
+            "label" : "Putere",
+            "type" : "number",
+            "unit" : "hp"
+          },
+          {
+            "isEssential" : false,
+            "isSensitive" : false,
+            "key" : "vehicle.usage",
+            "label" : "Folosire",
+            "options" : [
+              {
+                "aliases" : [
+                  "Personal",
+                  "Private"
+                ],
+                "key" : "vehicleUse.personal",
+                "label" : "Personală"
+              },
+              {
+                "aliases" : [
+                  "Ridesharing",
+                  "Taxi",
+                  "Uber",
+                  "Bolt",
+                  "Comercial"
+                ],
+                "key" : "vehicleUse.commercial",
+                "label" : "Ridesharing sau taxi"
+              }
+            ],
+            "type" : "choice"
+          }
+        ],
+        "key" : "vehicle.technical",
+        "title" : "Date tehnice"
+      },
+      {
+        "fields" : [
+          {
+            "isEssential" : false,
+            "isSensitive" : false,
+            "key" : "vehicle.insurer",
+            "label" : "Asigurător RCA",
+            "role" : "issuer",
+            "type" : "text"
+          },
+          {
+            "isEssential" : false,
+            "isSensitive" : false,
+            "key" : "vehicle.policyNumber",
+            "label" : "Număr poliță RCA",
+            "role" : "keyFact",
+            "type" : "text"
+          },
+          {
+            "isEssential" : false,
+            "isSensitive" : false,
+            "key" : "vehicle.claimsPhone",
+            "label" : "Telefon daune RCA",
+            "role" : "keyFact",
+            "type" : "phone"
+          },
+          {
+            "isEssential" : false,
+            "isSensitive" : false,
+            "key" : "vehicle.policyholder",
+            "label" : "Asigurat RCA",
+            "type" : "text"
+          },
+          {
+            "isEssential" : false,
+            "isSensitive" : false,
+            "key" : "vehicle.cascoInsurer",
+            "label" : "Asigurător CASCO",
+            "type" : "text"
+          },
+          {
+            "isEssential" : false,
+            "isSensitive" : false,
+            "key" : "vehicle.cascoPolicyNumber",
+            "label" : "Număr poliță CASCO",
+            "role" : "keyFact",
+            "type" : "text"
+          },
+          {
+            "isEssential" : false,
+            "isSensitive" : false,
+            "key" : "vehicle.cascoClaimsPhone",
+            "label" : "Telefon daune CASCO",
+            "role" : "keyFact",
+            "type" : "phone"
+          },
+          {
+            "isEssential" : false,
+            "isSensitive" : false,
+            "key" : "vehicle.cascoInsuredSum",
+            "label" : "Sumă asigurată CASCO",
+            "type" : "money"
+          }
+        ],
+        "key" : "vehicle.insurance",
+        "title" : "Asigurare"
+      },
+      {
+        "fields" : [
+          {
+            "isEssential" : false,
+            "isSensitive" : false,
+            "key" : "vehicle.purchaseDate",
+            "label" : "Data cumpărării",
+            "role" : "purchaseDate",
+            "type" : "date"
+          },
+          {
+            "isEssential" : false,
+            "isSensitive" : false,
+            "key" : "vehicle.purchasePrice",
+            "label" : "Preț",
+            "role" : "purchasePrice",
+            "type" : "money"
+          },
+          {
+            "isEssential" : false,
+            "isSensitive" : false,
+            "key" : "vehicle.retailer",
+            "label" : "Cumpărat de la",
+            "role" : "retailer",
+            "type" : "text"
+          },
+          {
+            "isEssential" : false,
+            "isSensitive" : false,
+            "key" : "vehicle.warrantyUntil",
+            "label" : "Garanție până la",
+            "role" : "warrantyUntil",
+            "type" : "expiryDate"
+          }
+        ],
+        "key" : "vehicle.purchase",
+        "title" : "Cumpărare"
+      }
+    ],
+    "summary" : "ITP, RCA, rovinietă și revizii, cu kilometrajul la zi.",
+    "symbol" : "car.fill",
+    "tint" : "blue",
+    "version" : 27
+  },
+  {
+    "behavior" : {
+      "addedOnlyUnderParent" : false,
+      "box" : "perSection",
+      "goesUnderTheOnlyOne" : false,
+      "listing" : "plain",
+      "offerTitle" : "Casă sau apartament",
+      "role" : "home",
+      "sectionNoun" : "home",
+      "shortlistOrder" : 2,
+      "singular" : {
+        "gender" : "feminine",
+        "name" : "Locuința"
+      },
+      "visit" : "job"
+    },
+    "blueprints" : [
+      {
+        "completion" : "boilerCheck",
+        "firstDue" : {
+          "type" : "ask"
+        },
+        "isSuggested" : true,
+        "key" : "home.boilerCheck",
+        "kind" : "legal",
+        "note" : "Obligatorie la cel mult 2 ani, făcută de o firmă autorizată ISCIR.",
+        "recurrence" : {
+          "anchor" : "completion",
+          "every" : 2,
+          "type" : "interval",
+          "unit" : "year"
+        },
+        "reminders" : {
+          "consequence" : "legal",
+          "followUpAfterLapse" : true,
+          "graceDays" : 0,
+          "leadDays" : [
+            30,
+            7
+          ]
+        },
+        "title" : "Verificare centrală (VTP)"
+      },
+      {
+        "completion" : "gasCheck",
+        "firstDue" : {
+          "type" : "ask"
+        },
+        "isSuggested" : true,
+        "key" : "home.gasCheck",
+        "kind" : "legal",
+        "recurrence" : {
+          "anchor" : "completion",
+          "every" : 2,
+          "type" : "interval",
+          "unit" : "year"
+        },
+        "reminders" : {
+          "consequence" : "legal",
+          "followUpAfterLapse" : true,
+          "graceDays" : 0,
+          "leadDays" : [
+            30,
+            7
+          ]
+        },
+        "title" : "Verificare instalație de gaze"
+      },
+      {
+        "completion" : "gasCheck",
+        "firstDue" : {
+          "type" : "ask"
+        },
+        "isSuggested" : false,
+        "key" : "home.gasRevision",
+        "kind" : "legal",
+        "recurrence" : {
+          "anchor" : "completion",
+          "every" : 10,
+          "type" : "interval",
+          "unit" : "year"
+        },
+        "reminders" : {
+          "consequence" : "legal",
+          "followUpAfterLapse" : true,
+          "graceDays" : 0,
+          "leadDays" : [
+            60,
+            30
+          ]
+        },
+        "title" : "Revizie instalație de gaze"
+      },
+      {
+        "completion" : "policy",
+        "estimatedCost" : {
+          "amount" : "130",
+          "currency" : "RON"
+        },
+        "facts" : {
+          "claimsPhone" : "home.claimsPhone",
+          "insuredSum" : "home.insuredSum",
+          "insurer" : "home.insurer",
+          "policyNumber" : "home.policyNumber"
+        },
+        "firstDue" : {
+          "type" : "ask"
+        },
+        "isSuggested" : true,
+        "key" : "home.pad",
+        "kind" : "insurance",
+        "recurrence" : {
+          "anchor" : "dueDate",
+          "every" : 1,
+          "type" : "interval",
+          "unit" : "year"
+        },
+        "reminders" : {
+          "consequence" : "legal",
+          "followUpAfterLapse" : true,
+          "graceDays" : 0,
+          "leadDays" : [
+            30,
+            7,
+            0
+          ]
+        },
+        "title" : "Asigurare obligatorie (PAD)"
+      },
+      {
+        "completion" : "policy",
+        "facts" : {
+          "claimsPhone" : "home.optionalClaimsPhone",
+          "insuredSum" : "home.optionalInsuredSum",
+          "insurer" : "home.optionalInsurer",
+          "policyNumber" : "home.optionalPolicyNumber"
+        },
+        "firstDue" : {
+          "type" : "ask"
+        },
+        "isSuggested" : false,
+        "key" : "home.insurance",
+        "kind" : "insurance",
+        "recurrence" : {
+          "anchor" : "dueDate",
+          "every" : 1,
+          "type" : "interval",
+          "unit" : "year"
+        },
+        "reminders" : {
+          "consequence" : "financial",
+          "followUpAfterLapse" : true,
+          "graceDays" : 0,
+          "leadDays" : [
+            30,
+            7,
+            0
+          ]
+        },
+        "title" : "Asigurare facultativă"
+      },
+      {
+        "completion" : "buildingTax",
+        "firstDue" : {
+          "type" : "nextFixedDate"
+        },
+        "isSuggested" : true,
+        "key" : "home.buildingTax",
+        "kind" : "tax",
+        "note" : "Plata integrală până la 31 martie poate aduce o reducere.",
+        "recurrence" : {
+          "dates" : [
+            "03-31",
+            "09-30"
+          ],
+          "type" : "fixedDates"
+        },
+        "reminders" : {
+          "consequence" : "financial",
+          "followUpAfterLapse" : true,
+          "graceDays" : 0,
+          "leadDays" : [
+            14,
+            1
+          ]
+        },
+        "title" : "Impozit pe clădire"
+      },
+      {
+        "completion" : "chimneySweep",
+        "firstDue" : {
+          "type" : "ask"
+        },
+        "isSuggested" : false,
+        "key" : "home.chimney",
+        "kind" : "maintenance",
+        "recurrence" : {
+          "anchor" : "completion",
+          "every" : 1,
+          "type" : "interval",
+          "unit" : "year"
+        },
+        "reminders" : {
+          "consequence" : "comfort",
+          "followUpAfterLapse" : false,
+          "graceDays" : 30,
+          "leadDays" : [
+            14,
+            0
+          ]
+        },
+        "title" : "Curățare coș de fum"
+      }
+    ],
+    "components" : [
+      {
+        "group" : "Încălzire",
+        "key" : "heating.boiler",
+        "name" : "Centrală termică",
+        "synonyms" : [
+          "centrala",
+          "boiler gaz"
+        ]
+      },
+      {
+        "group" : "Încălzire",
+        "key" : "heating.boilerService",
+        "name" : "Revizie centrală",
+        "synonyms" : [
+          "revizie centrala",
+          "verificare centrala",
+          "vtp centrala",
+          "curatare centrala"
+        ]
+      },
+      {
+        "group" : "Încălzire",
+        "key" : "heating.radiators",
+        "name" : "Calorifere",
+        "synonyms" : [
+          "calorifer",
+          "radiator"
+        ]
+      },
+      {
+        "group" : "Instalații sanitare",
+        "key" : "plumbing.taps",
+        "name" : "Robinete și baterii",
+        "synonyms" : [
+          "robinet",
+          "baterie baie",
+          "baterie bucatarie",
+          "baterie chiuveta",
+          "baterie lavoar",
+          "baterie dus",
+          "baterie sanitara"
+        ]
+      },
+      {
+        "group" : "Instalații sanitare",
+        "key" : "plumbing.waterHeater",
+        "name" : "Boiler electric",
+        "synonyms" : [
+          "boiler electric"
+        ]
+      },
+      {
+        "group" : "Instalații sanitare",
+        "key" : "plumbing.toilet",
+        "name" : "Rezervor și WC",
+        "synonyms" : [
+          "rezervor wc",
+          "vas wc"
+        ]
+      },
+      {
+        "group" : "Instalații sanitare",
+        "key" : "plumbing.waterFilter",
+        "name" : "Filtru de apă",
+        "synonyms" : [
+          "filtru apa",
+          "dedurizator"
+        ]
+      },
+      {
+        "group" : "Gaze",
+        "key" : "gas.detector",
+        "name" : "Detector de gaz",
+        "synonyms" : [
+          "detector gaze",
+          "senzor gaz"
+        ]
+      },
+      {
+        "group" : "Bucătărie",
+        "key" : "kitchen.hood",
+        "name" : "Hotă",
+        "synonyms" : [
+          "hota"
+        ]
+      },
+      {
+        "group" : "Bucătărie",
+        "key" : "kitchen.cooker",
+        "name" : "Aragaz",
+        "synonyms" : [
+          "plita",
+          "cuptor"
+        ]
+      },
+      {
+        "group" : "Climatizare",
+        "key" : "climate.acFilters",
+        "name" : "Filtre aer condiționat",
+        "synonyms" : [
+          "igienizare aer conditionat",
+          "filtre ac"
+        ]
+      },
+      {
+        "group" : "Electric",
+        "key" : "electrical.panel",
+        "name" : "Tablou electric",
+        "synonyms" : [
+          "tablou electric",
+          "sigurante"
+        ]
+      },
+      {
+        "group" : "Tâmplărie",
+        "key" : "windows.seals",
+        "name" : "Garnituri geamuri",
+        "synonyms" : [
+          "garnituri",
+          "reglaj geamuri"
+        ]
+      }
+    ],
+    "heroStyle" : "home",
+    "isBuiltIn" : true,
+    "key" : "home",
+    "name" : "Locuințe",
+    "pockets" : [
+      "upcoming",
+      "tenants",
+      "products",
+      "subscriptions",
+      "plants",
+      "documents",
+      "history",
+      "people",
+      "money",
+      "keyFacts"
+    ],
+    "sections" : [
+      {
+        "fields" : [
+          {
+            "isEssential" : true,
+            "isSensitive" : false,
+            "key" : "home.address",
+            "label" : "Adresă",
+            "role" : "location",
+            "type" : "address"
+          },
+          {
+            "isEssential" : false,
+            "isSensitive" : false,
+            "key" : "home.area",
+            "label" : "Suprafață utilă",
+            "type" : "number",
+            "unit" : "m2"
+          },
+          {
+            "isEssential" : false,
+            "isSensitive" : false,
+            "key" : "home.year",
+            "label" : "An construcție",
+            "type" : "year"
+          },
+          {
+            "isEssential" : false,
+            "isSensitive" : false,
+            "key" : "home.cadastral",
+            "label" : "Număr cadastral",
+            "type" : "text"
+          }
+        ],
+        "key" : "home.place",
+        "title" : "Locuința"
+      },
+      {
+        "fields" : [
+          {
+            "isEssential" : false,
+            "isSensitive" : false,
+            "key" : "home.pod",
+            "label" : "Cod loc de consum energie (POD)",
+            "role" : "keyFact",
+            "type" : "text"
+          },
+          {
+            "isEssential" : false,
+            "isSensitive" : false,
+            "key" : "home.clc",
+            "label" : "Cod loc de consum gaze (CLC)",
+            "role" : "keyFact",
+            "type" : "text"
+          },
+          {
+            "isEssential" : false,
+            "isSensitive" : false,
+            "key" : "home.waterCode",
+            "label" : "Cod client apă",
+            "type" : "text"
+          },
+          {
+            "isEssential" : false,
+            "isSensitive" : false,
+            "key" : "home.meterReadFrom",
+            "label" : "Autocitire de la ziua",
+            "type" : "number"
+          },
+          {
+            "isEssential" : false,
+            "isSensitive" : false,
+            "key" : "home.meterReadTo",
+            "label" : "Autocitire până la ziua",
+            "type" : "number"
+          }
+        ],
+        "key" : "home.utilities",
+        "title" : "Utilități"
+      },
+      {
+        "fields" : [
+          {
+            "isEssential" : false,
+            "isSensitive" : false,
+            "key" : "home.insurer",
+            "label" : "Asigurător PAD",
+            "role" : "issuer",
+            "type" : "text"
+          },
+          {
+            "isEssential" : false,
+            "isSensitive" : false,
+            "key" : "home.policyNumber",
+            "label" : "Număr poliță PAD",
+            "role" : "keyFact",
+            "type" : "text"
+          },
+          {
+            "isEssential" : false,
+            "isSensitive" : false,
+            "key" : "home.claimsPhone",
+            "label" : "Telefon daune PAD",
+            "role" : "keyFact",
+            "type" : "phone"
+          },
+          {
+            "isEssential" : false,
+            "isSensitive" : false,
+            "key" : "home.insuredSum",
+            "label" : "Sumă asigurată PAD",
+            "type" : "money"
+          },
+          {
+            "isEssential" : false,
+            "isSensitive" : false,
+            "key" : "home.optionalInsurer",
+            "label" : "Asigurător facultativă",
+            "type" : "text"
+          },
+          {
+            "isEssential" : false,
+            "isSensitive" : false,
+            "key" : "home.optionalPolicyNumber",
+            "label" : "Număr poliță facultativă",
+            "role" : "keyFact",
+            "type" : "text"
+          },
+          {
+            "isEssential" : false,
+            "isSensitive" : false,
+            "key" : "home.optionalClaimsPhone",
+            "label" : "Telefon daune facultativă",
+            "role" : "keyFact",
+            "type" : "phone"
+          },
+          {
+            "isEssential" : false,
+            "isSensitive" : false,
+            "key" : "home.optionalInsuredSum",
+            "label" : "Sumă asigurată facultativă",
+            "type" : "money"
+          }
+        ],
+        "key" : "home.insurance",
+        "title" : "Asigurare"
+      },
+      {
+        "fields" : [
+          {
+            "isEssential" : false,
+            "isSensitive" : false,
+            "key" : "home.boilerModel",
+            "label" : "Model",
+            "type" : "text"
+          },
+          {
+            "isEssential" : false,
+            "isSensitive" : false,
+            "key" : "home.boilerSerial",
+            "label" : "Serie",
+            "type" : "text"
+          }
+        ],
+        "key" : "home.heating",
+        "title" : "Centrală termică"
+      }
+    ],
+    "summary" : "Centrală, gaze, asigurare, impozit și contoare.",
+    "symbol" : "house.fill",
+    "tint" : "orange",
+    "version" : 27
+  },
+  {
+    "behavior" : {
+      "addedOnlyUnderParent" : false,
+      "box" : "wholeCategory",
+      "goesUnderTheOnlyOne" : false,
+      "listing" : "byHolder",
+      "offerTitle" : "Un act (carte de identitate, pașaport, permis)",
+      "role" : "personalDocument",
+      "singular" : {
+        "gender" : "masculineOrNeuter",
+        "name" : "Actul"
+      },
+      "visit" : "none"
+    },
+    "blueprints" : [
+      {
+        "completion" : "documentReplaced",
+        "firstDue" : {
+          "field" : "document.expiry",
+          "offsetDays" : 0,
+          "type" : "field"
+        },
+        "isSuggested" : true,
+        "key" : "document.renew",
+        "kind" : "renewal",
+        "note" : "Programările durează. Pentru pașaport, multe țări cer 6 luni de valabilitate.",
+        "recurrence" : {
+          "type" : "none"
+        },
+        "reminderVariants" : {
+          "field" : "document.type",
+          "variants" : {
+            "documentType.bankCard" : {
+              "consequence" : "financial",
+              "followUpAfterLapse" : true,
+              "graceDays" : 0,
+              "leadDays" : [
+                30,
+                0
+              ]
+            },
+            "documentType.criminalRecord" : {
+              "consequence" : "comfort",
+              "followUpAfterLapse" : false,
+              "graceDays" : 0,
+              "leadDays" : [
+                7,
+                0
+              ]
+            },
+            "documentType.drivingLicence" : {
+              "consequence" : "legal",
+              "followUpAfterLapse" : true,
+              "graceDays" : 0,
+              "leadDays" : [
+                60,
+                30
+              ]
+            },
+            "documentType.eSignature" : {
+              "consequence" : "financial",
+              "followUpAfterLapse" : true,
+              "graceDays" : 0,
+              "leadDays" : [
+                30,
+                7
+              ]
+            },
+            "documentType.euHealthCard" : {
+              "consequence" : "health",
+              "followUpAfterLapse" : false,
+              "graceDays" : 0,
+              "leadDays" : [
+                30,
+                7
+              ]
+            },
+            "documentType.greenCard" : {
+              "consequence" : "legal",
+              "followUpAfterLapse" : true,
+              "graceDays" : 0,
+              "leadDays" : [
+                30,
+                7
+              ]
+            },
+            "documentType.idCard" : {
+              "consequence" : "legal",
+              "followUpAfterLapse" : true,
+              "graceDays" : 0,
+              "leadDays" : [
+                90,
+                30
+              ]
+            },
+            "documentType.nationalHealthCard" : {
+              "consequence" : "health",
+              "followUpAfterLapse" : false,
+              "graceDays" : 0,
+              "leadDays" : [
+                30,
+                7
+              ]
+            },
+            "documentType.passport" : {
+              "consequence" : "legal",
+              "followUpAfterLapse" : true,
+              "graceDays" : 0,
+              "leadDays" : [
+                90,
+                0
+              ],
+              "travelMarginDays" : 180
+            },
+            "documentType.residencePermit" : {
+              "consequence" : "legal",
+              "followUpAfterLapse" : true,
+              "graceDays" : 0,
+              "leadDays" : [
+                90,
+                45
+              ]
+            }
+          }
+        },
+        "reminders" : {
+          "consequence" : "legal",
+          "followUpAfterLapse" : true,
+          "graceDays" : 0,
+          "leadDays" : [
+            90,
+            30
+          ]
+        },
+        "title" : "Reînnoire"
+      }
+    ],
+    "components" : [
+
+    ],
+    "heroStyle" : "document",
+    "isBuiltIn" : true,
+    "key" : "documents",
+    "name" : "Acte",
+    "pockets" : [
+      "upcoming",
+      "documents",
+      "keyFacts"
+    ],
+    "sections" : [
+      {
+        "fields" : [
+          {
+            "isEssential" : true,
+            "isSensitive" : false,
+            "key" : "document.type",
+            "label" : "Tip",
+            "options" : [
+              {
+                "aliases" : [
+                  "Buletin",
+                  "CI",
+                  "ID card"
+                ],
+                "key" : "documentType.idCard",
+                "label" : "Carte de identitate"
+              },
+              {
+                "aliases" : [
+                  "Pasaport",
+                  "Passport"
+                ],
+                "key" : "documentType.passport",
+                "label" : "Pașaport"
+              },
+              {
+                "aliases" : [
+                  "Permis de sedere",
+                  "Residence permit",
+                  "Permis de ședere temporară",
+                  "Permis de ședere pe termen lung",
+                  "Carte de rezidență",
+                  "Residence card"
+                ],
+                "key" : "documentType.residencePermit",
+                "label" : "Permis de ședere"
+              },
+              {
+                "aliases" : [
+                  "Permis",
+                  "Driving licence"
+                ],
+                "key" : "documentType.drivingLicence",
+                "label" : "Permis de conducere"
+              },
+              {
+                "aliases" : [
+                  "CEASS",
+                  "EHIC",
+                  "Card european de asigurări sociale de sănătate"
+                ],
+                "key" : "documentType.euHealthCard",
+                "label" : "Card european de sănătate"
+              },
+              {
+                "aliases" : [
+                  "Card de sănătate",
+                  "Cardul de sănătate",
+                  "Card național de asigurări sociale de sănătate"
+                ],
+                "key" : "documentType.nationalHealthCard",
+                "label" : "Card național de sănătate"
+              },
+              {
+                "aliases" : [
+                  "Green card"
+                ],
+                "key" : "documentType.greenCard",
+                "label" : "Carte verde"
+              },
+              {
+                "aliases" : [
+                  "Card"
+                ],
+                "key" : "documentType.bankCard",
+                "label" : "Card bancar"
+              },
+              {
+                "aliases" : [
+                  "Certificat digital",
+                  "Token"
+                ],
+                "key" : "documentType.eSignature",
+                "label" : "Semnătură electronică"
+              },
+              {
+                "aliases" : [
+                  "Cazier judiciar"
+                ],
+                "key" : "documentType.criminalRecord",
+                "label" : "Cazier"
+              },
+              {
+                "aliases" : [
+                  "Altul"
+                ],
+                "key" : "documentType.other",
+                "label" : "Alt document"
+              }
+            ],
+            "role" : "subtitle",
+            "type" : "choice"
+          },
+          {
+            "appliesWhen" : {
+              "field" : "document.type",
+              "oneOf" : [
+                "documentType.idCard",
+                "documentType.passport",
+                "documentType.residencePermit",
+                "documentType.bankCard",
+                "documentType.criminalRecord"
+              ]
+            },
+            "isEssential" : false,
+            "isSensitive" : false,
+            "key" : "document.variant",
+            "label" : "Varianta",
+            "options" : [
+              {
+                "appliesWhen" : {
+                  "field" : "document.type",
+                  "oneOf" : [
+                    "documentType.idCard"
+                  ]
+                },
+                "key" : "documentVariant.idCard.electronic",
+                "label" : "Electronică, cu cip (CEI)"
+              },
+              {
+                "appliesWhen" : {
+                  "field" : "document.type",
+                  "oneOf" : [
+                    "documentType.idCard"
+                  ]
+                },
+                "key" : "documentVariant.idCard.withoutChip",
+                "label" : "Fără cip, modelul vechi"
+              },
+              {
+                "appliesWhen" : {
+                  "field" : "document.type",
+                  "oneOf" : [
+                    "documentType.idCard"
+                  ]
+                },
+                "key" : "documentVariant.idCard.simple",
+                "label" : "Simplă (CIS)"
+              },
+              {
+                "appliesWhen" : {
+                  "field" : "document.type",
+                  "oneOf" : [
+                    "documentType.passport"
+                  ]
+                },
+                "key" : "documentVariant.passport.electronic",
+                "label" : "Simplu electronic"
+              },
+              {
+                "appliesWhen" : {
+                  "field" : "document.type",
+                  "oneOf" : [
+                    "documentType.passport"
+                  ]
+                },
+                "key" : "documentVariant.passport.temporary",
+                "label" : "Simplu temporar"
+              },
+              {
+                "appliesWhen" : {
+                  "field" : "document.type",
+                  "oneOf" : [
+                    "documentType.residencePermit"
+                  ]
+                },
+                "key" : "documentVariant.residencePermit.residenceCard",
+                "label" : "Carte de rezidență, pentru un membru de familie al unui cetățean UE"
+              },
+              {
+                "appliesWhen" : {
+                  "field" : "document.type",
+                  "oneOf" : [
+                    "documentType.residencePermit"
+                  ]
+                },
+                "key" : "documentVariant.residencePermit.withdrawalAgreement",
+                "label" : "Pentru cetățeni britanici (Acordul de retragere)"
+              },
+              {
+                "appliesWhen" : {
+                  "field" : "document.type",
+                  "oneOf" : [
+                    "documentType.bankCard"
+                  ]
+                },
+                "key" : "documentVariant.bankCard.debit",
+                "label" : "De debit"
+              },
+              {
+                "appliesWhen" : {
+                  "field" : "document.type",
+                  "oneOf" : [
+                    "documentType.bankCard"
+                  ]
+                },
+                "key" : "documentVariant.bankCard.credit",
+                "label" : "De credit"
+              },
+              {
+                "appliesWhen" : {
+                  "field" : "document.type",
+                  "oneOf" : [
+                    "documentType.criminalRecord"
+                  ]
+                },
+                "key" : "documentVariant.criminalRecord.judicial",
+                "label" : "Judiciar"
+              },
+              {
+                "appliesWhen" : {
+                  "field" : "document.type",
+                  "oneOf" : [
+                    "documentType.criminalRecord"
+                  ]
+                },
+                "key" : "documentVariant.criminalRecord.fiscal",
+                "label" : "Fiscal"
+              },
+              {
+                "appliesWhen" : {
+                  "field" : "document.type",
+                  "oneOf" : [
+                    "documentType.criminalRecord"
+                  ]
+                },
+                "key" : "documentVariant.criminalRecord.driving",
+                "label" : "Auto"
+              }
+            ],
+            "type" : "choice"
+          },
+          {
+            "isEssential" : false,
+            "isSensitive" : true,
+            "key" : "document.number",
+            "label" : "Serie și număr",
+            "role" : "documentNumber",
+            "type" : "text"
+          },
+          {
+            "isEssential" : false,
+            "isSensitive" : true,
+            "key" : "document.personalNumber",
+            "label" : "CNP",
+            "type" : "text"
+          },
+          {
+            "isEssential" : false,
+            "isSensitive" : true,
+            "key" : "document.birthDate",
+            "label" : "Data nașterii",
+            "type" : "date"
+          },
+          {
+            "isEssential" : false,
+            "isSensitive" : true,
+            "key" : "document.sex",
+            "label" : "Sex",
+            "type" : "text"
+          },
+          {
+            "isEssential" : false,
+            "isSensitive" : true,
+            "key" : "document.nationality",
+            "label" : "Cetățenie",
+            "type" : "text"
+          },
+          {
+            "isEssential" : false,
+            "isSensitive" : false,
+            "key" : "document.categories",
+            "label" : "Categorii",
+            "type" : "text"
+          },
+          {
+            "isEssential" : false,
+            "isSensitive" : false,
+            "key" : "document.issuer",
+            "label" : "Emis de",
+            "role" : "issuer",
+            "type" : "text"
+          },
+          {
+            "isEssential" : false,
+            "isSensitive" : false,
+            "key" : "document.issueDate",
+            "label" : "Data emiterii",
+            "role" : "startDate",
+            "type" : "date"
+          },
+          {
+            "derivation" : {
+              "date" : "document.issueDate",
+              "type" : "validityAfterIssue"
+            },
+            "isEssential" : true,
+            "isSensitive" : false,
+            "key" : "document.expiry",
+            "label" : "Valabil până la",
+            "role" : "expiryDate",
+            "type" : "expiryDate"
+          },
+          {
+            "appliesWhen" : {
+              "field" : "document.type",
+              "oneOf" : [
+                "documentType.criminalRecord"
+              ]
+            },
+            "isEssential" : false,
+            "isSensitive" : true,
+            "key" : "document.recordResult",
+            "label" : "Ce scrie în cazier",
+            "type" : "text"
+          },
+          {
+            "appliesWhen" : {
+              "field" : "document.type",
+              "oneOf" : [
+                "documentType.bankCard"
+              ]
+            },
+            "isEssential" : false,
+            "isSensitive" : false,
+            "key" : "document.cardNetwork",
+            "label" : "Tip card",
+            "options" : [
+              {
+                "aliases" : [
+                  "Visa Debit",
+                  "Visa Electron",
+                  "Visa Classic",
+                  "Visa Gold",
+                  "Visa Platinum"
+                ],
+                "key" : "cardNetwork.visa",
+                "label" : "Visa"
+              },
+              {
+                "aliases" : [
+                  "MasterCard",
+                  "Debit Mastercard",
+                  "Mastercard Gold",
+                  "World Mastercard"
+                ],
+                "key" : "cardNetwork.mastercard",
+                "label" : "Mastercard"
+              },
+              {
+                "key" : "cardNetwork.maestro",
+                "label" : "Maestro"
+              },
+              {
+                "aliases" : [
+                  "Amex"
+                ],
+                "key" : "cardNetwork.amex",
+                "label" : "American Express"
+              },
+              {
+                "aliases" : [
+                  "Altul"
+                ],
+                "key" : "cardNetwork.other",
+                "label" : "Altă rețea"
+              }
+            ],
+            "type" : "choice"
+          },
+          {
+            "appliesWhen" : {
+              "field" : "document.type",
+              "oneOf" : [
+                "documentType.bankCard"
+              ]
+            },
+            "footnote" : "Doar ultimele 4 cifre. Numărul întreg al cardului nu se păstrează.",
+            "isEssential" : false,
+            "isSensitive" : true,
+            "key" : "document.cardLastFour",
+            "label" : "Ultimele 4 cifre",
+            "type" : "text"
+          },
+          {
+            "appliesWhen" : {
+              "field" : "document.type",
+              "oneOf" : [
+                "documentType.greenCard"
+              ]
+            },
+            "isEssential" : false,
+            "isSensitive" : false,
+            "key" : "document.vehiclePlate",
+            "label" : "Număr de înmatriculare",
+            "placeholder" : "B-123-ABC",
+            "type" : "plate"
+          }
+        ],
+        "key" : "document.main",
+        "title" : "Document"
+      },
+      {
+        "fields" : [
+          {
+            "appliesWhen" : {
+              "field" : "document.variant",
+              "oneOf" : [
+                "documentVariant.idCard.electronic"
+              ]
+            },
+            "footnote" : "4 cifre. Îl folosești când intri în servicii online cu cartea de identitate.",
+            "isEssential" : false,
+            "isSensitive" : true,
+            "key" : "document.pinAuthentication",
+            "label" : "PIN pentru autentificare",
+            "type" : "secret"
+          },
+          {
+            "appliesWhen" : {
+              "field" : "document.variant",
+              "oneOf" : [
+                "documentVariant.idCard.electronic"
+              ]
+            },
+            "footnote" : "6 cifre. Îl folosești când semnezi documente cu cartea de identitate.",
+            "isEssential" : false,
+            "isSensitive" : true,
+            "key" : "document.pinSigning",
+            "label" : "PIN pentru semnare",
+            "type" : "secret"
+          }
+        ],
+        "key" : "document.pins",
+        "title" : "Coduri PIN"
+      }
+    ],
+    "summary" : "Îți amintesc din timp să le reînnoiești.",
+    "symbol" : "person.text.rectangle.fill",
+    "tint" : "indigo",
+    "version" : 27
+  },
+  {
+    "behavior" : {
+      "addedOnlyUnderParent" : false,
+      "box" : "perSection",
+      "goesUnderTheOnlyOne" : false,
+      "listing" : "plain",
+      "offerTitle" : "Animal de companie",
+      "sectionNoun" : "pet",
+      "shortlistOrder" : 3,
+      "singular" : {
+        "gender" : "masculineOrNeuter",
+        "name" : "Animalul"
+      },
+      "visit" : "vet"
+    },
+    "blueprints" : [
+      {
+        "completion" : "petVaccine",
+        "firstDue" : {
+          "type" : "ask"
+        },
+        "isSuggested" : true,
+        "key" : "pet.rabies",
+        "kind" : "legal",
+        "note" : "Obligatoriu și cerut la trecerea graniței.",
+        "recurrence" : {
+          "anchor" : "completion",
+          "every" : 1,
+          "type" : "interval",
+          "unit" : "year"
+        },
+        "reminderVariants" : {
+          "field" : "pet.species",
+          "variants" : {
+            "species.cat" : {
+              "consequence" : "health",
+              "followUpAfterLapse" : false,
+              "graceDays" : 7,
+              "leadDays" : [
+                1
+              ]
+            },
+            "species.dog" : {
+              "consequence" : "legal",
+              "followUpAfterLapse" : true,
+              "graceDays" : 0,
+              "leadDays" : [
+                10,
+                4
+              ]
+            }
+          }
+        },
+        "reminders" : {
+          "consequence" : "health",
+          "followUpAfterLapse" : false,
+          "graceDays" : 7,
+          "leadDays" : [
+            1
+          ]
+        },
+        "title" : "Vaccin antirabic"
+      },
+      {
+        "completion" : "petVaccine",
+        "firstDue" : {
+          "type" : "ask"
+        },
+        "isSuggested" : true,
+        "key" : "pet.vaccine",
+        "kind" : "health",
+        "recurrence" : {
+          "anchor" : "completion",
+          "every" : 1,
+          "type" : "interval",
+          "unit" : "year"
+        },
+        "reminders" : {
+          "consequence" : "health",
+          "followUpAfterLapse" : false,
+          "graceDays" : 7,
+          "leadDays" : [
+            1
+          ]
+        },
+        "title" : "Vaccin anual"
+      },
+      {
+        "completion" : "doneAtHome",
+        "firstDue" : {
+          "every" : 3,
+          "type" : "afterInterval",
+          "unit" : "month"
+        },
+        "isSuggested" : true,
+        "key" : "pet.dewormInternal",
+        "kind" : "health",
+        "recurrence" : {
+          "anchor" : "completion",
+          "every" : 3,
+          "type" : "interval",
+          "unit" : "month"
+        },
+        "reminders" : {
+          "consequence" : "health",
+          "followUpAfterLapse" : false,
+          "graceDays" : 7,
+          "leadDays" : [
+            1,
+            0
+          ]
+        },
+        "title" : "Deparazitare internă"
+      },
+      {
+        "completion" : "doneAtHome",
+        "firstDue" : {
+          "every" : 1,
+          "type" : "afterInterval",
+          "unit" : "month"
+        },
+        "isSuggested" : true,
+        "key" : "pet.dewormExternal",
+        "kind" : "health",
+        "recurrence" : {
+          "anchor" : "completion",
+          "every" : 1,
+          "type" : "interval",
+          "unit" : "month"
+        },
+        "reminders" : {
+          "consequence" : "health",
+          "followUpAfterLapse" : false,
+          "graceDays" : 7,
+          "leadDays" : [
+            1,
+            0
+          ]
+        },
+        "title" : "Deparazitare externă"
+      },
+      {
+        "completion" : "chore",
+        "firstDue" : {
+          "every" : 6,
+          "type" : "afterInterval",
+          "unit" : "week"
+        },
+        "isSuggested" : false,
+        "key" : "pet.grooming",
+        "kind" : "routine",
+        "recurrence" : {
+          "anchor" : "completion",
+          "every" : 6,
+          "type" : "interval",
+          "unit" : "week"
+        },
+        "reminders" : {
+          "consequence" : "comfort",
+          "followUpAfterLapse" : false,
+          "graceDays" : 14,
+          "leadDays" : [
+            2
+          ]
+        },
+        "title" : "Toaletaj"
+      }
+    ],
+    "components" : [
+      {
+        "group" : "Vaccinuri",
+        "key" : "vaccine.rabies",
+        "name" : "Vaccin antirabic",
+        "synonyms" : [
+          "antirabic",
+          "rabie"
+        ]
+      },
+      {
+        "group" : "Vaccinuri",
+        "key" : "vaccine.core",
+        "name" : "Vaccin anual",
+        "synonyms" : [
+          "polivalent",
+          "dhppi",
+          "tricat",
+          "vaccin"
+        ]
+      },
+      {
+        "group" : "Paraziți",
+        "key" : "parasites.internal",
+        "name" : "Deparazitare internă",
+        "synonyms" : [
+          "milbemax",
+          "drontal",
+          "deparazitare interna"
+        ]
+      },
+      {
+        "group" : "Paraziți",
+        "key" : "parasites.external",
+        "name" : "Deparazitare externă",
+        "synonyms" : [
+          "bravecto",
+          "pipeta",
+          "zgarda",
+          "deparazitare externa"
+        ]
+      },
+      {
+        "group" : "Îngrijire",
+        "key" : "care.dental",
+        "name" : "Detartraj",
+        "synonyms" : [
+          "detartraj",
+          "curatare dentara"
+        ]
+      },
+      {
+        "group" : "Îngrijire",
+        "key" : "care.grooming",
+        "name" : "Toaletaj",
+        "synonyms" : [
+          "tuns",
+          "toaletaj"
+        ]
+      },
+      {
+        "group" : "Tratamente",
+        "key" : "medicine",
+        "name" : "Tratament",
+        "synonyms" : [
+          "antibiotic",
+          "tratament"
+        ]
+      }
+    ],
+    "heroStyle" : "pet",
+    "isBuiltIn" : true,
+    "key" : "pet",
+    "name" : "Animale",
+    "pockets" : [
+      "upcoming",
+      "documents",
+      "history",
+      "people",
+      "money",
+      "keyFacts"
+    ],
+    "sections" : [
+      {
+        "fields" : [
+          {
+            "isEssential" : true,
+            "isSensitive" : false,
+            "key" : "pet.species",
+            "label" : "Specie",
+            "options" : [
+              {
+                "aliases" : [
+                  "Pisica",
+                  "Cat",
+                  "Motan"
+                ],
+                "key" : "species.cat",
+                "label" : "Pisică"
+              },
+              {
+                "aliases" : [
+                  "Caine",
+                  "Dog",
+                  "Cățel"
+                ],
+                "key" : "species.dog",
+                "label" : "Câine"
+              },
+              {
+                "aliases" : [
+                  "Altul"
+                ],
+                "key" : "species.other",
+                "label" : "Alt animal"
+              }
+            ],
+            "role" : "subtitle",
+            "type" : "choice"
+          },
+          {
+            "isEssential" : false,
+            "isSensitive" : false,
+            "key" : "pet.breed",
+            "label" : "Rasă",
+            "role" : "subtitle",
+            "type" : "text"
+          },
+          {
+            "isEssential" : true,
+            "isSensitive" : false,
+            "key" : "pet.birthDate",
+            "label" : "Data nașterii",
+            "role" : "startDate",
+            "type" : "date"
+          },
+          {
+            "isEssential" : false,
+            "isSensitive" : false,
+            "key" : "pet.microchip",
+            "label" : "Microcip",
+            "role" : "keyFact",
+            "type" : "microchip"
+          },
+          {
+            "isEssential" : false,
+            "isSensitive" : false,
+            "key" : "pet.passport",
+            "label" : "Pașaport european",
+            "role" : "keyFact",
+            "type" : "text"
+          },
+          {
+            "isEssential" : false,
+            "isSensitive" : false,
+            "key" : "pet.weight",
+            "label" : "Greutate",
+            "role" : "heroMetric",
+            "type" : "number",
+            "unit" : "kg"
+          }
+        ],
+        "key" : "pet.identity",
+        "title" : "Identitate"
+      },
+      {
+        "fields" : [
+          {
+            "isEssential" : false,
+            "isSensitive" : false,
+            "key" : "pet.diet",
+            "label" : "Hrană și porții",
+            "type" : "longText"
+          }
+        ],
+        "key" : "pet.care",
+        "title" : "Îngrijire"
+      }
+    ],
+    "summary" : "Vaccinuri, deparazitări, greutate și veterinar.",
+    "symbol" : "pawprint.fill",
+    "tint" : "brown",
+    "version" : 27
+  },
+  {
+    "behavior" : {
+      "addedOnlyUnderParent" : false,
+      "box" : "perSection",
+      "goesUnderTheOnlyOne" : false,
+      "listing" : "plain",
+      "offerTitle" : "Fișă medicală",
+      "singular" : {
+        "gender" : "feminine",
+        "name" : "Fișa medicală"
+      },
+      "visit" : "doctor"
+    },
+    "blueprints" : [
+      {
+        "completion" : "checkup",
+        "firstDue" : {
+          "every" : 1,
+          "type" : "afterInterval",
+          "unit" : "year"
+        },
+        "isSuggested" : true,
+        "key" : "health.checkup",
+        "kind" : "health",
+        "recurrence" : {
+          "anchor" : "completion",
+          "every" : 1,
+          "type" : "interval",
+          "unit" : "year"
+        },
+        "reminders" : {
+          "consequence" : "health",
+          "followUpAfterLapse" : false,
+          "graceDays" : 30,
+          "leadDays" : [
+            14,
+            0
+          ]
+        },
+        "title" : "Analize anuale"
+      },
+      {
+        "completion" : "dentist",
+        "firstDue" : {
+          "every" : 6,
+          "type" : "afterInterval",
+          "unit" : "month"
+        },
+        "isSuggested" : true,
+        "key" : "health.dentist",
+        "kind" : "health",
+        "recurrence" : {
+          "anchor" : "completion",
+          "every" : 6,
+          "type" : "interval",
+          "unit" : "month"
+        },
+        "reminders" : {
+          "consequence" : "health",
+          "followUpAfterLapse" : false,
+          "graceDays" : 30,
+          "leadDays" : [
+            7,
+            0
+          ]
+        },
+        "title" : "Control stomatologic"
+      },
+      {
+        "completion" : "vaccine",
+        "firstDue" : {
+          "type" : "ask"
+        },
+        "isSuggested" : false,
+        "key" : "health.tetanus",
+        "kind" : "health",
+        "recurrence" : {
+          "anchor" : "completion",
+          "every" : 10,
+          "type" : "interval",
+          "unit" : "year"
+        },
+        "reminders" : {
+          "consequence" : "health",
+          "followUpAfterLapse" : false,
+          "graceDays" : 30,
+          "leadDays" : [
+            30,
+            0
+          ]
+        },
+        "title" : "Rapel antitetanos"
+      },
+      {
+        "completion" : "vaccine",
+        "firstDue" : {
+          "type" : "nextFixedDate"
+        },
+        "isSuggested" : false,
+        "key" : "health.flu",
+        "kind" : "health",
+        "recurrence" : {
+          "dates" : [
+            "10-15"
+          ],
+          "type" : "fixedDates"
+        },
+        "reminders" : {
+          "consequence" : "health",
+          "followUpAfterLapse" : false,
+          "graceDays" : 30,
+          "leadDays" : [
+            7,
+            0
+          ]
+        },
+        "title" : "Vaccin antigripal"
+      },
+      {
+        "completion" : "newHealthCard",
+        "firstDue" : {
+          "type" : "ask"
+        },
+        "isSuggested" : false,
+        "key" : "health.euCard",
+        "kind" : "renewal",
+        "recurrence" : {
+          "type" : "none"
+        },
+        "reminders" : {
+          "consequence" : "financial",
+          "followUpAfterLapse" : true,
+          "graceDays" : 0,
+          "leadDays" : [
+            30,
+            7
+          ]
+        },
+        "title" : "Card european de sănătate"
+      }
+    ],
+    "components" : [
+
+    ],
+    "heroStyle" : "standard",
+    "isBuiltIn" : true,
+    "key" : "health",
+    "name" : "Sănătate",
+    "pockets" : [
+      "upcoming",
+      "documents",
+      "history",
+      "people",
+      "keyFacts"
+    ],
+    "sections" : [
+      {
+        "fields" : [
+          {
+            "isEssential" : false,
+            "isSensitive" : false,
+            "key" : "health.birthDate",
+            "label" : "Data nașterii",
+            "role" : "startDate",
+            "type" : "date"
+          },
+          {
+            "isEssential" : false,
+            "isSensitive" : true,
+            "key" : "health.bloodType",
+            "label" : "Grupa sanguină",
+            "options" : [
+              {
+                "aliases" : [
+                  "O+",
+                  "0+",
+                  "O I+"
+                ],
+                "key" : "bloodType.0Positive",
+                "label" : "0 I+"
+              },
+              {
+                "aliases" : [
+                  "O-",
+                  "0-",
+                  "0 I-",
+                  "O I-"
+                ],
+                "key" : "bloodType.0Negative",
+                "label" : "0 I−"
+              },
+              {
+                "aliases" : [
+                  "A+"
+                ],
+                "key" : "bloodType.aPositive",
+                "label" : "A II+"
+              },
+              {
+                "aliases" : [
+                  "A-",
+                  "A II-"
+                ],
+                "key" : "bloodType.aNegative",
+                "label" : "A II−"
+              },
+              {
+                "aliases" : [
+                  "B+"
+                ],
+                "key" : "bloodType.bPositive",
+                "label" : "B III+"
+              },
+              {
+                "aliases" : [
+                  "B-",
+                  "B III-"
+                ],
+                "key" : "bloodType.bNegative",
+                "label" : "B III−"
+              },
+              {
+                "aliases" : [
+                  "AB+"
+                ],
+                "key" : "bloodType.abPositive",
+                "label" : "AB IV+"
+              },
+              {
+                "aliases" : [
+                  "AB-",
+                  "AB IV-"
+                ],
+                "key" : "bloodType.abNegative",
+                "label" : "AB IV−"
+              }
+            ],
+            "role" : "keyFact",
+            "type" : "choice"
+          },
+          {
+            "isEssential" : false,
+            "isSensitive" : true,
+            "key" : "health.allergies",
+            "label" : "Alergii",
+            "type" : "longText"
+          },
+          {
+            "isEssential" : false,
+            "isSensitive" : true,
+            "key" : "health.conditions",
+            "label" : "Afecțiuni cronice",
+            "type" : "longText"
+          },
+          {
+            "isEssential" : false,
+            "isSensitive" : true,
+            "key" : "health.medication",
+            "label" : "Tratament curent",
+            "type" : "longText"
+          }
+        ],
+        "key" : "health.person",
+        "title" : "Persoană"
+      }
+    ],
+    "summary" : "Analize, controale, vaccinuri și date de urgență.",
+    "symbol" : "heart.text.square.fill",
+    "tint" : "pink",
+    "version" : 27
+  },
+  {
+    "behavior" : {
+      "addedOnlyUnderParent" : false,
+      "box" : "wholeCategory",
+      "goesUnderTheOnlyOne" : false,
+      "listing" : "byWarranty",
+      "offerTitle" : "Produs cu garanție",
+      "parentPocket" : "products",
+      "shortlistOrder" : 5,
+      "singular" : {
+        "gender" : "masculineOrNeuter",
+        "name" : "Produsul"
+      },
+      "visit" : "repair"
+    },
+    "blueprints" : [
+      {
+        "completion" : "acknowledged",
+        "firstDue" : {
+          "field" : "purchase.warrantyUntil",
+          "offsetDays" : 0,
+          "type" : "field"
+        },
+        "isSuggested" : true,
+        "key" : "purchase.warrantyEnds",
+        "kind" : "renewal",
+        "note" : "Funcționează totul bine? Acum mai poți reclama gratuit un defect.",
+        "recurrence" : {
+          "type" : "none"
+        },
+        "reminders" : {
+          "consequence" : "financial",
+          "followUpAfterLapse" : false,
+          "graceDays" : 0,
+          "leadDays" : [
+            30
+          ]
+        },
+        "title" : "Garanția se termină"
+      }
+    ],
+    "components" : [
+
+    ],
+    "heroStyle" : "document",
+    "isBuiltIn" : true,
+    "key" : "purchase",
+    "name" : "Garanții",
+    "pockets" : [
+      "upcoming",
+      "documents",
+      "history",
+      "money",
+      "keyFacts"
+    ],
+    "sections" : [
+      {
+        "fields" : [
+          {
+            "isEssential" : false,
+            "isSensitive" : false,
+            "key" : "purchase.brand",
+            "label" : "Marcă",
+            "role" : "subtitle",
+            "type" : "text"
+          },
+          {
+            "isEssential" : false,
+            "isSensitive" : false,
+            "key" : "purchase.model",
+            "label" : "Model",
+            "role" : "subtitle",
+            "type" : "text"
+          },
+          {
+            "isEssential" : false,
+            "isSensitive" : false,
+            "key" : "purchase.serial",
+            "label" : "Serie sau IMEI",
+            "role" : "identifier",
+            "type" : "text"
+          }
+        ],
+        "key" : "purchase.product",
+        "title" : "Produs"
+      },
+      {
+        "fields" : [
+          {
+            "isEssential" : true,
+            "isSensitive" : false,
+            "key" : "purchase.retailer",
+            "label" : "Magazin",
+            "role" : "retailer",
+            "type" : "text"
+          },
+          {
+            "isEssential" : true,
+            "isSensitive" : false,
+            "key" : "purchase.date",
+            "label" : "Data cumpărării",
+            "role" : "purchaseDate",
+            "type" : "date"
+          },
+          {
+            "isEssential" : true,
+            "isSensitive" : false,
+            "key" : "purchase.price",
+            "label" : "Preț",
+            "role" : "purchasePrice",
+            "type" : "money"
+          }
+        ],
+        "key" : "purchase.bought",
+        "title" : "Cumpărare"
+      },
+      {
+        "fields" : [
+          {
+            "defaultValue" : {
+              "type" : "number",
+              "value" : 24
+            },
+            "isEssential" : false,
+            "isSensitive" : false,
+            "key" : "purchase.warrantyMonths",
+            "label" : "Garanție (luni)",
+            "type" : "number",
+            "unit" : "months"
+          },
+          {
+            "derivation" : {
+              "date" : "purchase.date",
+              "months" : "purchase.warrantyMonths",
+              "type" : "addMonths"
+            },
+            "isEssential" : false,
+            "isSensitive" : false,
+            "key" : "purchase.warrantyUntil",
+            "label" : "Garanția expiră",
+            "role" : "warrantyUntil",
+            "type" : "expiryDate"
+          },
+          {
+            "isEssential" : false,
+            "isSensitive" : false,
+            "key" : "purchase.manualUrl",
+            "label" : "Manual de utilizare",
+            "type" : "url"
+          }
+        ],
+        "key" : "purchase.coverage",
+        "title" : "Garanție"
+      }
+    ],
+    "summary" : "Ce ai cumpărat, cât a costat și până când e în garanție.",
+    "symbol" : "shield.lefthalf.filled",
+    "tint" : "teal",
+    "version" : 27
+  },
+  {
+    "behavior" : {
+      "addedOnlyUnderParent" : false,
+      "box" : "wholeCategory",
+      "goesUnderTheOnlyOne" : false,
+      "listing" : "byMonthlyCost",
+      "mayBelongTo" : "home",
+      "offerTitle" : "Abonament",
+      "parentPocket" : "subscriptions",
+      "role" : "subscription",
+      "shortlistOrder" : 6,
+      "singular" : {
+        "gender" : "masculineOrNeuter",
+        "name" : "Abonamentul"
+      },
+      "visit" : "none"
+    },
+    "blueprints" : [
+      {
+        "appliesWhen" : {
+          "field" : "subscription.cycle",
+          "oneOf" : [
+            "billing.yearly"
+          ]
+        },
+        "completion" : "bill",
+        "firstDue" : {
+          "field" : "subscription.renewalDate",
+          "offsetDays" : 0,
+          "type" : "field"
+        },
+        "isSuggested" : true,
+        "key" : "subscription.renewal",
+        "kind" : "payment",
+        "note" : "Decide dacă îl mai vrei înainte să se plătească singur.",
+        "recurrence" : {
+          "anchor" : "dueDate",
+          "every" : 1,
+          "type" : "interval",
+          "unit" : "year"
+        },
+        "reminders" : {
+          "consequence" : "financial",
+          "followUpAfterLapse" : false,
+          "graceDays" : 0,
+          "leadDays" : [
+            14
+          ]
+        },
+        "title" : "Reînnoire anuală"
+      },
+      {
+        "completion" : "newContract",
+        "firstDue" : {
+          "field" : "subscription.contractEnd",
+          "offsetDays" : 0,
+          "type" : "field"
+        },
+        "isSuggested" : true,
+        "key" : "subscription.contractEnd",
+        "kind" : "renewal",
+        "note" : "De obicei prețul crește după. E momentul să ceri o ofertă mai bună.",
+        "recurrence" : {
+          "type" : "none"
+        },
+        "reminders" : {
+          "consequence" : "financial",
+          "followUpAfterLapse" : false,
+          "graceDays" : 0,
+          "leadDays" : [
+            30
+          ]
+        },
+        "title" : "Se termină contractul"
+      },
+      {
+        "completion" : "acknowledged",
+        "firstDue" : {
+          "field" : "subscription.minimumUntil",
+          "offsetDays" : 0,
+          "type" : "field"
+        },
+        "isSuggested" : true,
+        "key" : "subscription.minimumEnds",
+        "kind" : "renewal",
+        "note" : "De regulă, de la această dată poți renunța fără penalități, iar contractul se încheie la cel mult o lună după ce anunți. E cel mai bun moment să ceri o ofertă mai bună.",
+        "recurrence" : {
+          "type" : "none"
+        },
+        "reminders" : {
+          "consequence" : "financial",
+          "followUpAfterLapse" : false,
+          "graceDays" : 0,
+          "leadDays" : [
+            30,
+            0
+          ]
+        },
+        "title" : "Se termină perioada minimă"
+      },
+      {
+        "completion" : "bill",
+        "firstDue" : {
+          "type" : "ask"
+        },
+        "isSuggested" : false,
+        "key" : "subscription.bill",
+        "kind" : "payment",
+        "note" : "Data vine de pe ultima factură citită.",
+        "recurrence" : {
+          "type" : "none"
+        },
+        "reminders" : {
+          "consequence" : "financial",
+          "followUpAfterLapse" : true,
+          "graceDays" : 0,
+          "leadDays" : [
+            2,
+            0
+          ]
+        },
+        "title" : "Factura de plătit"
+      }
+    ],
+    "components" : [
+
+    ],
+    "heroStyle" : "standard",
+    "isBuiltIn" : true,
+    "key" : "subscription",
+    "name" : "Abonamente",
+    "pockets" : [
+      "upcoming",
+      "documents",
+      "history",
+      "money",
+      "keyFacts"
+    ],
+    "sections" : [
+      {
+        "fields" : [
+          {
+            "isEssential" : true,
+            "isSensitive" : false,
+            "key" : "subscription.provider",
+            "label" : "Furnizor",
+            "placeholder" : "ENGIE Romania S.A.",
+            "role" : "subtitle",
+            "type" : "text"
+          },
+          {
+            "isEssential" : false,
+            "isSensitive" : false,
+            "key" : "subscription.service",
+            "label" : "Serviciu",
+            "options" : [
+              {
+                "aliases" : [
+                  "Gaz",
+                  "Gaze naturale"
+                ],
+                "key" : "service.gas",
+                "label" : "Gaze"
+              },
+              {
+                "aliases" : [
+                  "Energie electrică",
+                  "Electricitate"
+                ],
+                "key" : "service.electricity",
+                "label" : "Curent"
+              },
+              {
+                "aliases" : [
+                  "Apă și canal",
+                  "Apă-canal"
+                ],
+                "key" : "service.water",
+                "label" : "Apă"
+              },
+              {
+                "aliases" : [
+                  "Încălzire",
+                  "Termoficare",
+                  "Energie termică",
+                  "Agent termic"
+                ],
+                "key" : "service.heating",
+                "label" : "Căldură"
+              },
+              {
+                "aliases" : [
+                  "Salubrizare",
+                  "Gunoi",
+                  "Colectare deșeuri"
+                ],
+                "key" : "service.sanitation",
+                "label" : "Salubritate"
+              },
+              {
+                "aliases" : [
+                  "Internet",
+                  "Televiziune",
+                  "TV",
+                  "Cablu",
+                  "Telefonie fixă"
+                ],
+                "key" : "service.internetTV",
+                "label" : "Internet și TV"
+              },
+              {
+                "aliases" : [
+                  "Mobil",
+                  "Abonament mobil",
+                  "Telefonie mobilă"
+                ],
+                "key" : "service.mobile",
+                "label" : "Telefon mobil"
+              },
+              {
+                "aliases" : [
+                  "Abonament transport",
+                  "Transport public",
+                  "Metrou",
+                  "Parcare"
+                ],
+                "key" : "service.transport",
+                "label" : "Transport"
+              },
+              {
+                "aliases" : [
+                  "Streaming",
+                  "Aplicație",
+                  "Aplicații"
+                ],
+                "key" : "service.streaming",
+                "label" : "Aplicație sau streaming"
+              },
+              {
+                "aliases" : [
+                  "Altul",
+                  "Altceva"
+                ],
+                "key" : "service.other",
+                "label" : "Alt abonament"
+              }
+            ],
+            "type" : "choice"
+          },
+          {
+            "derivation" : {
+              "service" : "subscription.service",
+              "type" : "serviceGroup"
+            },
+            "footnote" : "Se alege după serviciu. Îl poți muta în alt grup.",
+            "isEssential" : false,
+            "isSensitive" : false,
+            "key" : "subscription.group",
+            "label" : "Grup în Abonamente",
+            "options" : [
+              {
+                "key" : "subscriptionGroup.utilities",
+                "label" : "Utilități"
+              },
+              {
+                "key" : "subscriptionGroup.internetAndPhone",
+                "label" : "Internet și telefon"
+              },
+              {
+                "key" : "subscriptionGroup.transport",
+                "label" : "Transport"
+              },
+              {
+                "key" : "subscriptionGroup.appsAndStreaming",
+                "label" : "Aplicații și streaming"
+              },
+              {
+                "key" : "subscriptionGroup.other",
+                "label" : "Altele"
+              }
+            ],
+            "type" : "choice"
+          },
+          {
+            "isEssential" : true,
+            "isSensitive" : false,
+            "key" : "subscription.price",
+            "label" : "Preț",
+            "role" : "heroMetric",
+            "type" : "money"
+          },
+          {
+            "defaultValue" : {
+              "type" : "text",
+              "value" : "billing.monthly"
+            },
+            "isEssential" : true,
+            "isSensitive" : false,
+            "key" : "subscription.cycle",
+            "label" : "Se plătește",
+            "options" : [
+              {
+                "aliases" : [
+                  "Săptămânală",
+                  "Weekly"
+                ],
+                "key" : "billing.weekly",
+                "label" : "Săptămânal"
+              },
+              {
+                "aliases" : [
+                  "Lunară",
+                  "Monthly"
+                ],
+                "key" : "billing.monthly",
+                "label" : "Lunar"
+              },
+              {
+                "aliases" : [
+                  "Trimestrială",
+                  "Quarterly"
+                ],
+                "key" : "billing.quarterly",
+                "label" : "Trimestrial"
+              },
+              {
+                "aliases" : [
+                  "Anuală",
+                  "Yearly",
+                  "Annual"
+                ],
+                "key" : "billing.yearly",
+                "label" : "Anual"
+              }
+            ],
+            "type" : "choice"
+          },
+          {
+            "isEssential" : false,
+            "isSensitive" : false,
+            "key" : "subscription.renewalDate",
+            "label" : "Următoarea reînnoire",
+            "type" : "date"
+          },
+          {
+            "isEssential" : false,
+            "isSensitive" : false,
+            "key" : "subscription.contractEnd",
+            "label" : "Contract până la",
+            "role" : "expiryDate",
+            "type" : "expiryDate"
+          },
+          {
+            "isEssential" : false,
+            "isSensitive" : false,
+            "key" : "subscription.cancelUrl",
+            "label" : "Unde anulezi",
+            "type" : "url"
+          }
+        ],
+        "key" : "subscription.main",
+        "title" : "Abonament"
+      },
+      {
+        "fields" : [
+          {
+            "appliesWhen" : {
+              "field" : "subscription.service",
+              "oneOf" : [
+                "service.gas",
+                "service.electricity",
+                "service.water",
+                "service.heating",
+                "service.sanitation",
+                "service.internetTV",
+                "service.mobile",
+                "service.transport",
+                "service.other"
+              ],
+              "orWhenEmpty" : true
+            },
+            "isEssential" : false,
+            "isSensitive" : false,
+            "key" : "subscription.clientCode",
+            "label" : "Cod client",
+            "role" : "keyFact",
+            "type" : "text"
+          },
+          {
+            "appliesWhen" : {
+              "field" : "subscription.service",
+              "oneOf" : [
+                "service.gas",
+                "service.electricity",
+                "service.water",
+                "service.heating",
+                "service.sanitation",
+                "service.internetTV",
+                "service.mobile",
+                "service.transport",
+                "service.other"
+              ],
+              "orWhenEmpty" : true
+            },
+            "isEssential" : false,
+            "isSensitive" : false,
+            "key" : "subscription.contractNumber",
+            "label" : "Număr contract",
+            "role" : "keyFact",
+            "type" : "text"
+          },
+          {
+            "appliesWhen" : {
+              "field" : "subscription.service",
+              "oneOf" : [
+                "service.internetTV",
+                "service.mobile"
+              ]
+            },
+            "footnote" : "E pe factură, uneori în locul codului de client.",
+            "isEssential" : false,
+            "isSensitive" : false,
+            "key" : "subscription.account",
+            "label" : "Cont de facturare",
+            "role" : "keyFact",
+            "type" : "text"
+          },
+          {
+            "appliesWhen" : {
+              "field" : "subscription.service",
+              "oneOf" : [
+                "service.electricity"
+              ]
+            },
+            "footnote" : "Începe cu RO. E pe factura de curent.",
+            "isEssential" : false,
+            "isSensitive" : false,
+            "key" : "subscription.pod",
+            "label" : "Cod loc de consum (POD)",
+            "role" : "keyFact",
+            "type" : "text"
+          },
+          {
+            "appliesWhen" : {
+              "field" : "subscription.service",
+              "oneOf" : [
+                "service.gas"
+              ]
+            },
+            "footnote" : "Poate apărea și ca POD gaz. E pe factura de gaze.",
+            "isEssential" : false,
+            "isSensitive" : false,
+            "key" : "subscription.clc",
+            "label" : "Cod loc de consum gaze (CLC)",
+            "role" : "keyFact",
+            "type" : "text"
+          },
+          {
+            "appliesWhen" : {
+              "field" : "subscription.service",
+              "oneOf" : [
+                "service.water",
+                "service.heating"
+              ]
+            },
+            "footnote" : "E pe factură, lângă codul de client.",
+            "isEssential" : false,
+            "isSensitive" : false,
+            "key" : "subscription.placeCode",
+            "label" : "Cod loc de consum",
+            "role" : "keyFact",
+            "type" : "text"
+          },
+          {
+            "appliesWhen" : {
+              "field" : "subscription.service",
+              "oneOf" : [
+                "service.mobile"
+              ]
+            },
+            "isEssential" : false,
+            "isSensitive" : false,
+            "key" : "subscription.phoneNumber",
+            "label" : "Număr de telefon",
+            "placeholder" : "0700 000 000",
+            "role" : "keyFact",
+            "type" : "text"
+          }
+        ],
+        "key" : "subscription.identifiers",
+        "title" : "Coduri"
+      },
+      {
+        "fields" : [
+          {
+            "isEssential" : false,
+            "isSensitive" : false,
+            "key" : "subscription.startDate",
+            "label" : "Început contract",
+            "role" : "startDate",
+            "type" : "date"
+          },
+          {
+            "footnote" : "Cât te-ai angajat să rămâi. Plecarea mai devreme costă de obicei.",
+            "isEssential" : false,
+            "isSensitive" : false,
+            "key" : "subscription.minimumMonths",
+            "label" : "Perioadă minimă",
+            "placeholder" : "24",
+            "type" : "number",
+            "unit" : "months"
+          },
+          {
+            "derivation" : {
+              "date" : "subscription.startDate",
+              "months" : "subscription.minimumMonths",
+              "type" : "addMonths"
+            },
+            "isEssential" : false,
+            "isSensitive" : false,
+            "key" : "subscription.minimumUntil",
+            "label" : "Perioada minimă se termină",
+            "type" : "date"
+          }
+        ],
+        "key" : "subscription.term",
+        "title" : "Perioada minimă"
+      },
+      {
+        "fields" : [
+          {
+            "footnote" : "Banca plătește singură facturile, așa că nu îți mai amintesc să le plătești.",
+            "isEssential" : false,
+            "isSensitive" : false,
+            "key" : "subscription.directDebit",
+            "label" : "Se plătește prin debit direct",
+            "type" : "toggle"
+          },
+          {
+            "isEssential" : false,
+            "isSensitive" : false,
+            "key" : "subscription.lastBill",
+            "label" : "Ultima factură",
+            "type" : "money"
+          },
+          {
+            "isEssential" : false,
+            "isSensitive" : true,
+            "key" : "subscription.card",
+            "label" : "Card (ultimele 4 cifre)",
+            "type" : "text"
+          }
+        ],
+        "key" : "subscription.payment",
+        "title" : "Plată"
+      }
+    ],
+    "summary" : "Telefon, internet, gaze și curent: facturile și contractele lor.",
+    "symbol" : "creditcard.fill",
+    "tint" : "purple",
+    "version" : 27
+  },
+  {
+    "behavior" : {
+      "addedOnlyUnderParent" : false,
+      "box" : "perSection",
+      "goesUnderTheOnlyOne" : false,
+      "listing" : "plain",
+      "offerTitle" : "Alt obiect",
+      "singular" : {
+        "gender" : "masculineOrNeuter",
+        "name" : "Obiectul"
+      },
+      "visit" : "job"
+    },
+    "blueprints" : [
+
+    ],
+    "components" : [
+
+    ],
+    "heroStyle" : "standard",
+    "isBuiltIn" : true,
+    "key" : "other",
+    "name" : "Altele",
+    "pockets" : [
+      "upcoming",
+      "documents",
+      "history",
+      "people",
+      "money",
+      "keyFacts"
+    ],
+    "sections" : [
+      {
+        "fields" : [
+          {
+            "isEssential" : false,
+            "isSensitive" : false,
+            "key" : "other.description",
+            "label" : "Descriere scurtă",
+            "role" : "subtitle",
+            "type" : "text"
+          },
+          {
+            "isEssential" : false,
+            "isSensitive" : false,
+            "key" : "other.identifier",
+            "label" : "Serie sau cod",
+            "role" : "identifier",
+            "type" : "text"
+          }
+        ],
+        "key" : "other.main",
+        "title" : "Detalii"
+      },
+      {
+        "fields" : [
+          {
+            "isEssential" : false,
+            "isSensitive" : false,
+            "key" : "other.purchaseDate",
+            "label" : "Data cumpărării",
+            "role" : "purchaseDate",
+            "type" : "date"
+          },
+          {
+            "isEssential" : false,
+            "isSensitive" : false,
+            "key" : "other.purchasePrice",
+            "label" : "Preț",
+            "role" : "purchasePrice",
+            "type" : "money"
+          },
+          {
+            "isEssential" : false,
+            "isSensitive" : false,
+            "key" : "other.retailer",
+            "label" : "Cumpărat de la",
+            "role" : "retailer",
+            "type" : "text"
+          },
+          {
+            "isEssential" : false,
+            "isSensitive" : false,
+            "key" : "other.warrantyUntil",
+            "label" : "Garanție până la",
+            "role" : "warrantyUntil",
+            "type" : "expiryDate"
+          }
+        ],
+        "key" : "other.purchase",
+        "title" : "Cumpărare"
+      }
+    ],
+    "summary" : "Orice altceva, cu termenele tale.",
+    "symbol" : "square.grid.2x2.fill",
+    "tint" : "gray",
+    "version" : 27
+  },
+  {
+    "behavior" : {
+      "addedOnlyUnderParent" : false,
+      "box" : "perSection",
+      "goesUnderTheOnlyOne" : false,
+      "listing" : "plain",
+      "offerTitle" : "Bicicletă",
+      "sectionNoun" : "bike",
+      "singular" : {
+        "gender" : "feminine",
+        "name" : "Bicicleta"
+      },
+      "visit" : "service"
+    },
+    "blueprints" : [
+      {
+        "completion" : "chore",
+        "firstDue" : {
+          "every" : 1,
+          "type" : "afterInterval",
+          "unit" : "month"
+        },
+        "isSuggested" : true,
+        "key" : "bike.chainLube",
+        "kind" : "routine",
+        "recurrence" : {
+          "every" : 150,
+          "fallbackEvery" : 1,
+          "fallbackUnit" : "month",
+          "type" : "metric",
+          "unit" : "km"
+        },
+        "reminders" : {
+          "consequence" : "comfort",
+          "followUpAfterLapse" : false,
+          "graceDays" : 7,
+          "leadDays" : [
+            0
+          ]
+        },
+        "title" : "Curățare și ungere lanț"
+      },
+      {
+        "completion" : "bikeService",
+        "firstDue" : {
+          "every" : 6,
+          "type" : "afterInterval",
+          "unit" : "month"
+        },
+        "isSuggested" : true,
+        "key" : "bike.brakes",
+        "kind" : "maintenance",
+        "recurrence" : {
+          "every" : 1000,
+          "fallbackEvery" : 6,
+          "fallbackUnit" : "month",
+          "type" : "metric",
+          "unit" : "km"
+        },
+        "reminders" : {
+          "consequence" : "comfort",
+          "followUpAfterLapse" : false,
+          "graceDays" : 14,
+          "leadDays" : [
+            3,
+            0
+          ]
+        },
+        "title" : "Verificare plăcuțe de frână"
+      },
+      {
+        "completion" : "bikeService",
+        "firstDue" : {
+          "every" : 1,
+          "type" : "afterInterval",
+          "unit" : "year"
+        },
+        "isSuggested" : true,
+        "key" : "bike.chain",
+        "kind" : "maintenance",
+        "recurrence" : {
+          "every" : 2000,
+          "fallbackEvery" : 1,
+          "fallbackUnit" : "year",
+          "type" : "metric",
+          "unit" : "km"
+        },
+        "reminders" : {
+          "consequence" : "comfort",
+          "followUpAfterLapse" : false,
+          "graceDays" : 30,
+          "leadDays" : [
+            7,
+            0
+          ]
+        },
+        "title" : "Schimb lanț"
+      },
+      {
+        "completion" : "bikeService",
+        "firstDue" : {
+          "every" : 1,
+          "type" : "afterInterval",
+          "unit" : "year"
+        },
+        "isSuggested" : false,
+        "key" : "bike.fork",
+        "kind" : "maintenance",
+        "recurrence" : {
+          "anchor" : "completion",
+          "every" : 1,
+          "type" : "interval",
+          "unit" : "year"
+        },
+        "reminders" : {
+          "consequence" : "comfort",
+          "followUpAfterLapse" : false,
+          "graceDays" : 30,
+          "leadDays" : [
+            7
+          ]
+        },
+        "title" : "Service suspensie"
+      }
+    ],
+    "components" : [
+      {
+        "group" : "Transmisie",
+        "key" : "drivetrain.chain",
+        "name" : "Lanț",
+        "synonyms" : [
+          "lant"
+        ]
+      },
+      {
+        "group" : "Transmisie",
+        "key" : "drivetrain.cassette",
+        "name" : "Casetă",
+        "synonyms" : [
+          "caseta",
+          "pinioane"
+        ]
+      },
+      {
+        "group" : "Frâne",
+        "key" : "brakes.pads",
+        "name" : "Plăcuțe de frână",
+        "synonyms" : [
+          "placute"
+        ]
+      },
+      {
+        "group" : "Suspensie",
+        "key" : "suspension.fork",
+        "name" : "Service furcă",
+        "synonyms" : [
+          "furca"
+        ]
+      },
+      {
+        "group" : "Roți",
+        "key" : "wheels.tyres",
+        "name" : "Anvelope",
+        "synonyms" : [
+          "cauciucuri",
+          "camera"
+        ]
+      }
+    ],
+    "heroStyle" : "standard",
+    "isBuiltIn" : true,
+    "key" : "bike",
+    "name" : "Biciclete",
+    "pockets" : [
+      "upcoming",
+      "history",
+      "people",
+      "money",
+      "keyFacts"
+    ],
+    "sections" : [
+      {
+        "fields" : [
+          {
+            "isEssential" : true,
+            "isSensitive" : false,
+            "key" : "bike.brand",
+            "label" : "Marcă",
+            "role" : "subtitle",
+            "type" : "text"
+          },
+          {
+            "isEssential" : false,
+            "isSensitive" : false,
+            "key" : "bike.model",
+            "label" : "Model",
+            "role" : "subtitle",
+            "type" : "text"
+          },
+          {
+            "isEssential" : true,
+            "isSensitive" : false,
+            "key" : "bike.odometer",
+            "label" : "Kilometri parcurși",
+            "role" : "heroMetric",
+            "type" : "metric",
+            "unit" : "km"
+          },
+          {
+            "isEssential" : false,
+            "isSensitive" : false,
+            "key" : "bike.serial",
+            "label" : "Serie cadru",
+            "role" : "identifier",
+            "type" : "text"
+          }
+        ],
+        "key" : "bike.main",
+        "title" : "Bicicletă"
+      },
+      {
+        "fields" : [
+          {
+            "isEssential" : false,
+            "isSensitive" : false,
+            "key" : "bike.purchaseDate",
+            "label" : "Data cumpărării",
+            "role" : "purchaseDate",
+            "type" : "date"
+          },
+          {
+            "isEssential" : false,
+            "isSensitive" : false,
+            "key" : "bike.purchasePrice",
+            "label" : "Preț",
+            "role" : "purchasePrice",
+            "type" : "money"
+          },
+          {
+            "isEssential" : false,
+            "isSensitive" : false,
+            "key" : "bike.retailer",
+            "label" : "Cumpărat de la",
+            "role" : "retailer",
+            "type" : "text"
+          },
+          {
+            "isEssential" : false,
+            "isSensitive" : false,
+            "key" : "bike.warrantyUntil",
+            "label" : "Garanție până la",
+            "role" : "warrantyUntil",
+            "type" : "expiryDate"
+          }
+        ],
+        "key" : "bike.purchase",
+        "title" : "Cumpărare"
+      }
+    ],
+    "summary" : "Lanț, frâne și service, după kilometri.",
+    "symbol" : "bicycle",
+    "tint" : "green",
+    "version" : 27
+  },
+  {
+    "behavior" : {
+      "addedOnlyUnderParent" : false,
+      "box" : "perSection",
+      "defaultGrouping" : "grouped",
+      "goesUnderTheOnlyOne" : true,
+      "listing" : "plain",
+      "mayBelongTo" : "home",
+      "offerTitle" : "Plantă",
+      "parentPocket" : "plants",
+      "sectionNoun" : "plant",
+      "singular" : {
+        "gender" : "feminine",
+        "name" : "Planta"
+      },
+      "visit" : "note"
+    },
+    "blueprints" : [
+      {
+        "completion" : "chore",
+        "firstDue" : {
+          "every" : 7,
+          "type" : "afterInterval",
+          "unit" : "day"
+        },
+        "isSuggested" : true,
+        "key" : "plants.water",
+        "kind" : "routine",
+        "recurrence" : {
+          "anchor" : "completion",
+          "every" : 7,
+          "type" : "interval",
+          "unit" : "day"
+        },
+        "reminders" : {
+          "consequence" : "comfort",
+          "followUpAfterLapse" : false,
+          "graceDays" : 2,
+          "leadDays" : [
+            0
+          ]
+        },
+        "title" : "Udat"
+      },
+      {
+        "completion" : "chore",
+        "firstDue" : {
+          "every" : 1,
+          "type" : "afterInterval",
+          "unit" : "month"
+        },
+        "isSuggested" : true,
+        "key" : "plants.feed",
+        "kind" : "routine",
+        "recurrence" : {
+          "anchor" : "completion",
+          "every" : 1,
+          "type" : "interval",
+          "unit" : "month"
+        },
+        "reminders" : {
+          "consequence" : "comfort",
+          "followUpAfterLapse" : false,
+          "graceDays" : 7,
+          "leadDays" : [
+            0
+          ]
+        },
+        "title" : "Fertilizat"
+      },
+      {
+        "completion" : "chore",
+        "firstDue" : {
+          "every" : 2,
+          "type" : "afterInterval",
+          "unit" : "year"
+        },
+        "isSuggested" : false,
+        "key" : "plants.repot",
+        "kind" : "routine",
+        "recurrence" : {
+          "anchor" : "completion",
+          "every" : 2,
+          "type" : "interval",
+          "unit" : "year"
+        },
+        "reminders" : {
+          "consequence" : "comfort",
+          "followUpAfterLapse" : false,
+          "graceDays" : 30,
+          "leadDays" : [
+            7
+          ]
+        },
+        "title" : "Schimbat ghiveciul"
+      }
+    ],
+    "components" : [
+
+    ],
+    "heroStyle" : "standard",
+    "isBuiltIn" : true,
+    "key" : "plants",
+    "name" : "Plante",
+    "pockets" : [
+      "upcoming",
+      "history",
+      "keyFacts"
+    ],
+    "sections" : [
+      {
+        "fields" : [
+          {
+            "isEssential" : true,
+            "isSensitive" : false,
+            "key" : "plants.species",
+            "label" : "Specie",
+            "role" : "subtitle",
+            "type" : "text"
+          },
+          {
+            "isEssential" : false,
+            "isSensitive" : false,
+            "key" : "plants.place",
+            "label" : "Unde stă",
+            "role" : "location",
+            "type" : "text"
+          }
+        ],
+        "key" : "plants.main",
+        "title" : "Plantă"
+      }
+    ],
+    "summary" : "Udat, fertilizat și schimbat ghiveciul.",
+    "symbol" : "leaf.fill",
+    "tint" : "mint",
+    "version" : 27
+  },
+  {
+    "behavior" : {
+      "addedOnlyUnderParent" : true,
+      "box" : "insideOther",
+      "goesUnderTheOnlyOne" : false,
+      "listing" : "plain",
+      "offerTitle" : "Chiriaș",
+      "parentPocket" : "tenants",
+      "singular" : {
+        "gender" : "masculineOrNeuter",
+        "name" : "Chiriașul"
+      },
+      "visit" : "none"
+    },
+    "blueprints" : [
+      {
+        "completion" : "newLease",
+        "firstDue" : {
+          "field" : "tenancy.end",
+          "offsetDays" : 0,
+          "type" : "field"
+        },
+        "isSuggested" : true,
+        "key" : "tenancy.end",
+        "kind" : "renewal",
+        "note" : "Timp să vorbiți despre prelungire sau să cauți alt chiriaș.",
+        "recurrence" : {
+          "type" : "none"
+        },
+        "reminders" : {
+          "consequence" : "financial",
+          "followUpAfterLapse" : false,
+          "graceDays" : 0,
+          "leadDays" : [
+            60
+          ]
+        },
+        "title" : "Se termină contractul de închiriere"
+      }
+    ],
+    "components" : [
+
+    ],
+    "heroStyle" : "standard",
+    "isBuiltIn" : true,
+    "key" : "tenancy",
+    "name" : "Chiriași",
+    "pockets" : [
+      "upcoming",
+      "documents",
+      "people",
+      "money",
+      "keyFacts"
+    ],
+    "sections" : [
+      {
+        "fields" : [
+          {
+            "isEssential" : true,
+            "isSensitive" : false,
+            "key" : "tenancy.start",
+            "label" : "Început contract",
+            "role" : "startDate",
+            "type" : "date"
+          },
+          {
+            "isEssential" : true,
+            "isSensitive" : false,
+            "key" : "tenancy.end",
+            "label" : "Sfârșit contract",
+            "role" : "expiryDate",
+            "type" : "expiryDate"
+          }
+        ],
+        "key" : "tenancy.contract",
+        "title" : "Contract"
+      },
+      {
+        "fields" : [
+          {
+            "isEssential" : true,
+            "isSensitive" : false,
+            "key" : "tenancy.rent",
+            "label" : "Chirie lunară",
+            "role" : "heroMetric",
+            "type" : "money"
+          },
+          {
+            "isEssential" : false,
+            "isSensitive" : false,
+            "key" : "tenancy.paymentDay",
+            "label" : "Ziua de plată",
+            "placeholder" : "5",
+            "type" : "number"
+          },
+          {
+            "isEssential" : false,
+            "isSensitive" : false,
+            "key" : "tenancy.deposit",
+            "label" : "Garanție încasată",
+            "type" : "money"
+          }
+        ],
+        "key" : "tenancy.money",
+        "title" : "Bani"
+      }
+    ],
+    "summary" : "Contractul, chiria, garanția și indexurile la mutare.",
+    "symbol" : "person.2.fill",
+    "tint" : "cyan",
+    "version" : 27
+  },
+  {
+    "behavior" : {
+      "addedOnlyUnderParent" : false,
+      "box" : "insideOther",
+      "goesUnderTheOnlyOne" : false,
+      "listing" : "plain",
+      "offerTitle" : "Actele unei persoane",
+      "role" : "holder",
+      "shortlistOrder" : 4,
+      "singular" : {
+        "gender" : "feminine",
+        "name" : "Persoana"
+      },
+      "visit" : "none"
+    },
+    "blueprints" : [
+
+    ],
+    "components" : [
+
+    ],
+    "heroStyle" : "standard",
+    "isBuiltIn" : true,
+    "key" : "member",
+    "name" : "Membri ai familiei",
+    "pockets" : [
+      "upcoming",
+      "documents",
+      "keyFacts"
+    ],
+    "sections" : [
+      {
+        "fields" : [
+          {
+            "isEssential" : false,
+            "isSensitive" : true,
+            "key" : "member.citizenship",
+            "label" : "Cetățenie",
+            "options" : [
+              {
+                "aliases" : [
+                  "AF",
+                  "AFG"
+                ],
+                "key" : "country.AF",
+                "label" : "Afganistan"
+              },
+              {
+                "aliases" : [
+                  "ZA",
+                  "ZAF"
+                ],
+                "key" : "country.ZA",
+                "label" : "Africa de Sud"
+              },
+              {
+                "aliases" : [
+                  "AL",
+                  "ALB"
+                ],
+                "key" : "country.AL",
+                "label" : "Albania"
+              },
+              {
+                "aliases" : [
+                  "DZ",
+                  "DZA"
+                ],
+                "key" : "country.DZ",
+                "label" : "Algeria"
+              },
+              {
+                "aliases" : [
+                  "AD",
+                  "AND"
+                ],
+                "key" : "country.AD",
+                "label" : "Andorra"
+              },
+              {
+                "aliases" : [
+                  "AO",
+                  "AGO"
+                ],
+                "key" : "country.AO",
+                "label" : "Angola"
+              },
+              {
+                "aliases" : [
+                  "AG",
+                  "ATG"
+                ],
+                "key" : "country.AG",
+                "label" : "Antigua și Barbuda"
+              },
+              {
+                "aliases" : [
+                  "SA",
+                  "SAU"
+                ],
+                "key" : "country.SA",
+                "label" : "Arabia Saudită"
+              },
+              {
+                "aliases" : [
+                  "AR",
+                  "ARG"
+                ],
+                "key" : "country.AR",
+                "label" : "Argentina"
+              },
+              {
+                "aliases" : [
+                  "AM",
+                  "ARM"
+                ],
+                "key" : "country.AM",
+                "label" : "Armenia"
+              },
+              {
+                "aliases" : [
+                  "AU",
+                  "AUS"
+                ],
+                "key" : "country.AU",
+                "label" : "Australia"
+              },
+              {
+                "aliases" : [
+                  "AT",
+                  "AUT"
+                ],
+                "key" : "country.AT",
+                "label" : "Austria"
+              },
+              {
+                "aliases" : [
+                  "AZ",
+                  "AZE"
+                ],
+                "key" : "country.AZ",
+                "label" : "Azerbaidjan"
+              },
+              {
+                "aliases" : [
+                  "BS",
+                  "BHS"
+                ],
+                "key" : "country.BS",
+                "label" : "Bahamas"
+              },
+              {
+                "aliases" : [
+                  "BH",
+                  "BHR"
+                ],
+                "key" : "country.BH",
+                "label" : "Bahrain"
+              },
+              {
+                "aliases" : [
+                  "BD",
+                  "BGD"
+                ],
+                "key" : "country.BD",
+                "label" : "Bangladesh"
+              },
+              {
+                "aliases" : [
+                  "BB",
+                  "BRB"
+                ],
+                "key" : "country.BB",
+                "label" : "Barbados"
+              },
+              {
+                "aliases" : [
+                  "BY",
+                  "BLR"
+                ],
+                "key" : "country.BY",
+                "label" : "Belarus"
+              },
+              {
+                "aliases" : [
+                  "BE",
+                  "BEL"
+                ],
+                "key" : "country.BE",
+                "label" : "Belgia"
+              },
+              {
+                "aliases" : [
+                  "BZ",
+                  "BLZ"
+                ],
+                "key" : "country.BZ",
+                "label" : "Belize"
+              },
+              {
+                "aliases" : [
+                  "BJ",
+                  "BEN"
+                ],
+                "key" : "country.BJ",
+                "label" : "Benin"
+              },
+              {
+                "aliases" : [
+                  "BT",
+                  "BTN"
+                ],
+                "key" : "country.BT",
+                "label" : "Bhutan"
+              },
+              {
+                "aliases" : [
+                  "BO",
+                  "BOL"
+                ],
+                "key" : "country.BO",
+                "label" : "Bolivia"
+              },
+              {
+                "aliases" : [
+                  "BA",
+                  "BIH"
+                ],
+                "key" : "country.BA",
+                "label" : "Bosnia și Herțegovina"
+              },
+              {
+                "aliases" : [
+                  "BW",
+                  "BWA"
+                ],
+                "key" : "country.BW",
+                "label" : "Botswana"
+              },
+              {
+                "aliases" : [
+                  "BR",
+                  "BRA"
+                ],
+                "key" : "country.BR",
+                "label" : "Brazilia"
+              },
+              {
+                "aliases" : [
+                  "BN",
+                  "BRN"
+                ],
+                "key" : "country.BN",
+                "label" : "Brunei"
+              },
+              {
+                "aliases" : [
+                  "BG",
+                  "BGR"
+                ],
+                "key" : "country.BG",
+                "label" : "Bulgaria"
+              },
+              {
+                "aliases" : [
+                  "BF",
+                  "BFA"
+                ],
+                "key" : "country.BF",
+                "label" : "Burkina Faso"
+              },
+              {
+                "aliases" : [
+                  "BI",
+                  "BDI"
+                ],
+                "key" : "country.BI",
+                "label" : "Burundi"
+              },
+              {
+                "aliases" : [
+                  "KH",
+                  "KHM"
+                ],
+                "key" : "country.KH",
+                "label" : "Cambodgia"
+              },
+              {
+                "aliases" : [
+                  "CM",
+                  "CMR"
+                ],
+                "key" : "country.CM",
+                "label" : "Camerun"
+              },
+              {
+                "aliases" : [
+                  "CA",
+                  "CAN"
+                ],
+                "key" : "country.CA",
+                "label" : "Canada"
+              },
+              {
+                "aliases" : [
+                  "CV",
+                  "CPV"
+                ],
+                "key" : "country.CV",
+                "label" : "Capul Verde"
+              },
+              {
+                "aliases" : [
+                  "CZ",
+                  "CZE"
+                ],
+                "key" : "country.CZ",
+                "label" : "Cehia"
+              },
+              {
+                "aliases" : [
+                  "CL",
+                  "CHL"
+                ],
+                "key" : "country.CL",
+                "label" : "Chile"
+              },
+              {
+                "aliases" : [
+                  "CN",
+                  "CHN"
+                ],
+                "key" : "country.CN",
+                "label" : "China"
+              },
+              {
+                "aliases" : [
+                  "TD",
+                  "TCD"
+                ],
+                "key" : "country.TD",
+                "label" : "Ciad"
+              },
+              {
+                "aliases" : [
+                  "CY",
+                  "CYP"
+                ],
+                "key" : "country.CY",
+                "label" : "Cipru"
+              },
+              {
+                "aliases" : [
+                  "CO",
+                  "COL"
+                ],
+                "key" : "country.CO",
+                "label" : "Columbia"
+              },
+              {
+                "aliases" : [
+                  "KM",
+                  "COM"
+                ],
+                "key" : "country.KM",
+                "label" : "Comore"
+              },
+              {
+                "aliases" : [
+                  "KP",
+                  "PRK"
+                ],
+                "key" : "country.KP",
+                "label" : "Coreea de Nord"
+              },
+              {
+                "aliases" : [
+                  "KR",
+                  "KOR"
+                ],
+                "key" : "country.KR",
+                "label" : "Coreea de Sud"
+              },
+              {
+                "aliases" : [
+                  "CR",
+                  "CRI"
+                ],
+                "key" : "country.CR",
+                "label" : "Costa Rica"
+              },
+              {
+                "aliases" : [
+                  "CI",
+                  "CIV"
+                ],
+                "key" : "country.CI",
+                "label" : "Côte d’Ivoire"
+              },
+              {
+                "aliases" : [
+                  "HR",
+                  "HRV"
+                ],
+                "key" : "country.HR",
+                "label" : "Croația"
+              },
+              {
+                "aliases" : [
+                  "CU",
+                  "CUB"
+                ],
+                "key" : "country.CU",
+                "label" : "Cuba"
+              },
+              {
+                "aliases" : [
+                  "DK",
+                  "DNK"
+                ],
+                "key" : "country.DK",
+                "label" : "Danemarca"
+              },
+              {
+                "aliases" : [
+                  "DJ",
+                  "DJI"
+                ],
+                "key" : "country.DJ",
+                "label" : "Djibouti"
+              },
+              {
+                "aliases" : [
+                  "DM",
+                  "DMA"
+                ],
+                "key" : "country.DM",
+                "label" : "Dominica"
+              },
+              {
+                "aliases" : [
+                  "EC",
+                  "ECU"
+                ],
+                "key" : "country.EC",
+                "label" : "Ecuador"
+              },
+              {
+                "aliases" : [
+                  "EG",
+                  "EGY"
+                ],
+                "key" : "country.EG",
+                "label" : "Egipt"
+              },
+              {
+                "aliases" : [
+                  "SV",
+                  "SLV"
+                ],
+                "key" : "country.SV",
+                "label" : "El Salvador"
+              },
+              {
+                "aliases" : [
+                  "CH",
+                  "CHE"
+                ],
+                "key" : "country.CH",
+                "label" : "Elveția"
+              },
+              {
+                "aliases" : [
+                  "AE",
+                  "ARE"
+                ],
+                "key" : "country.AE",
+                "label" : "Emiratele Arabe Unite"
+              },
+              {
+                "aliases" : [
+                  "ER",
+                  "ERI"
+                ],
+                "key" : "country.ER",
+                "label" : "Eritreea"
+              },
+              {
+                "aliases" : [
+                  "EE",
+                  "EST"
+                ],
+                "key" : "country.EE",
+                "label" : "Estonia"
+              },
+              {
+                "aliases" : [
+                  "SZ",
+                  "SWZ"
+                ],
+                "key" : "country.SZ",
+                "label" : "Eswatini"
+              },
+              {
+                "aliases" : [
+                  "ET",
+                  "ETH"
+                ],
+                "key" : "country.ET",
+                "label" : "Etiopia"
+              },
+              {
+                "aliases" : [
+                  "FJ",
+                  "FJI"
+                ],
+                "key" : "country.FJ",
+                "label" : "Fiji"
+              },
+              {
+                "aliases" : [
+                  "PH",
+                  "PHL"
+                ],
+                "key" : "country.PH",
+                "label" : "Filipine"
+              },
+              {
+                "aliases" : [
+                  "FI",
+                  "FIN"
+                ],
+                "key" : "country.FI",
+                "label" : "Finlanda"
+              },
+              {
+                "aliases" : [
+                  "FR",
+                  "FRA"
+                ],
+                "key" : "country.FR",
+                "label" : "Franța"
+              },
+              {
+                "aliases" : [
+                  "GA",
+                  "GAB"
+                ],
+                "key" : "country.GA",
+                "label" : "Gabon"
+              },
+              {
+                "aliases" : [
+                  "GM",
+                  "GMB"
+                ],
+                "key" : "country.GM",
+                "label" : "Gambia"
+              },
+              {
+                "aliases" : [
+                  "GE",
+                  "GEO"
+                ],
+                "key" : "country.GE",
+                "label" : "Georgia"
+              },
+              {
+                "aliases" : [
+                  "DE",
+                  "DEU",
+                  "D"
+                ],
+                "key" : "country.DE",
+                "label" : "Germania"
+              },
+              {
+                "aliases" : [
+                  "GH",
+                  "GHA"
+                ],
+                "key" : "country.GH",
+                "label" : "Ghana"
+              },
+              {
+                "aliases" : [
+                  "GR",
+                  "GRC"
+                ],
+                "key" : "country.GR",
+                "label" : "Grecia"
+              },
+              {
+                "aliases" : [
+                  "GD",
+                  "GRD"
+                ],
+                "key" : "country.GD",
+                "label" : "Grenada"
+              },
+              {
+                "aliases" : [
+                  "GT",
+                  "GTM"
+                ],
+                "key" : "country.GT",
+                "label" : "Guatemala"
+              },
+              {
+                "aliases" : [
+                  "GN",
+                  "GIN"
+                ],
+                "key" : "country.GN",
+                "label" : "Guineea"
+              },
+              {
+                "aliases" : [
+                  "GQ",
+                  "GNQ"
+                ],
+                "key" : "country.GQ",
+                "label" : "Guineea Ecuatorială"
+              },
+              {
+                "aliases" : [
+                  "GW",
+                  "GNB"
+                ],
+                "key" : "country.GW",
+                "label" : "Guineea-Bissau"
+              },
+              {
+                "aliases" : [
+                  "GY",
+                  "GUY"
+                ],
+                "key" : "country.GY",
+                "label" : "Guyana"
+              },
+              {
+                "aliases" : [
+                  "HT",
+                  "HTI"
+                ],
+                "key" : "country.HT",
+                "label" : "Haiti"
+              },
+              {
+                "aliases" : [
+                  "HN",
+                  "HND"
+                ],
+                "key" : "country.HN",
+                "label" : "Honduras"
+              },
+              {
+                "aliases" : [
+                  "IN",
+                  "IND"
+                ],
+                "key" : "country.IN",
+                "label" : "India"
+              },
+              {
+                "aliases" : [
+                  "ID",
+                  "IDN"
+                ],
+                "key" : "country.ID",
+                "label" : "Indonezia"
+              },
+              {
+                "aliases" : [
+                  "MH",
+                  "MHL"
+                ],
+                "key" : "country.MH",
+                "label" : "Insulele Marshall"
+              },
+              {
+                "aliases" : [
+                  "SB",
+                  "SLB"
+                ],
+                "key" : "country.SB",
+                "label" : "Insulele Solomon"
+              },
+              {
+                "aliases" : [
+                  "JO",
+                  "JOR"
+                ],
+                "key" : "country.JO",
+                "label" : "Iordania"
+              },
+              {
+                "aliases" : [
+                  "IQ",
+                  "IRQ"
+                ],
+                "key" : "country.IQ",
+                "label" : "Irak"
+              },
+              {
+                "aliases" : [
+                  "IR",
+                  "IRN"
+                ],
+                "key" : "country.IR",
+                "label" : "Iran"
+              },
+              {
+                "aliases" : [
+                  "IE",
+                  "IRL"
+                ],
+                "key" : "country.IE",
+                "label" : "Irlanda"
+              },
+              {
+                "aliases" : [
+                  "IS",
+                  "ISL"
+                ],
+                "key" : "country.IS",
+                "label" : "Islanda"
+              },
+              {
+                "aliases" : [
+                  "IL",
+                  "ISR"
+                ],
+                "key" : "country.IL",
+                "label" : "Israel"
+              },
+              {
+                "aliases" : [
+                  "IT",
+                  "ITA"
+                ],
+                "key" : "country.IT",
+                "label" : "Italia"
+              },
+              {
+                "aliases" : [
+                  "JM",
+                  "JAM"
+                ],
+                "key" : "country.JM",
+                "label" : "Jamaica"
+              },
+              {
+                "aliases" : [
+                  "JP",
+                  "JPN"
+                ],
+                "key" : "country.JP",
+                "label" : "Japonia"
+              },
+              {
+                "aliases" : [
+                  "KZ",
+                  "KAZ"
+                ],
+                "key" : "country.KZ",
+                "label" : "Kazahstan"
+              },
+              {
+                "aliases" : [
+                  "KG",
+                  "KGZ"
+                ],
+                "key" : "country.KG",
+                "label" : "Kârgâzstan"
+              },
+              {
+                "aliases" : [
+                  "KE",
+                  "KEN"
+                ],
+                "key" : "country.KE",
+                "label" : "Kenya"
+              },
+              {
+                "aliases" : [
+                  "KI",
+                  "KIR"
+                ],
+                "key" : "country.KI",
+                "label" : "Kiribati"
+              },
+              {
+                "aliases" : [
+                  "XK",
+                  "RKS",
+                  "XKK"
+                ],
+                "key" : "country.XK",
+                "label" : "Kosovo"
+              },
+              {
+                "aliases" : [
+                  "KW",
+                  "KWT"
+                ],
+                "key" : "country.KW",
+                "label" : "Kuweit"
+              },
+              {
+                "aliases" : [
+                  "LA",
+                  "LAO"
+                ],
+                "key" : "country.LA",
+                "label" : "Laos"
+              },
+              {
+                "aliases" : [
+                  "LS",
+                  "LSO"
+                ],
+                "key" : "country.LS",
+                "label" : "Lesotho"
+              },
+              {
+                "aliases" : [
+                  "LV",
+                  "LVA"
+                ],
+                "key" : "country.LV",
+                "label" : "Letonia"
+              },
+              {
+                "aliases" : [
+                  "LB",
+                  "LBN"
+                ],
+                "key" : "country.LB",
+                "label" : "Liban"
+              },
+              {
+                "aliases" : [
+                  "LR",
+                  "LBR"
+                ],
+                "key" : "country.LR",
+                "label" : "Liberia"
+              },
+              {
+                "aliases" : [
+                  "LY",
+                  "LBY"
+                ],
+                "key" : "country.LY",
+                "label" : "Libia"
+              },
+              {
+                "aliases" : [
+                  "LI",
+                  "LIE"
+                ],
+                "key" : "country.LI",
+                "label" : "Liechtenstein"
+              },
+              {
+                "aliases" : [
+                  "LT",
+                  "LTU"
+                ],
+                "key" : "country.LT",
+                "label" : "Lituania"
+              },
+              {
+                "aliases" : [
+                  "LU",
+                  "LUX"
+                ],
+                "key" : "country.LU",
+                "label" : "Luxemburg"
+              },
+              {
+                "aliases" : [
+                  "MK",
+                  "MKD"
+                ],
+                "key" : "country.MK",
+                "label" : "Macedonia de Nord"
+              },
+              {
+                "aliases" : [
+                  "MG",
+                  "MDG"
+                ],
+                "key" : "country.MG",
+                "label" : "Madagascar"
+              },
+              {
+                "aliases" : [
+                  "MW",
+                  "MWI"
+                ],
+                "key" : "country.MW",
+                "label" : "Malawi"
+              },
+              {
+                "aliases" : [
+                  "MY",
+                  "MYS"
+                ],
+                "key" : "country.MY",
+                "label" : "Malaysia"
+              },
+              {
+                "aliases" : [
+                  "MV",
+                  "MDV"
+                ],
+                "key" : "country.MV",
+                "label" : "Maldive"
+              },
+              {
+                "aliases" : [
+                  "ML",
+                  "MLI"
+                ],
+                "key" : "country.ML",
+                "label" : "Mali"
+              },
+              {
+                "aliases" : [
+                  "MT",
+                  "MLT"
+                ],
+                "key" : "country.MT",
+                "label" : "Malta"
+              },
+              {
+                "aliases" : [
+                  "MA",
+                  "MAR"
+                ],
+                "key" : "country.MA",
+                "label" : "Maroc"
+              },
+              {
+                "aliases" : [
+                  "MR",
+                  "MRT"
+                ],
+                "key" : "country.MR",
+                "label" : "Mauritania"
+              },
+              {
+                "aliases" : [
+                  "MU",
+                  "MUS"
+                ],
+                "key" : "country.MU",
+                "label" : "Mauritius"
+              },
+              {
+                "aliases" : [
+                  "MX",
+                  "MEX"
+                ],
+                "key" : "country.MX",
+                "label" : "Mexic"
+              },
+              {
+                "aliases" : [
+                  "FM",
+                  "FSM"
+                ],
+                "key" : "country.FM",
+                "label" : "Micronezia"
+              },
+              {
+                "aliases" : [
+                  "MC",
+                  "MCO"
+                ],
+                "key" : "country.MC",
+                "label" : "Monaco"
+              },
+              {
+                "aliases" : [
+                  "MN",
+                  "MNG"
+                ],
+                "key" : "country.MN",
+                "label" : "Mongolia"
+              },
+              {
+                "aliases" : [
+                  "MZ",
+                  "MOZ"
+                ],
+                "key" : "country.MZ",
+                "label" : "Mozambic"
+              },
+              {
+                "aliases" : [
+                  "ME",
+                  "MNE"
+                ],
+                "key" : "country.ME",
+                "label" : "Muntenegru"
+              },
+              {
+                "aliases" : [
+                  "MM",
+                  "MMR"
+                ],
+                "key" : "country.MM",
+                "label" : "Myanmar (Birmania)"
+              },
+              {
+                "aliases" : [
+                  "NA",
+                  "NAM"
+                ],
+                "key" : "country.NA",
+                "label" : "Namibia"
+              },
+              {
+                "aliases" : [
+                  "NR",
+                  "NRU"
+                ],
+                "key" : "country.NR",
+                "label" : "Nauru"
+              },
+              {
+                "aliases" : [
+                  "NP",
+                  "NPL"
+                ],
+                "key" : "country.NP",
+                "label" : "Nepal"
+              },
+              {
+                "aliases" : [
+                  "NI",
+                  "NIC"
+                ],
+                "key" : "country.NI",
+                "label" : "Nicaragua"
+              },
+              {
+                "aliases" : [
+                  "NE",
+                  "NER"
+                ],
+                "key" : "country.NE",
+                "label" : "Niger"
+              },
+              {
+                "aliases" : [
+                  "NG",
+                  "NGA"
+                ],
+                "key" : "country.NG",
+                "label" : "Nigeria"
+              },
+              {
+                "aliases" : [
+                  "NO",
+                  "NOR"
+                ],
+                "key" : "country.NO",
+                "label" : "Norvegia"
+              },
+              {
+                "aliases" : [
+                  "NZ",
+                  "NZL"
+                ],
+                "key" : "country.NZ",
+                "label" : "Noua Zeelandă"
+              },
+              {
+                "aliases" : [
+                  "OM",
+                  "OMN"
+                ],
+                "key" : "country.OM",
+                "label" : "Oman"
+              },
+              {
+                "aliases" : [
+                  "PK",
+                  "PAK"
+                ],
+                "key" : "country.PK",
+                "label" : "Pakistan"
+              },
+              {
+                "aliases" : [
+                  "PW",
+                  "PLW"
+                ],
+                "key" : "country.PW",
+                "label" : "Palau"
+              },
+              {
+                "aliases" : [
+                  "PS",
+                  "PSE"
+                ],
+                "key" : "country.PS",
+                "label" : "Palestina"
+              },
+              {
+                "aliases" : [
+                  "PA",
+                  "PAN"
+                ],
+                "key" : "country.PA",
+                "label" : "Panama"
+              },
+              {
+                "aliases" : [
+                  "PG",
+                  "PNG"
+                ],
+                "key" : "country.PG",
+                "label" : "Papua-Noua Guinee"
+              },
+              {
+                "aliases" : [
+                  "PY",
+                  "PRY"
+                ],
+                "key" : "country.PY",
+                "label" : "Paraguay"
+              },
+              {
+                "aliases" : [
+                  "PE",
+                  "PER"
+                ],
+                "key" : "country.PE",
+                "label" : "Peru"
+              },
+              {
+                "aliases" : [
+                  "PL",
+                  "POL"
+                ],
+                "key" : "country.PL",
+                "label" : "Polonia"
+              },
+              {
+                "aliases" : [
+                  "PT",
+                  "PRT"
+                ],
+                "key" : "country.PT",
+                "label" : "Portugalia"
+              },
+              {
+                "aliases" : [
+                  "QA",
+                  "QAT"
+                ],
+                "key" : "country.QA",
+                "label" : "Qatar"
+              },
+              {
+                "aliases" : [
+                  "GB",
+                  "GBR",
+                  "GBD",
+                  "GBN",
+                  "GBO",
+                  "GBP",
+                  "GBS"
+                ],
+                "key" : "country.GB",
+                "label" : "Regatul Unit"
+              },
+              {
+                "aliases" : [
+                  "CF",
+                  "CAF"
+                ],
+                "key" : "country.CF",
+                "label" : "Republica Centrafricană"
+              },
+              {
+                "aliases" : [
+                  "CG",
+                  "COG"
+                ],
+                "key" : "country.CG",
+                "label" : "Republica Congo"
+              },
+              {
+                "aliases" : [
+                  "CD",
+                  "COD"
+                ],
+                "key" : "country.CD",
+                "label" : "Republica Democratică Congo"
+              },
+              {
+                "aliases" : [
+                  "DO",
+                  "DOM"
+                ],
+                "key" : "country.DO",
+                "label" : "Republica Dominicană"
+              },
+              {
+                "aliases" : [
+                  "MD",
+                  "MDA",
+                  "Moldoveană",
+                  "Moldovean",
+                  "Moldovan"
+                ],
+                "key" : "country.MD",
+                "label" : "Republica Moldova"
+              },
+              {
+                "aliases" : [
+                  "RO",
+                  "ROU",
+                  "Română",
+                  "Român",
+                  "Romana",
+                  "Roman",
+                  "Romanian"
+                ],
+                "key" : "country.RO",
+                "label" : "România"
+              },
+              {
+                "aliases" : [
+                  "RU",
+                  "RUS"
+                ],
+                "key" : "country.RU",
+                "label" : "Rusia"
+              },
+              {
+                "aliases" : [
+                  "RW",
+                  "RWA"
+                ],
+                "key" : "country.RW",
+                "label" : "Rwanda"
+              },
+              {
+                "aliases" : [
+                  "KN",
+                  "KNA"
+                ],
+                "key" : "country.KN",
+                "label" : "Saint Kitts și Nevis"
+              },
+              {
+                "aliases" : [
+                  "VC",
+                  "VCT"
+                ],
+                "key" : "country.VC",
+                "label" : "Saint Vincent și Grenadinele"
+              },
+              {
+                "aliases" : [
+                  "WS",
+                  "WSM"
+                ],
+                "key" : "country.WS",
+                "label" : "Samoa"
+              },
+              {
+                "aliases" : [
+                  "SM",
+                  "SMR"
+                ],
+                "key" : "country.SM",
+                "label" : "San Marino"
+              },
+              {
+                "aliases" : [
+                  "ST",
+                  "STP"
+                ],
+                "key" : "country.ST",
+                "label" : "São Tomé și Príncipe"
+              },
+              {
+                "aliases" : [
+                  "SN",
+                  "SEN"
+                ],
+                "key" : "country.SN",
+                "label" : "Senegal"
+              },
+              {
+                "aliases" : [
+                  "RS",
+                  "SRB"
+                ],
+                "key" : "country.RS",
+                "label" : "Serbia"
+              },
+              {
+                "aliases" : [
+                  "SC",
+                  "SYC"
+                ],
+                "key" : "country.SC",
+                "label" : "Seychelles"
+              },
+              {
+                "aliases" : [
+                  "LC",
+                  "LCA"
+                ],
+                "key" : "country.LC",
+                "label" : "Sfânta Lucia"
+              },
+              {
+                "aliases" : [
+                  "SL",
+                  "SLE"
+                ],
+                "key" : "country.SL",
+                "label" : "Sierra Leone"
+              },
+              {
+                "aliases" : [
+                  "SG",
+                  "SGP"
+                ],
+                "key" : "country.SG",
+                "label" : "Singapore"
+              },
+              {
+                "aliases" : [
+                  "SY",
+                  "SYR"
+                ],
+                "key" : "country.SY",
+                "label" : "Siria"
+              },
+              {
+                "aliases" : [
+                  "SK",
+                  "SVK"
+                ],
+                "key" : "country.SK",
+                "label" : "Slovacia"
+              },
+              {
+                "aliases" : [
+                  "SI",
+                  "SVN"
+                ],
+                "key" : "country.SI",
+                "label" : "Slovenia"
+              },
+              {
+                "aliases" : [
+                  "SO",
+                  "SOM"
+                ],
+                "key" : "country.SO",
+                "label" : "Somalia"
+              },
+              {
+                "aliases" : [
+                  "ES",
+                  "ESP"
+                ],
+                "key" : "country.ES",
+                "label" : "Spania"
+              },
+              {
+                "aliases" : [
+                  "LK",
+                  "LKA"
+                ],
+                "key" : "country.LK",
+                "label" : "Sri Lanka"
+              },
+              {
+                "aliases" : [
+                  "US",
+                  "USA"
+                ],
+                "key" : "country.US",
+                "label" : "Statele Unite ale Americii"
+              },
+              {
+                "aliases" : [
+                  "VA",
+                  "VAT"
+                ],
+                "key" : "country.VA",
+                "label" : "Statul Cetății Vaticanului"
+              },
+              {
+                "aliases" : [
+                  "SD",
+                  "SDN"
+                ],
+                "key" : "country.SD",
+                "label" : "Sudan"
+              },
+              {
+                "aliases" : [
+                  "SS",
+                  "SSD"
+                ],
+                "key" : "country.SS",
+                "label" : "Sudanul de Sud"
+              },
+              {
+                "aliases" : [
+                  "SE",
+                  "SWE"
+                ],
+                "key" : "country.SE",
+                "label" : "Suedia"
+              },
+              {
+                "aliases" : [
+                  "SR",
+                  "SUR"
+                ],
+                "key" : "country.SR",
+                "label" : "Suriname"
+              },
+              {
+                "aliases" : [
+                  "TJ",
+                  "TJK"
+                ],
+                "key" : "country.TJ",
+                "label" : "Tadjikistan"
+              },
+              {
+                "aliases" : [
+                  "TW",
+                  "TWN"
+                ],
+                "key" : "country.TW",
+                "label" : "Taiwan"
+              },
+              {
+                "aliases" : [
+                  "TZ",
+                  "TZA"
+                ],
+                "key" : "country.TZ",
+                "label" : "Tanzania"
+              },
+              {
+                "aliases" : [
+                  "TH",
+                  "THA"
+                ],
+                "key" : "country.TH",
+                "label" : "Thailanda"
+              },
+              {
+                "aliases" : [
+                  "TL",
+                  "TLS"
+                ],
+                "key" : "country.TL",
+                "label" : "Timor-Leste"
+              },
+              {
+                "aliases" : [
+                  "TG",
+                  "TGO"
+                ],
+                "key" : "country.TG",
+                "label" : "Togo"
+              },
+              {
+                "aliases" : [
+                  "TO",
+                  "TON"
+                ],
+                "key" : "country.TO",
+                "label" : "Tonga"
+              },
+              {
+                "aliases" : [
+                  "TT",
+                  "TTO"
+                ],
+                "key" : "country.TT",
+                "label" : "Trinidad și Tobago"
+              },
+              {
+                "aliases" : [
+                  "TN",
+                  "TUN"
+                ],
+                "key" : "country.TN",
+                "label" : "Tunisia"
+              },
+              {
+                "aliases" : [
+                  "TR",
+                  "TUR"
+                ],
+                "key" : "country.TR",
+                "label" : "Turcia"
+              },
+              {
+                "aliases" : [
+                  "TM",
+                  "TKM"
+                ],
+                "key" : "country.TM",
+                "label" : "Turkmenistan"
+              },
+              {
+                "aliases" : [
+                  "TV",
+                  "TUV"
+                ],
+                "key" : "country.TV",
+                "label" : "Tuvalu"
+              },
+              {
+                "aliases" : [
+                  "NL",
+                  "NLD"
+                ],
+                "key" : "country.NL",
+                "label" : "Țările de Jos"
+              },
+              {
+                "aliases" : [
+                  "UA",
+                  "UKR"
+                ],
+                "key" : "country.UA",
+                "label" : "Ucraina"
+              },
+              {
+                "aliases" : [
+                  "UG",
+                  "UGA"
+                ],
+                "key" : "country.UG",
+                "label" : "Uganda"
+              },
+              {
+                "aliases" : [
+                  "HU",
+                  "HUN"
+                ],
+                "key" : "country.HU",
+                "label" : "Ungaria"
+              },
+              {
+                "aliases" : [
+                  "UY",
+                  "URY"
+                ],
+                "key" : "country.UY",
+                "label" : "Uruguay"
+              },
+              {
+                "aliases" : [
+                  "UZ",
+                  "UZB"
+                ],
+                "key" : "country.UZ",
+                "label" : "Uzbekistan"
+              },
+              {
+                "aliases" : [
+                  "VU",
+                  "VUT"
+                ],
+                "key" : "country.VU",
+                "label" : "Vanuatu"
+              },
+              {
+                "aliases" : [
+                  "VE",
+                  "VEN"
+                ],
+                "key" : "country.VE",
+                "label" : "Venezuela"
+              },
+              {
+                "aliases" : [
+                  "VN",
+                  "VNM"
+                ],
+                "key" : "country.VN",
+                "label" : "Vietnam"
+              },
+              {
+                "aliases" : [
+                  "YE",
+                  "YEM"
+                ],
+                "key" : "country.YE",
+                "label" : "Yemen"
+              },
+              {
+                "aliases" : [
+                  "ZM",
+                  "ZMB"
+                ],
+                "key" : "country.ZM",
+                "label" : "Zambia"
+              },
+              {
+                "aliases" : [
+                  "ZW",
+                  "ZWE"
+                ],
+                "key" : "country.ZW",
+                "label" : "Zimbabwe"
+              },
+              {
+                "aliases" : [
+                  "XXA",
+                  "XXB",
+                  "XXC",
+                  "Apatrid",
+                  "Stateless"
+                ],
+                "key" : "country.stateless",
+                "label" : "Fără cetățenie (apatrid)"
+              }
+            ],
+            "role" : "keyFact",
+            "type" : "multiChoice"
+          }
+        ],
+        "key" : "member.identity",
+        "title" : "Cetățenie"
+      },
+      {
+        "fields" : [
+          {
+            "isEssential" : false,
+            "isSensitive" : false,
+            "key" : "member.bonusMalus",
+            "label" : "Clasă bonus-malus",
+            "options" : [
+              {
+                "key" : "bonusMalus.m8",
+                "label" : "M8"
+              },
+              {
+                "key" : "bonusMalus.m7",
+                "label" : "M7"
+              },
+              {
+                "key" : "bonusMalus.m6",
+                "label" : "M6"
+              },
+              {
+                "key" : "bonusMalus.m5",
+                "label" : "M5"
+              },
+              {
+                "key" : "bonusMalus.m4",
+                "label" : "M4"
+              },
+              {
+                "key" : "bonusMalus.m3",
+                "label" : "M3"
+              },
+              {
+                "key" : "bonusMalus.m2",
+                "label" : "M2"
+              },
+              {
+                "key" : "bonusMalus.m1",
+                "label" : "M1"
+              },
+              {
+                "key" : "bonusMalus.b0",
+                "label" : "B0"
+              },
+              {
+                "key" : "bonusMalus.b1",
+                "label" : "B1"
+              },
+              {
+                "key" : "bonusMalus.b2",
+                "label" : "B2"
+              },
+              {
+                "key" : "bonusMalus.b3",
+                "label" : "B3"
+              },
+              {
+                "key" : "bonusMalus.b4",
+                "label" : "B4"
+              },
+              {
+                "key" : "bonusMalus.b5",
+                "label" : "B5"
+              },
+              {
+                "key" : "bonusMalus.b6",
+                "label" : "B6"
+              },
+              {
+                "key" : "bonusMalus.b7",
+                "label" : "B7"
+              },
+              {
+                "key" : "bonusMalus.b8",
+                "label" : "B8"
+              }
+            ],
+            "role" : "keyFact",
+            "type" : "choice"
+          }
+        ],
+        "key" : "member.driving",
+        "title" : "Asigurare auto"
+      }
+    ],
+    "summary" : "Actele fiecărei persoane, la un loc.",
+    "symbol" : "person.crop.circle",
+    "tint" : "indigo",
+    "version" : 27
+  },
+  {
+    "behavior" : {
+      "addedOnlyUnderParent" : false,
+      "box" : "perSection",
+      "goesUnderTheOnlyOne" : false,
+      "listing" : "plain",
+      "offerTitle" : "Espressor",
+      "sectionNoun" : "espressoMachine",
+      "singular" : {
+        "gender" : "masculineOrNeuter",
+        "name" : "Espressorul"
+      },
+      "visit" : "upkeep"
+    },
+    "blueprints" : [
+      {
+        "completion" : "chore",
+        "firstDue" : {
+          "every" : 2,
+          "type" : "afterInterval",
+          "unit" : "week"
+        },
+        "isSuggested" : true,
+        "key" : "espresso.backflush",
+        "kind" : "routine",
+        "recurrence" : {
+          "every" : 100,
+          "fallbackEvery" : 2,
+          "fallbackUnit" : "week",
+          "type" : "metric",
+          "unit" : "shots"
+        },
+        "reminders" : {
+          "consequence" : "comfort",
+          "followUpAfterLapse" : false,
+          "graceDays" : 3,
+          "leadDays" : [
+            0
+          ]
+        },
+        "title" : "Curățare grup"
+      },
+      {
+        "completion" : "doneAtHome",
+        "firstDue" : {
+          "every" : 2,
+          "type" : "afterInterval",
+          "unit" : "month"
+        },
+        "isSuggested" : true,
+        "key" : "espresso.descale",
+        "kind" : "maintenance",
+        "recurrence" : {
+          "every" : 300,
+          "fallbackEvery" : 2,
+          "fallbackUnit" : "month",
+          "type" : "metric",
+          "unit" : "shots"
+        },
+        "reminders" : {
+          "consequence" : "comfort",
+          "followUpAfterLapse" : false,
+          "graceDays" : 14,
+          "leadDays" : [
+            3,
+            0
+          ]
+        },
+        "title" : "Decalcifiere"
+      },
+      {
+        "completion" : "doneAtHome",
+        "firstDue" : {
+          "every" : 2,
+          "type" : "afterInterval",
+          "unit" : "month"
+        },
+        "isSuggested" : true,
+        "key" : "espresso.filter",
+        "kind" : "maintenance",
+        "recurrence" : {
+          "anchor" : "completion",
+          "every" : 2,
+          "type" : "interval",
+          "unit" : "month"
+        },
+        "reminders" : {
+          "consequence" : "comfort",
+          "followUpAfterLapse" : false,
+          "graceDays" : 14,
+          "leadDays" : [
+            3,
+            0
+          ]
+        },
+        "title" : "Schimb filtru de apă"
+      }
+    ],
+    "components" : [
+      {
+        "group" : "Întreținere",
+        "key" : "maintenance.descale",
+        "name" : "Decalcifiere",
+        "synonyms" : [
+          "decalcifiere"
+        ]
+      },
+      {
+        "group" : "Întreținere",
+        "key" : "maintenance.gasket",
+        "name" : "Garnitură grup",
+        "synonyms" : [
+          "garnitura"
+        ]
+      },
+      {
+        "group" : "Întreținere",
+        "key" : "maintenance.waterFilter",
+        "name" : "Filtru de apă",
+        "synonyms" : [
+          "filtru apa"
+        ]
+      }
+    ],
+    "heroStyle" : "standard",
+    "isBuiltIn" : true,
+    "key" : "espresso",
+    "name" : "Espressoare",
+    "pockets" : [
+      "upcoming",
+      "history",
+      "money",
+      "keyFacts"
+    ],
+    "sections" : [
+      {
+        "fields" : [
+          {
+            "isEssential" : true,
+            "isSensitive" : false,
+            "key" : "espresso.brand",
+            "label" : "Marcă",
+            "role" : "subtitle",
+            "type" : "text"
+          },
+          {
+            "isEssential" : false,
+            "isSensitive" : false,
+            "key" : "espresso.model",
+            "label" : "Model",
+            "role" : "subtitle",
+            "type" : "text"
+          },
+          {
+            "isEssential" : false,
+            "isSensitive" : false,
+            "key" : "espresso.shots",
+            "label" : "Cafele făcute",
+            "role" : "heroMetric",
+            "type" : "metric",
+            "unit" : "shots"
+          }
+        ],
+        "key" : "espresso.main",
+        "title" : "Aparat"
+      },
+      {
+        "fields" : [
+          {
+            "isEssential" : false,
+            "isSensitive" : false,
+            "key" : "espresso.purchaseDate",
+            "label" : "Data cumpărării",
+            "role" : "purchaseDate",
+            "type" : "date"
+          },
+          {
+            "isEssential" : false,
+            "isSensitive" : false,
+            "key" : "espresso.purchasePrice",
+            "label" : "Preț",
+            "role" : "purchasePrice",
+            "type" : "money"
+          },
+          {
+            "isEssential" : false,
+            "isSensitive" : false,
+            "key" : "espresso.retailer",
+            "label" : "Cumpărat de la",
+            "role" : "retailer",
+            "type" : "text"
+          },
+          {
+            "isEssential" : false,
+            "isSensitive" : false,
+            "key" : "espresso.warrantyUntil",
+            "label" : "Garanție până la",
+            "role" : "warrantyUntil",
+            "type" : "expiryDate"
+          }
+        ],
+        "key" : "espresso.purchase",
+        "title" : "Cumpărare"
+      }
+    ],
+    "summary" : "Curățare, decalcifiere și filtre, după numărul de cafele.",
+    "symbol" : "cup.and.saucer.fill",
+    "tint" : "brown",
+    "version" : 27
+  }
+]

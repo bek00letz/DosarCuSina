@@ -3,6 +3,7 @@ package com.ar.dosarcusina.archive
 import com.ar.dosarcusina.archive.binder.Binder
 import com.ar.dosarcusina.archive.v3.Digests
 import com.ar.dosarcusina.archive.v3.DossierV3
+import com.ar.dosarcusina.catalog.Catalog
 import com.ar.dosarcusina.core.values.JsonTrees
 import com.ar.dosarcusina.core.values.MachineText
 import kotlinx.serialization.json.JsonObject
@@ -46,10 +47,14 @@ class GoldenAndroidArchivesTest {
         "household-password.dosar and expected/ from the failed run's android-golden-archives artifact " +
         "over it; then review the diff of expected/ and commit it with both archives. The iOS suite imports them."
 
+    /** Imports into [binder] as the golden household was, at [IMPORTED_AT] in Bucharest. */
+    private fun importer(binder: InMemoryBinder) =
+        DossierArchiveService(binder, Catalog.builtIn, Clock.fixed(IMPORTED_AT, ZoneOffset.UTC)) { bucharest }
+
     /** The iOS golden household, brought into an empty binder. */
     private fun household(): Binder {
         val binder = InMemoryBinder()
-        DossierArchiveService(binder, clock = Clock.fixed(IMPORTED_AT, ZoneOffset.UTC), zone = { bucharest })
+        importer(binder)
             .importArchive(
                 MemoryByteSource(File(golden, "ios/household.dosar").readBytes()),
                 null,
@@ -116,7 +121,7 @@ class GoldenAndroidArchivesTest {
     fun bothAndroidGoldenArchivesComeBackWhole(name: String) {
         val password = if (name.contains("password")) GoldenContents.PASSWORD else null
         val binder = InMemoryBinder()
-        DossierArchiveService(binder, clock = Clock.fixed(IMPORTED_AT, ZoneOffset.UTC), zone = { bucharest })
+        importer(binder)
             .importArchive(
                 MemoryByteSource(File(android, name).readBytes()),
                 password,

@@ -102,6 +102,7 @@ The Android app is being ported by [docs/ANDROID_PLAN.md](docs/ANDROID_PLAN.md).
 | :--- | :--- |
 | `core` | Values and engines, in pure Kotlin (no Android), tested on the JVM. |
 | `archive` | The `.dosar` reader and writer, in pure Kotlin. |
+| `catalog` | The built-in catalog, in pure Kotlin: [shared/catalog/](shared/catalog/), which the iOS tests export, copied into its resources and read. |
 | `app` | The Android app, `com.ar.dosarcusina.app`: Compose with Material 3. |
 
 You need a JDK (17 or later; GitHub uses 25) and the Android SDK, found through `ANDROID_HOME` or `sdk.dir` in `android/local.properties` (which git ignores). From `android/`, build the app (debug, and the release build unsigned) and run every module's tests:
@@ -155,8 +156,8 @@ The captions are text in [marketing/app-store/captions.json](marketing/app-store
 | `ios/DosarCuSinaTests/` | Tests. |
 | `ios/DosarCuSinaScreenshots/` | The UI tests that take the App Store's screenshots (their own scheme, never in the test run). |
 | `ios/Legacy/` | The first version of the app. Not compiled, kept as a way back. |
-| `shared/` | The `.dosar` format and fixtures, Romanian administrative standards, starter templates. |
-| `android/` | The Android app, a Gradle project: `core` and `archive` in pure Kotlin, `app` the Android app (see [Android](#android)). |
+| `shared/` | The `.dosar` format and fixtures, the built-in catalog the iOS tests export (`catalog/`), test vectors, Romanian administrative standards, starter templates. |
+| `android/` | The Android app, a Gradle project: `core`, `archive` and `catalog` in pure Kotlin, `app` the Android app (see [Android](#android)). |
 | `android/Legacy/` | The first Android version. Not built, kept as a way back. |
 | `tests/` | The iOS test runner, plus the first versions' scripts in `tests/legacy/`. |
 | `docs/` | Decisions, handoff notes, copy guide, archive. |

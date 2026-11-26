@@ -1,0 +1,87 @@
+{
+  "builtInVersion" : 27,
+  "categories" : [
+    {
+      "isOnHomeByDefault" : true,
+      "isSensitiveByDefault" : false,
+      "key" : "vehicle"
+    },
+    {
+      "isOnHomeByDefault" : true,
+      "isSensitiveByDefault" : false,
+      "key" : "home"
+    },
+    {
+      "isOnHomeByDefault" : true,
+      "isSensitiveByDefault" : true,
+      "key" : "documents"
+    },
+    {
+      "isOnHomeByDefault" : true,
+      "isSensitiveByDefault" : false,
+      "key" : "pet"
+    },
+    {
+      "isOnHomeByDefault" : true,
+      "isSensitiveByDefault" : true,
+      "key" : "health"
+    },
+    {
+      "isOnHomeByDefault" : true,
+      "isSensitiveByDefault" : false,
+      "key" : "purchase"
+    },
+    {
+      "isOnHomeByDefault" : true,
+      "isSensitiveByDefault" : false,
+      "key" : "subscription"
+    },
+    {
+      "isOnHomeByDefault" : true,
+      "isSensitiveByDefault" : false,
+      "key" : "other"
+    },
+    {
+      "isOnHomeByDefault" : false,
+      "isSensitiveByDefault" : false,
+      "key" : "bike"
+    },
+    {
+      "isOnHomeByDefault" : false,
+      "isSensitiveByDefault" : false,
+      "key" : "plants"
+    },
+    {
+      "isOnHomeByDefault" : false,
+      "isSensitiveByDefault" : false,
+      "key" : "tenancy"
+    },
+    {
+      "isOnHomeByDefault" : false,
+      "isSensitiveByDefault" : false,
+      "key" : "member"
+    },
+    {
+      "isOnHomeByDefault" : false,
+      "isSensitiveByDefault" : false,
+      "key" : "espresso"
+    }
+  ],
+  "replacedFieldKeys" : {
+    "warranty.brand" : "purchase.brand",
+    "warranty.expiry" : "purchase.warrantyUntil",
+    "warranty.manualUrl" : "purchase.manualUrl",
+    "warranty.model" : "purchase.model",
+    "warranty.price" : "purchase.price",
+    "warranty.purchaseDate" : "purchase.date",
+    "warranty.retailer" : "purchase.retailer",
+    "warranty.serial" : "purchase.serial"
+  },
+  "replacedKeys" : {
+    "warranty" : "purchase"
+  },
+  "retiredKeys" : [
+    "rental"
+  ],
+  "writtenBy" : "ios/DosarCuSinaTests/CatalogExportTests.swift"
+}

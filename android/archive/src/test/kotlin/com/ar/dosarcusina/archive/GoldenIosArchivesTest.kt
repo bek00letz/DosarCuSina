@@ -1,6 +1,7 @@
 package com.ar.dosarcusina.archive
 
 import com.ar.dosarcusina.archive.v3.DossierV3
+import com.ar.dosarcusina.catalog.Catalog
 import com.ar.dosarcusina.core.values.JsonTrees
 import com.ar.dosarcusina.core.values.MachineText
 import kotlinx.serialization.json.JsonArray
@@ -41,6 +42,7 @@ class GoldenIosArchivesTest {
         val binder = InMemoryBinder()
         val service = DossierArchiveService(
             binder,
+            Catalog.builtIn,
             clock = Clock.fixed(moment("2026-11-26T10:00:00Z"), ZoneOffset.UTC),
             zone = { bucharest },
         )

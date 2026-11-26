@@ -2,6 +2,7 @@ package com.ar.dosarcusina.archive
 
 import com.ar.dosarcusina.archive.v3.DossierV3
 import com.ar.dosarcusina.archive.v3.MemoryFile
+import com.ar.dosarcusina.catalog.Catalog
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -24,7 +25,7 @@ class ArchiveWriterTest {
     private val clock: Clock = Clock.fixed(moment("2026-11-26T10:00:00Z"), ZoneOffset.UTC)
 
     private fun household(): InMemoryBinder = InMemoryBinder().also {
-        DossierArchiveService(it, clock = clock, zone = { bucharest })
+        DossierArchiveService(it, Catalog.builtIn, clock = clock, zone = { bucharest })
             .importArchive(
                 MemoryByteSource(fixtureArchive("dosar-v3/household")),
                 mode = ArchiveImportMode.REPLACE,
@@ -61,7 +62,7 @@ class ArchiveWriterTest {
     @Test
     fun anExportComesBackAsItWasAndOpensOnlyWithItsPassword() {
         val source = household()
-        val service = DossierArchiveService(source, clock = clock, zone = { bucharest })
+        val service = DossierArchiveService(source, Catalog.builtIn, clock = clock, zone = { bucharest })
         val file = File(staging, "copie.dosar")
         service.export(file, password = "parola-de-test-dosar", appVersion = "1.0")
         val bytes = file.readBytes()
@@ -74,7 +75,7 @@ class ArchiveWriterTest {
         })
 
         val target = InMemoryBinder()
-        DossierArchiveService(target, clock = clock, zone = { bucharest })
+        DossierArchiveService(target, Catalog.builtIn, clock = clock, zone = { bucharest })
             .importArchive(
                 MemoryByteSource(bytes),
                 "parola-de-test-dosar",

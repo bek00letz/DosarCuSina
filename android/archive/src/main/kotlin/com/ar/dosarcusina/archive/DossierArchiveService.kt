@@ -4,7 +4,6 @@ import com.ar.dosarcusina.archive.binder.ArchiveTarget
 import com.ar.dosarcusina.archive.binder.Binder
 import com.ar.dosarcusina.archive.binder.BuiltIns
 import com.ar.dosarcusina.archive.binder.Removed
-import com.ar.dosarcusina.archive.binder.UntilTheSharedCatalog
 import com.ar.dosarcusina.archive.v3.DossierPackage
 import com.ar.dosarcusina.core.values.DosarCalendar
 import java.io.File
@@ -20,14 +19,15 @@ import java.util.UUID
  */
 class DossierArchiveService(
     private val target: ArchiveTarget,
-    private val builtIns: BuiltIns = UntilTheSharedCatalog,
+    /** The app's own categories (`com.ar.dosarcusina.catalog.Catalog.builtIn`). */
+    private val builtIns: BuiltIns,
     private val clock: Clock = Clock.systemUTC(),
     /** The time zone days are counted in; the phone's, read each time ([DosarCalendar.zone]). */
     private val zone: () -> ZoneId = DosarCalendar::zone,
 ) {
     /** What an archive holds, once every file in it is checked; none of its files is kept. */
     fun inspect(source: ArchiveByteSource, password: String? = null): ArchiveSummary =
-        DossierArchiveReader.summary(source, password)
+        DossierArchiveReader.summary(source, builtIns, password)
 
     /**
      * Reads an archive and writes it into the binder. Its documents' files pass through a folder
@@ -41,7 +41,7 @@ class DossierArchiveService(
     ): ArchiveImportResult {
         val folder = File(staging, "import-${UUID.randomUUID()}.files")
         try {
-            return importPackage(DossierArchiveReader.read(source, password, folder), mode)
+            return importPackage(DossierArchiveReader.read(source, builtIns, password, folder), mode)
         } finally {
             folder.deleteRecursively()
         }

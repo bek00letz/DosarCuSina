@@ -3,7 +3,6 @@ package com.ar.dosarcusina.archive.v2
 import com.ar.dosarcusina.archive.ArchiveError
 import com.ar.dosarcusina.archive.DossierArchiveReader
 import com.ar.dosarcusina.archive.binder.BuiltIns
-import com.ar.dosarcusina.archive.binder.UntilTheSharedCatalog
 import com.ar.dosarcusina.archive.v3.ArchiveFiles
 import com.ar.dosarcusina.archive.v3.AssetRecord
 import com.ar.dosarcusina.archive.v3.AttachmentRecord
@@ -40,8 +39,8 @@ import java.util.UUID
  * section's notes, contacts become firms, and completed events and service records become
  * history.
  *
- * A line item is matched to its category's parts by the app's own catalog ([BuiltIns]); until the
- * shared catalog comes in Phase 2 there is none, so each gets its own `custom.` key.
+ * A line item is matched to its category's parts by the app's own catalog ([BuiltIns]); one that
+ * matches none gets its own `custom.` key.
  */
 // Each mapping of the iOS converter, side by side.
 @Suppress("TooManyFunctions")
@@ -97,8 +96,8 @@ object DossierV2Converter {
         manifestBytes: ByteArray,
         data: Map<String, ByteArray>,
         vault: ArchiveFiles,
+        builtIns: BuiltIns,
         zone: ZoneId = DosarCalendar.zone(),
-        builtIns: BuiltIns = UntilTheSharedCatalog,
     ): DossierPackage {
         val manifest = manifest(manifestBytes)
         fun <T> decode(path: String, read: (JsonRecord) -> T): List<T> {

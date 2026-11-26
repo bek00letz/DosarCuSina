@@ -101,17 +101,28 @@ jobs:
           RESULTS_DIR: ${{ runner.temp }}/results
         run: ./tests/run_tests.sh
 
-      # A change to what an iOS backup holds (the built-in catalog, say) changes the iOS
-      # golden archives and, made from them, Android's: when GoldenArchiveTests left the iOS
-      # ones made afresh, Android's are made from them here too, so the one failed run's
-      # test-results holds both (golden-archives/ and golden-archives-android/), and the next
-      # push is green on both sides.
-      - name: Look for golden archives made afresh
+      # A change to what an iOS backup holds, or to the built-in catalog Android reads,
+      # changes Android's golden archives too: they are the iOS golden household brought
+      # into Android, with the catalog from shared/catalog/. When GoldenArchiveTests left the
+      # iOS ones made afresh, or CatalogExportTests the catalog, Android's are made here from
+      # what this run made (the committed iOS ones where they didn't change), so the one
+      # failed run's test-results holds everything to commit (golden-archives/, catalog/,
+      # golden-archives-android/), and the next push is green on both sides.
+      - name: Look for golden archives or a catalog made afresh
         id: golden
         if: failure()
         run: |
-          if [[ -d "$RUNNER_TEMP/results/golden-archives" ]]; then
+          results="$RUNNER_TEMP/results"
+          if [[ -d "$results/golden-archives" || -d "$results/catalog" ]]; then
             echo "fresh=true" >> "$GITHUB_OUTPUT"
+            if [[ -d "$results/golden-archives" ]]; then
+              echo "ios=$results/golden-archives" >> "$GITHUB_OUTPUT"
+            else
+              echo "ios=shared/fixtures/golden/ios" >> "$GITHUB_OUTPUT"
+            fi
+            if [[ -d "$results/catalog" ]]; then
+              echo "catalog=$results/catalog" >> "$GITHUB_OUTPUT"
+            fi
           fi
 
       - name: Set up Java for Android's golden archives
@@ -121,9 +132,13 @@ jobs:
           distribution: temurin
           java-version: "25"
 
-      - name: Make Android's golden archives from the iOS ones made afresh
+      - name: Make Android's golden archives from what this run made
         if: failure() && steps.golden.outputs.fresh == 'true'
-        run: scripts/golden-android-from-ios.sh "$RUNNER_TEMP/results/golden-archives" "$RUNNER_TEMP/results/golden-archives-android"
+        env:
+          FRESH_IOS: ${{ steps.golden.outputs.ios }}
+          FRESH_CATALOG: ${{ steps.golden.outputs.catalog }}
+        run: |
+          scripts/golden-android-from-ios.sh "$FRESH_IOS" "$RUNNER_TEMP/results/golden-archives-android" ${FRESH_CATALOG:+"$FRESH_CATALOG"}
 
       - name: Keep the log and results of a failed run
         if: failure()

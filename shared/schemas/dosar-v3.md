@@ -174,7 +174,7 @@ Keys from earlier builds:
 - **`warranty`:** became `purchase`. Readers move such assets over and rename their fields (`warranty.purchaseDate` → `purchase.date`, `warranty.expiry` → `purchase.warrantyUntil`, other `warranty.*` → `purchase.*`).
 - **`rental`:** retired. If assets still use it, readers keep it as a custom category. Custom keys
 start with `custom.`. A built-in template always takes the reader's own
-definition, whatever the archive says about it (`name`, `sections`, field
+definition (the catalog, [`../catalog`](../catalog), which both apps read), whatever the archive says about it (`name`, `sections`, field
 types, `blueprints`, `version`, `isBuiltIn`): a key that names a built-in is a
 built-in. From the archive, a reader takes only the household preferences:
 `homeOrder`, `isOnHome`, `boxGrouping` and `isSensitive`, the last one only towards locked (a

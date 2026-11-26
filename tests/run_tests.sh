@@ -86,10 +86,12 @@ LOG="$RESULTS/test.log"
 RESULT_BUNDLE="$RESULTS/DosarCuSinaTests.xcresult"
 rm -rf "$RESULT_BUNDLE"
 # GoldenArchiveTests leaves the golden archives as they should be here when the committed
-# ones are out of date (xcodebuild hands TEST_RUNNER_ variables to the tests without the prefix).
+# ones are out of date, and CatalogExportTests the built-in catalog (shared/catalog/)
+# (xcodebuild hands TEST_RUNNER_ variables to the tests without the prefix).
 if [[ -n "${RESULTS_DIR:-}" ]]; then
-    rm -rf "$RESULTS/golden-archives"
+    rm -rf "$RESULTS/golden-archives" "$RESULTS/catalog"
     export TEST_RUNNER_GOLDEN_ARCHIVES_OUT="$RESULTS/golden-archives"
+    export TEST_RUNNER_CATALOG_OUT="$RESULTS/catalog"
 fi
 
 echo "iOS tests on $DESCRIPTION"

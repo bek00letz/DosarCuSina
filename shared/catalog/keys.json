@@ -1,0 +1,117 @@
+{
+  "keys" : {
+    "BuiltInBlueprints" : {
+      "documentRenew" : "document.renew",
+      "healthEUCard" : "health.euCard",
+      "homeBoilerCheck" : "home.boilerCheck",
+      "homeGasCheck" : "home.gasCheck",
+      "homeGasRevision" : "home.gasRevision",
+      "homeInsurance" : "home.insurance",
+      "homePAD" : "home.pad",
+      "petRabies" : "pet.rabies",
+      "petVaccine" : "pet.vaccine",
+      "vehicleCASCO" : "vehicle.casco",
+      "vehicleITP" : "vehicle.itp",
+      "vehicleRCA" : "vehicle.rca",
+      "vehicleVignette" : "vehicle.vignette",
+      "warrantyEnds" : "purchase.warrantyEnds"
+    },
+    "BuiltInTemplates.Key" : {
+      "bike" : "bike",
+      "documents" : "documents",
+      "espresso" : "espresso",
+      "health" : "health",
+      "home" : "home",
+      "member" : "member",
+      "other" : "other",
+      "pet" : "pet",
+      "plants" : "plants",
+      "purchase" : "purchase",
+      "subscription" : "subscription",
+      "tenancy" : "tenancy",
+      "vehicle" : "vehicle"
+    },
+    "DocumentFields" : {
+      "birthDate" : "document.birthDate",
+      "cardLastFour" : "document.cardLastFour",
+      "cardNetwork" : "document.cardNetwork",
+      "categories" : "document.categories",
+      "expiry" : "document.expiry",
+      "issueDate" : "document.issueDate",
+      "issuer" : "document.issuer",
+      "nationality" : "document.nationality",
+      "number" : "document.number",
+      "personalNumber" : "document.personalNumber",
+      "recordResult" : "document.recordResult",
+      "sex" : "document.sex",
+      "vehiclePlate" : "document.vehiclePlate"
+    },
+    "HomeFields" : {
+      "address" : "home.address",
+      "claimsPhone" : "home.claimsPhone",
+      "clc" : "home.clc",
+      "insuredSum" : "home.insuredSum",
+      "insurer" : "home.insurer",
+      "optionalClaimsPhone" : "home.optionalClaimsPhone",
+      "optionalInsuredSum" : "home.optionalInsuredSum",
+      "optionalInsurer" : "home.optionalInsurer",
+      "optionalPolicyNumber" : "home.optionalPolicyNumber",
+      "pod" : "home.pod",
+      "policyNumber" : "home.policyNumber"
+    },
+    "MemberFields" : {
+      "bonusMalus" : "member.bonusMalus",
+      "citizenship" : "member.citizenship"
+    },
+    "PetFields" : {
+      "microchip" : "pet.microchip",
+      "passport" : "pet.passport"
+    },
+    "PurchaseFieldKeys" : {
+      "model" : "purchase.model",
+      "serial" : "purchase.serial",
+      "warrantyMonths" : "purchase.warrantyMonths",
+      "warrantyUntil" : "purchase.warrantyUntil"
+    },
+    "SubscriptionFields" : {
+      "account" : "subscription.account",
+      "billBlueprint" : "subscription.bill",
+      "clc" : "subscription.clc",
+      "clientCode" : "subscription.clientCode",
+      "contractNumber" : "subscription.contractNumber",
+      "cycle" : "subscription.cycle",
+      "directDebit" : "subscription.directDebit",
+      "group" : "subscription.group",
+      "lastBill" : "subscription.lastBill",
+      "minimumEndsBlueprint" : "subscription.minimumEnds",
+      "minimumMonths" : "subscription.minimumMonths",
+      "minimumUntil" : "subscription.minimumUntil",
+      "phoneNumber" : "subscription.phoneNumber",
+      "placeCode" : "subscription.placeCode",
+      "pod" : "subscription.pod",
+      "price" : "subscription.price",
+      "provider" : "subscription.provider",
+      "service" : "subscription.service",
+      "startDate" : "subscription.startDate"
+    },
+    "VehicleFields" : {
+      "cascoClaimsPhone" : "vehicle.cascoClaimsPhone",
+      "cascoInsuredSum" : "vehicle.cascoInsuredSum",
+      "cascoInsurer" : "vehicle.cascoInsurer",
+      "cascoPolicyNumber" : "vehicle.cascoPolicyNumber",
+      "civ" : "vehicle.civ",
+      "claimsPhone" : "vehicle.claimsPhone",
+      "insurer" : "vehicle.insurer",
+      "make" : "vehicle.make",
+      "model" : "vehicle.model",
+      "odometer" : "vehicle.odometer",
+      "plate" : "vehicle.plate",
+      "policyNumber" : "vehicle.policyNumber",
+      "policyholder" : "vehicle.policyholder",
+      "usage" : "vehicle.usage",
+      "vin" : "vehicle.vin",
+      "year" : "vehicle.year"
+    }
+  },
+  "writtenBy" : "ios/DosarCuSinaTests/CatalogExportTests.swift"
+}
