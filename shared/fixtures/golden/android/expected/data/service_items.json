@@ -1,0 +1,49 @@
+[
+  {
+    "componentKey" : "brakes.padsFront",
+    "cost" : {
+      "amount" : "380",
+      "currency" : "RON"
+    },
+    "entryId" : "86b05476-7efe-4e0f-9883-3a3fadacf9a5",
+    "group" : "Frâne",
+    "id" : "fae5c762-6d21-426e-b7d6-aa331d03d3cb",
+    "isExample" : false,
+    "name" : "Plăcuțe frână față",
+    "partSerialNumber" : "SN-0001",
+    "updatedAt" : "2026-11-20T08:11:00Z"
+  },
+  {
+    "componentKey" : "engine.oil",
+    "cost" : {
+      "amount" : "420",
+      "currency" : "RON"
+    },
+    "entryId" : "86b05476-7efe-4e0f-9883-3a3fadacf9a5",
+    "group" : "Motor",
+    "id" : "d02b64e4-66d4-44d9-a9d5-9e9744ba5144",
+    "isExample" : false,
+    "laborCost" : {
+      "amount" : "120",
+      "currency" : "RON"
+    },
+    "name" : "Schimb ulei și filtru",
+    "partBrandOrCode" : "5W-30",
+    "partsCost" : {
+      "amount" : "300",
+      "currency" : "RON"
+    },
+    "supplierId" : "5f1af6c4-3fcd-49b4-b558-727e360dec30",
+    "updatedAt" : "2026-11-20T08:11:00Z",
+    "warrantyMonths" : 6
+  },
+  {
+    "componentKey" : "custom.spalare-motor",
+    "entryId" : "86b05476-7efe-4e0f-9883-3a3fadacf9a5",
+    "id" : "03f86744-e2a1-4edd-8fa7-2116e8b5e2f2",
+    "isExample" : false,
+    "name" : "Spălare motor",
+    "notes" : "Din partea casei",
+    "updatedAt" : "2026-11-20T08:11:00Z"
+  }
+]

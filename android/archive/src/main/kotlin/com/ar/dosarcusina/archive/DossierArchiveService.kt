@@ -47,6 +47,14 @@ class DossierArchiveService(
         }
     }
 
+    /**
+     * Writes the binder to [file] (which must not exist yet), sealed with [password] when there
+     * is one; on any failure nothing is left there. [appVersion] is the app's, for the manifest.
+     */
+    fun export(file: File, password: String? = null, appVersion: String) {
+        DossierArchiveWriter(appVersion, clock.instant(), zone()).write(target.snapshot(), file, password)
+    }
+
     /** Writes an already read package into the binder, in one step. */
     fun importPackage(pack: DossierPackage, mode: ArchiveImportMode): ArchiveImportResult {
         val plan = DossierImporter(pack, target.snapshot(), mode, clock.instant(), zone(), builtIns).run()
