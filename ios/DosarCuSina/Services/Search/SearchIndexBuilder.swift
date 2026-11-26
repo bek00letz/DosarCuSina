@@ -17,10 +17,13 @@ import SwiftData
 public struct SearchIndexBuilder {
     public let context: ModelContext
     private let locale: Locale
+    /// The calendar days are counted in: the app's, as it is when the builder is made (one per pass).
+    private let calendar: Calendar
 
-    public init(context: ModelContext, locale: Locale = .dosarDefault) {
+    public init(context: ModelContext, locale: Locale = .dosarDefault, calendar: Calendar = .dosar) {
         self.context = context
         self.locale = locale
+        self.calendar = calendar
     }
 
     public func build() throws -> SearchIndex {
@@ -221,7 +224,7 @@ public struct SearchIndexBuilder {
             guard let last = MaintenanceLog.lastOccurrence(of: key, in: items) else { return nil }
             let component = catalog.first { $0.key == key }
             let name = component?.name ?? last.name
-            let when = DosarFormat.day(last.date, locale: locale)
+            let when = DosarFormat.day(last.date, locale: locale, calendar: calendar)
             return SearchDocument(
                 id: "\(SearchResultKind.component.rawValue):\(asset.id.uuidString):\(key)", kind: .component, title: name,
                 subtitle: "\(asset.name) · \(when)", route: .historyEntry(last.entryId),
@@ -249,13 +252,13 @@ public struct SearchIndexBuilder {
                 SearchField(obligation.asset?.name, weight: SearchField.Weight.label),
                 SearchField(obligation.notes, weight: SearchField.Weight.note),
             ],
-            date: obligation.dueDay.noonDate(), isSensitive: isSensitive(obligation.asset, templates)
+            date: obligation.dueDay.noonDate(in: calendar), isSensitive: isSensitive(obligation.asset, templates)
         )
     }
 
     private func historyDocument(_ entry: HistoryEntry, templates: [String: CategoryTemplate]) -> SearchDocument {
         let items = entry.items ?? []
-        let when = DosarFormat.day(entry.occurredAt, locale: locale)
+        let when = DosarFormat.day(entry.occurredAt, locale: locale, calendar: calendar)
         return SearchDocument(
             id: id(.historyEntry, entry.id), kind: .historyEntry, title: entry.title,
             subtitle: [entry.asset?.name, when].compactMap { $0 }.joined(separator: " · "),
@@ -317,7 +320,7 @@ public struct SearchIndexBuilder {
                 SearchField(section?.name, weight: SearchField.Weight.label),
                 SearchField(readText, weight: SearchField.Weight.extracted),
             ],
-            date: attachment.documentDay?.noonDate() ?? attachment.createdAt,
+            date: attachment.documentDay?.noonDate(in: calendar) ?? attachment.createdAt,
             isSensitive: isLocked
         )
     }
