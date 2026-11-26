@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertSame
 import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.Assumptions.assumeTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import java.io.File
@@ -172,6 +173,30 @@ class SectionLocksTest {
         val locks = SectionLocks(file)
         assertTrue(locks.needsChoosingAgain)
         assertTrue(locked(locks, VEHICLE))
+    }
+
+    @Test
+    fun aLockFolderThatCantBeListedKeepsEveryCategoryLocked() {
+        val file = lockFile()
+        val folder = file.parentFile
+        assertTrue(folder.setReadable(false, false), "The folder can be made unreadable")
+        try {
+            // Where the folder can still be listed (a test run with every right), there is nothing to check.
+            assumeTrue(folder.list() == null)
+            val locks = SectionLocks(file)
+            assertTrue(locks.needsChoosingAgain, "A folder that can't be listed can't say it holds no lock set aside")
+            assertTrue(locked(locks, VEHICLE))
+        } finally {
+            folder.setReadable(true, false)
+        }
+    }
+
+    @Test
+    fun aLockFolderNotMadeYetHoldsNothingSetAside() {
+        val file = File(File(lockFile().parentFile, "not-made-yet"), BinderStore.DATABASE_NAME)
+        val locks = SectionLocks(SectionLocks.fileForStore(file))
+        assertFalse(locks.needsChoosingAgain)
+        assertFalse(locked(locks, VEHICLE))
     }
 
     @Test

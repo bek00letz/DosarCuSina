@@ -8,6 +8,7 @@ import com.ar.dosarcusina.core.values.MachineText
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
+import java.util.UUID
 import kotlin.math.floor
 import kotlin.math.max
 
@@ -336,13 +337,16 @@ data class BoxTaken(val behavior: Behavior, val grouping: BoxGrouping)
  * What a category of one's own is made of besides the answers to its switches, as the iOS app
  * exports it (`shared/catalog/ownCategories.json`, `CatalogExportTests.OwnCategories`): the pockets
  * every new one starts with, and for each way a service is counted, its counter field and its
- * service deadline at the interval it starts at. The words are the iOS app's; Android writes none.
+ * service deadline at the interval it starts at; and „Recuperate” ([recovered]). The words are the
+ * iOS app's; Android writes none.
  */
 class OwnCategories internal constructor(
     /** The pockets every new category of one's own starts with, as stored keys; the switches add theirs. */
     val basePockets: List<String>,
     private val fields: Map<CategorySwitches.Counter, FieldDefinition>,
     private val services: Map<CategorySwitches.Counter, ObligationBlueprint>,
+    /** „Recuperate”, where the repair list keeps records whose section was deleted on another device. */
+    val recovered: RecoveredCategory,
 ) {
     /** The counter the hero shows and the service counts by; none for a service by time. */
     fun counterField(counter: CategorySwitches.Counter): FieldDefinition? = fields[counter]
@@ -350,3 +354,18 @@ class OwnCategories internal constructor(
     /** The service deadline of [counter] as the catalog writes it, at the interval it starts at. */
     fun service(counter: CategorySwitches.Counter): ObligationBlueprint = services.getValue(counter)
 }
+
+/**
+ * „Recuperate”, the category of one's own the repair list keeps records in whose section was
+ * deleted on another device, as the iOS app's `LostRecordsStep` makes it: one key and one
+ * section id on every device and on both apps, so two that keep records there make one.
+ */
+data class RecoveredCategory(
+    val key: String,
+    val name: String,
+    val symbol: String,
+    /** `SectionPocket` keys, as stored. */
+    val pockets: List<String>,
+    /** The id of its one section. */
+    val sectionID: UUID,
+)
