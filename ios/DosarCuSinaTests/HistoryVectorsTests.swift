@@ -553,7 +553,7 @@ struct HistoryVectorsTests {
             default: return nil
             }
         }
-        func decimal(_ key: String) -> Decimal? { string(key).flatMap { Decimal(string: $0) } }
+        func decimal(_ key: String) -> Decimal? { string(key).flatMap(RomanianNumber.canonical) }
         func money(_ key: String) -> Money? { decimal(key).map { Money($0) } }
         func list(_ key: String) -> [Action] {
             guard case .array(let items)? = action[key] else { return [] }
