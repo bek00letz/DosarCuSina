@@ -115,6 +115,13 @@ struct SectionVectorsTests {
 
     static func day(_ iso: String) -> FieldValue { .date(ValueVectorsTests.day(iso)) }
 
+    /// An optional value as a case writes it: null for none.
+    static func text(_ value: String?) -> JSONValue { value.map(JSONValue.string) ?? .null }
+
+    static func int(_ value: Int?) -> JSONValue { value.map(JSONValue.int) ?? .null }
+
+    static func number(_ value: Double?) -> JSONValue { value.map(JSONValue.number) ?? .null }
+
     static func typed(_ pairs: [String: FieldValue]) -> FieldValues { FieldValues(pairs) }
 
     // MARK: Which deadlines start ticked
@@ -206,7 +213,7 @@ struct SectionVectorsTests {
         let firstDue: String?
 
         var json: JSONValue {
-            .object(["key": .string(key), "isSelected": .bool(isSelected), "firstDue": firstDue.map { .string($0) } ?? .null])
+            .object(["key": .string(key), "isSelected": .bool(isSelected), "firstDue": Self.text(firstDue)])
         }
     }
 
@@ -281,7 +288,7 @@ struct SectionVectorsTests {
                 "sections": .array(sections.map { section in
                     .object([
                         "name": .string(section.name), "category": .string(section.category),
-                        "values": (try? json(section.values)) ?? .null, "parent": section.parent.map { .string($0) } ?? .null,
+                        "values": (try? json(section.values)) ?? .null, "parent": Self.text(section.parent),
                         "plan": section.plan.map { .array($0.map(\.json)) } ?? .null,
                     ])
                 }),
@@ -313,17 +320,17 @@ struct SectionVectorsTests {
     static func obligation(_ obligation: Obligation) throws -> JSONValue {
         let reminders = obligation.reminders
         return .object([
-            "blueprintKey": obligation.blueprintKey.map { .string($0) } ?? .null,
+            "blueprintKey": Self.text(obligation.blueprintKey),
             "title": .string(obligation.title),
             "kind": .string(obligation.kind.rawValue),
             "dueDay": .string(obligation.dueDay.isoString),
-            "dueMetric": obligation.dueMetric.map { .number($0) } ?? .null,
+            "dueMetric": Self.number(obligation.dueMetric),
             "leadDays": .array(reminders.leadDays.map { .int($0) }),
             "consequence": .string(reminders.consequence.rawValue),
             "graceDays": .int(reminders.graceDays),
             "followUpAfterLapse": .bool(reminders.followUpAfterLapse),
             "travelMarginDays": .int(reminders.travelMarginDays),
-            "notes": obligation.notes.map { .string($0) } ?? .null,
+            "notes": Self.text(obligation.notes),
             "recurrence": try json(encoding: obligation.recurrence),
             "estimatedCost": try obligation.estimatedCost.map { try json(encoding: $0) } ?? .null,
             "isExample": .bool(obligation.isExample),
@@ -367,7 +374,7 @@ struct SectionVectorsTests {
                 "offersNewMember": .bool(AssetActions.offersNewMember(for: asset)),
                 "offersStandalone": .bool(AssetActions.offersStandalone(for: asset)),
                 "destinations": .array(AssetActions.moveDestinations(for: asset, among: all).map { .string($0.name) }),
-                "renamedFor": .object(["Popescu Ion": AssetActions.renamedForHolder(asset, newHolder: "Popescu Ion").map { .string($0) } ?? .null]),
+                "renamedFor": .object(["Popescu Ion": Self.text(AssetActions.renamedForHolder(asset, newHolder: "Popescu Ion"))]),
             ]))
         }
         // Moves, each from the household as it was made.
@@ -392,12 +399,13 @@ struct SectionVectorsTests {
             }
             try actions.move(child, to: target, renamingTo: renamed)
             let people = try context.fetch(FetchDescriptor<Asset>()).filter { $0.templateKey == BuiltInTemplates.Key.member }
+            let toSection: JSONValue = member == nil && !to.isEmpty ? .string(to) : .null
             cases.append(.object([
                 "move": .string(name),
                 "section": .string(moved),
-                "to": member == nil ? (to.isEmpty ? .null : .string(to)) : .null,
-                "newMember": member.map { .string($0) } ?? .null,
-                "renamingTo": renamed.map { .string($0) } ?? .null,
+                "to": toSection,
+                "newMember": Self.text(member),
+                "renamingTo": Self.text(renamed),
                 "name": .string(child.name),
                 "parent": child.parent.map { .string($0.name) } ?? .null,
                 "parentCategory": child.parent.map { .string($0.templateKey) } ?? .null,
@@ -468,12 +476,12 @@ struct SectionVectorsTests {
                                   "documentName": .string(DocumentType.documentName(type: option.key, variant: nil)),
                                   "keepsBackSide": .bool(DocumentType.keepsBackSide(option.key)),
                                   "travelMarginDays": .int(DocumentType.travelMarginDays(for: option.key)),
-                                  "validityMonths": DocumentType.validityMonths(type: option.key, variant: nil).map { .int($0) } ?? .null,
+                                  "validityMonths": Self.int(DocumentType.validityMonths(type: option.key, variant: nil)),
                                   "isDatedByIssue": .bool(DocumentType.isDatedByIssue(option.key))]))
             for variant in DocumentType.variants(of: option.key) {
                 cases.append(.object(["type": .string(option.key), "variant": .string(variant.key),
                                       "documentName": .string(DocumentType.documentName(type: option.key, variant: variant.key)),
-                                      "validityMonths": DocumentType.validityMonths(type: option.key, variant: variant.key).map { .int($0) } ?? .null]))
+                                      "validityMonths": Self.int(DocumentType.validityMonths(type: option.key, variant: variant.key))]))
             }
         }
         for type in ["Pasaport", "buletin", "CEASS", "documentType.somethingNewer", ""] {
@@ -490,7 +498,7 @@ struct SectionVectorsTests {
         ]
         for values in typed {
             cases.append(.object(["values": try json(FieldValues(values)),
-                                  "nameFromValues": AssetActions.documentName(FieldValues(values)).map { .string($0) } ?? .null]))
+                                  "nameFromValues": Self.text(AssetActions.documentName(FieldValues(values)))]))
         }
         cases.append(.object(["validUntil": .object([
             "issued": "2026-08-31", "type": .string(DocumentType.criminalRecord), "variant": .string(DocumentType.Variant.criminalRecordJudicial),
@@ -499,7 +507,7 @@ struct SectionVectorsTests {
         ])]))
         let names: [(String, String?)] = [("Cazier judiciar", "Manole Corina"), ("  Pașaport ", "  "), ("Carte de identitate", nil), ("Permis", " Popescu Ion ")]
         for (document, holder) in names {
-            cases.append(.object(["nameOf": .object(["document": .string(document), "holder": holder.map { .string($0) } ?? .null]),
+            cases.append(.object(["nameOf": .object(["document": .string(document), "holder": Self.text(holder)]),
                                   "name": .string(DocumentNaming.name(document: document, holder: holder))]))
         }
         let renames: [(String, String?, String)] = [
@@ -513,8 +521,8 @@ struct SectionVectorsTests {
             ("Cazier – fiscal – Manole Corina", "Manole Corina", "Popescu Ion"),
         ]
         for (name, from, to) in renames {
-            cases.append(.object(["renamed": .object(["name": .string(name), "from": from.map { .string($0) } ?? .null, "to": .string(to)]),
-                                  "result": DocumentNaming.renamed(name, from: from, to: to).map { .string($0) } ?? .null]))
+            cases.append(.object(["renamed": .object(["name": .string(name), "from": Self.text(from), "to": .string(to)]),
+                                  "result": Self.text(DocumentNaming.renamed(name, from: from, to: to))]))
         }
         let retypes: [(String, String?, String)] = [
             ("Alt document – Manole Corina", "Alt document", "Pașaport"),
@@ -525,8 +533,8 @@ struct SectionVectorsTests {
             ("Cazier – Manole Corina", "Cazier", " "),
         ]
         for (name, from, to) in retypes {
-            cases.append(.object(["retyped": .object(["name": .string(name), "from": from.map { .string($0) } ?? .null, "to": .string(to)]),
-                                  "result": DocumentNaming.retyped(name, from: from, to: to).map { .string($0) } ?? .null]))
+            cases.append(.object(["retyped": .object(["name": .string(name), "from": Self.text(from), "to": .string(to)]),
+                                  "result": Self.text(DocumentNaming.retyped(name, from: from, to: to))]))
         }
         return Vectors(
             name: "document-names",
@@ -576,17 +584,17 @@ struct SectionVectorsTests {
             }
             cases.append(.object([
                 "name": .string(name),
-                "firms": .array(existing.map { .object(["name": .string($0.name), "taxID": $0.taxID.map { .string($0) } ?? .null]) }),
-                "find": .object(["name": .string(wanted), "taxID": taxID.map { .string($0) } ?? .null, "trade": "mechanic"]),
+                "firms": .array(existing.map { .object(["name": .string($0.name), "taxID": Self.text($0.taxID)]) }),
+                "find": .object(["name": .string(wanted), "taxID": Self.text(taxID), "trade": "mechanic"]),
                 "found": foundIndex,
                 "after": .array(all.sorted { $0.createdAt == $1.createdAt ? $0.name < $1.name : $0.createdAt < $1.createdAt }.map { firm in
-                    .object(["name": .string(firm.name), "taxID": firm.taxID.map { .string($0) } ?? .null,
+                    .object(["name": .string(firm.name), "taxID": Self.text(firm.taxID),
                              "trades": .array(firm.trades.map { .string($0) })])
                 }),
             ]))
         }
         for text in ["RO12345678", "ro 1234 5678", "0012345678", "12.345.678", "12-345-678", "1", "12345678901", "RO", "ABC", "  98765432  "] {
-            cases.append(.object(["taxIDText": .string(text), "normalized": ProviderTaxID.normalized(text).map { .string($0) } ?? .null]))
+            cases.append(.object(["taxIDText": .string(text), "normalized": Self.text(ProviderTaxID.normalized(text))]))
         }
         return Vectors(
             name: "firms",
