@@ -130,7 +130,7 @@ data class CalendarDay(val year: Int, val month: Int, val day: Int) : Comparable
         fun of(date: LocalDate): CalendarDay = CalendarDay(date.year, date.monthValue, date.dayOfMonth)
 
         /** The day that contains [instant] in [zone]. */
-        fun of(instant: Instant, zone: ZoneId): CalendarDay = of(LocalDate.ofInstant(instant, zone))
+        fun of(instant: Instant, zone: ZoneId): CalendarDay = of(instant.atZone(zone).toLocalDate())
 
         /** These numbers as a date, rolled over as a calendar does for a month or day out of range. */
         private fun normalized(year: Int, month: Int, day: Int): LocalDate =

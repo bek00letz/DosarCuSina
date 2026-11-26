@@ -102,7 +102,17 @@ interface StoredFile {
     fun open(): InputStream
 
     /** Its first [count] bytes, or fewer when it is shorter. */
-    fun header(count: Int): ByteArray = open().use { it.readNBytes(count) }
+    fun header(count: Int): ByteArray = open().use { input ->
+        // InputStream.readNBytes comes with Android 13; the app runs from Android 11.
+        val bytes = ByteArray(count)
+        var read = 0
+        while (read < count) {
+            val got = input.read(bytes, read, count - read)
+            if (got < 0) break
+            read += got
+        }
+        bytes.copyOf(read)
+    }
 }
 
 /** A file kept in memory: small ones made by hand, in tests and the in-memory binder. */

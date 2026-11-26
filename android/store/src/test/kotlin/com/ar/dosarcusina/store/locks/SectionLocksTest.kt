@@ -1,6 +1,7 @@
 package com.ar.dosarcusina.store.locks
 
 import com.ar.dosarcusina.store.BinderStore
+import com.ar.dosarcusina.store.DatabaseBuilders
 import org.junit.jupiter.api.Assertions.assertArrayEquals
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
@@ -70,7 +71,7 @@ class SectionLocksTest {
         val database = File(folder, BinderStore.DATABASE_NAME)
         assertEquals(File(folder, "binder.sqlite.section-locks.json"), SectionLocks.fileForStore(database))
         assertSame(SectionLocks.of(database), SectionLocks.of(File(folder, "./" + BinderStore.DATABASE_NAME)))
-        BinderStore.open(folder).use { store ->
+        BinderStore.open(folder, DatabaseBuilders.JVM).use { store ->
             assertSame(SectionLocks.of(database), store.locks, "Everything that opens the store shares them")
             store.locks.set(true, VEHICLE, later)
         }

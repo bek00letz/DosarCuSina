@@ -46,10 +46,11 @@ class BinderStore private constructor(
 
         /**
          * The store kept in [folder]: made there the first time, brought to the current version after.
-         * [builders] gives Room's builder for its database file: the JVM's here and in the tests, the
-         * phone's (with the app's context) in the app.
+         * [builders] gives Room's builder for its database file: the phone's (with the app's context)
+         * in the app, the JVM's ([DatabaseBuilders.JVM]) in the tests. Every caller says which, since
+         * the JVM's doesn't exist on the phone.
          */
-        fun open(folder: File, builders: DatabaseBuilders = DatabaseBuilders.JVM): BinderStore {
+        fun open(folder: File, builders: DatabaseBuilders): BinderStore {
             folder.mkdirs()
             val database = File(folder, DATABASE_NAME)
             val files = StoreFiles(File(folder, FILES_FOLDER))
@@ -58,7 +59,8 @@ class BinderStore private constructor(
 
         /**
          * A store whose database lives only in memory, its files in [filesFolder] and its locks in
-         * [locks] (their own, gone with it, unless a test hands it some): for tests and previews.
+         * [locks] (their own, gone with it, unless a test hands it some): for the tests, on the JVM
+         * (Room's in-memory builder there is the JVM's).
          */
         fun inMemory(filesFolder: File, locks: SectionLocks = SectionLocks(file = null)): BinderStore = BinderStore(
             Room.inMemoryDatabaseBuilder<BinderDatabase> { BinderDatabase_Impl() }.configured().build(),
@@ -67,7 +69,7 @@ class BinderStore private constructor(
         )
 
         /** The database in the file at [path], as every open makes it. */
-        internal fun database(path: String, builders: DatabaseBuilders = DatabaseBuilders.JVM): BinderDatabase =
+        internal fun database(path: String, builders: DatabaseBuilders): BinderDatabase =
             builders.builder(path) { BinderDatabase_Impl() }.configured().build()
 
         private fun RoomDatabase.Builder<BinderDatabase>.configured() =

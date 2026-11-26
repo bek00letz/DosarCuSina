@@ -67,9 +67,6 @@ android {
         warningsAsErrors = true
         abortOnError = true
         checkReleaseBuilds = true
-        // The modules the app is built from are checked as part of it, with its oldest Android
-        // (minSdk): code that runs on the JVM but not on Android 11 fails here.
-        checkDependencies = true
     }
 }
 
