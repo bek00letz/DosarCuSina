@@ -5,7 +5,6 @@ import com.ar.dosarcusina.core.urgency.ReminderLead
 import com.ar.dosarcusina.core.values.CalendarDay
 import com.ar.dosarcusina.core.values.DosarLocale
 import java.time.DateTimeException
-import java.time.Period
 import kotlin.math.abs
 
 // How long and how far, in words, as the iOS app's ios/Shared/DurationWording.swift: its counts
@@ -44,13 +43,15 @@ object DurationWording {
     fun distance(days: Int, from: CalendarDay): String {
         val n = magnitude(days.toLong())
         if (n < THREE_WEEKS) return DayCount.phrase(n)
-        val period = period(from, n) ?: return DayCount.phrase(n)
-        val weeks = period.days / DAYS_IN_WEEK
+        val span = span(from, n) ?: return DayCount.phrase(n)
+        val years = span.months / MONTHS_IN_YEAR
+        val months = span.months % MONTHS_IN_YEAR
+        val weeks = span.days / DAYS_IN_WEEK
         return when {
-            period.years > 0 -> yearsAndMonths(period.years, period.months)
-            period.months == 0 -> CalendarCount.weeks(maxOf(weeks, 1))
-            weeks == 0 -> CalendarCount.months(period.months)
-            else -> both(CalendarCount.months(period.months), CalendarCount.weeks(weeks))
+            years > 0 -> yearsAndMonths(years, months)
+            months == 0 -> CalendarCount.weeks(maxOf(weeks, 1))
+            weeks == 0 -> CalendarCount.months(months)
+            else -> both(CalendarCount.months(months), CalendarCount.weeks(weeks))
         }
     }
 
@@ -81,14 +82,26 @@ object DurationWording {
         else -> both(CalendarCount.years(years), CalendarCount.months(months))
     }
 
-    /** The years, months and days from [from] to [days] days after it; null past the calendar's end. */
-    private fun period(from: CalendarDay, days: Long): Period? {
-        val start = from.localDate()
-        return try {
-            Period.between(start, start.plusDays(days))
+    /** Whole calendar months, then days, from one day to another. */
+    private data class Span(val months: Int, val days: Int)
+
+    /**
+     * How far [days] days after [from] is, as the calendar counts it: the most whole months that
+     * don't go past it (a month from 31 January is 28 February, the month's last day standing in
+     * for the 31st, as `Calendar.dateComponents` counts), then the days left. Null past the
+     * calendar's end.
+     */
+    private fun span(from: CalendarDay, days: Long): Span? {
+        val start = from.onCalendar
+        val endDate = try {
+            start.localDate().plusDays(days)
         } catch (_: DateTimeException) {
             null
-        }
+        } ?: return null
+        val end = CalendarDay.of(endDate)
+        var months = (end.year - start.year) * MONTHS_IN_YEAR + (end.month - start.month)
+        while (months > 0 && start.addingMonths(months) > end) months--
+        return Span(months, start.addingMonths(months).daysTo(end))
     }
 
     private fun both(first: String, second: String): String =

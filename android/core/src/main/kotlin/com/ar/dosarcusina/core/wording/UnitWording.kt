@@ -20,8 +20,8 @@ object UnitWording {
         fewestFractionDigits: Int = 0,
         mostFractionDigits: Int = 1,
     ): String {
-        // The double's own value, as iOS's Decimal(Double) takes it, never its shortest text.
-        val number = RomanianNumber.format(BigDecimal(value), fewestFractionDigits, mostFractionDigits)
+        // The double's shortest decimal text, as iOS's Decimal(Double) takes it: 0.35 is 0,4 to one decimal.
+        val number = RomanianNumber.format(BigDecimal.valueOf(value), fewestFractionDigits, mostFractionDigits)
         return if (unit == null) number else after(unit, number, value)
     }
 

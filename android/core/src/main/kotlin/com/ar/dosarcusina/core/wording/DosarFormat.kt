@@ -21,7 +21,7 @@ enum class DateStyle {
     /** „martie 2025” */
     MONTH_YEAR,
 
-    /** „14.03.2025”, as printed on Romanian documents. */
+    /** „14.03.2025”, „1.01.2027”: the month in two digits, the day as it is. */
     NUMERIC_DAY,
 }
 
@@ -90,7 +90,7 @@ private fun writeNumbers(year: Int, month: Int, day: Int, style: DateStyle): Str
     DateStyle.LONG_DAY -> "$day ${RomanianMonths.wide(month)} $year"
     DateStyle.DAY_MONTH -> "$day ${RomanianMonths.wide(month)}"
     DateStyle.MONTH_YEAR -> "${RomanianMonths.wide(month)} $year"
-    DateStyle.NUMERIC_DAY -> "${twoDigits(day)}.${twoDigits(month)}.$year"
+    DateStyle.NUMERIC_DAY -> "$day.${twoDigits(month)}.$year"
 }
 
 /** „05”: a number with two digits at least, in ASCII, as dates and times are written. */
