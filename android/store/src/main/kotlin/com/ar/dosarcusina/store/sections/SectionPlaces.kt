@@ -21,6 +21,8 @@ import java.util.UUID
  * filed under itself. Always by what a category does (`CategoryBehavior`: the part it may belong to,
  * its role), never by its key. Read over any view of the binder: as stored, or a step's.
  */
+// The iOS type's questions about where a section goes, one function each.
+@Suppress("TooManyFunctions")
 object SectionPlaces {
     /** The categories by key, as [view] has them, each once (`TemplateStore.templatesByKey`). */
     fun categories(view: BinderView): Map<String, CategoryTemplate> =
