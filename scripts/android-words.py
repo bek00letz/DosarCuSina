@@ -439,19 +439,19 @@ def self_test():
         "one": {"stringUnit": {"value": "o zi"}}, "other": {"stringUnit": {"value": "%lld de zile"}}}}}}}
     expect("missing few reads as other", romanian("%lld zile", plural, "t"),
            ("plural", 1, {"one": "o zi", "few": "%lld de zile", "other": "%lld de zile"}))
-    lei = {"localizations": {"ro": {"stringUnit": {"value": "%1$@ %#@lei@"}, "substitutions": {"lei": {
+    lei = {"localizations": {"ro": {"stringUnit": {"value": "%1$@\u00a0%#@lei@"}, "substitutions": {"lei": {
         "argNum": 2, "formatSpecifier": "lld", "variations": {"plural": {
             "one": {"stringUnit": {"value": "leu"}}, "few": {"stringUnit": {"value": "lei"}},
             "other": {"stringUnit": {"value": "de lei"}}}}}}}}}
-    expect("substitution", romanian("%@ %lld lei", lei, "t"),
-           ("plural", 2, {"one": "%1$@ leu", "few": "%1$@ lei", "other": "%1$@ de lei"}))
+    expect("substitution", romanian("%@\u00a0%lld lei", lei, "t"),
+           ("plural", 2, {"one": "%1$@\u00a0leu", "few": "%1$@\u00a0lei", "other": "%1$@\u00a0de lei"}))
     expect("no localization", romanian("azi", {}, "t"), ("text", "azi"))
     refuses("plural on two arguments", lambda: romanian("%@ %lld", plural, "t"))
 
     # Android's escapes.
     expect("apostrophe and quotes", android_text("n'a \"x\""), "n\\'a \\\"x\\\"")
     expect("xml", android_text("a < b & c"), "a &lt; b &amp; c")
-    expect("no-break space", android_text("1 leu"), "1\\u00A0leu")
+    expect("no-break space", android_text("1\u00a0leu"), "1\\u00A0leu")
     expect("edges", android_text(" a  b "), "\\u0020a \\u0020b\\u0020")
     expect("at sign", android_text("@x"), "\\@x")
     expect("newline", android_text("a\nb"), "a\\nb")
@@ -464,7 +464,7 @@ def self_test():
             json.dump({"sourceLanguage": "ro", "strings": strings, "version": "1.0"}, open(full, "w"))
 
         catalog("ios/DosarCuSina/Resources/Localizable.xcstrings",
-                {"Protejat cu Face ID": {}, "%@ %lld lei": lei, "Lipit": {"extractionState": "manual"}})
+                {"Protejat cu Face ID": {}, "%@\u00a0%lld lei": lei, "Lipit": {"extractionState": "manual"}})
         catalog("ios/Shared/Shared.xcstrings", {"%lld zile": plural, "în %@": {}})
         catalog("ios/DosarCuSinaWidgets/Localizable.xcstrings", {})
         differs = os.path.join(root, DIFFERS)
@@ -479,7 +479,7 @@ def self_test():
         expect("android's words", book["app"]["Protejat cu Face ID"]["text"], "Protejat cu amprenta")
         expect("manual entry kept", "Lipit" in book["app"], True)
         expect("plural in json", book["shared"]["%lld zile"]["plural"]["other"], "%1$,d de zile")
-        expect("lei in json", book["app"]["%@ %lld lei"]["plural"]["one"], "%1$s leu")
+        expect("lei in json", book["app"]["%@\u00a0%lld lei"]["plural"]["one"], "%1$s\u00a0leu")
         expect("plurals in xml", '<item quantity="few">%1$,d de zile</item>' in xml, True)
         expect("text in xml", '>în %1$s</string>' in xml, True)
         say([{"book": "app", "key": "Nu mai e", "android": "x", "why": "y"}])
