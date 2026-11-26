@@ -13,6 +13,7 @@ import com.ar.dosarcusina.archive.v3.IssuerLessonRecord
 import com.ar.dosarcusina.archive.v3.Manifest
 import com.ar.dosarcusina.archive.v3.ProviderRecord
 import com.ar.dosarcusina.archive.v3.TemplateRecord
+import com.ar.dosarcusina.catalog.Catalog
 import com.ar.dosarcusina.core.values.MachineText
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
@@ -36,6 +37,7 @@ class ImportRulesTest {
     private val card = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaa02"
     private val sealedPin = "sealed:v1:AAAA"
 
+    /** As an archive writes them: a built-in takes the catalog's definition, whatever these say of it. */
     private val categories = """
         [{"key": "member", "name": "Persoane", "symbol": "person", "tint": "blue", "heroStyle": "standard", "isBuiltIn": true,
           "version": 27, "homeOrder": 0, "isOnHome": true, "isSensitive": false, "sections": [], "blueprints": [],
@@ -50,12 +52,19 @@ class ImportRulesTest {
           "blueprints": [], "createdAt": "2026-01-01T00:00:00Z", "updatedAt": "0001-01-01T00:00:00Z"}]
     """
 
-    private fun assets(cardUpdated: String = "2026-11-01T00:00:00Z", parentOfPerson: String? = null, cardType: String = "documentType.idCard") = """
+    /** The household's person and their identity card: an electronic one, whose PINs the catalog asks for, unless a passport. */
+    private fun assets(
+        cardUpdated: String = "2026-11-01T00:00:00Z",
+        parentOfPerson: String? = null,
+        cardType: String = "documentType.idCard",
+        cardVariant: String = if (cardType == "Pașaport") "documentVariant.passport.electronic" else "documentVariant.idCard.electronic",
+    ) = """
         [{"id": "$person", "templateKey": "member", "name": "Ana", "values": {}, "isExample": false,
           ${parentOfPerson?.let { "\"parentId\": \"$it\"," } ?: ""}
           "createdAt": "2026-01-01T00:00:00Z", "updatedAt": "$cardUpdated"},
          {"id": "$card", "templateKey": "documents", "name": "Carte de identitate – Ana", "parentId": "$person", "isExample": false,
-          "values": {"document.type": {"type": "text", "value": "$cardType"}, "document.number": {"type": "text", "value": "XX123456"}},
+          "values": {"document.type": {"type": "text", "value": "$cardType"},
+            "document.variant": {"type": "text", "value": "$cardVariant"}, "document.number": {"type": "text", "value": "XX123456"}},
           "customFacts": [{"id": "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbb01", "label": "Număr contract", "value": "123"}],
           "createdAt": "2026-01-01T00:00:00Z", "updatedAt": "$cardUpdated"}]
     """
@@ -81,7 +90,7 @@ class ImportRulesTest {
         (MachineText.parse(json) as kotlinx.serialization.json.JsonArray).map(read)
 
     private fun import(binder: InMemoryBinder, pack: DossierPackage, mode: ArchiveImportMode): ArchiveImportResult {
-        val plan = DossierImporter(pack, binder.snapshot(), mode, now, ZoneOffset.UTC).run()
+        val plan = DossierImporter(pack, binder.snapshot(), mode, now, ZoneOffset.UTC, Catalog.builtIn).run()
         binder.apply(plan.changes)
         return plan.result
     }
@@ -153,6 +162,26 @@ class ImportRulesTest {
         assertFalse(text.contains(SecretRules.SEALED_PREFIX), "Nothing sealed is written")
         assertFalse(text.contains("Cod alarmă"), "A secret row is left out")
         assertTrue(text.contains("Număr contract"))
+    }
+
+    @Test
+    fun aBuiltInTakesTheCatalogsDefinitionWhateverTheArchiveSays() {
+        val binder = InMemoryBinder()
+        import(binder, pack(), ArchiveImportMode.REPLACE)
+        val documents = binder.binder.templates.first { it.key == "documents" }
+        val catalog = Catalog.builtIn.definition("documents")!!
+        assertEquals(catalog.name, documents.name)
+        assertEquals(catalog.sections, documents.sections.items)
+        assertEquals(catalog.blueprints, documents.blueprints.items)
+        assertEquals(Catalog.builtIn.version, documents.version)
+        assertEquals(1, documents.homeOrder, "Its place is the household's, as the archive has it")
+        // The built-ins the archive doesn't name are installed, after it, as nobody's change.
+        assertEquals(Catalog.builtIn.all.map { it.key }.toSet(), binder.binder.templates.map { it.key }.toSet())
+        val bike = binder.binder.templates.first { it.key == "bike" }
+        assertEquals(ChangeTime.UNKNOWN, bike.updatedAt)
+        assertFalse(bike.isOnHome, "Shown on the binder as the catalog says")
+        assertTrue(bike.homeOrder > 1)
+        assertEquals(true, binder.binder.locks["health"], "Locked as the catalog says")
     }
 
     @Test
@@ -272,7 +301,8 @@ class ImportRulesTest {
             "createdAt": "2026-01-01T00:00:00Z", "updatedAt": "2026-01-01T00:00:00Z"}]"""
         val binder = InMemoryBinder(Binder())
         import(binder, pack(templates = own, assets = "[]"), ArchiveImportMode.REPLACE)
-        val boats = binder.binder.templates.single()
+        // The built-ins the archive doesn't name are installed beside it.
+        val boats = binder.binder.templates.single { !it.isBuiltIn }
         assertNull(boats.behavior!!.value.singular)
         assertFalse(MachineText.json(boats.behavior.json).contains("singular"))
         assertEquals(0, boats.version, "A category of one's own has no catalog version")

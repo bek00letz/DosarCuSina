@@ -61,6 +61,8 @@ kotlin {
 dependencies {
     implementation(projects.core)
     implementation(projects.archive)
+    // The built-in catalog, with shared/catalog/ in its resources.
+    implementation(projects.catalog)
 
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.compose.ui)

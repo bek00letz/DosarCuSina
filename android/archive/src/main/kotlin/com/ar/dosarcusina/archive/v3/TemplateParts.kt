@@ -12,8 +12,8 @@ import kotlinx.serialization.json.JsonPrimitive
 // "Template"): its sections and fields, its deadlines, its parts and its behaviour. Each is read
 // as the iOS app reads it, so what the importer decides (secret fields, choice keys, a category
 // of one's own's name) reads the same values; the parts the importer only carries (a field's
-// derivation, a deadline's first due date, its facts) are kept as written. A category's
-// definition stays the archive's until Phase 2 brings the shared catalog (`BuiltIns`).
+// derivation, a deadline's first due date, its facts) are kept as written. A built-in's
+// definition is the shared catalog's (`BuiltIns`), read with these same codecs.
 
 /** A codec that reads with [read] (null, or [UnreadableRecord], when it can't) and writes with [write]. */
 internal fun <T> codec(read: (JsonRecord) -> T, write: (T) -> JsonElement): JsonCodec<T> = object : JsonCodec<T> {
