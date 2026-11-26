@@ -1,5 +1,7 @@
 package com.ar.dosarcusina.core.search
 
+import com.ar.dosarcusina.core.history.HistoryItemSnapshot
+import com.ar.dosarcusina.core.history.MaintenanceLog
 import com.ar.dosarcusina.core.text.PaymentCardNumbers.KeptWhole
 import com.ar.dosarcusina.core.text.SealedText
 import com.ar.dosarcusina.core.values.CalendarDay
@@ -230,15 +232,11 @@ class SearchEntries(private val wording: SearchWording, private val zone: ZoneId
             TextRules.characters(text).filter { TextRules.isLetter(it) || TextRules.isNumber(it) }.joinToString("")
 
         /**
-         * The newest occurrence of each part or job followed, newest first (the iOS app's
-         * `MaintenanceLog.trackedComponents` and `lastOccurrence`, the part search reads of them).
+         * The newest occurrence of each part or job followed, newest first: the maintenance log's
+         * ([MaintenanceLog.trackedComponents] and [MaintenanceLog.lastItem]), the one place that says it.
          */
-        internal fun lastOccurrences(parts: List<SearchPart>): List<SearchPart> =
-            parts.filter { it.componentKey != null }
-                .groupBy { it.componentKey }
-                .values
-                .map { occurrences -> occurrences.maxBy { it.occurredAt } }
-                .sortedByDescending { it.occurredAt }
+        internal fun lastOccurrences(parts: List<HistoryItemSnapshot>): List<HistoryItemSnapshot> =
+            MaintenanceLog.trackedComponents(parts).mapNotNull { MaintenanceLog.lastItem(it, parts) }
 
         /**
          * [document] with every CNP-shaped number, card number and sealed value taken out of what can be

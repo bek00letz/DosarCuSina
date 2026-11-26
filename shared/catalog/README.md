@@ -14,8 +14,9 @@ The categories that ship with the app (Mașini, Locuințe, Acte and the rest), d
 | [`ownCategories.json`](ownCategories.json) | What a category of one's own is made of besides the answers to its switches. |
 | [`household.json`](household.json) | The household's own deadlines, which belong to no section. |
 | [`subscriptions/subscriptions.json`](subscriptions/subscriptions.json) | What a subscription can be: its services, codes, groups and billing cycles. Written by [`SubscriptionCatalogExportTests`](../../ios/DosarCuSinaTests/SubscriptionCatalogExportTests.swift) (see below). |
+| [`capture/lexicon.json`](capture/lexicon.json) | The words capture's shared readers look for that are no one kind's: today what a line of work is that is never a part. Written by [`CaptureLexiconExportTests`](../../ios/DosarCuSinaTests/CaptureLexiconExportTests.swift) (see below). |
 
-All six are machine JSON, written by `MachineText` with their keys sorted, so a diff shows only what changed.
+All seven are machine JSON, written by `MachineText` with their keys sorted, so a diff shows only what changed.
 
 ### `templates.json`
 
@@ -68,6 +69,15 @@ What a subscription can be, declared once in the iOS code (`ServiceKind.services
 - **`writtenBy`:** the test that writes the file.
 
 [`SubscriptionCatalogExportTests`](../../ios/DosarCuSinaTests/SubscriptionCatalogExportTests.swift) writes it fresh or fails, by the same switch (`TEST_RUNNER_CATALOG_WRITE=1`, or `CATALOG_WRITE=1` in Xcode, running `SubscriptionCatalogExportTests`); a failed run on GitHub keeps it made afresh in `test-results` as `catalog/subscriptions/`. Android's `core` module copies it into its resources (the `subscriptionCatalogResources` task) and reads it into `SubscriptionCatalog.builtIn` ([`core.subscriptions`](../../android/core/src/main/kotlin/com/ar/dosarcusina/core/subscriptions)); every part must read whole, and no Android code tests for a named service.
+
+### `capture/lexicon.json`
+
+The words capture's shared readers look for that are no one kind's, declared once in the iOS code (`CaptureLexicon` in [`CaptureLexicon.swift`](../../ios/DosarCuSina/Services/Capture/CaptureLexicon.swift)), in a folder of its own:
+
+- **`labourWords`:** the words of a line that is the work itself, never a part (`LabourLine`: „Manoperă”, „mână de lucru”, hours worked), folded, each matching only where a word starts. Wherever a line item is written, one that is labour is kept as the visit's labour cost and never listed as a part.
+- **`writtenBy`:** the test that writes the file.
+
+[`CaptureLexiconExportTests`](../../ios/DosarCuSinaTests/CaptureLexiconExportTests.swift) writes it fresh or fails, by the same switch (`TEST_RUNNER_CATALOG_WRITE=1`); a failed run on GitHub keeps it made afresh in `test-results` as `catalog/capture/`. Android's `core` module copies it into its resources (the `captureLexiconResources` task) and reads it into `CaptureLexicon.builtIn` ([`core.capture`](../../android/core/src/main/kotlin/com/ar/dosarcusina/core/capture)). Capture's other words (the label tables, the buyer's block, an issuer's prefixes) join it with capture's port.
 
 ## Fresh or failing
 
