@@ -38,7 +38,7 @@ The iOS golden household, brought into an empty Android binder and written out b
 
 **Android's** are kept fresh the same way, by contents, not bytes, by `GoldenAndroidArchivesTest`: it writes the household again on every run and compares what it writes with `android/expected/`, every data file and the manifest as JSON and every vault file by its SHA-256 (the salt, and the entries' dates where the time zone moves them, may differ). Bring them up to date from `android/` with `./gradlew :archive:test -PwriteGoldenArchives`, or copy what a failed run left: locally in `android/archive/build/golden-archives/`, on GitHub in the failed `android-build-and-test` run's `android-golden-archives` artifact. As for iOS, review the diff of `expected/` and commit it with both archives.
 
-For iOS: when the writer, the catalog or the household changes on purpose, bring them up to date and commit all three together. A pull request's failed `build-and-test` run already made them: its `test-results` artifact holds `golden-archives/`, laid out as `ios/` is (`tests/run_tests.sh` passes the folder as `TEST_RUNNER_GOLDEN_ARCHIVES_OUT`); copy `household.dosar`, `household-password.dosar` and `expected/` over `ios/`. Or make them on a Mac:
+For iOS: when the writer, the catalog or the household changes on purpose, bring them up to date and commit all three together. A pull request's failed `build-and-test` run already made them: its `test-results` artifact holds `golden-archives/`, laid out as `ios/` is (`tests/run_tests.sh` passes the folder as `TEST_RUNNER_GOLDEN_ARCHIVES_OUT`); copy `household.dosar`, `household-password.dosar` and `expected/` over `ios/`. Android's are made from the iOS household, so the same run made them afresh too, from the iOS ones it just made (`scripts/golden-android-from-ios.sh`), in `golden-archives-android/`: copy that folder over `android/` in the same commit, and the next run is green on both sides. Or make them on a Mac:
 
 ```sh
 TEST_RUNNER_GOLDEN_ARCHIVES_WRITE=1 xcodebuild test -project ios/DosarCuSina.xcodeproj -scheme DosarCuSina \
@@ -46,7 +46,7 @@ TEST_RUNNER_GOLDEN_ARCHIVES_WRITE=1 xcodebuild test -project ios/DosarCuSina.xco
   -only-testing:DosarCuSinaTests/GoldenArchiveTests CODE_SIGNING_ALLOWED=NO
 ```
 
-(In Xcode, set `GOLDEN_ARCHIVES_WRITE=1` in the scheme's environment and run `GoldenArchiveTests`.) Review the diff of `expected/` before committing: it is what Android's tests will expect.
+(In Xcode, set `GOLDEN_ARCHIVES_WRITE=1` in the scheme's environment and run `GoldenArchiveTests`.) Then make Android's from them with `scripts/golden-android-from-ios.sh shared/fixtures/golden/ios <out-dir>` and copy `<out-dir>` over `android/`. Review the diff of `expected/` before committing: it is what Android's tests will expect.
 
 ## Who reads them
 
