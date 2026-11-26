@@ -4,7 +4,8 @@ import SwiftData
 /// "Explore with examples": a small household that shows every part of the app.
 /// Everything it creates is tagged `isExample`, never schedules real reminders,
 /// and goes away with `removeExamples()`. Data is made up; no real people,
-/// plates or identifiers.
+/// plates or identifiers. The household itself is declared once, as data, in
+/// `ExampleHousehold`, which the Android app loads too.
 @MainActor
 public struct ExampleDataService {
     public let context: ModelContext
@@ -48,182 +49,85 @@ public struct ExampleDataService {
         try UnitOfWork.perform(in: context, now: now()) { try addExampleHousehold(store: store) }
     }
 
+    /// Makes the household's steps (`ExampleHousehold.standard`) in order, each through its
+    /// action, every record marked as an example. A step naming a section that wasn't made (its
+    /// category isn't in the binder) is left out with it.
     private func addExampleHousehold(store: TemplateStore) throws {
-        let templates = try store.templatesByKey()
-        let assets = AssetActions(context: context, calendar: calendar, now: now)
-        let history = HistoryActions(context: context, now: now)
-        let providers = ProviderActions(context: context, now: now)
-        let today = CalendarDay(now(), calendar: calendar)
-        func daysAgo(_ days: Int) -> Date { calendar.date(byAdding: .day, value: -days, to: now()) ?? now() }
-        func day(_ offset: Int) -> CalendarDay { today.adding(days: offset, calendar: calendar) }
-        func plan(_ template: CategoryTemplate, _ values: FieldValues, dues: [String: Int], extra: Set<String> = []) -> [PlannedObligation] {
-            assets.plannedObligations(for: template, values: values).map { planned in
-                var planned = planned
-                if let offset = dues[planned.blueprint.key] { planned.firstDue = day(offset) }
-                // The add flow's rule, with the example's own dates given.
-                planned.isSelected = PlannedObligation.startsSelected(planned.blueprint, firstDue: planned.firstDue)
-                    || (extra.contains(planned.blueprint.key) && planned.firstDue != nil)
-                return planned
+        var made = Made(templates: try store.templatesByKey())
+        for step in ExampleHousehold.standard.steps {
+            switch step {
+            case .section(let section): try make(section, in: &made)
+            case .firm(let firm): try make(firm, in: &made)
+            case .record(let record): try make(record, in: made)
+            case .pastCompletion(let completion): try make(completion, in: made)
+            case .reading(let reading): try make(reading, in: made)
             }
         }
+    }
 
-        if let template = templates[BuiltInTemplates.Key.vehicle] {
-            var values = FieldValues()
-            values["vehicle.plate"] = .text("B-123-ABC")
-            values["vehicle.make"] = .text("Volkswagen")
-            values["vehicle.model"] = .text("Golf")
-            values["vehicle.year"] = .number(2018)
-            values["vehicle.fuel"] = .text(FuelType.petrol)
-            values["vehicle.usage"] = .text(VehicleUse.personal)
-            values["vehicle.odometer"] = .number(142_500)
-            let car = try assets.create(
-                name: "VW Golf",
-                template: template,
-                values: values,
-                obligations: plan(template, values, dues: ["vehicle.itp": 9, "vehicle.rca": 41, "vehicle.vignette": -2, "vehicle.service": 120]),
-                isExample: true
-            )
-            try addHistory(to: car, blueprintKey: "vehicle.itp", daysAgo: 721, cost: Money(170))
-            let mechanic = try providers.create(name: String(localized: "Service auto exemplu"), trades: [.mechanic, .tyreShop], phone: "0700 000 001", linkedTo: [car])
-            try providers.setWouldCallAgain(mechanic, true)
-            try history.record(
-                on: car, kind: .maintenance, title: String(localized: "Revizie anuală"), occurredAt: daysAgo(400),
-                metricReading: 121_300, totalCost: Money(1_150),
-                items: [
-                    LineItemDraft(name: String(localized: "Schimb ulei și filtru"), partBrandOrCode: "5W-30", cost: Money(420)),
-                    LineItemDraft(name: String(localized: "Plăcuțe frână față"), partBrandOrCode: "Exemplu", cost: Money(380)),
-                ],
-                providers: [mechanic], rating: 5, asExample: true
-            )
-            try history.record(
-                on: car, kind: .maintenance, title: String(localized: "Revizie"), occurredAt: daysAgo(120),
-                metricReading: 136_200, totalCost: Money(690),
-                items: [LineItemDraft(name: String(localized: "Schimb ulei și filtru"), partBrandOrCode: "5W-30", cost: Money(450))],
-                providers: [mechanic], rating: 4, asExample: true
-            )
+    /// What the loader has made so far, by the refs the household's steps use.
+    private struct Made {
+        let templates: [String: CategoryTemplate]
+        var sections: [String: Asset] = [:]
+        var firms: [String: Provider] = [:]
+    }
+
+    private var assets: AssetActions { AssetActions(context: context, calendar: calendar, now: now) }
+
+    /// The moment `days` days from now, at the same time of day in the app's calendar.
+    private func moment(_ days: Int) -> Date { calendar.date(byAdding: .day, value: days, to: now()) ?? now() }
+
+    private func make(_ section: ExampleHousehold.Section, in made: inout Made) throws {
+        guard let template = made.templates[section.category] else { return }
+        let parent = section.parent.map { made.sections[$0] }
+        // Filed under a section that wasn't made: left out with it.
+        if case .some(.none) = parent { return }
+        let today = CalendarDay(now(), calendar: calendar)
+        var values = FieldValues()
+        for (key, value) in section.values { values[key] = value.value(on: today, calendar: calendar) }
+        let planned = assets.plannedObligations(for: template, values: values).map { planned in
+            var planned = planned
+            if let offset = section.firstDue[planned.blueprint.key] { planned.firstDue = today.adding(days: offset, calendar: calendar) }
+            // The add flow's rule, with the example's own dates given.
+            planned.isSelected = PlannedObligation.startsSelected(planned.blueprint, firstDue: planned.firstDue)
+            return planned
         }
+        made.sections[section.ref] = try assets.create(name: section.name, template: template, values: values,
+                                                       obligations: planned, parent: parent ?? nil, isExample: true)
+    }
 
-        var homeAsset: Asset?
-        if let template = templates[BuiltInTemplates.Key.home] {
-            var values = FieldValues()
-            values["home.address"] = .text("Str. Exemplului nr. 12, București")
-            values["home.area"] = .number(78.5)
-            values["home.meterReadFrom"] = .number(20)
-            values["home.meterReadTo"] = .number(25)
-            homeAsset = try assets.create(
-                name: String(localized: "Apartament Floreasca"),
-                template: template,
-                values: values,
-                obligations: plan(template, values, dues: ["home.boilerCheck": 200, "home.gasCheck": 310, "home.pad": 25]),
-                isExample: true
-            )
-        }
+    private func make(_ firm: ExampleHousehold.Firm, in made: inout Made) throws {
+        let linked = firm.linkedTo.compactMap { made.sections[$0] }
+        guard linked.count == firm.linkedTo.count else { return }
+        let providers = ProviderActions(context: context, now: now)
+        let provider = try providers.create(name: firm.name, trades: firm.trades, phone: firm.phone, linkedTo: linked)
+        if let rating = firm.rating { try providers.setRating(provider, rating) }
+        if let again = firm.wouldCallAgain { try providers.setWouldCallAgain(provider, again) }
+        made.firms[firm.ref] = provider
+    }
 
-        if let home = homeAsset {
-            let plumber = try providers.create(name: String(localized: "Instalator exemplu"), trades: [.plumber], phone: "0700 000 002", linkedTo: [home])
-            try history.record(
-                on: home, kind: .repair, title: String(localized: "Robinet nou la bucătărie"), occurredAt: daysAgo(210), totalCost: Money(340),
-                items: [LineItemDraft(name: String(localized: "Baterie bucătărie"), partBrandOrCode: "Exemplu", cost: Money(240))],
-                providers: [plumber], rating: 5, asExample: true
-            )
-            try history.record(
-                on: home, kind: .purchase, title: String(localized: "Hotă nouă"), occurredAt: daysAgo(500), totalCost: Money(899),
-                items: [LineItemDraft(name: String(localized: "Hotă"), partBrandOrCode: "Exemplu 60 cm", cost: Money(899))],
-                asExample: true
-            )
-        }
+    private func make(_ record: ExampleHousehold.Record, in made: Made) throws {
+        guard let section = made.sections[record.section] else { return }
+        try HistoryActions(context: context, now: now).record(
+            on: section, kind: record.kind, title: record.title, occurredAt: moment(record.daysFromNow),
+            metricReading: record.metricReading, totalCost: record.totalCost,
+            items: record.items.map { LineItemDraft(name: $0.name, partBrandOrCode: $0.partBrandOrCode, cost: $0.cost) },
+            providers: record.firms.compactMap { made.firms[$0] }, rating: record.rating, asExample: true
+        )
+    }
 
-        if let template = templates[BuiltInTemplates.Key.pet] {
-            var values = FieldValues()
-            values["pet.species"] = .text(PetSpecies.dog)
-            values["pet.breed"] = .text("Golden Retriever")
-            values["pet.birthDate"] = .date(CalendarDay(year: 2021, month: 5, day: 10))
-            values["pet.microchip"] = .text("642000000000001")
-            values["pet.weight"] = .number(31.5)
-            let pet = try assets.create(
-                name: "Max",
-                template: template,
-                values: values,
-                obligations: plan(template, values, dues: ["pet.rabies": 60, "pet.vaccine": 60, "pet.dewormInternal": 3, "pet.dewormExternal": 12]),
-                isExample: true
-            )
-            try addReadings(to: pet, kind: .bodyWeight, values: [(-120, 30.2), (-60, 31.0), (0, 31.5)])
-            let vet = try providers.create(name: String(localized: "Cabinet veterinar exemplu"), trades: [.vet], phone: "0700 000 003", linkedTo: [pet])
-            try providers.setRating(vet, 5)
-        }
+    /// A completion from before the binder knew the deadline, logged without moving the deadline.
+    private func make(_ completion: ExampleHousehold.PastCompletion, in made: Made) throws {
+        let deadlines = made.sections[completion.section]?.obligations ?? []
+        guard let obligation = deadlines.first(where: { $0.blueprintKey == completion.deadline }) else { return }
+        try ObligationActions(context: context, calendar: calendar, now: now)
+            .recordPastCompletion(of: obligation, on: moment(completion.daysFromNow), cost: completion.cost)
+    }
 
-        if let template = templates[BuiltInTemplates.Key.documents], let memberTemplate = templates[BuiltInTemplates.Key.member] {
-            // Documents are filed under the household member they belong to.
-            let me = try assets.create(name: String(localized: "Eu", comment: "Example household member"), template: memberTemplate, values: FieldValues(), isExample: true)
-            var passport = FieldValues()
-            passport["document.type"] = .text(DocumentType.passport)
-            passport["document.number"] = .text("050000000")
-            passport["document.expiry"] = .date(day(150))
-            try assets.create(name: String(localized: "Pașaport"), template: template, values: passport, obligations: plan(template, passport, dues: [:]), parent: me, isExample: true)
-            var idCard = FieldValues()
-            idCard["document.type"] = .text(DocumentType.idCard)
-            idCard["document.expiry"] = .date(day(900))
-            try assets.create(name: String(localized: "Carte de identitate"), template: template, values: idCard, obligations: plan(template, idCard, dues: [:]), parent: me, isExample: true)
-        }
-
-        if let template = templates[BuiltInTemplates.Key.health] {
-            var values = FieldValues()
-            values["health.bloodType"] = .text("bloodType.aPositive")
-            values["health.allergies"] = .text(String(localized: "Fără alergii cunoscute"))
-            try assets.create(
-                name: String(localized: "Profil medical"),
-                template: template,
-                values: values,
-                obligations: plan(template, values, dues: ["health.checkup": 45, "health.dentist": -1]),
-                isExample: true
-            )
-        }
-
-        if let template = templates[BuiltInTemplates.Key.purchase] {
-            var fridge = FieldValues()
-            fridge["purchase.brand"] = .text(String(localized: "Frigider combinat"))
-            fridge["purchase.retailer"] = .text(String(localized: "Magazin exemplu"))
-            fridge["purchase.price"] = .money(Money(2_499))
-            fridge["purchase.date"] = .date(day(-600))
-            try assets.create(name: String(localized: "Frigider"), template: template, values: fridge, obligations: plan(template, fridge, dues: [:]), parent: homeAsset, isExample: true)
-            var cooker = FieldValues()
-            cooker["purchase.retailer"] = .text(String(localized: "Magazin exemplu"))
-            cooker["purchase.price"] = .money(Money(1_350))
-            cooker["purchase.date"] = .date(day(-200))
-            try assets.create(name: String(localized: "Aragaz"), template: template, values: cooker, obligations: plan(template, cooker, dues: [:]), parent: homeAsset, isExample: true)
-        }
-
-        if let template = templates[BuiltInTemplates.Key.tenancy], let home = homeAsset {
-            var lease = FieldValues()
-            lease["tenancy.start"] = .date(day(-300))
-            lease["tenancy.end"] = .date(day(65))
-            lease["tenancy.rent"] = .money(Money(450, currency: "EUR"))
-            lease["tenancy.paymentDay"] = .number(5)
-            lease["tenancy.deposit"] = .money(Money(450, currency: "EUR"))
-            let tenancy = try assets.create(name: String(localized: "Chiriaș garsonieră"), template: template, values: lease,
-                                            obligations: plan(template, lease, dues: [:]), parent: home, isExample: true)
-            try providers.create(name: String(localized: "Chiriaș exemplu"), trades: [.tenant], phone: "0700 000 004", linkedTo: [tenancy])
-            try assets.recordMeasurement(on: tenancy, kind: .coldWater, name: String(localized: "Apă rece la mutare"), value: 312,
-                                         at: calendar.date(byAdding: .day, value: -300, to: now()), asExample: true)
-        }
-
-        if let template = templates[BuiltInTemplates.Key.subscription] {
-            var values = FieldValues()
-            values["subscription.provider"] = .text("Digi")
-            values[SubscriptionFields.service] = .text(ServiceKind.internetTV)
-            values["subscription.price"] = .money(Money(45))
-            values["subscription.cycle"] = .text(BillingCycle.monthly)
-            values["subscription.contractEnd"] = .date(day(40))
-            try assets.create(name: String(localized: "Internet fibră"), template: template, values: values, obligations: plan(template, values, dues: [:]), isExample: true)
-
-            var storage = FieldValues()
-            storage["subscription.provider"] = .text(String(localized: "Serviciu exemplu"))
-            storage[SubscriptionFields.service] = .text(ServiceKind.streaming)
-            storage["subscription.price"] = .money(Money(Decimal(string: "29.99") ?? 30, currency: "EUR"))
-            storage["subscription.cycle"] = .text(BillingCycle.yearly)
-            storage["subscription.renewalDate"] = .date(day(18))
-            try assets.create(name: String(localized: "Stocare online"), template: template, values: storage, obligations: plan(template, storage, dues: [:]), isExample: true)
-        }
+    private func make(_ reading: ExampleHousehold.Reading, in made: Made) throws {
+        guard let section = made.sections[reading.section] else { return }
+        try assets.recordMeasurement(on: section, kind: reading.kind, name: reading.name, value: reading.value,
+                                     at: moment(reading.daysFromNow), asExample: true)
     }
 
     /// Deletes everything created by `loadExamples()` in one save. Only examples go:
@@ -308,22 +212,5 @@ public struct ExampleDataService {
             queue += node.children ?? []
         }
         return result
-    }
-
-    // MARK: Helpers
-
-    private func addReadings(to asset: Asset, kind: MeasurementKind, values: [(daysAgo: Int, value: Double)]) throws {
-        let assets = AssetActions(context: context, calendar: calendar, now: now)
-        for reading in values where reading.daysAgo != 0 {
-            let date = calendar.date(byAdding: .day, value: reading.daysAgo, to: now()) ?? now()
-            try assets.recordMeasurement(on: asset, kind: kind, value: reading.value, at: date, asExample: true)
-        }
-    }
-
-    /// Adds a past completion to the history without moving the obligation.
-    private func addHistory(to asset: Asset, blueprintKey: String, daysAgo: Int, cost: Money) throws {
-        guard let obligation = (asset.obligations ?? []).first(where: { $0.blueprintKey == blueprintKey }) else { return }
-        let date = calendar.date(byAdding: .day, value: -daysAgo, to: now()) ?? now()
-        try ObligationActions(context: context, calendar: calendar, now: now).recordPastCompletion(of: obligation, on: date, cost: cost)
     }
 }

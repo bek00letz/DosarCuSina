@@ -15,8 +15,9 @@ The categories that ship with the app (Mașini, Locuințe, Acte and the rest), d
 | [`household.json`](household.json) | The household's own deadlines, which belong to no section. |
 | [`subscriptions/subscriptions.json`](subscriptions/subscriptions.json) | What a subscription can be: its services, codes, groups and billing cycles. Written by [`SubscriptionCatalogExportTests`](../../ios/DosarCuSinaTests/SubscriptionCatalogExportTests.swift) (see below). |
 | [`capture/lexicon.json`](capture/lexicon.json) | The words capture's shared readers look for that are no one kind's: today what a line of work is that is never a part. Written by [`CaptureLexiconExportTests`](../../ios/DosarCuSinaTests/CaptureLexiconExportTests.swift) (see below). |
+| [`examples/household.json`](examples/household.json) | The example household ("Explore with examples"): every step its loader takes. Written by [`ExampleHouseholdExportTests`](../../ios/DosarCuSinaTests/ExampleHouseholdExportTests.swift) (see below). |
 
-All seven are machine JSON, written by `MachineText` with their keys sorted, so a diff shows only what changed.
+All eight are machine JSON, written by `MachineText` with their keys sorted, so a diff shows only what changed.
 
 ### `templates.json`
 
@@ -79,6 +80,20 @@ The words capture's shared readers look for that are no one kind's, declared onc
 
 [`CaptureLexiconExportTests`](../../ios/DosarCuSinaTests/CaptureLexiconExportTests.swift) writes it fresh or fails, by the same switch (`TEST_RUNNER_CATALOG_WRITE=1`); a failed run on GitHub keeps it made afresh in `test-results` as `catalog/capture/`. Android's `core` module copies it into its resources (the `captureLexiconResources` task) and reads it into `CaptureLexicon.builtIn` ([`core.capture`](../../android/core/src/main/kotlin/com/ar/dosarcusina/core/capture)). Capture's other words (the label tables, the buyer's block, an issuer's prefixes) join it with capture's port.
 
+### `examples/household.json`
+
+The example household, declared once in the iOS code (`ExampleHousehold.standard` in [`ExampleHousehold.swift`](../../ios/DosarCuSina/Services/Examples/ExampleHousehold.swift)), which `ExampleDataService` loads through the app's actions, every record marked as an example. Made-up data only; its names and values are the household's, not the app's words.
+
+- **`steps`:** in the order the loader takes them, each one key naming its kind and holding it:
+  - **`section`:** `ref` (the name the steps after it know it by), `category` (a built-in's key), `name`, `values` (by field key, each as a section keeps it, or `{"type": "dayFromToday", "days": n}`, a day counted from the day the examples load), `firstDue` (the first day of each deadline the example gives, by its blueprint, in days from today; which deadlines start ticked is the add flow's one rule) and `parent` (the `ref` it is filed under).
+  - **`firm`:** `ref`, `name`, `trades`, `phone`, `linkedTo` (the `ref`s of the sections it works on), `rating`, `wouldCallAgain`.
+  - **`record`:** a record of history: `section`, `kind` (a stored history kind), `title`, `daysFromNow` (when, counted from the moment the examples load, at the same time of day), `metricReading`, `totalCost`, `items` (`name`, `partBrandOrCode`, `cost`), `firms` (`ref`s) and `rating`.
+  - **`pastCompletion`:** a completion from before the binder knew a deadline, which stays where it is: `section`, `deadline` (its blueprint key), `daysFromNow`, `cost`.
+  - **`reading`:** `section`, `kind` (a stored measurement kind), `name`, `value`, `daysFromNow`.
+- **`writtenBy`:** the test that writes the file.
+
+[`ExampleHouseholdExportTests`](../../ios/DosarCuSinaTests/ExampleHouseholdExportTests.swift) writes it fresh or fails, by the same switch (`TEST_RUNNER_CATALOG_WRITE=1`); a failed run on GitHub keeps it made afresh in `test-results` as `catalog/examples/`. Android's `catalog` module copies it into its resources with the catalog and reads it into `ExampleHousehold.builtIn`; the store's `ExampleDataService` makes each step through its own actions. What loading and removing leave in the binder, record by record, is pinned in [`../test-vectors/examples/`](../test-vectors/examples/) (`ExampleVectorsTests`).
+
 ## Fresh or failing
 
 `CatalogExportTests` writes the five files again on every iOS test run and fails when what is committed differs, or when a JSON file here is written by nothing any more. A failed run on GitHub keeps them made afresh in its `test-results` artifact, as `catalog/` (`tests/run_tests.sh` passes the folder as `TEST_RUNNER_CATALOG_OUT`): copy them over this folder. Or write them on a Mac:
@@ -93,7 +108,7 @@ TEST_RUNNER_CATALOG_WRITE=1 xcodebuild test -project ios/DosarCuSina.xcodeproj -
 
 ## Who reads them
 
-- **Android:** the `catalog` module ([`android/catalog`](../../android/catalog)) copies the five files into its resources as it is built (the `catalogResources` task), so the app carries this folder as it is, and reads them into `Catalog.builtIn`, with the archive's own codecs. Every part must read whole; a part the build can't read fails the build's tests, never the person's binder. The importer takes each built-in's definition from it (`BuiltIns`), and `BuiltInInstall` decides what installing the built-ins changes, as the iOS app's `TemplateStore.installBuiltIns` does. `CategorySwitches` makes a category of one's own from `ownCategories.json` (`Catalog.ownCategories`), and `HouseholdRules` the household's deadlines from `household.json` (`Catalog.household`).
+- **Android:** the `catalog` module ([`android/catalog`](../../android/catalog)) copies the five files into its resources as it is built (the `catalogResources` task), so the app carries this folder as it is, and reads them into `Catalog.builtIn`, with the archive's own codecs. Every part must read whole; a part the build can't read fails the build's tests, never the person's binder. The importer takes each built-in's definition from it (`BuiltIns`), and `BuiltInInstall` decides what installing the built-ins changes, as the iOS app's `TemplateStore.installBuiltIns` does. `CategorySwitches` makes a category of one's own from `ownCategories.json` (`Catalog.ownCategories`), and `HouseholdRules` the household's deadlines from `household.json` (`Catalog.household`). The example household (`examples/household.json`) comes in with them and is read into `ExampleHousehold.builtIn`.
 - **iOS:** nothing reads them; the catalog is the code.
 
 ## Left for later

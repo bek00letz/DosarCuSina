@@ -1,0 +1,534 @@
+{
+  "steps" : [
+    {
+      "section" : {
+        "category" : "vehicle",
+        "firstDue" : {
+          "vehicle.itp" : 9,
+          "vehicle.rca" : 41,
+          "vehicle.service" : 120,
+          "vehicle.vignette" : -2
+        },
+        "name" : "VW Golf",
+        "ref" : "car",
+        "values" : {
+          "vehicle.fuel" : {
+            "type" : "text",
+            "value" : "fuel.petrol"
+          },
+          "vehicle.make" : {
+            "type" : "text",
+            "value" : "Volkswagen"
+          },
+          "vehicle.model" : {
+            "type" : "text",
+            "value" : "Golf"
+          },
+          "vehicle.odometer" : {
+            "type" : "number",
+            "value" : 142500
+          },
+          "vehicle.plate" : {
+            "type" : "text",
+            "value" : "B-123-ABC"
+          },
+          "vehicle.usage" : {
+            "type" : "text",
+            "value" : "vehicleUse.personal"
+          },
+          "vehicle.year" : {
+            "type" : "number",
+            "value" : 2018
+          }
+        }
+      }
+    },
+    {
+      "pastCompletion" : {
+        "cost" : {
+          "amount" : "170",
+          "currency" : "RON"
+        },
+        "daysFromNow" : -721,
+        "deadline" : "vehicle.itp",
+        "section" : "car"
+      }
+    },
+    {
+      "firm" : {
+        "linkedTo" : [
+          "car"
+        ],
+        "name" : "Service auto exemplu",
+        "phone" : "0700 000 001",
+        "ref" : "mechanic",
+        "trades" : [
+          "mechanic",
+          "tyreShop"
+        ],
+        "wouldCallAgain" : true
+      }
+    },
+    {
+      "record" : {
+        "daysFromNow" : -400,
+        "firms" : [
+          "mechanic"
+        ],
+        "items" : [
+          {
+            "cost" : {
+              "amount" : "420",
+              "currency" : "RON"
+            },
+            "name" : "Schimb ulei și filtru",
+            "partBrandOrCode" : "5W-30"
+          },
+          {
+            "cost" : {
+              "amount" : "380",
+              "currency" : "RON"
+            },
+            "name" : "Plăcuțe frână față",
+            "partBrandOrCode" : "Exemplu"
+          }
+        ],
+        "kind" : "maintenance",
+        "metricReading" : 121300,
+        "rating" : 5,
+        "section" : "car",
+        "title" : "Revizie anuală",
+        "totalCost" : {
+          "amount" : "1150",
+          "currency" : "RON"
+        }
+      }
+    },
+    {
+      "record" : {
+        "daysFromNow" : -120,
+        "firms" : [
+          "mechanic"
+        ],
+        "items" : [
+          {
+            "cost" : {
+              "amount" : "450",
+              "currency" : "RON"
+            },
+            "name" : "Schimb ulei și filtru",
+            "partBrandOrCode" : "5W-30"
+          }
+        ],
+        "kind" : "maintenance",
+        "metricReading" : 136200,
+        "rating" : 4,
+        "section" : "car",
+        "title" : "Revizie",
+        "totalCost" : {
+          "amount" : "690",
+          "currency" : "RON"
+        }
+      }
+    },
+    {
+      "section" : {
+        "category" : "home",
+        "firstDue" : {
+          "home.boilerCheck" : 200,
+          "home.gasCheck" : 310,
+          "home.pad" : 25
+        },
+        "name" : "Apartament Floreasca",
+        "ref" : "home",
+        "values" : {
+          "home.address" : {
+            "type" : "text",
+            "value" : "Str. Exemplului nr. 12, București"
+          },
+          "home.area" : {
+            "type" : "number",
+            "value" : 78.5
+          },
+          "home.meterReadFrom" : {
+            "type" : "number",
+            "value" : 20
+          },
+          "home.meterReadTo" : {
+            "type" : "number",
+            "value" : 25
+          }
+        }
+      }
+    },
+    {
+      "firm" : {
+        "linkedTo" : [
+          "home"
+        ],
+        "name" : "Instalator exemplu",
+        "phone" : "0700 000 002",
+        "ref" : "plumber",
+        "trades" : [
+          "plumber"
+        ]
+      }
+    },
+    {
+      "record" : {
+        "daysFromNow" : -210,
+        "firms" : [
+          "plumber"
+        ],
+        "items" : [
+          {
+            "cost" : {
+              "amount" : "240",
+              "currency" : "RON"
+            },
+            "name" : "Baterie bucătărie",
+            "partBrandOrCode" : "Exemplu"
+          }
+        ],
+        "kind" : "repair",
+        "rating" : 5,
+        "section" : "home",
+        "title" : "Robinet nou la bucătărie",
+        "totalCost" : {
+          "amount" : "340",
+          "currency" : "RON"
+        }
+      }
+    },
+    {
+      "record" : {
+        "daysFromNow" : -500,
+        "firms" : [],
+        "items" : [
+          {
+            "cost" : {
+              "amount" : "899",
+              "currency" : "RON"
+            },
+            "name" : "Hotă",
+            "partBrandOrCode" : "Exemplu 60 cm"
+          }
+        ],
+        "kind" : "purchase",
+        "section" : "home",
+        "title" : "Hotă nouă",
+        "totalCost" : {
+          "amount" : "899",
+          "currency" : "RON"
+        }
+      }
+    },
+    {
+      "section" : {
+        "category" : "pet",
+        "firstDue" : {
+          "pet.dewormExternal" : 12,
+          "pet.dewormInternal" : 3,
+          "pet.rabies" : 60,
+          "pet.vaccine" : 60
+        },
+        "name" : "Max",
+        "ref" : "pet",
+        "values" : {
+          "pet.birthDate" : {
+            "type" : "date",
+            "value" : "2021-05-10"
+          },
+          "pet.breed" : {
+            "type" : "text",
+            "value" : "Golden Retriever"
+          },
+          "pet.microchip" : {
+            "type" : "text",
+            "value" : "642000000000001"
+          },
+          "pet.species" : {
+            "type" : "text",
+            "value" : "species.dog"
+          },
+          "pet.weight" : {
+            "type" : "number",
+            "value" : 31.5
+          }
+        }
+      }
+    },
+    {
+      "reading" : {
+        "daysFromNow" : -120,
+        "kind" : "bodyWeight",
+        "section" : "pet",
+        "value" : 30.2
+      }
+    },
+    {
+      "reading" : {
+        "daysFromNow" : -60,
+        "kind" : "bodyWeight",
+        "section" : "pet",
+        "value" : 31
+      }
+    },
+    {
+      "firm" : {
+        "linkedTo" : [
+          "pet"
+        ],
+        "name" : "Cabinet veterinar exemplu",
+        "phone" : "0700 000 003",
+        "rating" : 5,
+        "ref" : "vet",
+        "trades" : [
+          "vet"
+        ]
+      }
+    },
+    {
+      "section" : {
+        "category" : "member",
+        "firstDue" : {},
+        "name" : "Eu",
+        "ref" : "me",
+        "values" : {}
+      }
+    },
+    {
+      "section" : {
+        "category" : "documents",
+        "firstDue" : {},
+        "name" : "Pașaport",
+        "parent" : "me",
+        "ref" : "passport",
+        "values" : {
+          "document.expiry" : {
+            "days" : 150,
+            "type" : "dayFromToday"
+          },
+          "document.number" : {
+            "type" : "text",
+            "value" : "050000000"
+          },
+          "document.type" : {
+            "type" : "text",
+            "value" : "documentType.passport"
+          }
+        }
+      }
+    },
+    {
+      "section" : {
+        "category" : "documents",
+        "firstDue" : {},
+        "name" : "Carte de identitate",
+        "parent" : "me",
+        "ref" : "idCard",
+        "values" : {
+          "document.expiry" : {
+            "days" : 900,
+            "type" : "dayFromToday"
+          },
+          "document.type" : {
+            "type" : "text",
+            "value" : "documentType.idCard"
+          }
+        }
+      }
+    },
+    {
+      "section" : {
+        "category" : "health",
+        "firstDue" : {
+          "health.checkup" : 45,
+          "health.dentist" : -1
+        },
+        "name" : "Profil medical",
+        "ref" : "health",
+        "values" : {
+          "health.allergies" : {
+            "type" : "text",
+            "value" : "Fără alergii cunoscute"
+          },
+          "health.bloodType" : {
+            "type" : "text",
+            "value" : "bloodType.aPositive"
+          }
+        }
+      }
+    },
+    {
+      "section" : {
+        "category" : "purchase",
+        "firstDue" : {},
+        "name" : "Frigider",
+        "parent" : "home",
+        "ref" : "fridge",
+        "values" : {
+          "purchase.brand" : {
+            "type" : "text",
+            "value" : "Frigider combinat"
+          },
+          "purchase.date" : {
+            "days" : -600,
+            "type" : "dayFromToday"
+          },
+          "purchase.price" : {
+            "amount" : "2499",
+            "currency" : "RON",
+            "type" : "money"
+          },
+          "purchase.retailer" : {
+            "type" : "text",
+            "value" : "Magazin exemplu"
+          }
+        }
+      }
+    },
+    {
+      "section" : {
+        "category" : "purchase",
+        "firstDue" : {},
+        "name" : "Aragaz",
+        "parent" : "home",
+        "ref" : "cooker",
+        "values" : {
+          "purchase.date" : {
+            "days" : -200,
+            "type" : "dayFromToday"
+          },
+          "purchase.price" : {
+            "amount" : "1350",
+            "currency" : "RON",
+            "type" : "money"
+          },
+          "purchase.retailer" : {
+            "type" : "text",
+            "value" : "Magazin exemplu"
+          }
+        }
+      }
+    },
+    {
+      "section" : {
+        "category" : "tenancy",
+        "firstDue" : {},
+        "name" : "Chiriaș garsonieră",
+        "parent" : "home",
+        "ref" : "tenancy",
+        "values" : {
+          "tenancy.deposit" : {
+            "amount" : "450",
+            "currency" : "EUR",
+            "type" : "money"
+          },
+          "tenancy.end" : {
+            "days" : 65,
+            "type" : "dayFromToday"
+          },
+          "tenancy.paymentDay" : {
+            "type" : "number",
+            "value" : 5
+          },
+          "tenancy.rent" : {
+            "amount" : "450",
+            "currency" : "EUR",
+            "type" : "money"
+          },
+          "tenancy.start" : {
+            "days" : -300,
+            "type" : "dayFromToday"
+          }
+        }
+      }
+    },
+    {
+      "firm" : {
+        "linkedTo" : [
+          "tenancy"
+        ],
+        "name" : "Chiriaș exemplu",
+        "phone" : "0700 000 004",
+        "ref" : "tenant",
+        "trades" : [
+          "tenant"
+        ]
+      }
+    },
+    {
+      "reading" : {
+        "daysFromNow" : -300,
+        "kind" : "coldWater",
+        "name" : "Apă rece la mutare",
+        "section" : "tenancy",
+        "value" : 312
+      }
+    },
+    {
+      "section" : {
+        "category" : "subscription",
+        "firstDue" : {},
+        "name" : "Internet fibră",
+        "ref" : "internet",
+        "values" : {
+          "subscription.contractEnd" : {
+            "days" : 40,
+            "type" : "dayFromToday"
+          },
+          "subscription.cycle" : {
+            "type" : "text",
+            "value" : "billing.monthly"
+          },
+          "subscription.price" : {
+            "amount" : "45",
+            "currency" : "RON",
+            "type" : "money"
+          },
+          "subscription.provider" : {
+            "type" : "text",
+            "value" : "Digi"
+          },
+          "subscription.service" : {
+            "type" : "text",
+            "value" : "service.internetTV"
+          }
+        }
+      }
+    },
+    {
+      "section" : {
+        "category" : "subscription",
+        "firstDue" : {},
+        "name" : "Stocare online",
+        "ref" : "storage",
+        "values" : {
+          "subscription.cycle" : {
+            "type" : "text",
+            "value" : "billing.yearly"
+          },
+          "subscription.price" : {
+            "amount" : "29.99",
+            "currency" : "EUR",
+            "type" : "money"
+          },
+          "subscription.provider" : {
+            "type" : "text",
+            "value" : "Serviciu exemplu"
+          },
+          "subscription.renewalDate" : {
+            "days" : 18,
+            "type" : "dayFromToday"
+          },
+          "subscription.service" : {
+            "type" : "text",
+            "value" : "service.streaming"
+          }
+        }
+      }
+    }
+  ],
+  "writtenBy" : "ios/DosarCuSinaTests/ExampleHouseholdExportTests.swift"
+}
