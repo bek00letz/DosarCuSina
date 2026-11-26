@@ -147,6 +147,15 @@ class DeadlineVectorsTest {
             "resume" -> actions.resume(deadline)
             "archive" -> actions.archive(deadline)
             "delete" -> actions.delete(deadline)
+            else -> runSetting(made, action, name)
+        }
+    }
+
+    /** Runs a setting [name] (how it repeats, reminds, is named or costs) on [made]'s deadline. */
+    private fun runSetting(made: Made, action: JsonObject, name: String): UndoReceipt? {
+        val actions = made.actions
+        val deadline = made.obligation
+        return when (name) {
             "setRecurrence" -> actions.setRecurrence(
                 deadline, rule(action.getValue("rule")), action["startedFrom"]?.let(::rule),
             )
