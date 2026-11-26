@@ -209,7 +209,9 @@ object SubscriptionMatcher {
         }
         if (pointDiffers) return false
         val unspecified = ServiceKind.unspecified.key
-        val service = reading.service
+        // Both through the service's one resolver, so a paper's "Gaze naturale" and a subscription's key name the
+        // same service; a name it doesn't know tells nothing apart.
+        val service = ServiceKind.service(reading.service)?.key
         val theirs = ServiceKind.service(subscription.service)?.key
         return service == null || theirs == null || service == theirs || service == unspecified || theirs == unspecified
     }
