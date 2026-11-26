@@ -1,0 +1,368 @@
+{
+  "cases" : [
+    {
+      "dayMonth" : "14 martie",
+      "dayText" : "14 mar. 2025",
+      "longDay" : "14 martie 2025",
+      "monthYear" : "martie 2025",
+      "numericDay" : "14.03.2025",
+      "seconds" : 1741953900,
+      "time" : "14:05",
+      "zone" : "Europe/Bucharest"
+    },
+    {
+      "dayMonth" : "14 martie",
+      "dayText" : "14 mar. 2025",
+      "longDay" : "14 martie 2025",
+      "monthYear" : "martie 2025",
+      "numericDay" : "14.03.2025",
+      "seconds" : 1741953900,
+      "time" : "08:05",
+      "zone" : "America/New_York"
+    },
+    {
+      "dayMonth" : "14 martie",
+      "dayText" : "14 mar. 2025",
+      "longDay" : "14 martie 2025",
+      "monthYear" : "martie 2025",
+      "numericDay" : "14.03.2025",
+      "seconds" : 1741953900,
+      "time" : "21:05",
+      "zone" : "Asia/Tokyo"
+    },
+    {
+      "dayMonth" : "14 martie",
+      "dayText" : "14 mar. 2025",
+      "longDay" : "14 martie 2025",
+      "monthYear" : "martie 2025",
+      "numericDay" : "14.03.2025",
+      "seconds" : 1741953900,
+      "time" : "12:05",
+      "zone" : "UTC"
+    },
+    {
+      "dayMonth" : "15 martie",
+      "dayText" : "15 mar. 2025",
+      "longDay" : "15 martie 2025",
+      "monthYear" : "martie 2025",
+      "numericDay" : "15.03.2025",
+      "seconds" : 1741953900,
+      "time" : "02:05",
+      "zone" : "Pacific/Kiritimati"
+    },
+    {
+      "dayMonth" : "14 martie",
+      "dayText" : "14 mar. 2025",
+      "longDay" : "14 martie 2025",
+      "monthYear" : "martie 2025",
+      "numericDay" : "14.03.2025",
+      "seconds" : 1741953900,
+      "time" : "05:05",
+      "zone" : "America/Los_Angeles"
+    },
+    {
+      "dayMonth" : "1 ianuarie",
+      "dayText" : "1 ian. 2027",
+      "longDay" : "1 ianuarie 2027",
+      "monthYear" : "ianuarie 2027",
+      "numericDay" : "1.01.2027",
+      "seconds" : 1798756200,
+      "time" : "00:30",
+      "zone" : "Europe/Bucharest"
+    },
+    {
+      "dayMonth" : "31 decembrie",
+      "dayText" : "31 dec. 2026",
+      "longDay" : "31 decembrie 2026",
+      "monthYear" : "decembrie 2026",
+      "numericDay" : "31.12.2026",
+      "seconds" : 1798756200,
+      "time" : "17:30",
+      "zone" : "America/New_York"
+    },
+    {
+      "dayMonth" : "1 ianuarie",
+      "dayText" : "1 ian. 2027",
+      "longDay" : "1 ianuarie 2027",
+      "monthYear" : "ianuarie 2027",
+      "numericDay" : "1.01.2027",
+      "seconds" : 1798756200,
+      "time" : "07:30",
+      "zone" : "Asia/Tokyo"
+    },
+    {
+      "dayMonth" : "31 decembrie",
+      "dayText" : "31 dec. 2026",
+      "longDay" : "31 decembrie 2026",
+      "monthYear" : "decembrie 2026",
+      "numericDay" : "31.12.2026",
+      "seconds" : 1798756200,
+      "time" : "22:30",
+      "zone" : "UTC"
+    },
+    {
+      "dayMonth" : "1 ianuarie",
+      "dayText" : "1 ian. 2027",
+      "longDay" : "1 ianuarie 2027",
+      "monthYear" : "ianuarie 2027",
+      "numericDay" : "1.01.2027",
+      "seconds" : 1798756200,
+      "time" : "12:30",
+      "zone" : "Pacific/Kiritimati"
+    },
+    {
+      "dayMonth" : "31 decembrie",
+      "dayText" : "31 dec. 2026",
+      "longDay" : "31 decembrie 2026",
+      "monthYear" : "decembrie 2026",
+      "numericDay" : "31.12.2026",
+      "seconds" : 1798756200,
+      "time" : "14:30",
+      "zone" : "America/Los_Angeles"
+    },
+    {
+      "dayMonth" : "29 martie",
+      "dayText" : "29 mar. 2026",
+      "longDay" : "29 martie 2026",
+      "monthYear" : "martie 2026",
+      "numericDay" : "29.03.2026",
+      "seconds" : 1774744200,
+      "time" : "02:30",
+      "zone" : "Europe/Bucharest"
+    },
+    {
+      "dayMonth" : "28 martie",
+      "dayText" : "28 mar. 2026",
+      "longDay" : "28 martie 2026",
+      "monthYear" : "martie 2026",
+      "numericDay" : "28.03.2026",
+      "seconds" : 1774744200,
+      "time" : "20:30",
+      "zone" : "America/New_York"
+    },
+    {
+      "dayMonth" : "29 martie",
+      "dayText" : "29 mar. 2026",
+      "longDay" : "29 martie 2026",
+      "monthYear" : "martie 2026",
+      "numericDay" : "29.03.2026",
+      "seconds" : 1774744200,
+      "time" : "09:30",
+      "zone" : "Asia/Tokyo"
+    },
+    {
+      "dayMonth" : "29 martie",
+      "dayText" : "29 mar. 2026",
+      "longDay" : "29 martie 2026",
+      "monthYear" : "martie 2026",
+      "numericDay" : "29.03.2026",
+      "seconds" : 1774744200,
+      "time" : "00:30",
+      "zone" : "UTC"
+    },
+    {
+      "dayMonth" : "29 martie",
+      "dayText" : "29 mar. 2026",
+      "longDay" : "29 martie 2026",
+      "monthYear" : "martie 2026",
+      "numericDay" : "29.03.2026",
+      "seconds" : 1774744200,
+      "time" : "14:30",
+      "zone" : "Pacific/Kiritimati"
+    },
+    {
+      "dayMonth" : "28 martie",
+      "dayText" : "28 mar. 2026",
+      "longDay" : "28 martie 2026",
+      "monthYear" : "martie 2026",
+      "numericDay" : "28.03.2026",
+      "seconds" : 1774744200,
+      "time" : "17:30",
+      "zone" : "America/Los_Angeles"
+    },
+    {
+      "dayMonth" : "25 octombrie",
+      "dayText" : "25 oct. 2026",
+      "longDay" : "25 octombrie 2026",
+      "monthYear" : "octombrie 2026",
+      "numericDay" : "25.10.2026",
+      "seconds" : 1792888200,
+      "time" : "03:30",
+      "zone" : "Europe/Bucharest"
+    },
+    {
+      "dayMonth" : "24 octombrie",
+      "dayText" : "24 oct. 2026",
+      "longDay" : "24 octombrie 2026",
+      "monthYear" : "octombrie 2026",
+      "numericDay" : "24.10.2026",
+      "seconds" : 1792888200,
+      "time" : "20:30",
+      "zone" : "America/New_York"
+    },
+    {
+      "dayMonth" : "25 octombrie",
+      "dayText" : "25 oct. 2026",
+      "longDay" : "25 octombrie 2026",
+      "monthYear" : "octombrie 2026",
+      "numericDay" : "25.10.2026",
+      "seconds" : 1792888200,
+      "time" : "09:30",
+      "zone" : "Asia/Tokyo"
+    },
+    {
+      "dayMonth" : "25 octombrie",
+      "dayText" : "25 oct. 2026",
+      "longDay" : "25 octombrie 2026",
+      "monthYear" : "octombrie 2026",
+      "numericDay" : "25.10.2026",
+      "seconds" : 1792888200,
+      "time" : "00:30",
+      "zone" : "UTC"
+    },
+    {
+      "dayMonth" : "25 octombrie",
+      "dayText" : "25 oct. 2026",
+      "longDay" : "25 octombrie 2026",
+      "monthYear" : "octombrie 2026",
+      "numericDay" : "25.10.2026",
+      "seconds" : 1792888200,
+      "time" : "14:30",
+      "zone" : "Pacific/Kiritimati"
+    },
+    {
+      "dayMonth" : "24 octombrie",
+      "dayText" : "24 oct. 2026",
+      "longDay" : "24 octombrie 2026",
+      "monthYear" : "octombrie 2026",
+      "numericDay" : "24.10.2026",
+      "seconds" : 1792888200,
+      "time" : "17:30",
+      "zone" : "America/Los_Angeles"
+    },
+    {
+      "dayMonth" : "5 ianuarie",
+      "dayText" : "5 ian. 2026",
+      "longDay" : "5 ianuarie 2026",
+      "monthYear" : "ianuarie 2026",
+      "numericDay" : "5.01.2026",
+      "seconds" : 1767596400,
+      "time" : "09:00",
+      "zone" : "Europe/Bucharest"
+    },
+    {
+      "dayMonth" : "5 ianuarie",
+      "dayText" : "5 ian. 2026",
+      "longDay" : "5 ianuarie 2026",
+      "monthYear" : "ianuarie 2026",
+      "numericDay" : "5.01.2026",
+      "seconds" : 1767596400,
+      "time" : "02:00",
+      "zone" : "America/New_York"
+    },
+    {
+      "dayMonth" : "5 ianuarie",
+      "dayText" : "5 ian. 2026",
+      "longDay" : "5 ianuarie 2026",
+      "monthYear" : "ianuarie 2026",
+      "numericDay" : "5.01.2026",
+      "seconds" : 1767596400,
+      "time" : "16:00",
+      "zone" : "Asia/Tokyo"
+    },
+    {
+      "dayMonth" : "5 ianuarie",
+      "dayText" : "5 ian. 2026",
+      "longDay" : "5 ianuarie 2026",
+      "monthYear" : "ianuarie 2026",
+      "numericDay" : "5.01.2026",
+      "seconds" : 1767596400,
+      "time" : "07:00",
+      "zone" : "UTC"
+    },
+    {
+      "dayMonth" : "5 ianuarie",
+      "dayText" : "5 ian. 2026",
+      "longDay" : "5 ianuarie 2026",
+      "monthYear" : "ianuarie 2026",
+      "numericDay" : "5.01.2026",
+      "seconds" : 1767596400,
+      "time" : "21:00",
+      "zone" : "Pacific/Kiritimati"
+    },
+    {
+      "dayMonth" : "4 ianuarie",
+      "dayText" : "4 ian. 2026",
+      "longDay" : "4 ianuarie 2026",
+      "monthYear" : "ianuarie 2026",
+      "numericDay" : "4.01.2026",
+      "seconds" : 1767596400,
+      "time" : "23:00",
+      "zone" : "America/Los_Angeles"
+    },
+    {
+      "dayMonth" : "5 iulie",
+      "dayText" : "5 iul. 2026",
+      "longDay" : "5 iulie 2026",
+      "monthYear" : "iulie 2026",
+      "numericDay" : "5.07.2026",
+      "seconds" : 1783209599,
+      "time" : "02:59",
+      "zone" : "Europe/Bucharest"
+    },
+    {
+      "dayMonth" : "4 iulie",
+      "dayText" : "4 iul. 2026",
+      "longDay" : "4 iulie 2026",
+      "monthYear" : "iulie 2026",
+      "numericDay" : "4.07.2026",
+      "seconds" : 1783209599,
+      "time" : "19:59",
+      "zone" : "America/New_York"
+    },
+    {
+      "dayMonth" : "5 iulie",
+      "dayText" : "5 iul. 2026",
+      "longDay" : "5 iulie 2026",
+      "monthYear" : "iulie 2026",
+      "numericDay" : "5.07.2026",
+      "seconds" : 1783209599,
+      "time" : "08:59",
+      "zone" : "Asia/Tokyo"
+    },
+    {
+      "dayMonth" : "4 iulie",
+      "dayText" : "4 iul. 2026",
+      "longDay" : "4 iulie 2026",
+      "monthYear" : "iulie 2026",
+      "numericDay" : "4.07.2026",
+      "seconds" : 1783209599,
+      "time" : "23:59",
+      "zone" : "UTC"
+    },
+    {
+      "dayMonth" : "5 iulie",
+      "dayText" : "5 iul. 2026",
+      "longDay" : "5 iulie 2026",
+      "monthYear" : "iulie 2026",
+      "numericDay" : "5.07.2026",
+      "seconds" : 1783209599,
+      "time" : "13:59",
+      "zone" : "Pacific/Kiritimati"
+    },
+    {
+      "dayMonth" : "4 iulie",
+      "dayText" : "4 iul. 2026",
+      "longDay" : "4 iulie 2026",
+      "monthYear" : "iulie 2026",
+      "numericDay" : "4.07.2026",
+      "seconds" : 1783209599,
+      "time" : "16:59",
+      "zone" : "America/Los_Angeles"
+    }
+  ],
+  "rule" : "DosarFormat.day, longDay, dayMonth, monthYear, numericDay and time, for a moment",
+  "shape" : "seconds: the moment, after 1970 in UTC; zone: the time zone it is written in; the rest: the words.",
+  "source" : "ios/Shared/DosarFormat.swift",
+  "writtenBy" : "ios/DosarCuSinaTests/WordingVectorsTests.swift"
+}

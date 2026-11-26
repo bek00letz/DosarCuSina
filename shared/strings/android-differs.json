@@ -1,0 +1,53 @@
+{
+  "about": "The words Android says differently from the iOS String Catalogs, and why. scripts/android-words.py puts each in place of the catalog's words in Android's strings.xml and core's words.json, and fails for a key no catalog has any more. Each entry: the catalog's book (app, shared, widgets), the iOS key as the catalog has it, Android's words in the catalog's own specifiers (%@, %lld; for a plural key, its one, few and other forms), and why. Keep it short: a word belongs here only when Android truly can't say what iOS says.",
+  "words": [
+    {
+      "book": "app",
+      "key": "Codul rămâne ascuns. Îl vezi după Face ID, din pagina actului.",
+      "android": "Codul rămâne ascuns. Îl vezi după deblocarea telefonului, din pagina actului.",
+      "why": "Android unlocks with the fingerprint, the face or the phone's PIN, and has no Face ID: „deblocarea telefonului” covers all three (the owner's choice, 26 November 2026)."
+    },
+    {
+      "book": "app",
+      "key": "Deschide Dosar cu Șină ca să confirmi cu Face ID.",
+      "android": "Deschide Dosar cu Șină ca să confirmi cu deblocarea telefonului.",
+      "why": "Android unlocks with the fingerprint, the face or the phone's PIN, and has no Face ID: „deblocarea telefonului” covers all three (the owner's choice, 26 November 2026)."
+    },
+    {
+      "book": "app",
+      "key": "Dosar cu Șină e protejat cu Face ID. Deschide aplicația ca să vezi termenele.",
+      "android": "Dosar cu Șină e protejat cu deblocarea telefonului. Deschide aplicația ca să vezi termenele.",
+      "why": "Android unlocks with the fingerprint, the face or the phone's PIN, and has no Face ID: „deblocarea telefonului” covers all three (the owner's choice, 26 November 2026)."
+    },
+    {
+      "book": "app",
+      "key": "Îl poți scrie din Editează. Îl arăt doar după Face ID.",
+      "android": "Îl poți scrie din Editează. Îl arăt doar după deblocarea telefonului.",
+      "why": "Android unlocks with the fingerprint, the face or the phone's PIN, and has no Face ID: „deblocarea telefonului” covers all three (the owner's choice, 26 November 2026)."
+    },
+    {
+      "book": "app",
+      "key": "Îl vezi sau îl copiezi doar după Face ID.",
+      "android": "Îl vezi sau îl copiezi doar după deblocarea telefonului.",
+      "why": "Android unlocks with the fingerprint, the face or the phone's PIN, and has no Face ID: „deblocarea telefonului” covers all three (the owner's choice, 26 November 2026)."
+    },
+    {
+      "book": "app",
+      "key": "Protejat cu Face ID",
+      "android": "Protejat cu deblocarea telefonului",
+      "why": "Android unlocks with the fingerprint, the face or the phone's PIN, and has no Face ID: „deblocarea telefonului” covers all three (the owner's choice, 26 November 2026)."
+    },
+    {
+      "book": "app",
+      "key": "Secțiunea e protejată. Deschide-o cu Face ID sau cu codul, apoi salvează.",
+      "android": "Secțiunea e protejată. Deschide-o cu deblocarea telefonului, apoi salvează.",
+      "why": "Android unlocks with the fingerprint, the face or the phone's PIN, and has no Face ID: „deblocarea telefonului” covers all three (the owner's choice, 26 November 2026)."
+    },
+    {
+      "book": "app",
+      "key": "Termenul e într-o categorie protejată. Deschide-l în Dosar cu Șină și confirmă cu Face ID ca să-l bifezi.",
+      "android": "Termenul e într-o categorie protejată. Deschide-l în Dosar cu Șină și confirmă cu deblocarea telefonului ca să-l bifezi.",
+      "why": "Android unlocks with the fingerprint, the face or the phone's PIN, and has no Face ID: „deblocarea telefonului” covers all three (the owner's choice, 26 November 2026)."
+    }
+  ]
+}

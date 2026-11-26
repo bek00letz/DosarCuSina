@@ -24,6 +24,20 @@ CATALOGS = {
 }
 TARGETS = {"DosarCuSina", "DosarCuSinaWidgets", "DosarCuSinaShare"}
 
+# The catalogs the Android app's words are generated from (scripts/android-words.py), each
+# by the name Android knows it by: its "book". The app's catalog, the widgets' and the
+# Shared table; the share extension has none of its own.
+ANDROID_BOOKS = {
+    "app": ("DosarCuSina", "Localizable"),
+    "shared": ("*", "Shared"),
+    "widgets": ("DosarCuSinaWidgets", "Localizable"),
+}
+
+
+def android_books(root):
+    """Every catalog Android's words come from, as [(book, absolute path)], in a fixed order."""
+    return [(book, os.path.join(root, CATALOGS[pair])) for book, pair in ANDROID_BOOKS.items()]
+
 
 def catalog_path(target, table, root):
     """The catalog a target's table goes into, or None when it has none."""

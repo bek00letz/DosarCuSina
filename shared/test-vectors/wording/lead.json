@@ -1,0 +1,80 @@
+{
+  "cases" : [
+    {
+      "days" : 0,
+      "text" : "0 zile"
+    },
+    {
+      "days" : 1,
+      "text" : "o zi"
+    },
+    {
+      "days" : 7,
+      "text" : "7 zile"
+    },
+    {
+      "days" : 14,
+      "text" : "14 zile"
+    },
+    {
+      "days" : 29,
+      "text" : "29 de zile"
+    },
+    {
+      "days" : 30,
+      "text" : "o lună"
+    },
+    {
+      "days" : 31,
+      "text" : "31 de zile"
+    },
+    {
+      "days" : 60,
+      "text" : "2 luni"
+    },
+    {
+      "days" : 90,
+      "text" : "3 luni"
+    },
+    {
+      "days" : 180,
+      "text" : "6 luni"
+    },
+    {
+      "days" : 365,
+      "text" : "un an"
+    },
+    {
+      "days" : 366,
+      "text" : "366 de zile"
+    },
+    {
+      "days" : 395,
+      "text" : "395 de zile"
+    },
+    {
+      "days" : 730,
+      "text" : "2 ani"
+    },
+    {
+      "days" : 1095,
+      "text" : "3 ani"
+    },
+    {
+      "days" : 36500,
+      "text" : "100 de ani"
+    },
+    {
+      "days" : 40000,
+      "text" : "100 de ani"
+    },
+    {
+      "days" : -30,
+      "text" : "o lună"
+    }
+  ],
+  "rule" : "DurationWording.lead(days:)",
+  "shape" : "days: a reminder's lead; text: the words (whole months and years as calendar months).",
+  "source" : "ios/Shared/DurationWording.swift",
+  "writtenBy" : "ios/DosarCuSinaTests/WordingVectorsTests.swift"
+}

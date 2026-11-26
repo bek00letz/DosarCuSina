@@ -4,10 +4,11 @@
 #   android-build-and-test  builds the app (debug, and the release build unsigned, shrunk
 #                           as Google Play gets it) and runs every module's unit tests
 #                           on the JVM
-#   android-lint            Android Lint on every module and detekt, warnings as errors;
-#                           detekt's configuration (android/config/detekt/detekt.yml) is
-#                           where the Android counterpart of scripts/architecture-check.sh
-#                           grows
+#   android-lint            Android's words are the iOS String Catalogs'
+#                           (scripts/android-words.py), then Android Lint on every module
+#                           and detekt, warnings as errors; detekt's configuration
+#                           (android/config/detekt/detekt.yml) is where the Android
+#                           counterpart of scripts/architecture-check.sh grows
 # Reproduce either with the same Gradle command from android/ (see README).
 name: Android
 
@@ -90,8 +91,26 @@ jobs:
         with:
           cache-read-only: ${{ github.ref != 'refs/heads/main' }}
 
+      # Android's words are generated from the iOS String Catalogs: strings.xml and core's
+      # words.json must be what scripts/android-words.py writes today. A failed run keeps
+      # them made afresh as android-words: copy them over and commit.
+      - name: Check Android's words are the String Catalogs'
+        working-directory: .
+        run: |
+          python3 scripts/android-words.py --self-test
+          python3 scripts/android-words.py --check --write-to "$RUNNER_TEMP/android-words"
+
       - name: Android Lint and detekt
+        if: ${{ !cancelled() }}
         run: ./gradlew --stacktrace lint detekt
+
+      - name: Keep Android's words made afresh
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: android-words
+          path: ${{ runner.temp }}/android-words/
+          if-no-files-found: ignore
 
       - name: Keep the reports
         if: failure()

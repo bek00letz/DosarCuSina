@@ -124,7 +124,13 @@ One module's tests while you work:
 ./gradlew :core:test
 ```
 
-Every pull request runs the first two on GitHub as `android-build-and-test` and `android-lint` ([.github/workflows/android.yml](.github/workflows/android.yml)). Versions are in `android/gradle/libs.versions.toml`, Lint's settings in `android/lint.xml` and detekt's in `android/config/detekt/detekt.yml`. The build fails on any dependency on Google Play services, Firebase or ML Kit, and the app asks for no internet permission.
+Android's words are generated from the iOS String Catalogs, never written by hand: after a change to a catalog, or to the few words Android says differently ([shared/strings/android-differs.json](shared/strings/android-differs.json)), write them again from the repository's root and commit what changed:
+
+```sh
+python3 scripts/android-words.py
+```
+
+Every pull request runs the first two on GitHub as `android-build-and-test` and `android-lint` (which also checks the words are up to date) ([.github/workflows/android.yml](.github/workflows/android.yml)). Versions are in `android/gradle/libs.versions.toml`, Lint's settings in `android/lint.xml` and detekt's in `android/config/detekt/detekt.yml`. The build fails on any dependency on Google Play services, Firebase or ML Kit, and the app asks for no internet permission.
 
 ## App Store screenshots and listing
 

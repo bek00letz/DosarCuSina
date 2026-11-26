@@ -1,0 +1,360 @@
+{
+  "cases" : [
+    {
+      "due" : "2026-12-17",
+      "kind" : "legal",
+      "text" : "Expiră în 3 săptămâni · 17 decembrie",
+      "today" : "2026-11-26"
+    },
+    {
+      "due" : "2027-01-26",
+      "kind" : "legal",
+      "text" : "Expiră în 2 luni · 26 ianuarie 2027",
+      "today" : "2026-11-26"
+    },
+    {
+      "due" : "2027-02-14",
+      "kind" : "legal",
+      "text" : "Expiră în 2 luni și 2 săptămâni · 14 februarie 2027",
+      "today" : "2026-11-26"
+    },
+    {
+      "due" : "2028-03-01",
+      "kind" : "legal",
+      "text" : "Expiră într-un an și 3 luni · 1 martie 2028",
+      "today" : "2026-11-26"
+    },
+    {
+      "due" : "2026-10-26",
+      "kind" : "legal",
+      "text" : "A expirat acum o lună · 26 octombrie",
+      "today" : "2026-11-26"
+    },
+    {
+      "due" : "2026-09-01",
+      "kind" : "legal",
+      "text" : "A expirat acum 2 luni și 3 săptămâni · 1 septembrie",
+      "today" : "2026-11-26"
+    },
+    {
+      "due" : "2025-11-26",
+      "kind" : "legal",
+      "text" : "A expirat acum un an · 26 noiembrie 2025",
+      "today" : "2026-11-26"
+    },
+    {
+      "due" : "2026-12-17",
+      "kind" : "tax",
+      "text" : "De plătit în 3 săptămâni · 17 decembrie",
+      "today" : "2026-11-26"
+    },
+    {
+      "due" : "2027-01-26",
+      "kind" : "tax",
+      "text" : "De plătit în 2 luni · 26 ianuarie 2027",
+      "today" : "2026-11-26"
+    },
+    {
+      "due" : "2027-02-14",
+      "kind" : "tax",
+      "text" : "De plătit în 2 luni și 2 săptămâni · 14 februarie 2027",
+      "today" : "2026-11-26"
+    },
+    {
+      "due" : "2028-03-01",
+      "kind" : "tax",
+      "text" : "De plătit într-un an și 3 luni · 1 martie 2028",
+      "today" : "2026-11-26"
+    },
+    {
+      "due" : "2026-10-26",
+      "kind" : "tax",
+      "text" : "Trebuia plătit acum o lună · 26 octombrie",
+      "today" : "2026-11-26"
+    },
+    {
+      "due" : "2026-09-01",
+      "kind" : "tax",
+      "text" : "Trebuia plătit acum 2 luni și 3 săptămâni · 1 septembrie",
+      "today" : "2026-11-26"
+    },
+    {
+      "due" : "2025-11-26",
+      "kind" : "tax",
+      "text" : "Trebuia plătit acum un an · 26 noiembrie 2025",
+      "today" : "2026-11-26"
+    },
+    {
+      "due" : "2026-12-17",
+      "kind" : "insurance",
+      "text" : "Expiră în 3 săptămâni · 17 decembrie",
+      "today" : "2026-11-26"
+    },
+    {
+      "due" : "2027-01-26",
+      "kind" : "insurance",
+      "text" : "Expiră în 2 luni · 26 ianuarie 2027",
+      "today" : "2026-11-26"
+    },
+    {
+      "due" : "2027-02-14",
+      "kind" : "insurance",
+      "text" : "Expiră în 2 luni și 2 săptămâni · 14 februarie 2027",
+      "today" : "2026-11-26"
+    },
+    {
+      "due" : "2028-03-01",
+      "kind" : "insurance",
+      "text" : "Expiră într-un an și 3 luni · 1 martie 2028",
+      "today" : "2026-11-26"
+    },
+    {
+      "due" : "2026-10-26",
+      "kind" : "insurance",
+      "text" : "A expirat acum o lună · 26 octombrie",
+      "today" : "2026-11-26"
+    },
+    {
+      "due" : "2026-09-01",
+      "kind" : "insurance",
+      "text" : "A expirat acum 2 luni și 3 săptămâni · 1 septembrie",
+      "today" : "2026-11-26"
+    },
+    {
+      "due" : "2025-11-26",
+      "kind" : "insurance",
+      "text" : "A expirat acum un an · 26 noiembrie 2025",
+      "today" : "2026-11-26"
+    },
+    {
+      "due" : "2026-12-17",
+      "kind" : "health",
+      "text" : "De făcut în 3 săptămâni · 17 decembrie",
+      "today" : "2026-11-26"
+    },
+    {
+      "due" : "2027-01-26",
+      "kind" : "health",
+      "text" : "De făcut în 2 luni · 26 ianuarie 2027",
+      "today" : "2026-11-26"
+    },
+    {
+      "due" : "2027-02-14",
+      "kind" : "health",
+      "text" : "De făcut în 2 luni și 2 săptămâni · 14 februarie 2027",
+      "today" : "2026-11-26"
+    },
+    {
+      "due" : "2028-03-01",
+      "kind" : "health",
+      "text" : "De făcut într-un an și 3 luni · 1 martie 2028",
+      "today" : "2026-11-26"
+    },
+    {
+      "due" : "2026-10-26",
+      "kind" : "health",
+      "text" : "Trebuia făcut acum o lună · 26 octombrie",
+      "today" : "2026-11-26"
+    },
+    {
+      "due" : "2026-09-01",
+      "kind" : "health",
+      "text" : "Trebuia făcut acum 2 luni și 3 săptămâni · 1 septembrie",
+      "today" : "2026-11-26"
+    },
+    {
+      "due" : "2025-11-26",
+      "kind" : "health",
+      "text" : "Trebuia făcut acum un an · 26 noiembrie 2025",
+      "today" : "2026-11-26"
+    },
+    {
+      "due" : "2026-12-17",
+      "kind" : "renewal",
+      "text" : "Expiră în 3 săptămâni · 17 decembrie",
+      "today" : "2026-11-26"
+    },
+    {
+      "due" : "2027-01-26",
+      "kind" : "renewal",
+      "text" : "Expiră în 2 luni · 26 ianuarie 2027",
+      "today" : "2026-11-26"
+    },
+    {
+      "due" : "2027-02-14",
+      "kind" : "renewal",
+      "text" : "Expiră în 2 luni și 2 săptămâni · 14 februarie 2027",
+      "today" : "2026-11-26"
+    },
+    {
+      "due" : "2028-03-01",
+      "kind" : "renewal",
+      "text" : "Expiră într-un an și 3 luni · 1 martie 2028",
+      "today" : "2026-11-26"
+    },
+    {
+      "due" : "2026-10-26",
+      "kind" : "renewal",
+      "text" : "A expirat acum o lună · 26 octombrie",
+      "today" : "2026-11-26"
+    },
+    {
+      "due" : "2026-09-01",
+      "kind" : "renewal",
+      "text" : "A expirat acum 2 luni și 3 săptămâni · 1 septembrie",
+      "today" : "2026-11-26"
+    },
+    {
+      "due" : "2025-11-26",
+      "kind" : "renewal",
+      "text" : "A expirat acum un an · 26 noiembrie 2025",
+      "today" : "2026-11-26"
+    },
+    {
+      "due" : "2026-12-17",
+      "kind" : "payment",
+      "text" : "De plătit în 3 săptămâni · 17 decembrie",
+      "today" : "2026-11-26"
+    },
+    {
+      "due" : "2027-01-26",
+      "kind" : "payment",
+      "text" : "De plătit în 2 luni · 26 ianuarie 2027",
+      "today" : "2026-11-26"
+    },
+    {
+      "due" : "2027-02-14",
+      "kind" : "payment",
+      "text" : "De plătit în 2 luni și 2 săptămâni · 14 februarie 2027",
+      "today" : "2026-11-26"
+    },
+    {
+      "due" : "2028-03-01",
+      "kind" : "payment",
+      "text" : "De plătit într-un an și 3 luni · 1 martie 2028",
+      "today" : "2026-11-26"
+    },
+    {
+      "due" : "2026-10-26",
+      "kind" : "payment",
+      "text" : "Trebuia plătit acum o lună · 26 octombrie",
+      "today" : "2026-11-26"
+    },
+    {
+      "due" : "2026-09-01",
+      "kind" : "payment",
+      "text" : "Trebuia plătit acum 2 luni și 3 săptămâni · 1 septembrie",
+      "today" : "2026-11-26"
+    },
+    {
+      "due" : "2025-11-26",
+      "kind" : "payment",
+      "text" : "Trebuia plătit acum un an · 26 noiembrie 2025",
+      "today" : "2026-11-26"
+    },
+    {
+      "due" : "2026-12-17",
+      "kind" : "maintenance",
+      "text" : "De făcut în 3 săptămâni · 17 decembrie",
+      "today" : "2026-11-26"
+    },
+    {
+      "due" : "2027-01-26",
+      "kind" : "maintenance",
+      "text" : "De făcut în 2 luni · 26 ianuarie 2027",
+      "today" : "2026-11-26"
+    },
+    {
+      "due" : "2027-02-14",
+      "kind" : "maintenance",
+      "text" : "De făcut în 2 luni și 2 săptămâni · 14 februarie 2027",
+      "today" : "2026-11-26"
+    },
+    {
+      "due" : "2028-03-01",
+      "kind" : "maintenance",
+      "text" : "De făcut într-un an și 3 luni · 1 martie 2028",
+      "today" : "2026-11-26"
+    },
+    {
+      "due" : "2026-10-26",
+      "kind" : "maintenance",
+      "text" : "Trebuia făcut acum o lună · 26 octombrie",
+      "today" : "2026-11-26"
+    },
+    {
+      "due" : "2026-09-01",
+      "kind" : "maintenance",
+      "text" : "Trebuia făcut acum 2 luni și 3 săptămâni · 1 septembrie",
+      "today" : "2026-11-26"
+    },
+    {
+      "due" : "2025-11-26",
+      "kind" : "maintenance",
+      "text" : "Trebuia făcut acum un an · 26 noiembrie 2025",
+      "today" : "2026-11-26"
+    },
+    {
+      "due" : "2026-12-17",
+      "kind" : "routine",
+      "text" : "De făcut în 3 săptămâni · 17 decembrie",
+      "today" : "2026-11-26"
+    },
+    {
+      "due" : "2027-01-26",
+      "kind" : "routine",
+      "text" : "De făcut în 2 luni · 26 ianuarie 2027",
+      "today" : "2026-11-26"
+    },
+    {
+      "due" : "2027-02-14",
+      "kind" : "routine",
+      "text" : "De făcut în 2 luni și 2 săptămâni · 14 februarie 2027",
+      "today" : "2026-11-26"
+    },
+    {
+      "due" : "2028-03-01",
+      "kind" : "routine",
+      "text" : "De făcut într-un an și 3 luni · 1 martie 2028",
+      "today" : "2026-11-26"
+    },
+    {
+      "due" : "2026-10-26",
+      "kind" : "routine",
+      "text" : "Trebuia făcut acum o lună · 26 octombrie",
+      "today" : "2026-11-26"
+    },
+    {
+      "due" : "2026-09-01",
+      "kind" : "routine",
+      "text" : "Trebuia făcut acum 2 luni și 3 săptămâni · 1 septembrie",
+      "today" : "2026-11-26"
+    },
+    {
+      "due" : "2025-11-26",
+      "kind" : "routine",
+      "text" : "Trebuia făcut acum un an · 26 noiembrie 2025",
+      "today" : "2026-11-26"
+    },
+    {
+      "consequence" : "legal",
+      "text" : "Dacă trece termenul, riști amendă sau probleme la control."
+    },
+    {
+      "consequence" : "financial",
+      "text" : "Dacă întârzii, pot veni penalități sau bani pierduți."
+    },
+    {
+      "consequence" : "health",
+      "text" : "Ține de sănătate: e mai bine făcut la timp."
+    },
+    {
+      "consequence" : "comfort",
+      "text" : "Nu e grav dacă întârzie puțin."
+    }
+  ],
+  "rule" : "DueWording.line(kind:due:today:calendar:) for distances of weeks, months and years, and DueWording.consequence",
+  "shape" : "kind, today and due: text is the due line; or consequence: text is why it matters. The shorter lines and a passport's are in shared/test-vectors/attention/due-line.json.",
+  "source" : "ios/DosarCuSina/Services/Attention/DueWording.swift",
+  "writtenBy" : "ios/DosarCuSinaTests/WordingVectorsTests.swift"
+}

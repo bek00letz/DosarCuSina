@@ -1,0 +1,4625 @@
+{
+  "cases" : [
+    {
+      "fractionDigits" : [
+        0,
+        1
+      ],
+      "text" : "0 km",
+      "unit" : "km",
+      "value" : "0"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        2
+      ],
+      "text" : "0 km",
+      "unit" : "km",
+      "value" : "0"
+    },
+    {
+      "fractionDigits" : [
+        2,
+        2
+      ],
+      "text" : "0,00 km",
+      "unit" : "km",
+      "value" : "0"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        1
+      ],
+      "text" : "1 km",
+      "unit" : "km",
+      "value" : "1"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        2
+      ],
+      "text" : "1 km",
+      "unit" : "km",
+      "value" : "1"
+    },
+    {
+      "fractionDigits" : [
+        2,
+        2
+      ],
+      "text" : "1,00 km",
+      "unit" : "km",
+      "value" : "1"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        1
+      ],
+      "text" : "2 km",
+      "unit" : "km",
+      "value" : "2"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        2
+      ],
+      "text" : "2 km",
+      "unit" : "km",
+      "value" : "2"
+    },
+    {
+      "fractionDigits" : [
+        2,
+        2
+      ],
+      "text" : "2,00 km",
+      "unit" : "km",
+      "value" : "2"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        1
+      ],
+      "text" : "19 km",
+      "unit" : "km",
+      "value" : "19"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        2
+      ],
+      "text" : "19 km",
+      "unit" : "km",
+      "value" : "19"
+    },
+    {
+      "fractionDigits" : [
+        2,
+        2
+      ],
+      "text" : "19,00 km",
+      "unit" : "km",
+      "value" : "19"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        1
+      ],
+      "text" : "20 km",
+      "unit" : "km",
+      "value" : "20"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        2
+      ],
+      "text" : "20 km",
+      "unit" : "km",
+      "value" : "20"
+    },
+    {
+      "fractionDigits" : [
+        2,
+        2
+      ],
+      "text" : "20,00 km",
+      "unit" : "km",
+      "value" : "20"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        1
+      ],
+      "text" : "21 km",
+      "unit" : "km",
+      "value" : "21"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        2
+      ],
+      "text" : "21 km",
+      "unit" : "km",
+      "value" : "21"
+    },
+    {
+      "fractionDigits" : [
+        2,
+        2
+      ],
+      "text" : "21,00 km",
+      "unit" : "km",
+      "value" : "21"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        1
+      ],
+      "text" : "101 km",
+      "unit" : "km",
+      "value" : "101"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        2
+      ],
+      "text" : "101 km",
+      "unit" : "km",
+      "value" : "101"
+    },
+    {
+      "fractionDigits" : [
+        2,
+        2
+      ],
+      "text" : "101,00 km",
+      "unit" : "km",
+      "value" : "101"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        1
+      ],
+      "text" : "119 km",
+      "unit" : "km",
+      "value" : "119"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        2
+      ],
+      "text" : "119 km",
+      "unit" : "km",
+      "value" : "119"
+    },
+    {
+      "fractionDigits" : [
+        2,
+        2
+      ],
+      "text" : "119,00 km",
+      "unit" : "km",
+      "value" : "119"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        1
+      ],
+      "text" : "120 km",
+      "unit" : "km",
+      "value" : "120"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        2
+      ],
+      "text" : "120 km",
+      "unit" : "km",
+      "value" : "120"
+    },
+    {
+      "fractionDigits" : [
+        2,
+        2
+      ],
+      "text" : "120,00 km",
+      "unit" : "km",
+      "value" : "120"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        1
+      ],
+      "text" : "1.250 km",
+      "unit" : "km",
+      "value" : "1250"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        2
+      ],
+      "text" : "1.250 km",
+      "unit" : "km",
+      "value" : "1250"
+    },
+    {
+      "fractionDigits" : [
+        2,
+        2
+      ],
+      "text" : "1.250,00 km",
+      "unit" : "km",
+      "value" : "1250"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        1
+      ],
+      "text" : "45.724 km",
+      "unit" : "km",
+      "value" : "45724"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        2
+      ],
+      "text" : "45.724 km",
+      "unit" : "km",
+      "value" : "45724"
+    },
+    {
+      "fractionDigits" : [
+        2,
+        2
+      ],
+      "text" : "45.724,00 km",
+      "unit" : "km",
+      "value" : "45724"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        1
+      ],
+      "text" : "12,5 km",
+      "unit" : "km",
+      "value" : "12.5"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        2
+      ],
+      "text" : "12,5 km",
+      "unit" : "km",
+      "value" : "12.5"
+    },
+    {
+      "fractionDigits" : [
+        2,
+        2
+      ],
+      "text" : "12,50 km",
+      "unit" : "km",
+      "value" : "12.5"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        1
+      ],
+      "text" : "1,5 km",
+      "unit" : "km",
+      "value" : "1.5"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        2
+      ],
+      "text" : "1,5 km",
+      "unit" : "km",
+      "value" : "1.5"
+    },
+    {
+      "fractionDigits" : [
+        2,
+        2
+      ],
+      "text" : "1,50 km",
+      "unit" : "km",
+      "value" : "1.5"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        1
+      ],
+      "text" : "0,4 km",
+      "unit" : "km",
+      "value" : "0.35"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        2
+      ],
+      "text" : "0,35 km",
+      "unit" : "km",
+      "value" : "0.35"
+    },
+    {
+      "fractionDigits" : [
+        2,
+        2
+      ],
+      "text" : "0,35 km",
+      "unit" : "km",
+      "value" : "0.35"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        1
+      ],
+      "text" : "0,4 km",
+      "unit" : "km",
+      "value" : "0.45"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        2
+      ],
+      "text" : "0,45 km",
+      "unit" : "km",
+      "value" : "0.45"
+    },
+    {
+      "fractionDigits" : [
+        2,
+        2
+      ],
+      "text" : "0,45 km",
+      "unit" : "km",
+      "value" : "0.45"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        1
+      ],
+      "text" : "2,2 km",
+      "unit" : "km",
+      "value" : "2.25"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        2
+      ],
+      "text" : "2,25 km",
+      "unit" : "km",
+      "value" : "2.25"
+    },
+    {
+      "fractionDigits" : [
+        2,
+        2
+      ],
+      "text" : "2,25 km",
+      "unit" : "km",
+      "value" : "2.25"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        1
+      ],
+      "text" : "1 km",
+      "unit" : "km",
+      "value" : "1.05"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        2
+      ],
+      "text" : "1,05 km",
+      "unit" : "km",
+      "value" : "1.05"
+    },
+    {
+      "fractionDigits" : [
+        2,
+        2
+      ],
+      "text" : "1,05 km",
+      "unit" : "km",
+      "value" : "1.05"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        1
+      ],
+      "text" : "-3 km",
+      "unit" : "km",
+      "value" : "-3"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        2
+      ],
+      "text" : "-3 km",
+      "unit" : "km",
+      "value" : "-3"
+    },
+    {
+      "fractionDigits" : [
+        2,
+        2
+      ],
+      "text" : "-3,00 km",
+      "unit" : "km",
+      "value" : "-3"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        1
+      ],
+      "text" : "-20 km",
+      "unit" : "km",
+      "value" : "-20"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        2
+      ],
+      "text" : "-20 km",
+      "unit" : "km",
+      "value" : "-20"
+    },
+    {
+      "fractionDigits" : [
+        2,
+        2
+      ],
+      "text" : "-20,00 km",
+      "unit" : "km",
+      "value" : "-20"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        1
+      ],
+      "text" : "0 kWh",
+      "unit" : "kwh",
+      "value" : "0"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        2
+      ],
+      "text" : "0 kWh",
+      "unit" : "kwh",
+      "value" : "0"
+    },
+    {
+      "fractionDigits" : [
+        2,
+        2
+      ],
+      "text" : "0,00 kWh",
+      "unit" : "kwh",
+      "value" : "0"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        1
+      ],
+      "text" : "1 kWh",
+      "unit" : "kwh",
+      "value" : "1"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        2
+      ],
+      "text" : "1 kWh",
+      "unit" : "kwh",
+      "value" : "1"
+    },
+    {
+      "fractionDigits" : [
+        2,
+        2
+      ],
+      "text" : "1,00 kWh",
+      "unit" : "kwh",
+      "value" : "1"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        1
+      ],
+      "text" : "2 kWh",
+      "unit" : "kwh",
+      "value" : "2"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        2
+      ],
+      "text" : "2 kWh",
+      "unit" : "kwh",
+      "value" : "2"
+    },
+    {
+      "fractionDigits" : [
+        2,
+        2
+      ],
+      "text" : "2,00 kWh",
+      "unit" : "kwh",
+      "value" : "2"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        1
+      ],
+      "text" : "19 kWh",
+      "unit" : "kwh",
+      "value" : "19"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        2
+      ],
+      "text" : "19 kWh",
+      "unit" : "kwh",
+      "value" : "19"
+    },
+    {
+      "fractionDigits" : [
+        2,
+        2
+      ],
+      "text" : "19,00 kWh",
+      "unit" : "kwh",
+      "value" : "19"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        1
+      ],
+      "text" : "20 kWh",
+      "unit" : "kwh",
+      "value" : "20"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        2
+      ],
+      "text" : "20 kWh",
+      "unit" : "kwh",
+      "value" : "20"
+    },
+    {
+      "fractionDigits" : [
+        2,
+        2
+      ],
+      "text" : "20,00 kWh",
+      "unit" : "kwh",
+      "value" : "20"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        1
+      ],
+      "text" : "21 kWh",
+      "unit" : "kwh",
+      "value" : "21"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        2
+      ],
+      "text" : "21 kWh",
+      "unit" : "kwh",
+      "value" : "21"
+    },
+    {
+      "fractionDigits" : [
+        2,
+        2
+      ],
+      "text" : "21,00 kWh",
+      "unit" : "kwh",
+      "value" : "21"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        1
+      ],
+      "text" : "101 kWh",
+      "unit" : "kwh",
+      "value" : "101"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        2
+      ],
+      "text" : "101 kWh",
+      "unit" : "kwh",
+      "value" : "101"
+    },
+    {
+      "fractionDigits" : [
+        2,
+        2
+      ],
+      "text" : "101,00 kWh",
+      "unit" : "kwh",
+      "value" : "101"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        1
+      ],
+      "text" : "119 kWh",
+      "unit" : "kwh",
+      "value" : "119"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        2
+      ],
+      "text" : "119 kWh",
+      "unit" : "kwh",
+      "value" : "119"
+    },
+    {
+      "fractionDigits" : [
+        2,
+        2
+      ],
+      "text" : "119,00 kWh",
+      "unit" : "kwh",
+      "value" : "119"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        1
+      ],
+      "text" : "120 kWh",
+      "unit" : "kwh",
+      "value" : "120"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        2
+      ],
+      "text" : "120 kWh",
+      "unit" : "kwh",
+      "value" : "120"
+    },
+    {
+      "fractionDigits" : [
+        2,
+        2
+      ],
+      "text" : "120,00 kWh",
+      "unit" : "kwh",
+      "value" : "120"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        1
+      ],
+      "text" : "1.250 kWh",
+      "unit" : "kwh",
+      "value" : "1250"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        2
+      ],
+      "text" : "1.250 kWh",
+      "unit" : "kwh",
+      "value" : "1250"
+    },
+    {
+      "fractionDigits" : [
+        2,
+        2
+      ],
+      "text" : "1.250,00 kWh",
+      "unit" : "kwh",
+      "value" : "1250"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        1
+      ],
+      "text" : "45.724 kWh",
+      "unit" : "kwh",
+      "value" : "45724"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        2
+      ],
+      "text" : "45.724 kWh",
+      "unit" : "kwh",
+      "value" : "45724"
+    },
+    {
+      "fractionDigits" : [
+        2,
+        2
+      ],
+      "text" : "45.724,00 kWh",
+      "unit" : "kwh",
+      "value" : "45724"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        1
+      ],
+      "text" : "12,5 kWh",
+      "unit" : "kwh",
+      "value" : "12.5"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        2
+      ],
+      "text" : "12,5 kWh",
+      "unit" : "kwh",
+      "value" : "12.5"
+    },
+    {
+      "fractionDigits" : [
+        2,
+        2
+      ],
+      "text" : "12,50 kWh",
+      "unit" : "kwh",
+      "value" : "12.5"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        1
+      ],
+      "text" : "1,5 kWh",
+      "unit" : "kwh",
+      "value" : "1.5"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        2
+      ],
+      "text" : "1,5 kWh",
+      "unit" : "kwh",
+      "value" : "1.5"
+    },
+    {
+      "fractionDigits" : [
+        2,
+        2
+      ],
+      "text" : "1,50 kWh",
+      "unit" : "kwh",
+      "value" : "1.5"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        1
+      ],
+      "text" : "0,4 kWh",
+      "unit" : "kwh",
+      "value" : "0.35"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        2
+      ],
+      "text" : "0,35 kWh",
+      "unit" : "kwh",
+      "value" : "0.35"
+    },
+    {
+      "fractionDigits" : [
+        2,
+        2
+      ],
+      "text" : "0,35 kWh",
+      "unit" : "kwh",
+      "value" : "0.35"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        1
+      ],
+      "text" : "0,4 kWh",
+      "unit" : "kwh",
+      "value" : "0.45"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        2
+      ],
+      "text" : "0,45 kWh",
+      "unit" : "kwh",
+      "value" : "0.45"
+    },
+    {
+      "fractionDigits" : [
+        2,
+        2
+      ],
+      "text" : "0,45 kWh",
+      "unit" : "kwh",
+      "value" : "0.45"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        1
+      ],
+      "text" : "2,2 kWh",
+      "unit" : "kwh",
+      "value" : "2.25"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        2
+      ],
+      "text" : "2,25 kWh",
+      "unit" : "kwh",
+      "value" : "2.25"
+    },
+    {
+      "fractionDigits" : [
+        2,
+        2
+      ],
+      "text" : "2,25 kWh",
+      "unit" : "kwh",
+      "value" : "2.25"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        1
+      ],
+      "text" : "1 kWh",
+      "unit" : "kwh",
+      "value" : "1.05"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        2
+      ],
+      "text" : "1,05 kWh",
+      "unit" : "kwh",
+      "value" : "1.05"
+    },
+    {
+      "fractionDigits" : [
+        2,
+        2
+      ],
+      "text" : "1,05 kWh",
+      "unit" : "kwh",
+      "value" : "1.05"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        1
+      ],
+      "text" : "-3 kWh",
+      "unit" : "kwh",
+      "value" : "-3"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        2
+      ],
+      "text" : "-3 kWh",
+      "unit" : "kwh",
+      "value" : "-3"
+    },
+    {
+      "fractionDigits" : [
+        2,
+        2
+      ],
+      "text" : "-3,00 kWh",
+      "unit" : "kwh",
+      "value" : "-3"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        1
+      ],
+      "text" : "-20 kWh",
+      "unit" : "kwh",
+      "value" : "-20"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        2
+      ],
+      "text" : "-20 kWh",
+      "unit" : "kwh",
+      "value" : "-20"
+    },
+    {
+      "fractionDigits" : [
+        2,
+        2
+      ],
+      "text" : "-20,00 kWh",
+      "unit" : "kwh",
+      "value" : "-20"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        1
+      ],
+      "text" : "0 m³",
+      "unit" : "m3",
+      "value" : "0"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        2
+      ],
+      "text" : "0 m³",
+      "unit" : "m3",
+      "value" : "0"
+    },
+    {
+      "fractionDigits" : [
+        2,
+        2
+      ],
+      "text" : "0,00 m³",
+      "unit" : "m3",
+      "value" : "0"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        1
+      ],
+      "text" : "1 m³",
+      "unit" : "m3",
+      "value" : "1"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        2
+      ],
+      "text" : "1 m³",
+      "unit" : "m3",
+      "value" : "1"
+    },
+    {
+      "fractionDigits" : [
+        2,
+        2
+      ],
+      "text" : "1,00 m³",
+      "unit" : "m3",
+      "value" : "1"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        1
+      ],
+      "text" : "2 m³",
+      "unit" : "m3",
+      "value" : "2"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        2
+      ],
+      "text" : "2 m³",
+      "unit" : "m3",
+      "value" : "2"
+    },
+    {
+      "fractionDigits" : [
+        2,
+        2
+      ],
+      "text" : "2,00 m³",
+      "unit" : "m3",
+      "value" : "2"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        1
+      ],
+      "text" : "19 m³",
+      "unit" : "m3",
+      "value" : "19"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        2
+      ],
+      "text" : "19 m³",
+      "unit" : "m3",
+      "value" : "19"
+    },
+    {
+      "fractionDigits" : [
+        2,
+        2
+      ],
+      "text" : "19,00 m³",
+      "unit" : "m3",
+      "value" : "19"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        1
+      ],
+      "text" : "20 m³",
+      "unit" : "m3",
+      "value" : "20"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        2
+      ],
+      "text" : "20 m³",
+      "unit" : "m3",
+      "value" : "20"
+    },
+    {
+      "fractionDigits" : [
+        2,
+        2
+      ],
+      "text" : "20,00 m³",
+      "unit" : "m3",
+      "value" : "20"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        1
+      ],
+      "text" : "21 m³",
+      "unit" : "m3",
+      "value" : "21"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        2
+      ],
+      "text" : "21 m³",
+      "unit" : "m3",
+      "value" : "21"
+    },
+    {
+      "fractionDigits" : [
+        2,
+        2
+      ],
+      "text" : "21,00 m³",
+      "unit" : "m3",
+      "value" : "21"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        1
+      ],
+      "text" : "101 m³",
+      "unit" : "m3",
+      "value" : "101"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        2
+      ],
+      "text" : "101 m³",
+      "unit" : "m3",
+      "value" : "101"
+    },
+    {
+      "fractionDigits" : [
+        2,
+        2
+      ],
+      "text" : "101,00 m³",
+      "unit" : "m3",
+      "value" : "101"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        1
+      ],
+      "text" : "119 m³",
+      "unit" : "m3",
+      "value" : "119"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        2
+      ],
+      "text" : "119 m³",
+      "unit" : "m3",
+      "value" : "119"
+    },
+    {
+      "fractionDigits" : [
+        2,
+        2
+      ],
+      "text" : "119,00 m³",
+      "unit" : "m3",
+      "value" : "119"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        1
+      ],
+      "text" : "120 m³",
+      "unit" : "m3",
+      "value" : "120"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        2
+      ],
+      "text" : "120 m³",
+      "unit" : "m3",
+      "value" : "120"
+    },
+    {
+      "fractionDigits" : [
+        2,
+        2
+      ],
+      "text" : "120,00 m³",
+      "unit" : "m3",
+      "value" : "120"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        1
+      ],
+      "text" : "1.250 m³",
+      "unit" : "m3",
+      "value" : "1250"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        2
+      ],
+      "text" : "1.250 m³",
+      "unit" : "m3",
+      "value" : "1250"
+    },
+    {
+      "fractionDigits" : [
+        2,
+        2
+      ],
+      "text" : "1.250,00 m³",
+      "unit" : "m3",
+      "value" : "1250"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        1
+      ],
+      "text" : "45.724 m³",
+      "unit" : "m3",
+      "value" : "45724"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        2
+      ],
+      "text" : "45.724 m³",
+      "unit" : "m3",
+      "value" : "45724"
+    },
+    {
+      "fractionDigits" : [
+        2,
+        2
+      ],
+      "text" : "45.724,00 m³",
+      "unit" : "m3",
+      "value" : "45724"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        1
+      ],
+      "text" : "12,5 m³",
+      "unit" : "m3",
+      "value" : "12.5"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        2
+      ],
+      "text" : "12,5 m³",
+      "unit" : "m3",
+      "value" : "12.5"
+    },
+    {
+      "fractionDigits" : [
+        2,
+        2
+      ],
+      "text" : "12,50 m³",
+      "unit" : "m3",
+      "value" : "12.5"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        1
+      ],
+      "text" : "1,5 m³",
+      "unit" : "m3",
+      "value" : "1.5"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        2
+      ],
+      "text" : "1,5 m³",
+      "unit" : "m3",
+      "value" : "1.5"
+    },
+    {
+      "fractionDigits" : [
+        2,
+        2
+      ],
+      "text" : "1,50 m³",
+      "unit" : "m3",
+      "value" : "1.5"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        1
+      ],
+      "text" : "0,4 m³",
+      "unit" : "m3",
+      "value" : "0.35"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        2
+      ],
+      "text" : "0,35 m³",
+      "unit" : "m3",
+      "value" : "0.35"
+    },
+    {
+      "fractionDigits" : [
+        2,
+        2
+      ],
+      "text" : "0,35 m³",
+      "unit" : "m3",
+      "value" : "0.35"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        1
+      ],
+      "text" : "0,4 m³",
+      "unit" : "m3",
+      "value" : "0.45"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        2
+      ],
+      "text" : "0,45 m³",
+      "unit" : "m3",
+      "value" : "0.45"
+    },
+    {
+      "fractionDigits" : [
+        2,
+        2
+      ],
+      "text" : "0,45 m³",
+      "unit" : "m3",
+      "value" : "0.45"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        1
+      ],
+      "text" : "2,2 m³",
+      "unit" : "m3",
+      "value" : "2.25"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        2
+      ],
+      "text" : "2,25 m³",
+      "unit" : "m3",
+      "value" : "2.25"
+    },
+    {
+      "fractionDigits" : [
+        2,
+        2
+      ],
+      "text" : "2,25 m³",
+      "unit" : "m3",
+      "value" : "2.25"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        1
+      ],
+      "text" : "1 m³",
+      "unit" : "m3",
+      "value" : "1.05"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        2
+      ],
+      "text" : "1,05 m³",
+      "unit" : "m3",
+      "value" : "1.05"
+    },
+    {
+      "fractionDigits" : [
+        2,
+        2
+      ],
+      "text" : "1,05 m³",
+      "unit" : "m3",
+      "value" : "1.05"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        1
+      ],
+      "text" : "-3 m³",
+      "unit" : "m3",
+      "value" : "-3"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        2
+      ],
+      "text" : "-3 m³",
+      "unit" : "m3",
+      "value" : "-3"
+    },
+    {
+      "fractionDigits" : [
+        2,
+        2
+      ],
+      "text" : "-3,00 m³",
+      "unit" : "m3",
+      "value" : "-3"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        1
+      ],
+      "text" : "-20 m³",
+      "unit" : "m3",
+      "value" : "-20"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        2
+      ],
+      "text" : "-20 m³",
+      "unit" : "m3",
+      "value" : "-20"
+    },
+    {
+      "fractionDigits" : [
+        2,
+        2
+      ],
+      "text" : "-20,00 m³",
+      "unit" : "m3",
+      "value" : "-20"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        1
+      ],
+      "text" : "0 Gcal",
+      "unit" : "gcal",
+      "value" : "0"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        2
+      ],
+      "text" : "0 Gcal",
+      "unit" : "gcal",
+      "value" : "0"
+    },
+    {
+      "fractionDigits" : [
+        2,
+        2
+      ],
+      "text" : "0,00 Gcal",
+      "unit" : "gcal",
+      "value" : "0"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        1
+      ],
+      "text" : "1 Gcal",
+      "unit" : "gcal",
+      "value" : "1"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        2
+      ],
+      "text" : "1 Gcal",
+      "unit" : "gcal",
+      "value" : "1"
+    },
+    {
+      "fractionDigits" : [
+        2,
+        2
+      ],
+      "text" : "1,00 Gcal",
+      "unit" : "gcal",
+      "value" : "1"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        1
+      ],
+      "text" : "2 Gcal",
+      "unit" : "gcal",
+      "value" : "2"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        2
+      ],
+      "text" : "2 Gcal",
+      "unit" : "gcal",
+      "value" : "2"
+    },
+    {
+      "fractionDigits" : [
+        2,
+        2
+      ],
+      "text" : "2,00 Gcal",
+      "unit" : "gcal",
+      "value" : "2"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        1
+      ],
+      "text" : "19 Gcal",
+      "unit" : "gcal",
+      "value" : "19"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        2
+      ],
+      "text" : "19 Gcal",
+      "unit" : "gcal",
+      "value" : "19"
+    },
+    {
+      "fractionDigits" : [
+        2,
+        2
+      ],
+      "text" : "19,00 Gcal",
+      "unit" : "gcal",
+      "value" : "19"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        1
+      ],
+      "text" : "20 Gcal",
+      "unit" : "gcal",
+      "value" : "20"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        2
+      ],
+      "text" : "20 Gcal",
+      "unit" : "gcal",
+      "value" : "20"
+    },
+    {
+      "fractionDigits" : [
+        2,
+        2
+      ],
+      "text" : "20,00 Gcal",
+      "unit" : "gcal",
+      "value" : "20"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        1
+      ],
+      "text" : "21 Gcal",
+      "unit" : "gcal",
+      "value" : "21"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        2
+      ],
+      "text" : "21 Gcal",
+      "unit" : "gcal",
+      "value" : "21"
+    },
+    {
+      "fractionDigits" : [
+        2,
+        2
+      ],
+      "text" : "21,00 Gcal",
+      "unit" : "gcal",
+      "value" : "21"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        1
+      ],
+      "text" : "101 Gcal",
+      "unit" : "gcal",
+      "value" : "101"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        2
+      ],
+      "text" : "101 Gcal",
+      "unit" : "gcal",
+      "value" : "101"
+    },
+    {
+      "fractionDigits" : [
+        2,
+        2
+      ],
+      "text" : "101,00 Gcal",
+      "unit" : "gcal",
+      "value" : "101"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        1
+      ],
+      "text" : "119 Gcal",
+      "unit" : "gcal",
+      "value" : "119"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        2
+      ],
+      "text" : "119 Gcal",
+      "unit" : "gcal",
+      "value" : "119"
+    },
+    {
+      "fractionDigits" : [
+        2,
+        2
+      ],
+      "text" : "119,00 Gcal",
+      "unit" : "gcal",
+      "value" : "119"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        1
+      ],
+      "text" : "120 Gcal",
+      "unit" : "gcal",
+      "value" : "120"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        2
+      ],
+      "text" : "120 Gcal",
+      "unit" : "gcal",
+      "value" : "120"
+    },
+    {
+      "fractionDigits" : [
+        2,
+        2
+      ],
+      "text" : "120,00 Gcal",
+      "unit" : "gcal",
+      "value" : "120"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        1
+      ],
+      "text" : "1.250 Gcal",
+      "unit" : "gcal",
+      "value" : "1250"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        2
+      ],
+      "text" : "1.250 Gcal",
+      "unit" : "gcal",
+      "value" : "1250"
+    },
+    {
+      "fractionDigits" : [
+        2,
+        2
+      ],
+      "text" : "1.250,00 Gcal",
+      "unit" : "gcal",
+      "value" : "1250"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        1
+      ],
+      "text" : "45.724 Gcal",
+      "unit" : "gcal",
+      "value" : "45724"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        2
+      ],
+      "text" : "45.724 Gcal",
+      "unit" : "gcal",
+      "value" : "45724"
+    },
+    {
+      "fractionDigits" : [
+        2,
+        2
+      ],
+      "text" : "45.724,00 Gcal",
+      "unit" : "gcal",
+      "value" : "45724"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        1
+      ],
+      "text" : "12,5 Gcal",
+      "unit" : "gcal",
+      "value" : "12.5"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        2
+      ],
+      "text" : "12,5 Gcal",
+      "unit" : "gcal",
+      "value" : "12.5"
+    },
+    {
+      "fractionDigits" : [
+        2,
+        2
+      ],
+      "text" : "12,50 Gcal",
+      "unit" : "gcal",
+      "value" : "12.5"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        1
+      ],
+      "text" : "1,5 Gcal",
+      "unit" : "gcal",
+      "value" : "1.5"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        2
+      ],
+      "text" : "1,5 Gcal",
+      "unit" : "gcal",
+      "value" : "1.5"
+    },
+    {
+      "fractionDigits" : [
+        2,
+        2
+      ],
+      "text" : "1,50 Gcal",
+      "unit" : "gcal",
+      "value" : "1.5"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        1
+      ],
+      "text" : "0,4 Gcal",
+      "unit" : "gcal",
+      "value" : "0.35"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        2
+      ],
+      "text" : "0,35 Gcal",
+      "unit" : "gcal",
+      "value" : "0.35"
+    },
+    {
+      "fractionDigits" : [
+        2,
+        2
+      ],
+      "text" : "0,35 Gcal",
+      "unit" : "gcal",
+      "value" : "0.35"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        1
+      ],
+      "text" : "0,4 Gcal",
+      "unit" : "gcal",
+      "value" : "0.45"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        2
+      ],
+      "text" : "0,45 Gcal",
+      "unit" : "gcal",
+      "value" : "0.45"
+    },
+    {
+      "fractionDigits" : [
+        2,
+        2
+      ],
+      "text" : "0,45 Gcal",
+      "unit" : "gcal",
+      "value" : "0.45"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        1
+      ],
+      "text" : "2,2 Gcal",
+      "unit" : "gcal",
+      "value" : "2.25"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        2
+      ],
+      "text" : "2,25 Gcal",
+      "unit" : "gcal",
+      "value" : "2.25"
+    },
+    {
+      "fractionDigits" : [
+        2,
+        2
+      ],
+      "text" : "2,25 Gcal",
+      "unit" : "gcal",
+      "value" : "2.25"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        1
+      ],
+      "text" : "1 Gcal",
+      "unit" : "gcal",
+      "value" : "1.05"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        2
+      ],
+      "text" : "1,05 Gcal",
+      "unit" : "gcal",
+      "value" : "1.05"
+    },
+    {
+      "fractionDigits" : [
+        2,
+        2
+      ],
+      "text" : "1,05 Gcal",
+      "unit" : "gcal",
+      "value" : "1.05"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        1
+      ],
+      "text" : "-3 Gcal",
+      "unit" : "gcal",
+      "value" : "-3"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        2
+      ],
+      "text" : "-3 Gcal",
+      "unit" : "gcal",
+      "value" : "-3"
+    },
+    {
+      "fractionDigits" : [
+        2,
+        2
+      ],
+      "text" : "-3,00 Gcal",
+      "unit" : "gcal",
+      "value" : "-3"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        1
+      ],
+      "text" : "-20 Gcal",
+      "unit" : "gcal",
+      "value" : "-20"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        2
+      ],
+      "text" : "-20 Gcal",
+      "unit" : "gcal",
+      "value" : "-20"
+    },
+    {
+      "fractionDigits" : [
+        2,
+        2
+      ],
+      "text" : "-20,00 Gcal",
+      "unit" : "gcal",
+      "value" : "-20"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        1
+      ],
+      "text" : "0 mg/dL",
+      "unit" : "mgdl",
+      "value" : "0"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        2
+      ],
+      "text" : "0 mg/dL",
+      "unit" : "mgdl",
+      "value" : "0"
+    },
+    {
+      "fractionDigits" : [
+        2,
+        2
+      ],
+      "text" : "0,00 mg/dL",
+      "unit" : "mgdl",
+      "value" : "0"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        1
+      ],
+      "text" : "1 mg/dL",
+      "unit" : "mgdl",
+      "value" : "1"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        2
+      ],
+      "text" : "1 mg/dL",
+      "unit" : "mgdl",
+      "value" : "1"
+    },
+    {
+      "fractionDigits" : [
+        2,
+        2
+      ],
+      "text" : "1,00 mg/dL",
+      "unit" : "mgdl",
+      "value" : "1"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        1
+      ],
+      "text" : "2 mg/dL",
+      "unit" : "mgdl",
+      "value" : "2"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        2
+      ],
+      "text" : "2 mg/dL",
+      "unit" : "mgdl",
+      "value" : "2"
+    },
+    {
+      "fractionDigits" : [
+        2,
+        2
+      ],
+      "text" : "2,00 mg/dL",
+      "unit" : "mgdl",
+      "value" : "2"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        1
+      ],
+      "text" : "19 mg/dL",
+      "unit" : "mgdl",
+      "value" : "19"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        2
+      ],
+      "text" : "19 mg/dL",
+      "unit" : "mgdl",
+      "value" : "19"
+    },
+    {
+      "fractionDigits" : [
+        2,
+        2
+      ],
+      "text" : "19,00 mg/dL",
+      "unit" : "mgdl",
+      "value" : "19"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        1
+      ],
+      "text" : "20 mg/dL",
+      "unit" : "mgdl",
+      "value" : "20"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        2
+      ],
+      "text" : "20 mg/dL",
+      "unit" : "mgdl",
+      "value" : "20"
+    },
+    {
+      "fractionDigits" : [
+        2,
+        2
+      ],
+      "text" : "20,00 mg/dL",
+      "unit" : "mgdl",
+      "value" : "20"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        1
+      ],
+      "text" : "21 mg/dL",
+      "unit" : "mgdl",
+      "value" : "21"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        2
+      ],
+      "text" : "21 mg/dL",
+      "unit" : "mgdl",
+      "value" : "21"
+    },
+    {
+      "fractionDigits" : [
+        2,
+        2
+      ],
+      "text" : "21,00 mg/dL",
+      "unit" : "mgdl",
+      "value" : "21"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        1
+      ],
+      "text" : "101 mg/dL",
+      "unit" : "mgdl",
+      "value" : "101"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        2
+      ],
+      "text" : "101 mg/dL",
+      "unit" : "mgdl",
+      "value" : "101"
+    },
+    {
+      "fractionDigits" : [
+        2,
+        2
+      ],
+      "text" : "101,00 mg/dL",
+      "unit" : "mgdl",
+      "value" : "101"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        1
+      ],
+      "text" : "119 mg/dL",
+      "unit" : "mgdl",
+      "value" : "119"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        2
+      ],
+      "text" : "119 mg/dL",
+      "unit" : "mgdl",
+      "value" : "119"
+    },
+    {
+      "fractionDigits" : [
+        2,
+        2
+      ],
+      "text" : "119,00 mg/dL",
+      "unit" : "mgdl",
+      "value" : "119"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        1
+      ],
+      "text" : "120 mg/dL",
+      "unit" : "mgdl",
+      "value" : "120"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        2
+      ],
+      "text" : "120 mg/dL",
+      "unit" : "mgdl",
+      "value" : "120"
+    },
+    {
+      "fractionDigits" : [
+        2,
+        2
+      ],
+      "text" : "120,00 mg/dL",
+      "unit" : "mgdl",
+      "value" : "120"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        1
+      ],
+      "text" : "1.250 mg/dL",
+      "unit" : "mgdl",
+      "value" : "1250"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        2
+      ],
+      "text" : "1.250 mg/dL",
+      "unit" : "mgdl",
+      "value" : "1250"
+    },
+    {
+      "fractionDigits" : [
+        2,
+        2
+      ],
+      "text" : "1.250,00 mg/dL",
+      "unit" : "mgdl",
+      "value" : "1250"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        1
+      ],
+      "text" : "45.724 mg/dL",
+      "unit" : "mgdl",
+      "value" : "45724"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        2
+      ],
+      "text" : "45.724 mg/dL",
+      "unit" : "mgdl",
+      "value" : "45724"
+    },
+    {
+      "fractionDigits" : [
+        2,
+        2
+      ],
+      "text" : "45.724,00 mg/dL",
+      "unit" : "mgdl",
+      "value" : "45724"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        1
+      ],
+      "text" : "12,5 mg/dL",
+      "unit" : "mgdl",
+      "value" : "12.5"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        2
+      ],
+      "text" : "12,5 mg/dL",
+      "unit" : "mgdl",
+      "value" : "12.5"
+    },
+    {
+      "fractionDigits" : [
+        2,
+        2
+      ],
+      "text" : "12,50 mg/dL",
+      "unit" : "mgdl",
+      "value" : "12.5"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        1
+      ],
+      "text" : "1,5 mg/dL",
+      "unit" : "mgdl",
+      "value" : "1.5"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        2
+      ],
+      "text" : "1,5 mg/dL",
+      "unit" : "mgdl",
+      "value" : "1.5"
+    },
+    {
+      "fractionDigits" : [
+        2,
+        2
+      ],
+      "text" : "1,50 mg/dL",
+      "unit" : "mgdl",
+      "value" : "1.5"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        1
+      ],
+      "text" : "0,4 mg/dL",
+      "unit" : "mgdl",
+      "value" : "0.35"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        2
+      ],
+      "text" : "0,35 mg/dL",
+      "unit" : "mgdl",
+      "value" : "0.35"
+    },
+    {
+      "fractionDigits" : [
+        2,
+        2
+      ],
+      "text" : "0,35 mg/dL",
+      "unit" : "mgdl",
+      "value" : "0.35"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        1
+      ],
+      "text" : "0,4 mg/dL",
+      "unit" : "mgdl",
+      "value" : "0.45"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        2
+      ],
+      "text" : "0,45 mg/dL",
+      "unit" : "mgdl",
+      "value" : "0.45"
+    },
+    {
+      "fractionDigits" : [
+        2,
+        2
+      ],
+      "text" : "0,45 mg/dL",
+      "unit" : "mgdl",
+      "value" : "0.45"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        1
+      ],
+      "text" : "2,2 mg/dL",
+      "unit" : "mgdl",
+      "value" : "2.25"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        2
+      ],
+      "text" : "2,25 mg/dL",
+      "unit" : "mgdl",
+      "value" : "2.25"
+    },
+    {
+      "fractionDigits" : [
+        2,
+        2
+      ],
+      "text" : "2,25 mg/dL",
+      "unit" : "mgdl",
+      "value" : "2.25"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        1
+      ],
+      "text" : "1 mg/dL",
+      "unit" : "mgdl",
+      "value" : "1.05"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        2
+      ],
+      "text" : "1,05 mg/dL",
+      "unit" : "mgdl",
+      "value" : "1.05"
+    },
+    {
+      "fractionDigits" : [
+        2,
+        2
+      ],
+      "text" : "1,05 mg/dL",
+      "unit" : "mgdl",
+      "value" : "1.05"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        1
+      ],
+      "text" : "-3 mg/dL",
+      "unit" : "mgdl",
+      "value" : "-3"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        2
+      ],
+      "text" : "-3 mg/dL",
+      "unit" : "mgdl",
+      "value" : "-3"
+    },
+    {
+      "fractionDigits" : [
+        2,
+        2
+      ],
+      "text" : "-3,00 mg/dL",
+      "unit" : "mgdl",
+      "value" : "-3"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        1
+      ],
+      "text" : "-20 mg/dL",
+      "unit" : "mgdl",
+      "value" : "-20"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        2
+      ],
+      "text" : "-20 mg/dL",
+      "unit" : "mgdl",
+      "value" : "-20"
+    },
+    {
+      "fractionDigits" : [
+        2,
+        2
+      ],
+      "text" : "-20,00 mg/dL",
+      "unit" : "mgdl",
+      "value" : "-20"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        1
+      ],
+      "text" : "0 luni",
+      "unit" : "months",
+      "value" : "0"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        2
+      ],
+      "text" : "0 luni",
+      "unit" : "months",
+      "value" : "0"
+    },
+    {
+      "fractionDigits" : [
+        2,
+        2
+      ],
+      "text" : "0,00 luni",
+      "unit" : "months",
+      "value" : "0"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        1
+      ],
+      "text" : "1 lună",
+      "unit" : "months",
+      "value" : "1"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        2
+      ],
+      "text" : "1 lună",
+      "unit" : "months",
+      "value" : "1"
+    },
+    {
+      "fractionDigits" : [
+        2,
+        2
+      ],
+      "text" : "1,00 lună",
+      "unit" : "months",
+      "value" : "1"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        1
+      ],
+      "text" : "2 luni",
+      "unit" : "months",
+      "value" : "2"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        2
+      ],
+      "text" : "2 luni",
+      "unit" : "months",
+      "value" : "2"
+    },
+    {
+      "fractionDigits" : [
+        2,
+        2
+      ],
+      "text" : "2,00 luni",
+      "unit" : "months",
+      "value" : "2"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        1
+      ],
+      "text" : "19 luni",
+      "unit" : "months",
+      "value" : "19"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        2
+      ],
+      "text" : "19 luni",
+      "unit" : "months",
+      "value" : "19"
+    },
+    {
+      "fractionDigits" : [
+        2,
+        2
+      ],
+      "text" : "19,00 luni",
+      "unit" : "months",
+      "value" : "19"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        1
+      ],
+      "text" : "20 de luni",
+      "unit" : "months",
+      "value" : "20"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        2
+      ],
+      "text" : "20 de luni",
+      "unit" : "months",
+      "value" : "20"
+    },
+    {
+      "fractionDigits" : [
+        2,
+        2
+      ],
+      "text" : "20,00 de luni",
+      "unit" : "months",
+      "value" : "20"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        1
+      ],
+      "text" : "21 de luni",
+      "unit" : "months",
+      "value" : "21"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        2
+      ],
+      "text" : "21 de luni",
+      "unit" : "months",
+      "value" : "21"
+    },
+    {
+      "fractionDigits" : [
+        2,
+        2
+      ],
+      "text" : "21,00 de luni",
+      "unit" : "months",
+      "value" : "21"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        1
+      ],
+      "text" : "101 luni",
+      "unit" : "months",
+      "value" : "101"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        2
+      ],
+      "text" : "101 luni",
+      "unit" : "months",
+      "value" : "101"
+    },
+    {
+      "fractionDigits" : [
+        2,
+        2
+      ],
+      "text" : "101,00 luni",
+      "unit" : "months",
+      "value" : "101"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        1
+      ],
+      "text" : "119 luni",
+      "unit" : "months",
+      "value" : "119"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        2
+      ],
+      "text" : "119 luni",
+      "unit" : "months",
+      "value" : "119"
+    },
+    {
+      "fractionDigits" : [
+        2,
+        2
+      ],
+      "text" : "119,00 luni",
+      "unit" : "months",
+      "value" : "119"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        1
+      ],
+      "text" : "120 de luni",
+      "unit" : "months",
+      "value" : "120"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        2
+      ],
+      "text" : "120 de luni",
+      "unit" : "months",
+      "value" : "120"
+    },
+    {
+      "fractionDigits" : [
+        2,
+        2
+      ],
+      "text" : "120,00 de luni",
+      "unit" : "months",
+      "value" : "120"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        1
+      ],
+      "text" : "1.250 de luni",
+      "unit" : "months",
+      "value" : "1250"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        2
+      ],
+      "text" : "1.250 de luni",
+      "unit" : "months",
+      "value" : "1250"
+    },
+    {
+      "fractionDigits" : [
+        2,
+        2
+      ],
+      "text" : "1.250,00 de luni",
+      "unit" : "months",
+      "value" : "1250"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        1
+      ],
+      "text" : "45.724 de luni",
+      "unit" : "months",
+      "value" : "45724"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        2
+      ],
+      "text" : "45.724 de luni",
+      "unit" : "months",
+      "value" : "45724"
+    },
+    {
+      "fractionDigits" : [
+        2,
+        2
+      ],
+      "text" : "45.724,00 de luni",
+      "unit" : "months",
+      "value" : "45724"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        1
+      ],
+      "text" : "12,5 luni",
+      "unit" : "months",
+      "value" : "12.5"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        2
+      ],
+      "text" : "12,5 luni",
+      "unit" : "months",
+      "value" : "12.5"
+    },
+    {
+      "fractionDigits" : [
+        2,
+        2
+      ],
+      "text" : "12,50 luni",
+      "unit" : "months",
+      "value" : "12.5"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        1
+      ],
+      "text" : "1,5 luni",
+      "unit" : "months",
+      "value" : "1.5"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        2
+      ],
+      "text" : "1,5 luni",
+      "unit" : "months",
+      "value" : "1.5"
+    },
+    {
+      "fractionDigits" : [
+        2,
+        2
+      ],
+      "text" : "1,50 luni",
+      "unit" : "months",
+      "value" : "1.5"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        1
+      ],
+      "text" : "0,4 luni",
+      "unit" : "months",
+      "value" : "0.35"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        2
+      ],
+      "text" : "0,35 luni",
+      "unit" : "months",
+      "value" : "0.35"
+    },
+    {
+      "fractionDigits" : [
+        2,
+        2
+      ],
+      "text" : "0,35 luni",
+      "unit" : "months",
+      "value" : "0.35"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        1
+      ],
+      "text" : "0,4 luni",
+      "unit" : "months",
+      "value" : "0.45"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        2
+      ],
+      "text" : "0,45 luni",
+      "unit" : "months",
+      "value" : "0.45"
+    },
+    {
+      "fractionDigits" : [
+        2,
+        2
+      ],
+      "text" : "0,45 luni",
+      "unit" : "months",
+      "value" : "0.45"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        1
+      ],
+      "text" : "2,2 luni",
+      "unit" : "months",
+      "value" : "2.25"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        2
+      ],
+      "text" : "2,25 luni",
+      "unit" : "months",
+      "value" : "2.25"
+    },
+    {
+      "fractionDigits" : [
+        2,
+        2
+      ],
+      "text" : "2,25 luni",
+      "unit" : "months",
+      "value" : "2.25"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        1
+      ],
+      "text" : "1 luni",
+      "unit" : "months",
+      "value" : "1.05"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        2
+      ],
+      "text" : "1,05 luni",
+      "unit" : "months",
+      "value" : "1.05"
+    },
+    {
+      "fractionDigits" : [
+        2,
+        2
+      ],
+      "text" : "1,05 luni",
+      "unit" : "months",
+      "value" : "1.05"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        1
+      ],
+      "text" : "-3 luni",
+      "unit" : "months",
+      "value" : "-3"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        2
+      ],
+      "text" : "-3 luni",
+      "unit" : "months",
+      "value" : "-3"
+    },
+    {
+      "fractionDigits" : [
+        2,
+        2
+      ],
+      "text" : "-3,00 luni",
+      "unit" : "months",
+      "value" : "-3"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        1
+      ],
+      "text" : "-20 de luni",
+      "unit" : "months",
+      "value" : "-20"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        2
+      ],
+      "text" : "-20 de luni",
+      "unit" : "months",
+      "value" : "-20"
+    },
+    {
+      "fractionDigits" : [
+        2,
+        2
+      ],
+      "text" : "-20,00 de luni",
+      "unit" : "months",
+      "value" : "-20"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        1
+      ],
+      "text" : "0 cafele",
+      "unit" : "shots",
+      "value" : "0"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        2
+      ],
+      "text" : "0 cafele",
+      "unit" : "shots",
+      "value" : "0"
+    },
+    {
+      "fractionDigits" : [
+        2,
+        2
+      ],
+      "text" : "0,00 cafele",
+      "unit" : "shots",
+      "value" : "0"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        1
+      ],
+      "text" : "1 cafea",
+      "unit" : "shots",
+      "value" : "1"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        2
+      ],
+      "text" : "1 cafea",
+      "unit" : "shots",
+      "value" : "1"
+    },
+    {
+      "fractionDigits" : [
+        2,
+        2
+      ],
+      "text" : "1,00 cafea",
+      "unit" : "shots",
+      "value" : "1"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        1
+      ],
+      "text" : "2 cafele",
+      "unit" : "shots",
+      "value" : "2"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        2
+      ],
+      "text" : "2 cafele",
+      "unit" : "shots",
+      "value" : "2"
+    },
+    {
+      "fractionDigits" : [
+        2,
+        2
+      ],
+      "text" : "2,00 cafele",
+      "unit" : "shots",
+      "value" : "2"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        1
+      ],
+      "text" : "19 cafele",
+      "unit" : "shots",
+      "value" : "19"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        2
+      ],
+      "text" : "19 cafele",
+      "unit" : "shots",
+      "value" : "19"
+    },
+    {
+      "fractionDigits" : [
+        2,
+        2
+      ],
+      "text" : "19,00 cafele",
+      "unit" : "shots",
+      "value" : "19"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        1
+      ],
+      "text" : "20 de cafele",
+      "unit" : "shots",
+      "value" : "20"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        2
+      ],
+      "text" : "20 de cafele",
+      "unit" : "shots",
+      "value" : "20"
+    },
+    {
+      "fractionDigits" : [
+        2,
+        2
+      ],
+      "text" : "20,00 de cafele",
+      "unit" : "shots",
+      "value" : "20"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        1
+      ],
+      "text" : "21 de cafele",
+      "unit" : "shots",
+      "value" : "21"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        2
+      ],
+      "text" : "21 de cafele",
+      "unit" : "shots",
+      "value" : "21"
+    },
+    {
+      "fractionDigits" : [
+        2,
+        2
+      ],
+      "text" : "21,00 de cafele",
+      "unit" : "shots",
+      "value" : "21"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        1
+      ],
+      "text" : "101 cafele",
+      "unit" : "shots",
+      "value" : "101"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        2
+      ],
+      "text" : "101 cafele",
+      "unit" : "shots",
+      "value" : "101"
+    },
+    {
+      "fractionDigits" : [
+        2,
+        2
+      ],
+      "text" : "101,00 cafele",
+      "unit" : "shots",
+      "value" : "101"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        1
+      ],
+      "text" : "119 cafele",
+      "unit" : "shots",
+      "value" : "119"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        2
+      ],
+      "text" : "119 cafele",
+      "unit" : "shots",
+      "value" : "119"
+    },
+    {
+      "fractionDigits" : [
+        2,
+        2
+      ],
+      "text" : "119,00 cafele",
+      "unit" : "shots",
+      "value" : "119"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        1
+      ],
+      "text" : "120 de cafele",
+      "unit" : "shots",
+      "value" : "120"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        2
+      ],
+      "text" : "120 de cafele",
+      "unit" : "shots",
+      "value" : "120"
+    },
+    {
+      "fractionDigits" : [
+        2,
+        2
+      ],
+      "text" : "120,00 de cafele",
+      "unit" : "shots",
+      "value" : "120"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        1
+      ],
+      "text" : "1.250 de cafele",
+      "unit" : "shots",
+      "value" : "1250"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        2
+      ],
+      "text" : "1.250 de cafele",
+      "unit" : "shots",
+      "value" : "1250"
+    },
+    {
+      "fractionDigits" : [
+        2,
+        2
+      ],
+      "text" : "1.250,00 de cafele",
+      "unit" : "shots",
+      "value" : "1250"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        1
+      ],
+      "text" : "45.724 de cafele",
+      "unit" : "shots",
+      "value" : "45724"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        2
+      ],
+      "text" : "45.724 de cafele",
+      "unit" : "shots",
+      "value" : "45724"
+    },
+    {
+      "fractionDigits" : [
+        2,
+        2
+      ],
+      "text" : "45.724,00 de cafele",
+      "unit" : "shots",
+      "value" : "45724"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        1
+      ],
+      "text" : "12,5 cafele",
+      "unit" : "shots",
+      "value" : "12.5"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        2
+      ],
+      "text" : "12,5 cafele",
+      "unit" : "shots",
+      "value" : "12.5"
+    },
+    {
+      "fractionDigits" : [
+        2,
+        2
+      ],
+      "text" : "12,50 cafele",
+      "unit" : "shots",
+      "value" : "12.5"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        1
+      ],
+      "text" : "1,5 cafele",
+      "unit" : "shots",
+      "value" : "1.5"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        2
+      ],
+      "text" : "1,5 cafele",
+      "unit" : "shots",
+      "value" : "1.5"
+    },
+    {
+      "fractionDigits" : [
+        2,
+        2
+      ],
+      "text" : "1,50 cafele",
+      "unit" : "shots",
+      "value" : "1.5"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        1
+      ],
+      "text" : "0,4 cafele",
+      "unit" : "shots",
+      "value" : "0.35"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        2
+      ],
+      "text" : "0,35 cafele",
+      "unit" : "shots",
+      "value" : "0.35"
+    },
+    {
+      "fractionDigits" : [
+        2,
+        2
+      ],
+      "text" : "0,35 cafele",
+      "unit" : "shots",
+      "value" : "0.35"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        1
+      ],
+      "text" : "0,4 cafele",
+      "unit" : "shots",
+      "value" : "0.45"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        2
+      ],
+      "text" : "0,45 cafele",
+      "unit" : "shots",
+      "value" : "0.45"
+    },
+    {
+      "fractionDigits" : [
+        2,
+        2
+      ],
+      "text" : "0,45 cafele",
+      "unit" : "shots",
+      "value" : "0.45"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        1
+      ],
+      "text" : "2,2 cafele",
+      "unit" : "shots",
+      "value" : "2.25"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        2
+      ],
+      "text" : "2,25 cafele",
+      "unit" : "shots",
+      "value" : "2.25"
+    },
+    {
+      "fractionDigits" : [
+        2,
+        2
+      ],
+      "text" : "2,25 cafele",
+      "unit" : "shots",
+      "value" : "2.25"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        1
+      ],
+      "text" : "1 cafele",
+      "unit" : "shots",
+      "value" : "1.05"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        2
+      ],
+      "text" : "1,05 cafele",
+      "unit" : "shots",
+      "value" : "1.05"
+    },
+    {
+      "fractionDigits" : [
+        2,
+        2
+      ],
+      "text" : "1,05 cafele",
+      "unit" : "shots",
+      "value" : "1.05"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        1
+      ],
+      "text" : "-3 cafele",
+      "unit" : "shots",
+      "value" : "-3"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        2
+      ],
+      "text" : "-3 cafele",
+      "unit" : "shots",
+      "value" : "-3"
+    },
+    {
+      "fractionDigits" : [
+        2,
+        2
+      ],
+      "text" : "-3,00 cafele",
+      "unit" : "shots",
+      "value" : "-3"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        1
+      ],
+      "text" : "-20 de cafele",
+      "unit" : "shots",
+      "value" : "-20"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        2
+      ],
+      "text" : "-20 de cafele",
+      "unit" : "shots",
+      "value" : "-20"
+    },
+    {
+      "fractionDigits" : [
+        2,
+        2
+      ],
+      "text" : "-20,00 de cafele",
+      "unit" : "shots",
+      "value" : "-20"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        1
+      ],
+      "text" : "0 ore motor",
+      "unit" : "ore motor",
+      "value" : "0"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        2
+      ],
+      "text" : "0 ore motor",
+      "unit" : "ore motor",
+      "value" : "0"
+    },
+    {
+      "fractionDigits" : [
+        2,
+        2
+      ],
+      "text" : "0,00 ore motor",
+      "unit" : "ore motor",
+      "value" : "0"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        1
+      ],
+      "text" : "1 ore motor",
+      "unit" : "ore motor",
+      "value" : "1"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        2
+      ],
+      "text" : "1 ore motor",
+      "unit" : "ore motor",
+      "value" : "1"
+    },
+    {
+      "fractionDigits" : [
+        2,
+        2
+      ],
+      "text" : "1,00 ore motor",
+      "unit" : "ore motor",
+      "value" : "1"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        1
+      ],
+      "text" : "2 ore motor",
+      "unit" : "ore motor",
+      "value" : "2"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        2
+      ],
+      "text" : "2 ore motor",
+      "unit" : "ore motor",
+      "value" : "2"
+    },
+    {
+      "fractionDigits" : [
+        2,
+        2
+      ],
+      "text" : "2,00 ore motor",
+      "unit" : "ore motor",
+      "value" : "2"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        1
+      ],
+      "text" : "19 ore motor",
+      "unit" : "ore motor",
+      "value" : "19"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        2
+      ],
+      "text" : "19 ore motor",
+      "unit" : "ore motor",
+      "value" : "19"
+    },
+    {
+      "fractionDigits" : [
+        2,
+        2
+      ],
+      "text" : "19,00 ore motor",
+      "unit" : "ore motor",
+      "value" : "19"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        1
+      ],
+      "text" : "20 ore motor",
+      "unit" : "ore motor",
+      "value" : "20"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        2
+      ],
+      "text" : "20 ore motor",
+      "unit" : "ore motor",
+      "value" : "20"
+    },
+    {
+      "fractionDigits" : [
+        2,
+        2
+      ],
+      "text" : "20,00 ore motor",
+      "unit" : "ore motor",
+      "value" : "20"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        1
+      ],
+      "text" : "21 ore motor",
+      "unit" : "ore motor",
+      "value" : "21"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        2
+      ],
+      "text" : "21 ore motor",
+      "unit" : "ore motor",
+      "value" : "21"
+    },
+    {
+      "fractionDigits" : [
+        2,
+        2
+      ],
+      "text" : "21,00 ore motor",
+      "unit" : "ore motor",
+      "value" : "21"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        1
+      ],
+      "text" : "101 ore motor",
+      "unit" : "ore motor",
+      "value" : "101"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        2
+      ],
+      "text" : "101 ore motor",
+      "unit" : "ore motor",
+      "value" : "101"
+    },
+    {
+      "fractionDigits" : [
+        2,
+        2
+      ],
+      "text" : "101,00 ore motor",
+      "unit" : "ore motor",
+      "value" : "101"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        1
+      ],
+      "text" : "119 ore motor",
+      "unit" : "ore motor",
+      "value" : "119"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        2
+      ],
+      "text" : "119 ore motor",
+      "unit" : "ore motor",
+      "value" : "119"
+    },
+    {
+      "fractionDigits" : [
+        2,
+        2
+      ],
+      "text" : "119,00 ore motor",
+      "unit" : "ore motor",
+      "value" : "119"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        1
+      ],
+      "text" : "120 ore motor",
+      "unit" : "ore motor",
+      "value" : "120"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        2
+      ],
+      "text" : "120 ore motor",
+      "unit" : "ore motor",
+      "value" : "120"
+    },
+    {
+      "fractionDigits" : [
+        2,
+        2
+      ],
+      "text" : "120,00 ore motor",
+      "unit" : "ore motor",
+      "value" : "120"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        1
+      ],
+      "text" : "1.250 ore motor",
+      "unit" : "ore motor",
+      "value" : "1250"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        2
+      ],
+      "text" : "1.250 ore motor",
+      "unit" : "ore motor",
+      "value" : "1250"
+    },
+    {
+      "fractionDigits" : [
+        2,
+        2
+      ],
+      "text" : "1.250,00 ore motor",
+      "unit" : "ore motor",
+      "value" : "1250"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        1
+      ],
+      "text" : "45.724 ore motor",
+      "unit" : "ore motor",
+      "value" : "45724"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        2
+      ],
+      "text" : "45.724 ore motor",
+      "unit" : "ore motor",
+      "value" : "45724"
+    },
+    {
+      "fractionDigits" : [
+        2,
+        2
+      ],
+      "text" : "45.724,00 ore motor",
+      "unit" : "ore motor",
+      "value" : "45724"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        1
+      ],
+      "text" : "12,5 ore motor",
+      "unit" : "ore motor",
+      "value" : "12.5"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        2
+      ],
+      "text" : "12,5 ore motor",
+      "unit" : "ore motor",
+      "value" : "12.5"
+    },
+    {
+      "fractionDigits" : [
+        2,
+        2
+      ],
+      "text" : "12,50 ore motor",
+      "unit" : "ore motor",
+      "value" : "12.5"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        1
+      ],
+      "text" : "1,5 ore motor",
+      "unit" : "ore motor",
+      "value" : "1.5"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        2
+      ],
+      "text" : "1,5 ore motor",
+      "unit" : "ore motor",
+      "value" : "1.5"
+    },
+    {
+      "fractionDigits" : [
+        2,
+        2
+      ],
+      "text" : "1,50 ore motor",
+      "unit" : "ore motor",
+      "value" : "1.5"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        1
+      ],
+      "text" : "0,4 ore motor",
+      "unit" : "ore motor",
+      "value" : "0.35"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        2
+      ],
+      "text" : "0,35 ore motor",
+      "unit" : "ore motor",
+      "value" : "0.35"
+    },
+    {
+      "fractionDigits" : [
+        2,
+        2
+      ],
+      "text" : "0,35 ore motor",
+      "unit" : "ore motor",
+      "value" : "0.35"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        1
+      ],
+      "text" : "0,4 ore motor",
+      "unit" : "ore motor",
+      "value" : "0.45"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        2
+      ],
+      "text" : "0,45 ore motor",
+      "unit" : "ore motor",
+      "value" : "0.45"
+    },
+    {
+      "fractionDigits" : [
+        2,
+        2
+      ],
+      "text" : "0,45 ore motor",
+      "unit" : "ore motor",
+      "value" : "0.45"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        1
+      ],
+      "text" : "2,2 ore motor",
+      "unit" : "ore motor",
+      "value" : "2.25"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        2
+      ],
+      "text" : "2,25 ore motor",
+      "unit" : "ore motor",
+      "value" : "2.25"
+    },
+    {
+      "fractionDigits" : [
+        2,
+        2
+      ],
+      "text" : "2,25 ore motor",
+      "unit" : "ore motor",
+      "value" : "2.25"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        1
+      ],
+      "text" : "1 ore motor",
+      "unit" : "ore motor",
+      "value" : "1.05"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        2
+      ],
+      "text" : "1,05 ore motor",
+      "unit" : "ore motor",
+      "value" : "1.05"
+    },
+    {
+      "fractionDigits" : [
+        2,
+        2
+      ],
+      "text" : "1,05 ore motor",
+      "unit" : "ore motor",
+      "value" : "1.05"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        1
+      ],
+      "text" : "-3 ore motor",
+      "unit" : "ore motor",
+      "value" : "-3"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        2
+      ],
+      "text" : "-3 ore motor",
+      "unit" : "ore motor",
+      "value" : "-3"
+    },
+    {
+      "fractionDigits" : [
+        2,
+        2
+      ],
+      "text" : "-3,00 ore motor",
+      "unit" : "ore motor",
+      "value" : "-3"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        1
+      ],
+      "text" : "-20 ore motor",
+      "unit" : "ore motor",
+      "value" : "-20"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        2
+      ],
+      "text" : "-20 ore motor",
+      "unit" : "ore motor",
+      "value" : "-20"
+    },
+    {
+      "fractionDigits" : [
+        2,
+        2
+      ],
+      "text" : "-20,00 ore motor",
+      "unit" : "ore motor",
+      "value" : "-20"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        1
+      ],
+      "text" : "0",
+      "unit" : null,
+      "value" : "0"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        2
+      ],
+      "text" : "0",
+      "unit" : null,
+      "value" : "0"
+    },
+    {
+      "fractionDigits" : [
+        2,
+        2
+      ],
+      "text" : "0,00",
+      "unit" : null,
+      "value" : "0"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        1
+      ],
+      "text" : "1",
+      "unit" : null,
+      "value" : "1"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        2
+      ],
+      "text" : "1",
+      "unit" : null,
+      "value" : "1"
+    },
+    {
+      "fractionDigits" : [
+        2,
+        2
+      ],
+      "text" : "1,00",
+      "unit" : null,
+      "value" : "1"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        1
+      ],
+      "text" : "2",
+      "unit" : null,
+      "value" : "2"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        2
+      ],
+      "text" : "2",
+      "unit" : null,
+      "value" : "2"
+    },
+    {
+      "fractionDigits" : [
+        2,
+        2
+      ],
+      "text" : "2,00",
+      "unit" : null,
+      "value" : "2"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        1
+      ],
+      "text" : "19",
+      "unit" : null,
+      "value" : "19"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        2
+      ],
+      "text" : "19",
+      "unit" : null,
+      "value" : "19"
+    },
+    {
+      "fractionDigits" : [
+        2,
+        2
+      ],
+      "text" : "19,00",
+      "unit" : null,
+      "value" : "19"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        1
+      ],
+      "text" : "20",
+      "unit" : null,
+      "value" : "20"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        2
+      ],
+      "text" : "20",
+      "unit" : null,
+      "value" : "20"
+    },
+    {
+      "fractionDigits" : [
+        2,
+        2
+      ],
+      "text" : "20,00",
+      "unit" : null,
+      "value" : "20"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        1
+      ],
+      "text" : "21",
+      "unit" : null,
+      "value" : "21"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        2
+      ],
+      "text" : "21",
+      "unit" : null,
+      "value" : "21"
+    },
+    {
+      "fractionDigits" : [
+        2,
+        2
+      ],
+      "text" : "21,00",
+      "unit" : null,
+      "value" : "21"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        1
+      ],
+      "text" : "101",
+      "unit" : null,
+      "value" : "101"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        2
+      ],
+      "text" : "101",
+      "unit" : null,
+      "value" : "101"
+    },
+    {
+      "fractionDigits" : [
+        2,
+        2
+      ],
+      "text" : "101,00",
+      "unit" : null,
+      "value" : "101"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        1
+      ],
+      "text" : "119",
+      "unit" : null,
+      "value" : "119"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        2
+      ],
+      "text" : "119",
+      "unit" : null,
+      "value" : "119"
+    },
+    {
+      "fractionDigits" : [
+        2,
+        2
+      ],
+      "text" : "119,00",
+      "unit" : null,
+      "value" : "119"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        1
+      ],
+      "text" : "120",
+      "unit" : null,
+      "value" : "120"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        2
+      ],
+      "text" : "120",
+      "unit" : null,
+      "value" : "120"
+    },
+    {
+      "fractionDigits" : [
+        2,
+        2
+      ],
+      "text" : "120,00",
+      "unit" : null,
+      "value" : "120"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        1
+      ],
+      "text" : "1.250",
+      "unit" : null,
+      "value" : "1250"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        2
+      ],
+      "text" : "1.250",
+      "unit" : null,
+      "value" : "1250"
+    },
+    {
+      "fractionDigits" : [
+        2,
+        2
+      ],
+      "text" : "1.250,00",
+      "unit" : null,
+      "value" : "1250"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        1
+      ],
+      "text" : "45.724",
+      "unit" : null,
+      "value" : "45724"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        2
+      ],
+      "text" : "45.724",
+      "unit" : null,
+      "value" : "45724"
+    },
+    {
+      "fractionDigits" : [
+        2,
+        2
+      ],
+      "text" : "45.724,00",
+      "unit" : null,
+      "value" : "45724"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        1
+      ],
+      "text" : "12,5",
+      "unit" : null,
+      "value" : "12.5"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        2
+      ],
+      "text" : "12,5",
+      "unit" : null,
+      "value" : "12.5"
+    },
+    {
+      "fractionDigits" : [
+        2,
+        2
+      ],
+      "text" : "12,50",
+      "unit" : null,
+      "value" : "12.5"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        1
+      ],
+      "text" : "1,5",
+      "unit" : null,
+      "value" : "1.5"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        2
+      ],
+      "text" : "1,5",
+      "unit" : null,
+      "value" : "1.5"
+    },
+    {
+      "fractionDigits" : [
+        2,
+        2
+      ],
+      "text" : "1,50",
+      "unit" : null,
+      "value" : "1.5"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        1
+      ],
+      "text" : "0,4",
+      "unit" : null,
+      "value" : "0.35"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        2
+      ],
+      "text" : "0,35",
+      "unit" : null,
+      "value" : "0.35"
+    },
+    {
+      "fractionDigits" : [
+        2,
+        2
+      ],
+      "text" : "0,35",
+      "unit" : null,
+      "value" : "0.35"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        1
+      ],
+      "text" : "0,4",
+      "unit" : null,
+      "value" : "0.45"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        2
+      ],
+      "text" : "0,45",
+      "unit" : null,
+      "value" : "0.45"
+    },
+    {
+      "fractionDigits" : [
+        2,
+        2
+      ],
+      "text" : "0,45",
+      "unit" : null,
+      "value" : "0.45"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        1
+      ],
+      "text" : "2,2",
+      "unit" : null,
+      "value" : "2.25"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        2
+      ],
+      "text" : "2,25",
+      "unit" : null,
+      "value" : "2.25"
+    },
+    {
+      "fractionDigits" : [
+        2,
+        2
+      ],
+      "text" : "2,25",
+      "unit" : null,
+      "value" : "2.25"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        1
+      ],
+      "text" : "1",
+      "unit" : null,
+      "value" : "1.05"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        2
+      ],
+      "text" : "1,05",
+      "unit" : null,
+      "value" : "1.05"
+    },
+    {
+      "fractionDigits" : [
+        2,
+        2
+      ],
+      "text" : "1,05",
+      "unit" : null,
+      "value" : "1.05"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        1
+      ],
+      "text" : "-3",
+      "unit" : null,
+      "value" : "-3"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        2
+      ],
+      "text" : "-3",
+      "unit" : null,
+      "value" : "-3"
+    },
+    {
+      "fractionDigits" : [
+        2,
+        2
+      ],
+      "text" : "-3,00",
+      "unit" : null,
+      "value" : "-3"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        1
+      ],
+      "text" : "-20",
+      "unit" : null,
+      "value" : "-20"
+    },
+    {
+      "fractionDigits" : [
+        0,
+        2
+      ],
+      "text" : "-20",
+      "unit" : null,
+      "value" : "-20"
+    },
+    {
+      "fractionDigits" : [
+        2,
+        2
+      ],
+      "text" : "-20,00",
+      "unit" : null,
+      "value" : "-20"
+    }
+  ],
+  "rule" : "MeasurementUnit.written(_:in:fractionDigits:)",
+  "shape" : "value: the number in machine form, read as a Double; unit: as stored or typed, null for none; fractionDigits: [least, most]; text: the number with its unit.",
+  "source" : "ios/DosarCuSina/Models/Values/MeasurementUnit.swift",
+  "writtenBy" : "ios/DosarCuSinaTests/WordingVectorsTests.swift"
+}
