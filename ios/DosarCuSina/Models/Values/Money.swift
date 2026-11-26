@@ -19,9 +19,31 @@ public struct Money: Hashable, Sendable, Codable {
         self.currency = currency.uppercased()
     }
 
-    /// An amount in the machine form archives and stored JSON use ("12.50").
+    /// The most significant digits an amount may have. The store keeps an amount through a
+    /// `Double`, which holds any number of up to 15 significant digits exactly, so an amount
+    /// within it reads back as it was written (`MoneyStaysExactTests`): up to
+    /// 9.999.999.999.999,99 lei, or as many decimals as fit in the 15.
+    public static let mostDigits = 15
+
+    /// Whether the binder keeps `amount` exactly: at most `mostDigits` significant digits.
+    /// Every way an amount comes in asks it: what is typed or read off a paper
+    /// (`RomanianNumber.read(_:as: .money)`) and what a backup brings (`init(amountString:)`,
+    /// decoding).
+    public static func keepsExactly(_ amount: Decimal) -> Bool {
+        significantDigits(amount) <= mostDigits
+    }
+
+    /// The digits of `amount` between its first and its last that isn't zero.
+    static func significantDigits(_ amount: Decimal) -> Int {
+        let digits = "\(amount.magnitude)".filter(\.isASCII).filter(\.isNumber)
+        let trimmed = digits.drop { $0 == "0" }.reversed().drop { $0 == "0" }
+        return trimmed.count
+    }
+
+    /// An amount in the machine form archives and stored JSON use ("12.50"); nil when it isn't
+    /// one, or has more digits than the binder keeps exactly (`keepsExactly`).
     public init?(amountString: String, currency: String) {
-        guard let value = RomanianNumber.canonical(amountString) else { return nil }
+        guard let value = RomanianNumber.canonical(amountString), Self.keepsExactly(value) else { return nil }
         self.init(value, currency: currency)
     }
 
@@ -92,6 +114,9 @@ public struct Money: Hashable, Sendable, Codable {
         let raw = try container.decode(String.self, forKey: .amount)
         guard let value = RomanianNumber.canonical(raw) else {
             throw DecodingError.dataCorruptedError(forKey: .amount, in: container, debugDescription: "Not a decimal: \(raw)")
+        }
+        guard Self.keepsExactly(value) else {
+            throw DecodingError.dataCorruptedError(forKey: .amount, in: container, debugDescription: "More digits than an amount keeps")
         }
         self.init(value, currency: currency)
     }
