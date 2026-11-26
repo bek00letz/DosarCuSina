@@ -73,9 +73,11 @@ public actor SearchIndexer {
             guard let showing = try builder.recordsShowing(id) else { return try rebuild() }
             records.formUnion(showing)
         }
-        if changes.deleted.contains(where: { $0.entityName == SearchIndexBuilder.entity(CategoryTemplate.self) }) {
-            return try rebuild()
+        for id in changes.deleted {
+            guard let showing = try builder.recordsShowingDeleted(id) else { return try rebuild() }
+            records.formUnion(showing)
         }
+        records.subtract(changes.deleted)
         var removing: Set<String> = []
         for id in changes.deleted {
             removing.formUnion(documentIDs.removeValue(forKey: id) ?? [])

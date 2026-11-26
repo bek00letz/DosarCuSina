@@ -258,4 +258,93 @@ struct SearchLockedSectionsTests {
         #expect(result.subtitle == "Exemplu \(SecretFields.mask) · 2020")
         #expect(!result.fields.contains { $0.text.contains("000000") })
     }
+
+    @Test("A result's line never shows a CNP, and keeps what is already masked as its page shows it")
+    func aResultsLineIsRedactedAsItsFields() throws {
+        let context = try makeContext()
+        let definition = TemplateDefinition(
+            key: "search.copies", name: "Copii", symbol: "doc", tint: .gray,
+            sections: [FieldSection(key: "main", title: "Date", fields: [
+                FieldDefinition(key: "copy.note", label: "Exemplar", type: .text, role: .subtitle),
+            ])],
+            behavior: CategoryBehavior(visit: .none, singular: nil)
+        )
+        context.insert(CategoryTemplate(definition: definition, isBuiltIn: false, homeOrder: 0))
+        let values = FieldValues(["copy.note": .text("Copie 1800101990006 · card •••• 1111")])
+        let section = Asset(name: "Dosar Exemplu", templateKey: definition.key, values: values)
+        context.insert(section)
+        let deadline = Obligation(title: "Termen", kind: .routine, dueDay: CalendarDay("2027-01-10"))
+        context.insert(deadline)
+        deadline.asset = section
+        try UnitOfWork.save(context)
+
+        #expect(HeroFacts.subtitle(section.values, definition: definition) == "Copie 1800101990006 · card •••• 1111", "Its page is unchanged")
+        let index = try index(context)
+        let result = try #require(index.documents.first { $0.kind == .asset && $0.title == "Dosar Exemplu" })
+        #expect(result.subtitle == "Copie · card •••• 1111", "The CNP goes, the card's mask and last four stay")
+        #expect(!result.fields.contains { $0.text.contains("1800101990006") || $0.text.contains("1111") }, "Neither is searched")
+        #expect(index.search("1111").isEmpty)
+        // Every kind of result: a deadline's line names its section the same way.
+        let line = try #require(index.documents.first { $0.kind == .obligation }?.subtitle)
+        #expect(line.hasPrefix("Dosar Exemplu ·") && !line.contains("1800101990006"))
+    }
+
+    @Test("A section named with a CNP-shaped number shows without it in Caută")
+    func aTitleIsShownByTheSameRule() throws {
+        let context = try makeContext()
+        let vehicles = try #require(try TemplateStore(context: context).template(forKey: BuiltInTemplates.Key.vehicle))
+        let assets = AssetActions(context: context, calendar: .bucharest, now: { noon("2026-11-03") })
+        let named = try assets.create(name: "Certificat 1800101990006", template: vehicles, values: FieldValues())
+        _ = try assets.create(name: "VW Golf 2018", template: vehicles, values: FieldValues())
+        let deadline = Obligation(title: "ITP 1800101990006", kind: .legal, dueDay: CalendarDay("2027-03-01"))
+        context.insert(deadline)
+        deadline.asset = named
+        try UnitOfWork.save(context)
+
+        let index = try index(context)
+        #expect(index.documents.contains { $0.kind == .asset && $0.title == "Certificat" })
+        #expect(index.documents.contains { $0.kind == .asset && $0.title == "VW Golf 2018" }, "A title with nothing taken out stays as it is")
+        let itp = try #require(index.documents.first { $0.kind == .obligation })
+        #expect(itp.title == "ITP" && itp.subtitle?.hasPrefix("Certificat ·") == true)
+        #expect(!index.documents.contains { ($0.title + ($0.subtitle ?? "")).contains("1800101990006") })
+        #expect(index.search("1800101990006").isEmpty, "Nor is it matched")
+        #expect(index.search("certificat").contains { $0.document.kind == .asset })
+    }
+
+    @Test("A section whose category hasn't arrived reads again the documents that name no section")
+    func aSectionWhoseCategoryIsMissingReadsTheUnfiledDocuments() async throws {
+        // Nothing locked yet: no built-in categories, one open category of one's own.
+        let container = try makeInMemoryContainer()
+        let context = PersistenceController.context(in: container)
+        let open = TemplateDefinition(key: "search.open", name: "Deschise", symbol: "folder", tint: .gray, sections: [],
+                                      behavior: CategoryBehavior(visit: .none, singular: nil))
+        context.insert(CategoryTemplate(definition: open, isBuiltIn: false, homeOrder: 0))
+        for name in ["Raft", "Dulap", "Sertar"] { context.insert(Asset(name: name, templateKey: open.key)) }
+        let unfiled = DosarCuSina.Attachment(fileName: "scan.pdf", contentType: "com.adobe.pdf", data: nil, kind: .other)
+        unfiled.extractedText = "Pagina întâi"
+        context.insert(unfiled)
+        try UnitOfWork.save(context)
+
+        let indexer = SearchIndexer(container: container)
+        var index = try await indexer.rebuild()
+        let everything = await indexer.lastRecordsRead
+        #expect(index.search("pagina").first?.document.isSensitive == false)
+
+        // A section arrives before its category (from another device): locked, so the document is too.
+        let arriving = Asset(name: "Sosește", templateKey: "custom.0b6c6f43-0000-4000-8000-0000000000bb")
+        context.insert(arriving)
+        try UnitOfWork.save(context)
+        index = try await indexer.apply(SearchChanges(changed: [arriving.persistentModelID]))
+        #expect(await indexer.lastRecordsRead < everything, "Only what it can reach is read again")
+        #expect(index.search("pagina").isEmpty, "What was read off it isn't kept while something may be locked")
+        #expect(index.search("scan").first?.document.isSensitive == true)
+
+        // It goes: nothing of the binder is locked again.
+        let id = arriving.persistentModelID
+        context.delete(arriving)
+        try UnitOfWork.save(context)
+        index = try await indexer.apply(SearchChanges(deleted: [id]))
+        #expect(index.search("pagina").first?.document.isSensitive == false)
+        #expect(index.count == (try SearchIndexBuilder(context: PersistenceController.context(in: container)).build().count))
+    }
 }
