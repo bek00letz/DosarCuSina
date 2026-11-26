@@ -14,15 +14,12 @@ import com.ar.dosarcusina.core.values.StoredDay
 import com.ar.dosarcusina.store.schema.Asset
 import com.ar.dosarcusina.store.schema.Attachment
 import com.ar.dosarcusina.store.schema.AttachmentPage
-import com.ar.dosarcusina.store.schema.BinderDatabase
 import com.ar.dosarcusina.store.schema.CategoryTemplate
 import com.ar.dosarcusina.store.schema.HistoryEntry
-import com.ar.dosarcusina.store.schema.HistoryEntryProviders
 import com.ar.dosarcusina.store.schema.IssuerLesson
 import com.ar.dosarcusina.store.schema.MeasurementLog
 import com.ar.dosarcusina.store.schema.Obligation
 import com.ar.dosarcusina.store.schema.Provider
-import com.ar.dosarcusina.store.schema.ProviderAssets
 import com.ar.dosarcusina.store.schema.ServiceItem
 import com.ar.dosarcusina.store.schema.withDefinition
 import com.ar.dosarcusina.store.schema.withKeptFacts
@@ -33,7 +30,9 @@ import com.ar.dosarcusina.store.schema.withKeptValues
 import java.util.UUID
 
 /**
- * Writes an import's [BinderChanges] into the store's rows, inside the caller's write transaction.
+ * Writes an import's [BinderChanges] into the store's rows, through a step of the unit of work
+ * ([UnitOfWork.performPrivate]), which saves it once, its words masked like any save's; the
+ * catalog's install at launch writes its plan the same way, as the app's own step.
  *
  * A record written over the one with the same id (or key) stays that row: it keeps its copy
  * ([Asset.copyID]), and every column the archive's model doesn't carry (a document's
@@ -43,11 +42,11 @@ import java.util.UUID
  * its holder's id stamped from its link (`ParentLinks.stamp`). A record taken out goes alone, as
  * [BinderChanges] says, with only what is no record of its own ([RecordContents.deleteRow]).
  *
- * Files are already kept ([StoreFiles.keep]) when this runs: a column names a file by its digest.
+ * Files are already kept ([Step.keep]) when this runs: a column names a file by its digest.
  */
 // One writer per kind of record, as the importer has.
 @Suppress("TooManyFunctions")
-internal class BinderWriting(private val database: BinderDatabase, private val changes: BinderChanges) {
+internal class BinderWriting(private val step: Step, private val changes: BinderChanges) {
     private val templates = LinkedHashMap<String, CategoryTemplate>()
     private val assets = Rows<Asset> { it.pk }
     private val obligations = Rows<Obligation> { it.pk }
@@ -72,7 +71,7 @@ internal class BinderWriting(private val database: BinderDatabase, private val c
         fun row(id: UUID?): Long? = id?.let(byId::get)?.let(rowOf)
     }
 
-    suspend fun write() {
+    fun write() {
         readCurrent()
         addNewRows()
         writeTemplates()
@@ -87,52 +86,37 @@ internal class BinderWriting(private val database: BinderDatabase, private val c
         removeTakenOut()
     }
 
-    private suspend fun readCurrent() {
-        database.templates().all().forEach { templates.putIfAbsent(it.key, it) }
-        database.assets().all().forEach { assets.add(it.id, it) }
-        database.obligations().all().forEach { obligations.add(it.id, it) }
-        database.history().all().forEach { history.add(it.id, it) }
-        database.items().all().forEach { items.add(it.id, it) }
-        database.readings().all().forEach { readings.add(it.id, it) }
-        database.attachments().all().forEach { attachments.add(it.id, it) }
-        database.providers().all().forEach { providers.add(it.id, it) }
-        database.lessons().all().forEach { lessons.add(it.id, it) }
+    private fun readCurrent() {
+        step.all(Tables.templates).forEach { templates.putIfAbsent(it.key, it) }
+        step.all(Tables.assets).forEach { assets.add(it.id, it) }
+        step.all(Tables.obligations).forEach { obligations.add(it.id, it) }
+        step.all(Tables.history).forEach { history.add(it.id, it) }
+        step.all(Tables.items).forEach { items.add(it.id, it) }
+        step.all(Tables.readings).forEach { readings.add(it.id, it) }
+        step.all(Tables.attachments).forEach { attachments.add(it.id, it) }
+        step.all(Tables.providers).forEach { providers.add(it.id, it) }
+        step.all(Tables.lessons).forEach { lessons.add(it.id, it) }
     }
 
     /** The first pass: a row, with no links yet, for every record the binder doesn't have. */
-    private suspend fun addNewRows() {
+    private fun addNewRows() {
         val written = changes.written
         for (record in written.templates) {
             if (record.key in templates) continue
-            val row = CategoryTemplate(key = record.key)
-            templates[record.key] = row.copy(pk = database.templates().insert(row))
+            templates[record.key] = step.insert(CategoryTemplate(key = record.key))
         }
-        add(assets, written.assets.map { it.id }) { Asset(id = it).run { copy(pk = database.assets().insert(this)) } }
-        add(obligations, written.obligations.map { it.id }) {
-            Obligation(id = it).run { copy(pk = database.obligations().insert(this)) }
-        }
-        add(history, written.historyEntries.map { it.id }) {
-            HistoryEntry(id = it).run { copy(pk = database.history().insert(this)) }
-        }
-        add(items, written.serviceItems.map { it.id }) {
-            ServiceItem(id = it).run { copy(pk = database.items().insert(this)) }
-        }
-        add(readings, written.measurements.map { it.id }) {
-            MeasurementLog(id = it).run { copy(pk = database.readings().insert(this)) }
-        }
-        add(attachments, written.attachments.map { it.id }) {
-            Attachment(id = it).run { copy(pk = database.attachments().insert(this)) }
-        }
-        add(providers, written.providers.map { it.id }) {
-            Provider(id = it).run { copy(pk = database.providers().insert(this)) }
-        }
-        add(lessons, written.issuerLessons.map { it.id }) {
-            IssuerLesson(id = it).run { copy(pk = database.lessons().insert(this)) }
-        }
+        add(assets, written.assets.map { it.id }) { step.insert(Asset(id = it)) }
+        add(obligations, written.obligations.map { it.id }) { step.insert(Obligation(id = it)) }
+        add(history, written.historyEntries.map { it.id }) { step.insert(HistoryEntry(id = it)) }
+        add(items, written.serviceItems.map { it.id }) { step.insert(ServiceItem(id = it)) }
+        add(readings, written.measurements.map { it.id }) { step.insert(MeasurementLog(id = it)) }
+        add(attachments, written.attachments.map { it.id }) { step.insert(Attachment(id = it)) }
+        add(providers, written.providers.map { it.id }) { step.insert(Provider(id = it)) }
+        add(lessons, written.issuerLessons.map { it.id }) { step.insert(IssuerLesson(id = it)) }
     }
 
     /** A row made by [insert] for each record [ids] name that the binder doesn't have. */
-    private suspend fun <R> add(rows: Rows<R>, ids: List<UUID>, insert: suspend (UUID) -> R) {
+    private fun <R> add(rows: Rows<R>, ids: List<UUID>, insert: (UUID) -> R) {
         for (id in ids) if (id !in rows.byId) rows.add(id, insert(id))
     }
 
@@ -141,10 +125,10 @@ internal class BinderWriting(private val database: BinderDatabase, private val c
     // The second pass: each record written whole over its row. A row added in the first pass
     // is found by its id, which gives its row.
 
-    private suspend fun writeTemplates() {
+    private fun writeTemplates() {
         for (record in changes.written.templates) {
             val row = requireNotNull(templates[record.key])
-            update(row, written(row, record)) { database.templates().update(it) }
+            update(row, written(row, record))
         }
     }
 
@@ -155,10 +139,10 @@ internal class BinderWriting(private val database: BinderDatabase, private val c
         boxGroupingRaw = record.boxGrouping, createdAt = record.createdAt, updatedAt = record.updatedAt,
     ).withDefinition(record.sections, record.blueprints, record.components, record.behavior)
 
-    private suspend fun writeAssets() {
+    private fun writeAssets() {
         for (record in changes.written.assets) {
             val row = pkOf(assets, record.id)
-            update(row, written(row, record)) { database.assets().update(it) }
+            update(row, written(row, record))
         }
     }
 
@@ -169,11 +153,11 @@ internal class BinderWriting(private val database: BinderDatabase, private val c
         parent = assetRow(record.parentId),
     ).withKeptValues(record.values).withKeptFacts(record.customFacts)
 
-    private suspend fun writeObligations() {
+    private fun writeObligations() {
         val ids = idsOf(assets) { it.id }
         for (record in changes.written.obligations) {
             val row = pkOf(obligations, record.id)
-            update(row, ParentLinks.stamp(written(row, record), ids)) { database.obligations().update(it) }
+            update(row, ParentLinks.stamp(written(row, record), ids))
         }
     }
 
@@ -188,15 +172,12 @@ internal class BinderWriting(private val database: BinderDatabase, private val c
         asset = assetRow(record.assetId),
     ).withKeptReminders(record.reminders).withKeptRecurrence(record.recurrence)
 
-    private suspend fun writeHistory() {
+    private fun writeHistory() {
         val ids = idsOf(assets) { it.id }
         for (record in changes.written.historyEntries) {
             val row = pkOf(history, record.id)
-            update(row, ParentLinks.stamp(written(row, record), ids)) { database.history().update(it) }
-            database.entryProviders().deleteOfEntry(row.pk)
-            for (provider in record.providerIds.mapNotNull(providers::row)) {
-                database.entryProviders().insert(HistoryEntryProviders(historyEntry = row.pk, provider = provider))
-            }
+            update(row, ParentLinks.stamp(written(row, record), ids))
+            step.setLinked(Tables.entryProviders, row.pk, record.providerIds.mapNotNull(providers::row))
         }
     }
 
@@ -211,11 +192,11 @@ internal class BinderWriting(private val database: BinderDatabase, private val c
         asset = assetRow(record.assetId), obligation = obligations.row(record.obligationId),
     )
 
-    private suspend fun writeItems() {
+    private fun writeItems() {
         val ids = idsOf(history) { it.id }
         for (record in changes.written.serviceItems) {
             val row = pkOf(items, record.id)
-            update(row, ParentLinks.stamp(written(row, record), ids)) { database.items().update(it) }
+            update(row, ParentLinks.stamp(written(row, record), ids))
         }
     }
 
@@ -230,11 +211,11 @@ internal class BinderWriting(private val database: BinderDatabase, private val c
         updatedAt = record.updatedAt, entry = history.row(record.entryId),
     )
 
-    private suspend fun writeReadings() {
+    private fun writeReadings() {
         val ids = idsOf(assets) { it.id }
         for (record in changes.written.measurements) {
             val row = pkOf(readings, record.id)
-            update(row, ParentLinks.stamp(written(row, record), ids)) { database.readings().update(it) }
+            update(row, ParentLinks.stamp(written(row, record), ids))
         }
     }
 
@@ -247,11 +228,11 @@ internal class BinderWriting(private val database: BinderDatabase, private val c
         startsCounter = record.startsCounter, basisRaw = record.basis, asset = assetRow(record.assetId),
     )
 
-    private suspend fun writeAttachments() {
+    private fun writeAttachments() {
         val ids = idsOf(assets) { it.id }
         for (record in changes.written.attachments) {
             val row = pkOf(attachments, record.id)
-            update(row, ParentLinks.stamp(written(row, record), ids)) { database.attachments().update(it) }
+            update(row, ParentLinks.stamp(written(row, record), ids))
             writePages(row, record)
         }
     }
@@ -276,8 +257,9 @@ internal class BinderWriting(private val database: BinderDatabase, private val c
      * A document's pages as the archive gives them, in order: each page already there stays the
      * page it was (its id, its copy), with the picture the archive gives it.
      */
-    private suspend fun writePages(document: Attachment, record: BinderAttachment) {
-        val current = database.pages().ofAttachment(document.pk)
+    private fun writePages(document: Attachment, record: BinderAttachment) {
+        val current = step.all(Tables.pages).filter { it.attachment == document.pk }
+            .sortedWith(compareBy({ it.index }, { it.pk }))
         record.pages.forEachIndexed { index, file ->
             val page = current.getOrNull(index)
             val wanted = (page ?: AttachmentPage()).copy(
@@ -286,19 +268,16 @@ internal class BinderWriting(private val database: BinderDatabase, private val c
                 attachment = document.pk,
                 attachmentID = document.id,
             )
-            if (page == null) database.pages().insert(wanted) else if (wanted != page) database.pages().update(wanted)
+            if (page == null) step.insert(wanted) else if (wanted != page) step.update(wanted)
         }
-        current.drop(record.pages.size).forEach { database.pages().delete(it) }
+        current.drop(record.pages.size).forEach(step::remove)
     }
 
-    private suspend fun writeProviders() {
+    private fun writeProviders() {
         for (record in changes.written.providers) {
             val row = pkOf(providers, record.id)
-            update(row, written(row, record)) { database.providers().update(it) }
-            database.providerAssets().deleteOfProvider(row.pk)
-            for (asset in record.assetIds.mapNotNull(::assetRow)) {
-                database.providerAssets().insert(ProviderAssets(provider = row.pk, asset = asset))
-            }
+            update(row, written(row, record))
+            step.setLinked(Tables.providerAssets, row.pk, record.assetIds.mapNotNull(::assetRow))
         }
     }
 
@@ -310,10 +289,10 @@ internal class BinderWriting(private val database: BinderDatabase, private val c
         updatedAt = record.updatedAt,
     )
 
-    private suspend fun writeLessons() {
+    private fun writeLessons() {
         for (record in changes.written.issuerLessons) {
             val row = pkOf(lessons, record.id)
-            update(row, written(row, record)) { database.lessons().update(it) }
+            update(row, written(row, record))
         }
     }
 
@@ -324,21 +303,21 @@ internal class BinderWriting(private val database: BinderDatabase, private val c
     )
 
     /** What an import takes out: every copy of each record it names, alone. */
-    private suspend fun removeTakenOut() {
+    private fun removeTakenOut() {
         val removed = changes.removed
-        takeOut(database.templates().all().filter { it.key in removed.templates })
-        takeOut(database.assets().all().filter { it.id in removed.assets })
-        takeOut(database.obligations().all().filter { it.id in removed.obligations })
-        takeOut(database.history().all().filter { it.id in removed.historyEntries })
-        takeOut(database.items().all().filter { it.id in removed.serviceItems })
-        takeOut(database.providers().all().filter { it.id in removed.providers })
-        takeOut(database.readings().all().filter { it.id in removed.measurements })
-        takeOut(database.attachments().all().filter { it.id in removed.attachments })
-        takeOut(database.lessons().all().filter { it.id in removed.issuerLessons })
+        takeOut(step.all(Tables.templates).filter { it.key in removed.templates })
+        takeOut(step.all(Tables.assets).filter { it.id in removed.assets })
+        takeOut(step.all(Tables.obligations).filter { it.id in removed.obligations })
+        takeOut(step.all(Tables.history).filter { it.id in removed.historyEntries })
+        takeOut(step.all(Tables.items).filter { it.id in removed.serviceItems })
+        takeOut(step.all(Tables.providers).filter { it.id in removed.providers })
+        takeOut(step.all(Tables.readings).filter { it.id in removed.measurements })
+        takeOut(step.all(Tables.attachments).filter { it.id in removed.attachments })
+        takeOut(step.all(Tables.lessons).filter { it.id in removed.issuerLessons })
     }
 
-    private suspend fun takeOut(rows: List<Any>) {
-        for (row in rows) RecordContents.deleteRow(database, row)
+    private fun takeOut(rows: List<Any>) {
+        for (row in rows) RecordContents.deleteRow(step, row)
     }
 
     // Helpers
@@ -348,7 +327,7 @@ internal class BinderWriting(private val database: BinderDatabase, private val c
 
     private fun <R> idsOf(rows: Rows<R>, id: (R) -> UUID) = ParentLinks.IdOfRow { row -> rows.byRow[row]?.let(id) }
 
-    private suspend fun <R> update(row: R, wanted: R, write: suspend (R) -> Unit) {
-        if (wanted != row) write(wanted)
+    private fun <R : Any> update(row: R, wanted: R) {
+        if (wanted != row) step.update(wanted)
     }
 }

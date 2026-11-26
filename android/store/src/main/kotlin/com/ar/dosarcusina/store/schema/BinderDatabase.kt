@@ -21,9 +21,8 @@ import androidx.room3.Update
  * (`StoreVersionsTest`). As on iOS, every column is optional or defaulted, nothing is unique and no
  * link deletes what it points at (`ON DELETE SET NULL`, never `CASCADE`).
  *
- * Nothing outside the store writes through its DAOs: the archive's target
- * ([com.ar.dosarcusina.store.RoomArchiveTarget]) writes in one transaction, and the unit of work
- * will be the one way every other step saves.
+ * Nothing but the unit of work writes through its DAOs ([com.ar.dosarcusina.store.UnitOfWork]):
+ * every step, an import's included, saves through it, once, in one transaction.
  */
 @Database(
     entities = [

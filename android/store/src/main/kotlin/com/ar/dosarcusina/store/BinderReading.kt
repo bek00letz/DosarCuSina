@@ -16,7 +16,6 @@ import com.ar.dosarcusina.core.values.StoredDay
 import com.ar.dosarcusina.store.schema.Asset
 import com.ar.dosarcusina.store.schema.Attachment
 import com.ar.dosarcusina.store.schema.AttachmentPage
-import com.ar.dosarcusina.store.schema.BinderDatabase
 import com.ar.dosarcusina.store.schema.CategoryTemplate
 import com.ar.dosarcusina.store.schema.HistoryEntry
 import com.ar.dosarcusina.store.schema.IssuerLesson
@@ -43,8 +42,9 @@ import java.util.UUID
 
 /**
  * The store's rows as the archive's binder model reads them ([Binder]): every record in row
- * order, a link as the id of the row it points at. Read inside one read transaction, so a
- * backup sees the binder as it was at one moment.
+ * order, a link as the id of the row it points at. Read from one view of the binder: a snapshot
+ * read in one read transaction, so a backup sees the binder as it was at one moment, or a step
+ * of the unit of work, as the step sees it.
  */
 // One mapping per kind of record.
 @Suppress("TooManyFunctions")
@@ -57,14 +57,14 @@ internal class BinderReading(private val files: StoreFiles, private val zone: Zo
     private var attachmentIds: Map<Long, UUID> = emptyMap()
     private var providerIds: Map<Long, UUID> = emptyMap()
 
-    suspend fun read(database: BinderDatabase, locks: Map<String, Boolean>): Binder {
-        val assets = database.assets().all()
-        val obligations = database.obligations().all()
-        val history = database.history().all()
-        val items = database.items().all()
-        val readings = database.readings().all()
-        val attachments = database.attachments().all()
-        val providers = database.providers().all()
+    fun read(view: BinderView, locks: Map<String, Boolean>): Binder {
+        val assets = view.all(Tables.assets)
+        val obligations = view.all(Tables.obligations)
+        val history = view.all(Tables.history)
+        val items = view.all(Tables.items)
+        val readings = view.all(Tables.readings)
+        val attachments = view.all(Tables.attachments)
+        val providers = view.all(Tables.providers)
         assetIds = assets.associate { it.pk to it.id }
         obligationIds = obligations.associate { it.pk to it.id }
         entryIds = history.associate { it.pk to it.id }
@@ -72,13 +72,15 @@ internal class BinderReading(private val files: StoreFiles, private val zone: Zo
         readingIds = readings.associate { it.pk to it.id }
         attachmentIds = attachments.associate { it.pk to it.id }
         providerIds = providers.associate { it.pk to it.id }
-        val providersOfEntry = database.entryProviders().all()
-            .groupBy({ it.historyEntry }, { it.provider?.let(providerIds::get) })
-        val assetsOfProvider = database.providerAssets().all()
-            .groupBy({ it.provider }, { it.asset?.let(assetIds::get) })
-        val pagesOf = database.pages().all().groupBy { it.attachment }
+        val providersOfEntry = history.associate { entry ->
+            entry.pk to view.linked(Tables.entryProviders, entry.pk).map(providerIds::get)
+        }
+        val assetsOfProvider = providers.associate { provider ->
+            provider.pk to view.linked(Tables.providerAssets, provider.pk).map(assetIds::get)
+        }
+        val pagesOf = view.all(Tables.pages).groupBy { it.attachment }
         return Binder(
-            templates = database.templates().all().map(::template),
+            templates = view.all(Tables.templates).map(::template),
             assets = assets.map(::asset),
             obligations = obligations.map(::obligation),
             historyEntries = history.map { entry(it, providersOfEntry[it.pk].orEmpty().filterNotNull()) },
@@ -86,7 +88,7 @@ internal class BinderReading(private val files: StoreFiles, private val zone: Zo
             providers = providers.map { provider(it, assetsOfProvider[it.pk].orEmpty().filterNotNull()) },
             measurements = readings.map(::reading),
             attachments = attachments.map { attachment(it, pagesOf[it.pk].orEmpty()) },
-            issuerLessons = database.lessons().all().map(::lesson),
+            issuerLessons = view.all(Tables.lessons).map(::lesson),
             locks = locks,
         )
     }

@@ -16,8 +16,8 @@ import java.io.File
  *
  * One step writes at a time ([writing]): what it writes to the files and the database, and what
  * it removes from the files once its transaction is kept, so a file one step copies in is never
- * removed by another. The unit of work takes it for every save; the archive's target takes it
- * for an import.
+ * removed by another. The unit of work ([UnitOfWork]) takes it for every save, an import's
+ * included, and is the only code that writes the database.
  */
 class BinderStore private constructor(
     val database: BinderDatabase,
@@ -30,6 +30,9 @@ class BinderStore private constructor(
 ) : AutoCloseable {
     /** Held by whatever writes, for the whole of its step. */
     val writing: Mutex = Mutex()
+
+    /** The unit of work open on each thread, which a unit opened inside it joins. */
+    internal val openScope: ThreadLocal<UnitOfWork.Scope?> = ThreadLocal()
 
     override fun close() = database.close()
 

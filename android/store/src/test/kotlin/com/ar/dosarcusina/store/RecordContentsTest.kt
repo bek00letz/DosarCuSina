@@ -26,7 +26,8 @@ import java.util.UUID
  * ([ParentLinks.rehome]).
  */
 class RecordContentsTest {
-    private val database: BinderDatabase = scratchStore().database
+    private val binder = TestBinderStore()
+    private val database: BinderDatabase = binder.store.database
 
     /** A car with a deadline, a reading, a visit with a part, a firm and a document with a page; and another car. */
     private class Household(
@@ -67,7 +68,7 @@ class RecordContentsTest {
     @Test
     fun deletingASectionTakesWhatItHoldsAndNothingElse() = runBlocking {
         val home = database.withWriteTransaction { household() }
-        database.withWriteTransaction { RecordContents.delete(database, home.car) }
+        binder.unit.perform { step -> step.delete(requireNotNull(step.row(Tables.assets, home.car.pk))) }
         assertEquals(listOf(home.other.pk), database.assets().all().map { it.pk })
         assertEquals(emptyList<Obligation>(), database.obligations().all())
         assertEquals(emptyList<MeasurementLog>(), database.readings().all())
@@ -81,17 +82,35 @@ class RecordContentsTest {
     }
 
     @Test
-    fun aRowDeletedAloneLetsGoOfItsLinksAndTakesNothing() = runBlocking {
+    fun aRowTakenOutAloneLetsGoOfItsLinksAndTakesNothing() = runBlocking {
         val home = database.withWriteTransaction { household() }
-        database.withWriteTransaction { RecordContents.deleteRow(database, home.car) }
+        binder.unit.performPrivate { step ->
+            RecordContents.deleteRow(step, requireNotNull(step.row(Tables.assets, home.car.pk)))
+        }
         val deadline = database.obligations().all().single()
         assertNull(deadline.asset, "The link let go")
-        assertEquals(home.car.id, deadline.assetID, "The id of what held it stays")
+        assertNull(deadline.assetID, "And its holder's id follows its link, as every save writes it")
         assertEquals(1, database.history().all().size)
         assertEquals(1, database.attachments().all().size)
-        database.withWriteTransaction { RecordContents.deleteRow(database, home.firm) }
+        binder.unit.performPrivate { step ->
+            RecordContents.deleteRow(step, requireNotNull(step.row(Tables.providers, home.firm.pk)))
+        }
         assertNull(database.items().all().single().supplier)
         assertEquals(emptyList<HistoryEntryProviders>(), database.entryProviders().all())
+        assertEquals(emptyList<ProviderAssets>(), database.providerAssets().all())
+    }
+
+    @Test
+    fun theDatabaseLetsGoByItselfAndKeepsTheIdOfWhatHeldIt() = runBlocking {
+        val home = database.withWriteTransaction { household() }
+        // As another device's deletion arrives: the row goes, nothing of the binder's own rules runs.
+        database.withWriteTransaction {
+            database.providerAssets().deleteOfAsset(home.car.pk)
+            database.assets().delete(home.car)
+        }
+        val deadline = database.obligations().all().single()
+        assertNull(deadline.asset, "The link let go")
+        assertEquals(home.car.id, deadline.assetID, "The id of what held it stays, for it to go back to a copy")
     }
 
     @Test
@@ -106,7 +125,10 @@ class RecordContentsTest {
     @Test
     fun aRecordLeftWithoutWhatHeldItGoesBackToACopyWithItsId() = runBlocking {
         val home = database.withWriteTransaction { household() }
-        database.withWriteTransaction { RecordContents.deleteRow(database, home.car) }
+        database.withWriteTransaction {
+            database.providerAssets().deleteOfAsset(home.car.pk)
+            database.assets().delete(home.car)
+        }
         // Another copy of the same car, as two copies joined on another device would leave it.
         val copy = Asset(id = home.car.id, name = "VW Golf 2018", templateKey = "vehicle")
             .run { copy(pk = database.assets().insert(this)) }

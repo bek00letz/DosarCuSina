@@ -16,11 +16,33 @@ import java.util.UUID
  * `AttachmentPage.attachmentID`. A link is a row, which lets go when the row goes; the id stays,
  * so a record left without what held it can go back to a copy of it ([rehome]).
  *
- * Pure: the caller reads the rows and writes what these give back, in its own transaction.
+ * The unit of work stamps every held record a step saves ([stamp] over a step), before change
+ * times and undo read the step; the rest is pure: the caller reads the rows and writes what these
+ * give back.
  */
 object ParentLinks {
     /** The names of the ids, in every model that has one. */
     val idNames: Set<String> = setOf("assetID", "entryID", "attachmentID")
+
+    /** Writes the id of what holds it into every held record [step] saves, from its link. */
+    internal fun stamp(step: Step) {
+        val assets = IdOfRow { row -> step.row(Tables.assets, row)?.id }
+        val entries = IdOfRow { row -> step.row(Tables.history, row)?.id }
+        val attachments = IdOfRow { row -> step.row(Tables.attachments, row)?.id }
+        stamp(step, Tables.obligations) { stamp(it, assets) }
+        stamp(step, Tables.attachments) { stamp(it, assets) }
+        stamp(step, Tables.history) { stamp(it, assets) }
+        stamp(step, Tables.readings) { stamp(it, assets) }
+        stamp(step, Tables.items) { stamp(it, entries) }
+        stamp(step, Tables.pages) { stamp(it, attachments) }
+    }
+
+    private fun <R : Any> stamp(step: Step, table: Table<R>, follow: (R) -> R) {
+        for (record in step.changes(table).saved) {
+            val stamped = follow(record)
+            if (stamped !== record) step.update(stamped)
+        }
+    }
 
     /** The id of the record a row is: what [stamp] writes from a link. */
     fun interface IdOfRow {
