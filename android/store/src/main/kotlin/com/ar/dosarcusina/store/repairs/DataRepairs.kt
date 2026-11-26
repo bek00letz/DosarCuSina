@@ -119,6 +119,7 @@ class DataRepairs(
             PersonalLessonLabelsStep,
             LabourPartsStep,
             LostRecordsStep,
+            DecimalDoublesStep,
         )
 
         private val byId: Map<DataRepairStepId, DataRepairStep> = steps.associateBy { it.id }
@@ -170,6 +171,7 @@ enum class DataRepairStepId(val raw: String) {
     PERSONAL_LESSON_LABELS("personal-lesson-labels"),
     LABOUR_PARTS("labour-parts"),
     LOST_RECORDS("lost-records"),
+    DECIMAL_DOUBLES("decimal-doubles"),
 }
 
 /**
@@ -266,6 +268,9 @@ enum class DataRepairGroup {
 
     /** Records whose section was deleted on another device. */
     LOST_RECORDS,
+
+    /** Numbers with decimals an earlier iOS version kept a step off their short number. */
+    DECIMAL_DOUBLES,
 }
 
 /** What applying one finding says on its button, as the iOS steps' `applyTitle`. */

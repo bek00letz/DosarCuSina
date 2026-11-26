@@ -6616,6 +6616,9 @@
     "Numele și cât de important e vin din categoria lui, așa că rămân cum sunt." : {
       "comment" : "Error: a category's deadline can't be renamed or have its importance changed."
     },
+    "Numere cu zecimale" : {
+      "comment" : "Repair group: numbers with decimals an earlier version kept a hair off."
+    },
     "Numere de card întregi" : {
       "comment" : "Repair group: whole bank card numbers kept in rows, notes or titles by older builds."
     },
@@ -7954,6 +7957,35 @@
     },
     "Scrie parola pe care ai ales-o când ai făcut copia." : {
       "comment" : "Asks for a backup's password."
+    },
+    "Scrie suma cu cel mult %lld cifre." : {
+      "comment" : "Number field error: a money amount with more digits than are kept exactly. The argument is how many digits may be written.",
+      "localizations" : {
+        "ro" : {
+          "variations" : {
+            "plural" : {
+              "few" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Scrie suma cu cel mult %lld cifre."
+                }
+              },
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Scrie suma cu cel mult o cifră."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Scrie suma cu cel mult %lld de cifre."
+                }
+              }
+            }
+          }
+        }
+      }
     },
     "Scrie suma doar cu cifre, de exemplu 1.250,50." : {
       "comment" : "Number field error: a money amount that can't be read."

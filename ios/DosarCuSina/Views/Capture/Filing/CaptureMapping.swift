@@ -137,11 +137,11 @@ enum CaptureMapping {
         case (.money, .money(let money)):
             return .money(money)
         case (.number, .number(let number)):
-            return .number(NSDecimalNumber(decimal: number).doubleValue)
+            return .number(RomanianNumber.double(number))
         case (.number, .metric(let number, _)):
-            return .number(NSDecimalNumber(decimal: number).doubleValue)
+            return .number(RomanianNumber.double(number))
         case (.number, .money(let money)):
-            return .number(NSDecimalNumber(decimal: money.amount).doubleValue)
+            return .number(RomanianNumber.double(money.amount))
         default:
             return nil
         }
@@ -264,7 +264,7 @@ enum CaptureMapping {
         case .number(let number): return NSDecimalNumber(decimal: number).stringValue
         case .metric(let number, let unit):
             // A measurement as the app writes one: „45.724 km”, „1.250 de cafele”.
-            return unit.after(RomanianNumber.format(number, fractionDigits: 0...3), value: NSDecimalNumber(decimal: number).doubleValue)
+            return unit.after(RomanianNumber.format(number, fractionDigits: 0...3), value: RomanianNumber.double(number))
         case .lineItems(let items): return items.map(\.description).joined(separator: ", ")
         }
     }

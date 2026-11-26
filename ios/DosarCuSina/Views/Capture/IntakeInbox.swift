@@ -140,7 +140,7 @@ final class IntakeInbox {
         for item in items where previews[item.id] == nil {
             guard let preview = inbox.preview(of: item) else { continue }
             previews[item.id] = preview
-            if preview.hasThumbnail, let url = inbox.thumbnailURL(of: item), let image = UIImage(contentsOfFile: url.path()) {
+            if preview.hasThumbnail, let url = inbox.thumbnailURL(of: item), let image = UIImage(contentsOfFile: url.path(percentEncoded: false)) {
                 thumbnails[item.id] = image
             }
         }

@@ -377,7 +377,7 @@ struct ReadingVectorsTests {
         var number: Double? {
             if let value { return value }
             guard let typed, let read = RomanianNumber.value(typed, as: numberKind) else { return nil }
-            return NSDecimalNumber(decimal: read).doubleValue
+            return RomanianNumber.double(read)
         }
     }
 
@@ -434,6 +434,8 @@ struct ReadingVectorsTests {
             ("typed a tenth", golf, Planned(typed: "4.572", at: d("2026-03-01"))),
             ("typed an index with decimals", [gas(1, "2026-06-05", 1_300, nil)],
              Planned(typed: "1.234,5", numberKind: .meterIndex, at: d("2026-07-05"), unit: "m3", kind: "gas")),
+            ("typed an index with four decimals, kept as printed", [gas(1, "2026-06-05", 98_000, nil)],
+             Planned(typed: "98.765,4321", numberKind: .meterIndex, at: d("2026-07-05"), unit: "m3", kind: "gas")),
             ("an estimate is never stored", golf, Planned(value: 46_000, at: d("2026-03-01"), source: .estimate)),
             ("a person's reading is read", golf, Planned(value: 46_000, at: d("2026-03-01"), basis: "estimated")),
             ("a weight only goes where it goes", [Log(key: 1, at: d("2026-01-10"), value: 80, unit: "kg", kind: "bodyWeight")],

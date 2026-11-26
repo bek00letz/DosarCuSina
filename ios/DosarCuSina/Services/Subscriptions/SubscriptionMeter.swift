@@ -54,7 +54,7 @@ enum SubscriptionMeter {
     /// The number an index was read as.
     static func number(_ value: CaptureValue?) -> Double? {
         switch value {
-        case .number(let number)?, .metric(let number, _)?: NSDecimalNumber(decimal: number).doubleValue
+        case .number(let number)?, .metric(let number, _)?: RomanianNumber.double(number)
         default: nil
         }
     }

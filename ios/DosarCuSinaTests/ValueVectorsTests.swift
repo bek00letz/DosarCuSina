@@ -71,7 +71,7 @@ struct ValueVectorsTests {
             calendarDayOrder(), monthDays(), appCalendar(), machineText(), machineMoments(),
             machineMomentWriting(), machineJSON(), jsonNumbers(), jsonDoubles(), jsonLaying(),
             jsonMappingKept(), threeWay(), keptLists(), keptObjects(),
-            romanianNumberReading(), romanianNumberCanonical(), romanianNumberFormat(),
+            romanianNumberReading(), romanianNumberCanonical(), romanianNumberFormat(), romanianNumberDouble(), romanianNumberCorrection(),
             money(), measurementUnits(), romanianTextFold(),
         ]
     }
@@ -925,7 +925,7 @@ struct ValueVectorsTests {
             name: "romanian-number-read",
             rule: "RomanianNumber.read(_:as:from:unit:)",
             source: "ios/DosarCuSina/Models/Values/RomanianNumber.swift",
-            shape: "input: text; origin: document or typed; unit: a field's unit as written (read with MeasurementUnit), or null. For each kind (money, count, meterIndex, kilometres): value (the number, as Foundation's Decimal writes it), ambiguous and needsCheck, or problem (empty, unreadable, negative, notWhole).",
+            shape: "input: text; origin: document or typed; unit: a field's unit as written (read with MeasurementUnit), or null. For each kind (money, count, meterIndex, kilometres): value (the number, as Foundation's Decimal writes it), ambiguous and needsCheck, or problem (empty, unreadable, negative, notWhole, tooManyDigits).",
             cases: cases
         )
     }
@@ -947,6 +947,62 @@ struct ValueVectorsTests {
             shape: "input: text. value: the number as Foundation's Decimal writes it, or null when refused.",
             cases: cases
         )
+    }
+
+    static func romanianNumberDouble() -> Vectors {
+        let inputs = [
+            "0", "1", "-3", "45724", "0.5", "0.1", "0.125", "1250.5", "1250.55", "-3.75", "1234.567", "98765.4321", "4321.0987",
+            "1.001", "0.3", "12345.678", "999999.999", "123456789.123", "9007199254740993", "123456789012345678901234567890",
+            "0.00000000000000000001", "0.1234567890123456789",
+        ] + RomanianNumberTests.missedBefore.prefix(24).map(\.text)
+        let cases: [JSONValue] = inputs.map { input in
+            .object(["input": .string(input), "double": RomanianNumber.canonical(input).map { JSONValue.string(RomanianNumber.double($0).description) } ?? .null])
+        }
+        return Vectors(
+            name: "romanian-number-double",
+            rule: "RomanianNumber.double(_:), the one way a number read becomes a Double",
+            source: "ios/DosarCuSina/Models/Values/RomanianNumber.swift",
+            shape: "input: a number in machine form. double: the Double nearest it, correctly rounded (Kotlin's BigDecimal.toDouble()), as Swift writes it (its shortest text).",
+            cases: cases
+        )
+    }
+
+    static func romanianNumberCorrection() -> Vectors {
+        // What earlier versions stored (Foundation's NSDecimalNumber.doubleValue) for short numbers it missed,
+        // and the Doubles that stand.
+        var stored: [Double] = RomanianNumberTests.missedBefore.prefix(24).flatMap { [$0.old, $0.right, -$0.old] }
+        stored += [
+            98765.43209999999, 98765.4321, 1250.55.nextUp, 1250.55.nextDown, 1250.55.nextUp.nextUp, 1250.555.nextUp, 45_724, 45_724.0.nextUp,
+            45_724.0.nextDown, 45_724.5, 0, -0.0, 0.125, 5e-324, 4_000_000_000_000.125.nextUp, 9_007_199_254_740_992, 1e300, 0.001.nextUp,
+            0.000_5, 0.000_5.nextUp,
+        ]
+        // A Double's text whose digits, read together, pass the card check digit is left out: the
+        // privacy check reads digits apart by a dot as a possible card number.
+        let cases: [JSONValue] = stored.filter { !looksLikeACardNumber($0.description) }.map { value in
+            var answers: [String: JSONValue] = ["stored": .string(value.description)]
+            for kind in NumberKind.allCases {
+                answers["\(kind)"] = RomanianNumber.correction(of: value, as: kind).map { JSONValue.string($0.description) } ?? .null
+            }
+            return .object(answers)
+        }
+        return Vectors(
+            name: "romanian-number-correction",
+            rule: "RomanianNumber.correction(of:as:), the rule DecimalDoublesStep puts a number kept a step off back by",
+            source: "ios/DosarCuSina/Models/Values/RomanianNumber.swift",
+            shape: "stored: a Double as stored, as Swift writes it (its shortest text). For each kind (money, count, meterIndex, kilometres, with 2, 0, 6 and 0 decimals): the Double it is put back on, as Swift writes it, or null when it stands.",
+            cases: cases
+        )
+    }
+
+    /// Whether `text`'s digits, read together, are 13 to 19 that pass the card check digit (Luhn).
+    static func looksLikeACardNumber(_ text: String) -> Bool {
+        let digits = text.compactMap(\.wholeNumberValue)
+        guard (13...19).contains(digits.count) else { return false }
+        let sum = digits.reversed().enumerated().reduce(0) { sum, pair in
+            let doubled = pair.offset % 2 == 1 ? pair.element * 2 : pair.element
+            return sum + (doubled > 9 ? doubled - 9 : doubled)
+        }
+        return sum % 10 == 0
     }
 
     static func romanianNumberFormat() -> Vectors {

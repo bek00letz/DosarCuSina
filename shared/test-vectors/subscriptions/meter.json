@@ -118,6 +118,48 @@
         "value" : 0.125
       },
       "service" : "service.water"
+    },
+    {
+      "basis" : "read",
+      "day" : "2026-10-25",
+      "index" : "98765.4321",
+      "reading" : {
+        "at" : "2026-10-25T09:00:00Z",
+        "basis" : "read",
+        "day" : "2026-10-25",
+        "kind" : "gas",
+        "unit" : "m3",
+        "value" : 98765.4321
+      },
+      "service" : "service.gas"
+    },
+    {
+      "basis" : null,
+      "day" : "2026-10-05",
+      "index" : "4321.0987",
+      "reading" : {
+        "at" : "2026-10-05T09:00:00Z",
+        "basis" : null,
+        "day" : "2026-10-05",
+        "kind" : "coldWater",
+        "unit" : "m3",
+        "value" : 4321.0987
+      },
+      "service" : "service.water"
+    },
+    {
+      "basis" : "estimated",
+      "day" : "2026-03-29",
+      "index" : "1.001",
+      "reading" : {
+        "at" : "2026-03-29T10:00:00Z",
+        "basis" : "estimated",
+        "day" : "2026-03-29",
+        "kind" : "electricity",
+        "unit" : "kwh",
+        "value" : 1.001
+      },
+      "service" : "service.electricity"
     }
   ],
   "rule" : "SubscriptionMeter.reading(_:basis:service:day:), and the moment a bill's reading is dated at (Reading.planned: noon in Bucharest)",

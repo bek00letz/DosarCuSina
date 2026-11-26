@@ -23,6 +23,18 @@ enum class NumberKind(val key: String) {
     /** Kilometres and counts have no decimals, so "45,724 km" can only be 45724. */
     val isWhole: Boolean get() = this == COUNT || this == KILOMETRES
 
+    /**
+     * The most decimals a stored number of this kind is taken to have, by [RomanianNumber.correction]: two for money,
+     * none for kilometres and counts, and six for a meter index or another measured value, which the reader takes
+     * with any decimals: six is as far as the correction reaches safely for the values a meter shows (up to 2³⁰,
+     * about 1.07 × 10⁹). The iOS app's `NumberKind.decimals`.
+     */
+    val decimals: Int get() = when (this) {
+        MONEY -> 2
+        METER_INDEX -> 6
+        COUNT, KILOMETRES -> 0
+    }
+
     companion object {
         /**
          * The kind of a typed field's number: kilometres by their unit, whole numbers when the
@@ -74,6 +86,9 @@ object RomanianNumber {
 
         /** Decimals where the kind is whole (kilometres, counts). */
         NOT_WHOLE("notWhole"),
+
+        /** A money amount with more digits than the binder keeps exactly ([Money.keepsExactly]). */
+        TOO_MANY_DIGITS("tooManyDigits"),
     }
 
     /** A reading, or why there is none. */
@@ -107,17 +122,20 @@ object RomanianNumber {
         val sign = TextRules.characters(text).firstOrNull()?.takeIf { it == "-" || it == "\u2212" }
         val negative = sign != null
         val unsigned = sign?.let { TextRules.trimming(text.substring(it.length), TextRules::isWhitespace) } ?: text
-        val parsed = GroupedDigits.read(unsigned, kind)
-        val problem = when {
-            parsed == null -> Problem.UNREADABLE
-            negative && parsed.value.signum() != 0 -> Problem.NEGATIVE
-            kind.isWhole && DecimalText.normalized(parsed.value).scale() > 0 -> Problem.NOT_WHOLE
-            else -> null
-        }
-        if (parsed == null || problem != null) return Outcome.Refused(problem ?: Problem.UNREADABLE)
+        val parsed = GroupedDigits.read(unsigned, kind) ?: return Outcome.Refused(Problem.UNREADABLE)
+        problem(parsed.value, negative, kind)?.let { return Outcome.Refused(it) }
         val needsCheck = parsed.ambiguous && origin == NumberOrigin.DOCUMENT
         return Outcome.Read(Reading(parsed.value, parsed.ambiguous, needsCheck))
     }
+
+    /** Why a number read clearly still isn't one of [kind], in the iOS reader's order; null when it is. */
+    private fun problem(value: BigDecimal, negative: Boolean, kind: NumberKind): Problem? =
+        when {
+            negative && value.signum() != 0 -> Problem.NEGATIVE
+            kind.isWhole && DecimalText.normalized(value).scale() > 0 -> Problem.NOT_WHOLE
+            kind == NumberKind.MONEY && !Money.keepsExactly(value) -> Problem.TOO_MANY_DIGITS
+            else -> null
+        }
 
     /** The value of [raw], or null when it isn't clearly a number of [kind]. */
     fun value(
@@ -133,6 +151,46 @@ object RomanianNumber {
         if (!CANONICAL.matcher(text).find()) return null
         return DecimalText.read(text)
     }
+
+    // As a Double
+
+    /**
+     * The Double an earlier iOS version meant to store, when [stored] is a few steps off it, or null when [stored]
+     * stands: the iOS app's `RomanianNumber.correction(of:as:)`, the rule its `DecimalDoublesStep` (and this
+     * app's, in the store) puts a number back by. Earlier iOS versions turned a number into a Double through
+     * Foundation's `NSDecimalNumber.doubleValue`, which misses the nearest Double for about a third of the numbers
+     * with two decimals or more, by one step (one ULP), two, or for four to six decimals three: a meter index
+     * printed 98765.4321 was kept as 98765.43209999999, where [BigDecimal.toDouble] gives 98765.4321. Such a value
+     * reaches this app in a backup.
+     *
+     * - a number of [kind] is short when it has at most [NumberKind.decimals] decimals; a Double is a short number's
+     *   when it is that number correctly rounded ([BigDecimal.toDouble]);
+     * - [stored] is corrected when it isn't a short number's, and a Double at most [MISSED_STEPS] steps above or
+     *   below it is: it becomes the nearest such one (below first, at the same distance);
+     * - only while the steps around [stored] are small enough that one short number at most lies within reach
+     *   ([Math.ulp] × 2 × [MISSED_STEPS] below 10⁻ᵈ); a number past that (from 2³⁰, about 1.07 × 10⁹, for a meter
+     *   index's six decimals) stands, as does zero, an infinity or what isn't a number. Zero is never what it
+     *   becomes: the old conversion wrote it exactly.
+     */
+    fun correction(stored: Double, kind: NumberKind): Double? {
+        val decimals = kind.decimals
+        val outOfReach = !stored.isFinite() || stored == 0.0 || !hasSmallSteps(stored, decimals)
+        if (outOfReach || isShort(stored, decimals)) return null
+        // The Doubles within reach, nearest first.
+        val near = ArrayList<Double>()
+        var below = stored
+        var above = stored
+        repeat(MISSED_STEPS) {
+            below = Math.nextDown(below)
+            above = Math.nextUp(above)
+            near += below
+            near += above
+        }
+        return near.firstOrNull { it != 0.0 && isShort(it, decimals) }
+    }
+
+    /** How many steps the iOS app's old conversion missed the nearest Double by, at most (`missedSteps`). */
+    const val MISSED_STEPS = 3
 
     // Writing
 
@@ -200,6 +258,21 @@ object RomanianNumber {
         } ?: text
     }
 }
+
+/**
+ * Whether the steps of [value] are small enough for [RomanianNumber.MISSED_STEPS] of them each way to reach one
+ * short number.
+ */
+private fun hasSmallSteps(value: Double, decimals: Int): Boolean =
+    Math.ulp(value) * 2 * RomanianNumber.MISSED_STEPS < "1e-$decimals".toDouble()
+
+/**
+ * Whether [value] is a short number's Double: its exact value rounded to [decimals] and made a Double again gives
+ * it. Only asked of a Double whose steps are small enough, so it is never a half-way case (the iOS app rounds its
+ * shortest text, which lands on the same short number).
+ */
+private fun isShort(value: Double, decimals: Int): Boolean =
+    BigDecimal(value).setScale(decimals, RoundingMode.HALF_UP).toDouble() == value
 
 /**
  * Digits with dots, commas or spaces between them, read by [RomanianNumber]'s rule: which mark

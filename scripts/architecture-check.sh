@@ -104,6 +104,13 @@ rule system-error-text "$app" - \
     '\.localizedDescription([^A-Za-z0-9_]|$)' - \
     "The system's error text isn't written for people. Show SaveFailure.message(for:formKept:), or give the error a UserFacingError message."
 
+# A file URL's path() is percent-encoded ("Application%20Support"), and a file system API that
+# takes a path reads it as it is, so it finds nothing in a folder whose name has a space or a
+# diacritic. Every path handed to one is written as it is on disk.
+rule encoded-path-to-filesystem "$app" - \
+    '([aA]tPath|contentsOfFile|toPath) *:.*\.path\( *\)' - \
+    'A path handed to the file system is written as it is on disk: url.path(percentEncoded: false). path() is percent-encoded ("Application%20Support") and finds nothing in a folder whose name has a space or a diacritic.'
+
 rule format-string "$app" - \
     'String\(format:' - \
     'Use Money.formatted, CalendarDay, or .formatted(...) with Locale.dosarDefault. Machine text such as a hash or an ISO day goes through MachineText.'
@@ -142,6 +149,13 @@ rule animation-curve "$app" '^ios/Shared/DSMotion\.swift$' \
 rule number-parser "$app" '(^|/)RomanianNumber[^/]*\.swift$' \
     'Decimal\(string: *([a-z]|String\()|(^|[^A-Za-z0-9_.])(Double|Float)\( *("|[A-Za-z_.]*([tT]ext|[sS]tring|[rR]aw)\))|replacingOccurrences\(of: *",", *with: *"\."\)|NumberFormatter\(\)|\.number\.parseStrategy|ParseStrategy' - \
     "Read numbers from text with the one shared reader: RomanianNumber.read (or .value) for what is printed or typed, RomanianNumber.canonical for the machine form, ModelQuestions.number(_:as:) for a model's answer. Readers that disagree turn 45,724 into 45.724, and a detour through Double changes amounts."
+
+# A number read (a Decimal) becomes a Double one way: RomanianNumber.double, correctly rounded,
+# as Kotlin's BigDecimal.toDouble() is. Foundation's NSDecimalNumber.doubleValue can miss by one
+# step (98765.4321 becomes 98765.43209999999), so the two apps would store different values.
+rule decimal-to-double "$app" '(^|/)RomanianNumber\.swift$' \
+    'NSDecimalNumber\([^;]*\)\.(double|float)Value|NSDecimalNumber\)\.(double|float)Value|(^|[^A-Za-z0-9_])(Double|Float)\( *truncating:' - \
+    "Turn a Decimal into a Double with RomanianNumber.double(_:), the one correctly rounded conversion. NSDecimalNumber's doubleValue can miss the nearest Double by one step (98765.4321 becomes 98765.43209999999), and the Android app would store another value."
 
 # A kind's printed labels are data: its profile's table (CaptureKindProfile.labels), or the one
 # every document shares (CaptureKindProfile.commonLabels). Words the shared readers look for that
