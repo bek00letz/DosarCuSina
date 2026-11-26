@@ -456,7 +456,7 @@ class AssetActions(
         val reading = if (hero == null || hero == before) {
             null
         } else {
-            HouseholdReadings.plan(view, section.pk, hero, date ?: now(), source, definition?.let(HeroMetric::unit))
+            HouseholdReadings.plan(view, section.pk, hero, date ?: now(), source, HeroMetric.unit(definition))
         }
         return Edit(
             asset = section.pk,

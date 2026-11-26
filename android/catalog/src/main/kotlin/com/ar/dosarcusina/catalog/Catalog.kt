@@ -123,11 +123,12 @@ class Catalog private constructor(
                 basePockets = own.list("basePockets").map { it.text("basePockets") },
                 fields = fields,
                 services = services,
-                recovered = recovered(own["recovered"]?.obj("recovered") ?: throw CatalogError("recovered is missing")),
+                recovered = recovered(own["recovered"]),
             )
         }
 
-        private fun recovered(recovered: JsonObject): RecoveredCategory {
+        private fun recovered(element: JsonElement?): RecoveredCategory {
+            val recovered = element?.obj("recovered") ?: throw CatalogError("recovered is missing")
             val sectionID = recovered.string("sectionID")
             return RecoveredCategory(
                 key = recovered.string("key"),
