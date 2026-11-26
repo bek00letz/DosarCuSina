@@ -8,13 +8,13 @@ import com.ar.dosarcusina.core.values.CalendarDay
 import com.ar.dosarcusina.core.values.Money
 import com.ar.dosarcusina.core.values.ObligationStatus
 import com.ar.dosarcusina.core.values.StoredDay
-import com.ar.dosarcusina.store.BinderSnapshot
 import com.ar.dosarcusina.store.BinderView
 import com.ar.dosarcusina.store.Step
 import com.ar.dosarcusina.store.Tables
 import com.ar.dosarcusina.store.UndoReceipt
 import com.ar.dosarcusina.store.Undoable
 import com.ar.dosarcusina.store.UnitOfWork
+import com.ar.dosarcusina.store.view
 import com.ar.dosarcusina.store.examples.ExampleOwnership
 import com.ar.dosarcusina.store.providers.ProviderActions
 import com.ar.dosarcusina.store.readings.HeroMetric
@@ -24,7 +24,6 @@ import com.ar.dosarcusina.store.schema.Asset
 import com.ar.dosarcusina.store.schema.HistoryEntry
 import com.ar.dosarcusina.store.schema.Obligation
 import com.ar.dosarcusina.store.schema.Provider
-import kotlinx.coroutines.runBlocking
 import java.time.Instant
 
 /**
@@ -254,7 +253,7 @@ class HistoryActions(
         })
     }
 
-    private fun snapshot(): BinderView = runBlocking { BinderSnapshot.read(unit.store.database) }
+    private fun snapshot(): BinderView = unit.view()
 
     private fun current(view: BinderView, asset: Asset): Asset =
         view.row(Tables.assets, asset.pk) ?: throw NoSuchElementException("The section isn't in the binder")

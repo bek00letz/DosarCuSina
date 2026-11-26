@@ -203,3 +203,11 @@ class UnitOfWork(
         log.write(PersistenceLog.Entry(PersistenceLog.Level.FAULT, "A question asked after its unit wrote", kind))
     }
 }
+
+/**
+ * The binder as the next step sees it: the step of the unit open on this thread, with what it has
+ * recorded so far, else the store as saved. Every action reads what it asks about here before it
+ * opens its own unit, so an action that joins another's unit (the examples, made in one save) sees
+ * what that unit made before it, as the iOS app's context does.
+ */
+fun UnitOfWork.view(): BinderView = store.openScope.get()?.step ?: runBlocking { BinderSnapshot.read(store.database) }
