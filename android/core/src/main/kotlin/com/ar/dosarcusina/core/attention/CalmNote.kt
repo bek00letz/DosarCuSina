@@ -26,14 +26,14 @@ sealed interface CalmNote {
         val isLocked: Boolean get() = note.isSensitive
 
         /** Its bills come every week: it says „săptămâna asta”. */
-        val isWeekly: Boolean get() = isWeekly(note.missing.cycle)
+        val isWeekly: Boolean get() = CalmNote.isWeekly(note.missing.cycle)
 
         /**
          * How many months its bills come apart, which picks the words of its title by the String
          * Catalog's plural forms („luna asta” for one, „încă” for more); 0 for a cycle of days or
          * weeks, which has no whole month and so never says „luna asta”.
          */
-        val monthsApart: Int get() = monthsApart(note.missing.cycle)
+        val monthsApart: Int get() = CalmNote.monthsApart(note.missing.cycle)
     }
 
     /**

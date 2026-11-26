@@ -54,7 +54,7 @@ class AttentionVectorsTest {
 
     @TestFactory
     fun `one deadline as every surface sees it`(): List<DynamicTest> =
-        AttentionVectors.tests("attention-entry", { "${it.obj("deadline").text("title")} on ${it.text("today")}" }) { case ->
+        AttentionVectors.tests("attention-entry", { label(it.obj("deadline"), "title") }) { case ->
             val entry = AttentionModel.entry(attentionDeadline(case.obj("deadline")), day(case.text("today")))
             assertEquals(normalized(case.obj("entry")), normalized(written(entry)))
         }
