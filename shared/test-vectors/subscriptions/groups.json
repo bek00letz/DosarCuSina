@@ -1,0 +1,956 @@
+{
+  "cases" : [
+    {
+      "group" : null,
+      "listedIn" : "subscriptionGroup.utilities",
+      "service" : "service.gas"
+    },
+    {
+      "group" : null,
+      "listedIn" : "subscriptionGroup.appsAndStreaming",
+      "service" : "service.streaming"
+    },
+    {
+      "group" : "subscriptionGroup.other",
+      "listedIn" : "subscriptionGroup.other",
+      "service" : "service.gas"
+    },
+    {
+      "group" : "Transport",
+      "listedIn" : "subscriptionGroup.transport",
+      "service" : "service.gas"
+    },
+    {
+      "group" : "utilitati",
+      "listedIn" : "subscriptionGroup.utilities",
+      "service" : null
+    },
+    {
+      "group" : "bogus",
+      "listedIn" : "subscriptionGroup.internetAndPhone",
+      "service" : "service.mobile"
+    },
+    {
+      "group" : null,
+      "listedIn" : "subscriptionGroup.other",
+      "service" : null
+    },
+    {
+      "group" : null,
+      "listedIn" : "subscriptionGroup.internetAndPhone",
+      "service" : "Telefon mobil"
+    },
+    {
+      "group" : null,
+      "listedIn" : "subscriptionGroup.other",
+      "service" : "bogus"
+    },
+    {
+      "firstRows" : [
+        {
+          "limit" : 0,
+          "rows" : [
+
+          ]
+        },
+        {
+          "limit" : 1,
+          "rows" : [
+            {
+              "item" : "Gaz",
+              "opens" : "subscriptionGroup.utilities"
+            }
+          ]
+        },
+        {
+          "limit" : 3,
+          "rows" : [
+            {
+              "item" : "Gaz",
+              "opens" : "subscriptionGroup.utilities"
+            },
+            {
+              "item" : "Curent",
+              "opens" : null
+            },
+            {
+              "item" : "Telefon",
+              "opens" : "subscriptionGroup.internetAndPhone"
+            }
+          ]
+        },
+        {
+          "limit" : 4,
+          "rows" : [
+            {
+              "item" : "Gaz",
+              "opens" : "subscriptionGroup.utilities"
+            },
+            {
+              "item" : "Curent",
+              "opens" : null
+            },
+            {
+              "item" : "Telefon",
+              "opens" : "subscriptionGroup.internetAndPhone"
+            },
+            {
+              "item" : "Netflix",
+              "opens" : "subscriptionGroup.appsAndStreaming"
+            }
+          ]
+        },
+        {
+          "limit" : 10,
+          "rows" : [
+            {
+              "item" : "Gaz",
+              "opens" : "subscriptionGroup.utilities"
+            },
+            {
+              "item" : "Curent",
+              "opens" : null
+            },
+            {
+              "item" : "Telefon",
+              "opens" : "subscriptionGroup.internetAndPhone"
+            },
+            {
+              "item" : "Netflix",
+              "opens" : "subscriptionGroup.appsAndStreaming"
+            }
+          ]
+        }
+      ],
+      "items" : [
+        {
+          "group" : null,
+          "name" : "Netflix",
+          "service" : "service.streaming"
+        },
+        {
+          "group" : null,
+          "name" : "Gaz",
+          "service" : "service.gas"
+        },
+        {
+          "group" : null,
+          "name" : "Telefon",
+          "service" : "service.mobile"
+        },
+        {
+          "group" : null,
+          "name" : "Curent",
+          "service" : "service.electricity"
+        }
+      ],
+      "keepsGroups" : true,
+      "listing" : [
+        {
+          "group" : "subscriptionGroup.utilities",
+          "items" : [
+            "Gaz",
+            "Curent"
+          ]
+        },
+        {
+          "group" : "subscriptionGroup.internetAndPhone",
+          "items" : [
+            "Telefon"
+          ]
+        },
+        {
+          "group" : "subscriptionGroup.appsAndStreaming",
+          "items" : [
+            "Netflix"
+          ]
+        }
+      ]
+    },
+    {
+      "firstRows" : [
+        {
+          "limit" : 0,
+          "rows" : [
+
+          ]
+        },
+        {
+          "limit" : 1,
+          "rows" : [
+            {
+              "item" : "Netflix",
+              "opens" : null
+            }
+          ]
+        },
+        {
+          "limit" : 3,
+          "rows" : [
+            {
+              "item" : "Netflix",
+              "opens" : null
+            },
+            {
+              "item" : "Gaz",
+              "opens" : null
+            },
+            {
+              "item" : "Telefon",
+              "opens" : null
+            }
+          ]
+        },
+        {
+          "limit" : 4,
+          "rows" : [
+            {
+              "item" : "Netflix",
+              "opens" : null
+            },
+            {
+              "item" : "Gaz",
+              "opens" : null
+            },
+            {
+              "item" : "Telefon",
+              "opens" : null
+            },
+            {
+              "item" : "Curent",
+              "opens" : null
+            }
+          ]
+        },
+        {
+          "limit" : 10,
+          "rows" : [
+            {
+              "item" : "Netflix",
+              "opens" : null
+            },
+            {
+              "item" : "Gaz",
+              "opens" : null
+            },
+            {
+              "item" : "Telefon",
+              "opens" : null
+            },
+            {
+              "item" : "Curent",
+              "opens" : null
+            }
+          ]
+        }
+      ],
+      "items" : [
+        {
+          "group" : null,
+          "name" : "Netflix",
+          "service" : "service.streaming"
+        },
+        {
+          "group" : null,
+          "name" : "Gaz",
+          "service" : "service.gas"
+        },
+        {
+          "group" : null,
+          "name" : "Telefon",
+          "service" : "service.mobile"
+        },
+        {
+          "group" : null,
+          "name" : "Curent",
+          "service" : "service.electricity"
+        }
+      ],
+      "keepsGroups" : false,
+      "listing" : [
+        {
+          "group" : null,
+          "items" : [
+            "Netflix",
+            "Gaz",
+            "Telefon",
+            "Curent"
+          ]
+        }
+      ]
+    },
+    {
+      "firstRows" : [
+        {
+          "limit" : 0,
+          "rows" : [
+
+          ]
+        },
+        {
+          "limit" : 1,
+          "rows" : [
+            {
+              "item" : "Apă",
+              "opens" : "subscriptionGroup.utilities"
+            }
+          ]
+        },
+        {
+          "limit" : 3,
+          "rows" : [
+            {
+              "item" : "Apă",
+              "opens" : "subscriptionGroup.utilities"
+            },
+            {
+              "item" : "Curent",
+              "opens" : null
+            },
+            {
+              "item" : "Gaz",
+              "opens" : null
+            }
+          ]
+        },
+        {
+          "limit" : 4,
+          "rows" : [
+            {
+              "item" : "Apă",
+              "opens" : "subscriptionGroup.utilities"
+            },
+            {
+              "item" : "Curent",
+              "opens" : null
+            },
+            {
+              "item" : "Gaz",
+              "opens" : null
+            },
+            {
+              "item" : "Internet",
+              "opens" : "subscriptionGroup.internetAndPhone"
+            }
+          ]
+        },
+        {
+          "limit" : 10,
+          "rows" : [
+            {
+              "item" : "Apă",
+              "opens" : "subscriptionGroup.utilities"
+            },
+            {
+              "item" : "Curent",
+              "opens" : null
+            },
+            {
+              "item" : "Gaz",
+              "opens" : null
+            },
+            {
+              "item" : "Internet",
+              "opens" : "subscriptionGroup.internetAndPhone"
+            }
+          ]
+        }
+      ],
+      "items" : [
+        {
+          "group" : null,
+          "name" : "Apă",
+          "service" : "service.water"
+        },
+        {
+          "group" : null,
+          "name" : "Internet",
+          "service" : "service.internetTV"
+        },
+        {
+          "group" : null,
+          "name" : "Curent",
+          "service" : "service.electricity"
+        },
+        {
+          "group" : null,
+          "name" : "Gaz",
+          "service" : "service.gas"
+        }
+      ],
+      "keepsGroups" : true,
+      "listing" : [
+        {
+          "group" : "subscriptionGroup.utilities",
+          "items" : [
+            "Apă",
+            "Curent",
+            "Gaz"
+          ]
+        },
+        {
+          "group" : "subscriptionGroup.internetAndPhone",
+          "items" : [
+            "Internet"
+          ]
+        }
+      ]
+    },
+    {
+      "firstRows" : [
+        {
+          "limit" : 0,
+          "rows" : [
+
+          ]
+        },
+        {
+          "limit" : 1,
+          "rows" : [
+            {
+              "item" : "Apă",
+              "opens" : null
+            }
+          ]
+        },
+        {
+          "limit" : 3,
+          "rows" : [
+            {
+              "item" : "Apă",
+              "opens" : null
+            },
+            {
+              "item" : "Internet",
+              "opens" : null
+            },
+            {
+              "item" : "Curent",
+              "opens" : null
+            }
+          ]
+        },
+        {
+          "limit" : 4,
+          "rows" : [
+            {
+              "item" : "Apă",
+              "opens" : null
+            },
+            {
+              "item" : "Internet",
+              "opens" : null
+            },
+            {
+              "item" : "Curent",
+              "opens" : null
+            },
+            {
+              "item" : "Gaz",
+              "opens" : null
+            }
+          ]
+        },
+        {
+          "limit" : 10,
+          "rows" : [
+            {
+              "item" : "Apă",
+              "opens" : null
+            },
+            {
+              "item" : "Internet",
+              "opens" : null
+            },
+            {
+              "item" : "Curent",
+              "opens" : null
+            },
+            {
+              "item" : "Gaz",
+              "opens" : null
+            }
+          ]
+        }
+      ],
+      "items" : [
+        {
+          "group" : null,
+          "name" : "Apă",
+          "service" : "service.water"
+        },
+        {
+          "group" : null,
+          "name" : "Internet",
+          "service" : "service.internetTV"
+        },
+        {
+          "group" : null,
+          "name" : "Curent",
+          "service" : "service.electricity"
+        },
+        {
+          "group" : null,
+          "name" : "Gaz",
+          "service" : "service.gas"
+        }
+      ],
+      "keepsGroups" : false,
+      "listing" : [
+        {
+          "group" : null,
+          "items" : [
+            "Apă",
+            "Internet",
+            "Curent",
+            "Gaz"
+          ]
+        }
+      ]
+    },
+    {
+      "firstRows" : [
+        {
+          "limit" : 0,
+          "rows" : [
+
+          ]
+        },
+        {
+          "limit" : 1,
+          "rows" : [
+            {
+              "item" : "Apă",
+              "opens" : null
+            }
+          ]
+        },
+        {
+          "limit" : 3,
+          "rows" : [
+            {
+              "item" : "Apă",
+              "opens" : null
+            }
+          ]
+        },
+        {
+          "limit" : 4,
+          "rows" : [
+            {
+              "item" : "Apă",
+              "opens" : null
+            }
+          ]
+        },
+        {
+          "limit" : 10,
+          "rows" : [
+            {
+              "item" : "Apă",
+              "opens" : null
+            }
+          ]
+        }
+      ],
+      "items" : [
+        {
+          "group" : null,
+          "name" : "Apă",
+          "service" : "service.water"
+        }
+      ],
+      "keepsGroups" : true,
+      "listing" : [
+        {
+          "group" : "subscriptionGroup.utilities",
+          "items" : [
+            "Apă"
+          ]
+        }
+      ]
+    },
+    {
+      "firstRows" : [
+        {
+          "limit" : 0,
+          "rows" : [
+
+          ]
+        },
+        {
+          "limit" : 1,
+          "rows" : [
+            {
+              "item" : "Apă",
+              "opens" : null
+            }
+          ]
+        },
+        {
+          "limit" : 3,
+          "rows" : [
+            {
+              "item" : "Apă",
+              "opens" : null
+            }
+          ]
+        },
+        {
+          "limit" : 4,
+          "rows" : [
+            {
+              "item" : "Apă",
+              "opens" : null
+            }
+          ]
+        },
+        {
+          "limit" : 10,
+          "rows" : [
+            {
+              "item" : "Apă",
+              "opens" : null
+            }
+          ]
+        }
+      ],
+      "items" : [
+        {
+          "group" : null,
+          "name" : "Apă",
+          "service" : "service.water"
+        }
+      ],
+      "keepsGroups" : false,
+      "listing" : [
+        {
+          "group" : null,
+          "items" : [
+            "Apă"
+          ]
+        }
+      ]
+    },
+    {
+      "firstRows" : [
+        {
+          "limit" : 0,
+          "rows" : [
+
+          ]
+        },
+        {
+          "limit" : 1,
+          "rows" : [
+            {
+              "item" : "Curent",
+              "opens" : "subscriptionGroup.utilities"
+            }
+          ]
+        },
+        {
+          "limit" : 3,
+          "rows" : [
+            {
+              "item" : "Curent",
+              "opens" : "subscriptionGroup.utilities"
+            },
+            {
+              "item" : "Metrou",
+              "opens" : "subscriptionGroup.transport"
+            },
+            {
+              "item" : "Gaz mutat",
+              "opens" : "subscriptionGroup.other"
+            }
+          ]
+        },
+        {
+          "limit" : 4,
+          "rows" : [
+            {
+              "item" : "Curent",
+              "opens" : "subscriptionGroup.utilities"
+            },
+            {
+              "item" : "Metrou",
+              "opens" : "subscriptionGroup.transport"
+            },
+            {
+              "item" : "Gaz mutat",
+              "opens" : "subscriptionGroup.other"
+            },
+            {
+              "item" : "Altceva",
+              "opens" : null
+            }
+          ]
+        },
+        {
+          "limit" : 10,
+          "rows" : [
+            {
+              "item" : "Curent",
+              "opens" : "subscriptionGroup.utilities"
+            },
+            {
+              "item" : "Metrou",
+              "opens" : "subscriptionGroup.transport"
+            },
+            {
+              "item" : "Gaz mutat",
+              "opens" : "subscriptionGroup.other"
+            },
+            {
+              "item" : "Altceva",
+              "opens" : null
+            }
+          ]
+        }
+      ],
+      "items" : [
+        {
+          "group" : "subscriptionGroup.other",
+          "name" : "Gaz mutat",
+          "service" : "service.gas"
+        },
+        {
+          "group" : null,
+          "name" : "Altceva",
+          "service" : null
+        },
+        {
+          "group" : null,
+          "name" : "Metrou",
+          "service" : "service.transport"
+        },
+        {
+          "group" : null,
+          "name" : "Curent",
+          "service" : "service.electricity"
+        }
+      ],
+      "keepsGroups" : true,
+      "listing" : [
+        {
+          "group" : "subscriptionGroup.utilities",
+          "items" : [
+            "Curent"
+          ]
+        },
+        {
+          "group" : "subscriptionGroup.transport",
+          "items" : [
+            "Metrou"
+          ]
+        },
+        {
+          "group" : "subscriptionGroup.other",
+          "items" : [
+            "Gaz mutat",
+            "Altceva"
+          ]
+        }
+      ]
+    },
+    {
+      "firstRows" : [
+        {
+          "limit" : 0,
+          "rows" : [
+
+          ]
+        },
+        {
+          "limit" : 1,
+          "rows" : [
+            {
+              "item" : "Gaz mutat",
+              "opens" : null
+            }
+          ]
+        },
+        {
+          "limit" : 3,
+          "rows" : [
+            {
+              "item" : "Gaz mutat",
+              "opens" : null
+            },
+            {
+              "item" : "Altceva",
+              "opens" : null
+            },
+            {
+              "item" : "Metrou",
+              "opens" : null
+            }
+          ]
+        },
+        {
+          "limit" : 4,
+          "rows" : [
+            {
+              "item" : "Gaz mutat",
+              "opens" : null
+            },
+            {
+              "item" : "Altceva",
+              "opens" : null
+            },
+            {
+              "item" : "Metrou",
+              "opens" : null
+            },
+            {
+              "item" : "Curent",
+              "opens" : null
+            }
+          ]
+        },
+        {
+          "limit" : 10,
+          "rows" : [
+            {
+              "item" : "Gaz mutat",
+              "opens" : null
+            },
+            {
+              "item" : "Altceva",
+              "opens" : null
+            },
+            {
+              "item" : "Metrou",
+              "opens" : null
+            },
+            {
+              "item" : "Curent",
+              "opens" : null
+            }
+          ]
+        }
+      ],
+      "items" : [
+        {
+          "group" : "subscriptionGroup.other",
+          "name" : "Gaz mutat",
+          "service" : "service.gas"
+        },
+        {
+          "group" : null,
+          "name" : "Altceva",
+          "service" : null
+        },
+        {
+          "group" : null,
+          "name" : "Metrou",
+          "service" : "service.transport"
+        },
+        {
+          "group" : null,
+          "name" : "Curent",
+          "service" : "service.electricity"
+        }
+      ],
+      "keepsGroups" : false,
+      "listing" : [
+        {
+          "group" : null,
+          "items" : [
+            "Gaz mutat",
+            "Altceva",
+            "Metrou",
+            "Curent"
+          ]
+        }
+      ]
+    },
+    {
+      "firstRows" : [
+        {
+          "limit" : 0,
+          "rows" : [
+
+          ]
+        },
+        {
+          "limit" : 1,
+          "rows" : [
+
+          ]
+        },
+        {
+          "limit" : 3,
+          "rows" : [
+
+          ]
+        },
+        {
+          "limit" : 4,
+          "rows" : [
+
+          ]
+        },
+        {
+          "limit" : 10,
+          "rows" : [
+
+          ]
+        }
+      ],
+      "items" : [
+
+      ],
+      "keepsGroups" : true,
+      "listing" : [
+
+      ]
+    },
+    {
+      "firstRows" : [
+        {
+          "limit" : 0,
+          "rows" : [
+
+          ]
+        },
+        {
+          "limit" : 1,
+          "rows" : [
+
+          ]
+        },
+        {
+          "limit" : 3,
+          "rows" : [
+
+          ]
+        },
+        {
+          "limit" : 4,
+          "rows" : [
+
+          ]
+        },
+        {
+          "limit" : 10,
+          "rows" : [
+
+          ]
+        }
+      ],
+      "items" : [
+
+      ],
+      "keepsGroups" : false,
+      "listing" : [
+
+      ]
+    }
+  ],
+  "rule" : "SubscriptionGroup.of(_:), listing(_:in:values:) and firstRows(of:limit:)",
+  "shape" : "group, service: a subscription's stored group and service (null for none); listedIn: the group it is listed in. Or items (each its name, stored group and service) and whether the category keeps groups (keepsGroups: the subscription category, else one without the group field); listing: its groups in order, each its key (null for the one list of a category that keeps none) and its items' names; firstRows: for each limit, the rows a pocket shows, each the group it opens (null for none) and the item's name.",
+  "source" : "ios/DosarCuSina/Models/Fields/ChoiceOptions.swift",
+  "writtenBy" : "ios/DosarCuSinaTests/SubscriptionVectorsTests.swift"
+}

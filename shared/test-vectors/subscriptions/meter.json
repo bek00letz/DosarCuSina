@@ -1,0 +1,127 @@
+{
+  "cases" : [
+    {
+      "basis" : null,
+      "day" : "2026-10-05",
+      "index" : "12345",
+      "reading" : {
+        "at" : "2026-10-05T09:00:00Z",
+        "basis" : null,
+        "day" : "2026-10-05",
+        "kind" : "gas",
+        "unit" : "m3",
+        "value" : 12345
+      },
+      "service" : "service.gas"
+    },
+    {
+      "basis" : "estimated",
+      "day" : "2026-03-29",
+      "index" : "1234.567",
+      "reading" : {
+        "at" : "2026-03-29T10:00:00Z",
+        "basis" : "estimated",
+        "day" : "2026-03-29",
+        "kind" : "electricity",
+        "unit" : "kwh",
+        "value" : 1234.567
+      },
+      "service" : "service.electricity"
+    },
+    {
+      "basis" : "read",
+      "day" : "2026-10-25",
+      "index" : "0",
+      "reading" : {
+        "at" : "2026-10-25T09:00:00Z",
+        "basis" : "read",
+        "day" : "2026-10-25",
+        "kind" : "coldWater",
+        "unit" : "m3",
+        "value" : 0
+      },
+      "service" : "service.water"
+    },
+    {
+      "basis" : null,
+      "day" : "2026-10-05",
+      "index" : "-5",
+      "reading" : null,
+      "service" : "service.gas"
+    },
+    {
+      "basis" : null,
+      "day" : "2026-03-29",
+      "index" : null,
+      "reading" : null,
+      "service" : "service.gas"
+    },
+    {
+      "basis" : null,
+      "day" : "2026-10-25",
+      "index" : "100",
+      "reading" : null,
+      "service" : "service.heating"
+    },
+    {
+      "basis" : null,
+      "day" : "2026-10-05",
+      "index" : "100",
+      "reading" : null,
+      "service" : "service.mobile"
+    },
+    {
+      "basis" : null,
+      "day" : "2026-03-29",
+      "index" : "100",
+      "reading" : null,
+      "service" : null
+    },
+    {
+      "basis" : "bogus",
+      "day" : "2026-10-25",
+      "index" : "100",
+      "reading" : {
+        "at" : "2026-10-25T09:00:00Z",
+        "basis" : null,
+        "day" : "2026-10-25",
+        "kind" : "gas",
+        "unit" : "m3",
+        "value" : 100
+      },
+      "service" : "Gaze naturale"
+    },
+    {
+      "basis" : "read",
+      "day" : "2026-10-05",
+      "index" : "98765.5",
+      "reading" : {
+        "at" : "2026-10-05T09:00:00Z",
+        "basis" : "read",
+        "day" : "2026-10-05",
+        "kind" : "electricity",
+        "unit" : "kwh",
+        "value" : 98765.5
+      },
+      "service" : "Curent"
+    },
+    {
+      "basis" : null,
+      "day" : "2026-03-29",
+      "index" : "0.125",
+      "reading" : {
+        "at" : "2026-03-29T10:00:00Z",
+        "basis" : null,
+        "day" : "2026-03-29",
+        "kind" : "coldWater",
+        "unit" : "m3",
+        "value" : 0.125
+      },
+      "service" : "service.water"
+    }
+  ],
+  "rule" : "SubscriptionMeter.reading(_:basis:service:day:), and the moment a bill's reading is dated at (Reading.planned: noon in Bucharest)",
+  "shape" : "index: the number a bill prints (null for none), basis: how the bill says it was taken (null for unsaid), service: the subscription's stored service (null for none), day: the bill's day; reading: the value, its kind and unit's key, its day, its basis (null for none) and the UTC moment it is recorded at, or null when the service has no meter or the index isn't one.",
+  "source" : "ios/DosarCuSina/Services/Subscriptions/SubscriptionMeter.swift",
+  "writtenBy" : "ios/DosarCuSinaTests/SubscriptionVectorsTests.swift"
+}

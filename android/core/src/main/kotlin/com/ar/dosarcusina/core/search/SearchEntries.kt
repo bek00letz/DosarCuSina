@@ -3,7 +3,6 @@ package com.ar.dosarcusina.core.search
 import com.ar.dosarcusina.core.text.PaymentCardNumbers.KeptWhole
 import com.ar.dosarcusina.core.values.CalendarDay
 import com.ar.dosarcusina.core.values.TextRules
-import java.time.Duration
 import java.time.Instant
 import java.time.ZoneId
 import java.util.Locale
@@ -196,11 +195,9 @@ class SearchEntries(private val wording: SearchWording, private val zone: ZoneId
     private fun day(moment: Instant): CalendarDay = CalendarDay.of(moment, zone)
 
     /** Noon on [day], twelve hours after it starts, as the iOS app's `CalendarDay.noonDate()`. */
-    private fun noon(day: CalendarDay): Instant = day.startOfDay(zone).plus(NOON)
+    private fun noon(day: CalendarDay): Instant = day.noon(zone)
 
     companion object {
-        private val NOON: Duration = Duration.ofHours(12)
-
         /** A record's document id: its kind and its id, as the iOS app writes them ("asset:…", in capitals). */
         fun id(kind: SearchResultKind, id: UUID): String = "${kind.raw}:${uuid(id)}"
 

@@ -1,0 +1,105 @@
+{
+  "cases" : [
+    {
+      "name" : "ENGIE Romania S.A.",
+      "short" : "ENGIE",
+      "words" : [
+        "engie"
+      ]
+    },
+    {
+      "name" : "E.ON Energie Romania",
+      "short" : "E.ON",
+      "words" : [
+        "eon"
+      ]
+    },
+    {
+      "name" : "Apa Nova București S.A.",
+      "short" : "Apa Nova București",
+      "words" : [
+        "apa",
+        "bucuresti",
+        "nova"
+      ]
+    },
+    {
+      "name" : "Engie",
+      "short" : "Engie",
+      "words" : [
+        "engie"
+      ]
+    },
+    {
+      "name" : "Exemplu Gaz S.R.L.",
+      "short" : "Exemplu Gaz",
+      "words" : [
+        "exemplu",
+        "gaz"
+      ]
+    },
+    {
+      "name" : "Orange Romania S.A.",
+      "short" : "Orange",
+      "words" : [
+        "orange"
+      ]
+    },
+    {
+      "name" : "Romania S.A.",
+      "short" : "Romania S.A.",
+      "words" : [
+
+      ]
+    },
+    {
+      "name" : "S.C. Exemplu Furnizare S.R.L.",
+      "short" : "S.C. Exemplu",
+      "words" : [
+        "exemplu",
+        "sc"
+      ]
+    },
+    {
+      "name" : "The Exemplu Energy Company",
+      "short" : "Exemplu Company",
+      "words" : [
+        "company",
+        "exemplu"
+      ]
+    },
+    {
+      "name" : "Digi  Exemplu",
+      "short" : "Digi Exemplu",
+      "words" : [
+        "digi",
+        "exemplu"
+      ]
+    },
+    {
+      "name" : "  ",
+      "short" : "  ",
+      "words" : [
+
+      ]
+    },
+    {
+      "name" : "",
+      "short" : "",
+      "words" : [
+
+      ]
+    },
+    {
+      "name" : "Ș.A. Țară",
+      "short" : "Țară",
+      "words" : [
+        "tara"
+      ]
+    }
+  ],
+  "rule" : "SubscriptionMatcher.shortProviderName(_:) and providerWords(_:)",
+  "shape" : "name: a provider as printed; short: as people say it; words: the folded words that name it, sorted.",
+  "source" : "ios/DosarCuSina/Services/Subscriptions/SubscriptionMatcher.swift",
+  "writtenBy" : "ios/DosarCuSinaTests/SubscriptionVectorsTests.swift"
+}

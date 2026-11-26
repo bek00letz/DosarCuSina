@@ -1,6 +1,7 @@
 package com.ar.dosarcusina.core.urgency
 
 import com.ar.dosarcusina.core.values.CalendarDay
+import com.ar.dosarcusina.core.values.ObligationStatus
 
 /**
  * The urgency rule behind a date a page shows (an expiry, a warranty's or a contract's end), as
@@ -17,7 +18,7 @@ object DateUrgency {
      * as the section lists them, decides.
      */
     fun rule(day: CalendarDay, deadlines: List<DeadlineSnapshot>): UrgencyRule =
-        deadlines.filter { it.status == DeadlineStatus.ACTIVE }
+        deadlines.filter { it.status == ObligationStatus.ACTIVE }
             .sortedBy { it.dueDay }
             .firstOrNull { it.dueDay == day }
             ?.urgencyRule

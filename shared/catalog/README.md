@@ -11,8 +11,11 @@ The categories that ship with the app (Mașini, Locuințe, Acte and the rest), d
 | [`templates.json`](templates.json) | Every built-in's definition, in the catalog's order. |
 | [`catalog.json`](catalog.json) | What installing the built-ins reads that a backup doesn't carry. |
 | [`keys.json`](keys.json) | The built-in field, deadline and category keys the code names. |
+| [`ownCategories.json`](ownCategories.json) | What a category of one's own is made of besides the answers to its switches. |
+| [`household.json`](household.json) | The household's own deadlines, which belong to no section. |
+| [`subscriptions/subscriptions.json`](subscriptions/subscriptions.json) | What a subscription can be: its services, codes, groups and billing cycles. Written by [`SubscriptionCatalogExportTests`](../../ios/DosarCuSinaTests/SubscriptionCatalogExportTests.swift) (see below). |
 
-All three are machine JSON, written by `MachineText` with their keys sorted, so a diff shows only what changed.
+All six are machine JSON, written by `MachineText` with their keys sorted, so a diff shows only what changed.
 
 ### `templates.json`
 
@@ -38,9 +41,36 @@ It leaves out what is the household's, not the catalog's: `homeOrder`, `isOnHome
 
 Android names the same constants in [`BuiltInKeys.kt`](../../android/catalog/src/main/kotlin/com/ar/dosarcusina/catalog/BuiltInKeys.kt): each object the Swift type of the same name, each constant its Swift name in capitals (`VehicleFields.POLICY_NUMBER`). `BuiltInKeysTest` checks them against `keys.json` both ways, and `CatalogTest` that every key names a field, deadline or category the catalog has.
 
+### `ownCategories.json`
+
+What a category of one's own is made of besides the answers to its few questions (`CategorySwitches`: *Are acte*, *Are facturi și contracte*, *Are revizii sau lucrări* and how often, *Ține de…*, one box or one each). The rules that turn the answers into the category's pockets, behaviour, fields and deadlines are code, on both apps; the words and the parts they write are here.
+
+- **`basePockets`:** the pockets every new category of one's own starts with (`CategorySwitches.basePockets`); the switches add theirs.
+- **`counterSectionKey`:** the field section a counter goes in (`custom.counter`).
+- **`counters`:** each way a service is counted, in `CategorySwitches.Counter`'s order (the order a category's service is read in): `counter` (its raw value, which names the service deadline `custom.service.<counter>`), `defaultEvery` (the interval it starts at: months, kilometres or hours), `field` (its counter field, none for a service by time) and `service` (its service deadline at `defaultEvery`, as a template's `blueprints` writes one). The interval the person types is laid into the deadline's `recurrence` and `firstDue` by the rule both apps share (`CategorySwitches.serviceBlueprint`).
+- **`writtenBy`:** the test that writes the files.
+
+### `household.json`
+
+- **`blueprints`:** the household's own deadlines (`HouseholdRules.blueprints`), each as a template's `blueprints` writes one: today the rental income declaration (`household.rentalDeclaration`), made while the household has a tenancy (`HouseholdRules.reconcile`).
+- **`writtenBy`:** the test that writes the files.
+
+### `subscriptions/subscriptions.json`
+
+What a subscription can be, declared once in the iOS code (`ServiceKind.services`, `SubscriptionGroup` and `BillingCycle` in [`ChoiceOptions.swift`](../../ios/DosarCuSina/Models/Fields/ChoiceOptions.swift), `SubscriptionCode` in [`SubscriptionFields.swift`](../../ios/DosarCuSina/Services/Subscriptions/SubscriptionFields.swift)), in a folder of its own so it is written and checked apart from the built-in catalog:
+
+- **`services`:** in the order they are offered, each with its `key` (stored), `label` and `aliases` (what stored or typed text it is found by), its `group`, its `codes` (by name, most specific first: the only ones read, shown and asked), `isTiedToHome` (supplied at an address: the contract lives under the home), `sendsRegularBills` (one bill per billing cycle), `meter` (a `MeasurementKind`, or null) and `modelDescription` (what a language model is told it is).
+- **`unspecifiedService`:** the service that says nothing about which contract a paper is: its codes are what any contract has, and it is never told apart from another service.
+- **`codes`:** in the edit form's order, each with its `name`, `family` (`consumptionPoint`, `customer`, `contract`, `line`), `fieldKey` (the subscription's field that keeps it), `captureKey` (what capture reads it as), `weight` (how much an agreeing one says), `namesOnePoint` (a different one is a different contract), `homeFieldKeys` (a home's own fields for the same code), `comparedAs` (`compact`, or `nationalPhoneNumber`) and `editFormCondition` (when the edit form shows it, as a template writes a condition).
+- **`groups`:** in the order subscriptions are listed under them, each its `key` and `label`; **`unspecifiedGroup`:** the group of a service that isn't known.
+- **`billingCycles`:** in the order they are offered, each its `key`, `label`, `aliases` and `interval` (`every` and `unit`); **`unknownCycle`:** what a cycle that isn't known lasts.
+- **`writtenBy`:** the test that writes the file.
+
+[`SubscriptionCatalogExportTests`](../../ios/DosarCuSinaTests/SubscriptionCatalogExportTests.swift) writes it fresh or fails, by the same switch (`TEST_RUNNER_CATALOG_WRITE=1`, or `CATALOG_WRITE=1` in Xcode, running `SubscriptionCatalogExportTests`); a failed run on GitHub keeps it made afresh in `test-results` as `catalog/subscriptions/`. Android's `core` module copies it into its resources (the `subscriptionCatalogResources` task) and reads it into `SubscriptionCatalog.builtIn` ([`core.subscriptions`](../../android/core/src/main/kotlin/com/ar/dosarcusina/core/subscriptions)); every part must read whole, and no Android code tests for a named service.
+
 ## Fresh or failing
 
-`CatalogExportTests` writes the three files again on every iOS test run and fails when what is committed differs, or when a JSON file here is written by nothing any more. A failed run on GitHub keeps them made afresh in its `test-results` artifact, as `catalog/` (`tests/run_tests.sh` passes the folder as `TEST_RUNNER_CATALOG_OUT`): copy them over this folder. Or write them on a Mac:
+`CatalogExportTests` writes the five files again on every iOS test run and fails when what is committed differs, or when a JSON file here is written by nothing any more. A failed run on GitHub keeps them made afresh in its `test-results` artifact, as `catalog/` (`tests/run_tests.sh` passes the folder as `TEST_RUNNER_CATALOG_OUT`): copy them over this folder. Or write them on a Mac:
 
 ```sh
 TEST_RUNNER_CATALOG_WRITE=1 xcodebuild test -project ios/DosarCuSina.xcodeproj -scheme DosarCuSina \
@@ -52,7 +82,7 @@ TEST_RUNNER_CATALOG_WRITE=1 xcodebuild test -project ios/DosarCuSina.xcodeproj -
 
 ## Who reads them
 
-- **Android:** the `catalog` module ([`android/catalog`](../../android/catalog)) copies the three files into its resources as it is built (the `catalogResources` task), so the app carries this folder as it is, and reads them into `Catalog.builtIn`, with the archive's own codecs. Every part must read whole; a part the build can't read fails the build's tests, never the person's binder. The importer takes each built-in's definition from it (`BuiltIns`), and `BuiltInInstall` decides what installing the built-ins changes, as the iOS app's `TemplateStore.installBuiltIns` does.
+- **Android:** the `catalog` module ([`android/catalog`](../../android/catalog)) copies the five files into its resources as it is built (the `catalogResources` task), so the app carries this folder as it is, and reads them into `Catalog.builtIn`, with the archive's own codecs. Every part must read whole; a part the build can't read fails the build's tests, never the person's binder. The importer takes each built-in's definition from it (`BuiltIns`), and `BuiltInInstall` decides what installing the built-ins changes, as the iOS app's `TemplateStore.installBuiltIns` does. `CategorySwitches` makes a category of one's own from `ownCategories.json` (`Catalog.ownCategories`), and `HouseholdRules` the household's deadlines from `household.json` (`Catalog.household`).
 - **iOS:** nothing reads them; the catalog is the code.
 
 ## Left for later

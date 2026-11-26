@@ -1,5 +1,6 @@
 package com.ar.dosarcusina.core.values
 
+import java.time.Duration
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
@@ -61,6 +62,12 @@ data class CalendarDay(val year: Int, val month: Int, val day: Int) : Comparable
     fun startOfDay(zone: ZoneId): Instant = moment(0, zone)
 
     /**
+     * Noon on this day in [zone], twelve hours after it starts, as the iOS app's `CalendarDay.noonDate(in:)`: the
+     * moment a day stands for where a record keeps a moment (a document's reading, a deadline in search).
+     */
+    fun noon(zone: ZoneId): Instant = startOfDay(zone).plus(HALF_A_DAY)
+
+    /**
      * The moment [minuteOfDay] minutes after midnight on this day in [zone], by the clock on the
      * wall. The one place a day becomes a moment.
      *
@@ -83,6 +90,7 @@ data class CalendarDay(val year: Int, val month: Int, val day: Int) : Comparable
 
     companion object {
         private const val MONTHS = 12
+        private val HALF_A_DAY: Duration = Duration.ofHours(12)
         private const val SHORTEST_MONTH = 28
         private const val LONGEST_MONTH = 31
         private const val ISO_LENGTH = 10

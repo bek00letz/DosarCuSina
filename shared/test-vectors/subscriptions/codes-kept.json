@@ -1,0 +1,230 @@
+{
+  "cases" : [
+    {
+      "fields" : [
+        {
+          "key" : "serviceKind",
+          "value" : "service.internetTV"
+        },
+        {
+          "key" : "podCode",
+          "value" : "RO005E000000001"
+        },
+        {
+          "key" : "clientCode",
+          "value" : "2000000000"
+        }
+      ],
+      "kept" : [
+        {
+          "key" : "serviceKind",
+          "value" : "service.internetTV"
+        },
+        {
+          "key" : "clientCode",
+          "value" : "2000000000"
+        }
+      ],
+      "service" : "service.internetTV"
+    },
+    {
+      "fields" : [
+        {
+          "key" : "podCode",
+          "value" : "RO002G000000001"
+        },
+        {
+          "key" : "account",
+          "value" : "3000000000"
+        }
+      ],
+      "kept" : [
+        {
+          "key" : "clcCode",
+          "value" : "RO002G000000001"
+        },
+        {
+          "key" : "clientCode",
+          "value" : "3000000000"
+        }
+      ],
+      "service" : "service.gas"
+    },
+    {
+      "fields" : [
+        {
+          "key" : "clcCode",
+          "value" : "123456"
+        },
+        {
+          "key" : "placeCode",
+          "value" : "654321"
+        }
+      ],
+      "kept" : [
+        {
+          "key" : "placeCode",
+          "value" : "654321"
+        }
+      ],
+      "service" : "service.water"
+    },
+    {
+      "fields" : [
+        {
+          "key" : "clcCode",
+          "value" : "123456"
+        },
+        {
+          "key" : "podCode",
+          "value" : "654321"
+        }
+      ],
+      "kept" : [
+        {
+          "key" : "placeCode",
+          "value" : "123456"
+        }
+      ],
+      "service" : "service.water"
+    },
+    {
+      "fields" : [
+        {
+          "key" : "podCode",
+          "value" : "RO005E000000001"
+        },
+        {
+          "key" : "clcCode",
+          "value" : "DEG0000000001"
+        }
+      ],
+      "kept" : [
+        {
+          "key" : "podCode",
+          "value" : "RO005E000000001"
+        },
+        {
+          "key" : "clcCode",
+          "value" : "DEG0000000001"
+        }
+      ],
+      "service" : null
+    },
+    {
+      "fields" : [
+        {
+          "key" : "podCode",
+          "value" : "RO002G000000001"
+        },
+        {
+          "key" : "total",
+          "value" : "245.30"
+        }
+      ],
+      "kept" : [
+        {
+          "key" : "clcCode",
+          "value" : "RO002G000000001"
+        },
+        {
+          "key" : "total",
+          "value" : "245.30"
+        }
+      ],
+      "service" : "Gaze naturale"
+    },
+    {
+      "fields" : [
+        {
+          "key" : "clientCode",
+          "value" : "2000000000"
+        },
+        {
+          "key" : "provider",
+          "value" : "Exemplu Streaming"
+        }
+      ],
+      "kept" : [
+        {
+          "key" : "provider",
+          "value" : "Exemplu Streaming"
+        }
+      ],
+      "service" : "service.streaming"
+    },
+    {
+      "fields" : [
+        {
+          "key" : "phoneNumber",
+          "value" : "0712345678"
+        },
+        {
+          "key" : "podCode",
+          "value" : "RO005E000000001"
+        },
+        {
+          "key" : "account",
+          "value" : "3000000000"
+        },
+        {
+          "key" : "clientCode",
+          "value" : "2000000000"
+        }
+      ],
+      "kept" : [
+        {
+          "key" : "phoneNumber",
+          "value" : "0712345678"
+        },
+        {
+          "key" : "account",
+          "value" : "3000000000"
+        },
+        {
+          "key" : "clientCode",
+          "value" : "2000000000"
+        }
+      ],
+      "service" : "service.mobile"
+    },
+    {
+      "fields" : [
+        {
+          "key" : "clcCode",
+          "value" : "DEG0000000001"
+        },
+        {
+          "key" : "podCode",
+          "value" : "RO005E000000001"
+        }
+      ],
+      "kept" : [
+        {
+          "key" : "podCode",
+          "value" : "RO005E000000001"
+        }
+      ],
+      "service" : "service.electricity"
+    },
+    {
+      "fields" : [
+        {
+          "key" : "podCode",
+          "value" : "RO005E000000001"
+        }
+      ],
+      "kept" : [
+        {
+          "key" : "podCode",
+          "value" : "RO005E000000001"
+        }
+      ],
+      "service" : "Netflix"
+    }
+  ],
+  "rule" : "SubscriptionCode.keeping(_:service:)",
+  "shape" : "service: the service a paper was read as (null for none); fields: what it read, each its capture key and value, in order; kept: what it keeps, in order, a code read under another service's name kept as its own code of the same family.",
+  "source" : "ios/DosarCuSina/Services/Subscriptions/SubscriptionFields.swift",
+  "writtenBy" : "ios/DosarCuSinaTests/SubscriptionVectorsTests.swift"
+}

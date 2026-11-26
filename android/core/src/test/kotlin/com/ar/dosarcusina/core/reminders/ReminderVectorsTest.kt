@@ -142,7 +142,7 @@ class ReminderVectorsTest {
         UrgencyVectors.tests("reminder-plan", { it.text("name") }) { case ->
             val deadlines = case.objects("deadlines").map(::deadline)
             val open = ShownReminders.openCycles(deadlines)
-            assertTrue(open.keys.all { id -> deadlines.any { it.id == id && it.status.stored == "active" } })
+            assertTrue(open.keys.all { id -> deadlines.any { it.id == id && it.status.raw == "active" } })
             assertEquals(deadlines.filter { it.isSensitive }.map { it.id }.toSet(), ShownReminders.locked(deadlines))
             // Every reminder the plan made for a deadline is about its open cycle.
             for (reminder in planned(case, badges = false)) {
