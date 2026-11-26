@@ -6,6 +6,12 @@ To propose a change to a decision, open an issue with the **Proposal** template 
 
 ---
 
+## 2026-11-26
+
+### Caută keeps the title of every result in a locked section (owner)
+- **Decided (owner, replaces part of „A locked section is locked wherever it is named”):** Caută keeps the title of every result a locked section gives, the section itself, its documents and parts as well as its deadlines and visits, with nothing else under it („Deblochează secțiunea ca să vezi mai mult.”); opening one still asks for Face ID. The rule follows what the app already does.
+- **Why:** finding a document or a part by its name is what search is for, as it is for „RCA” or „Schimb ulei”; a title alone says what something is called, never what it holds. Every other place outside the section's page still shows only that it is locked, and the iPhone's search shows nothing of it.
+
 ## 2026-11-25
 
 ### A scanned page in a backup is HEIC or JPEG (owner)
