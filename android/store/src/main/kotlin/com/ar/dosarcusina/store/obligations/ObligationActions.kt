@@ -26,6 +26,7 @@ import com.ar.dosarcusina.store.Undoable
 import com.ar.dosarcusina.store.UnitOfWork
 import com.ar.dosarcusina.store.examples.ExampleOwnership
 import com.ar.dosarcusina.store.history.HistoryActions
+import com.ar.dosarcusina.store.history.LineItemDraft
 import com.ar.dosarcusina.store.readings.HouseholdReadings
 import com.ar.dosarcusina.store.schema.Asset
 import com.ar.dosarcusina.store.schema.HistoryEntry
@@ -108,8 +109,9 @@ class ObligationActions(
      * - A deadline whose closing replaces a document with a new one closes, whatever its repeat.
      * - A [metricReading] is recorded on the section through the one reading path, asked about first
      *   ([lowerReading] answers a lower counter).
-     *
-     * The line items a visit's completion files with it come with the visit form's port.
+     * - [items] are the parts and jobs it lists (a service's oil and filters), written as every record's are
+     *   ([HistoryActions.recordCompletion]): each worked out from the section's category, labour kept as the
+     *   work's cost.
      */
     @Suppress("LongParameterList") // What „Am rezolvat” asks, as the iOS action takes it.
     fun complete(
@@ -123,6 +125,7 @@ class ObligationActions(
         lowerReading: LowerReadingAnswer? = null,
         cycle: CalendarDay? = null,
         continuingOn: CalendarDay? = null,
+        items: List<LineItemDraft> = emptyList(),
     ): Undoable<HistoryEntry> {
         val zone = zone()
         val view = snapshot()
@@ -144,7 +147,7 @@ class ObligationActions(
             var entry = HistoryActions.recordCompletion(
                 step, row, HistoryKind.forCompleting(completion), due, completedAt,
                 cost = cost, metricReading = metricReading, note = note, rating = rating,
-                providers = providers.map { it.pk },
+                providers = providers.map { it.pk }, items = items,
             )
             if (reading != null) HouseholdReadings.recordReading(step, reading, lowerReading, isExample = row.isExample)
             val context = DeadlineMutations.recurrenceContext(step, row, metricReading, zone, builtIns)
