@@ -66,7 +66,7 @@ struct BackupInBackgroundTests {
         let run = BackupRun(protectedDataAvailable: false)
         try run.checkpoint(needsProtectedData: false)
         let waited = Task.detached { try run.checkpoint(needsProtectedData: true) }
-        await Task.yield()
+        await run.heldUntilTheUnlock()
         run.protectedData(isAvailable: true)
         try await waited.value
         #expect(run.timesLocked == 0, "Locked before it started, not while it ran")
@@ -77,7 +77,7 @@ struct BackupInBackgroundTests {
     @Test func stoppingWakesAStepWaitingForTheUnlock() async {
         let run = BackupRun(protectedDataAvailable: false)
         let waited = Task.detached { try run.checkpoint(needsProtectedData: true) }
-        await Task.yield()
+        await run.heldUntilTheUnlock()
         run.cancel()
         await #expect(throws: CancellationError.self) { try await waited.value }
     }
@@ -145,8 +145,9 @@ struct BackupInBackgroundTests {
         defer { try? FileManager.default.removeItem(at: directory) }
         let run = BackupRun(protectedDataAvailable: false)
         let export = Task { try await household.service.export(to: directory, password: nil, run: run) }
-        // Locked: nothing is handed out.
-        await Task.yield()
+        // Locked: the work is held at its first file that needs the documents, with nothing
+        // handed out but its own unfinished file.
+        await run.heldUntilTheUnlock()
         #expect(try FileManager.default.contentsOfDirectory(atPath: directory.path(percentEncoded: false)).allSatisfy { $0.hasSuffix(".partial") })
         run.protectedData(isAvailable: true)
         let url = try await export.value
