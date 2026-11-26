@@ -104,6 +104,13 @@ rule system-error-text "$app" - \
     '\.localizedDescription([^A-Za-z0-9_]|$)' - \
     "The system's error text isn't written for people. Show SaveFailure.message(for:formKept:), or give the error a UserFacingError message."
 
+# A file URL's path() is percent-encoded ("Application%20Support"), and a file system API that
+# takes a path reads it as it is, so it finds nothing in a folder whose name has a space or a
+# diacritic. Every path handed to one is written as it is on disk.
+rule encoded-path-to-filesystem "$app" - \
+    '([aA]tPath|contentsOfFile|toPath) *:.*\.path\( *\)' - \
+    'A path handed to the file system is written as it is on disk: url.path(percentEncoded: false). path() is percent-encoded ("Application%20Support") and finds nothing in a folder whose name has a space or a diacritic.'
+
 rule format-string "$app" - \
     'String\(format:' - \
     'Use Money.formatted, CalendarDay, or .formatted(...) with Locale.dosarDefault. Machine text such as a hash or an ISO day goes through MachineText.'
