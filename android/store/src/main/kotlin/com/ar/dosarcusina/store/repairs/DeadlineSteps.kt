@@ -131,7 +131,7 @@ object RenewalRepeatsStep : DataRepairStep {
     private fun candidates(view: BinderView): List<Obligation> {
         val categories = RepairReading.categories(view)
         return view.all(Tables.obligations).sortedBy { it.createdAt }.filter { obligation ->
-            if (obligation.isExample || !repeats(obligation.recurrence)) return@filter false
+            if (obligation.isExample || !obligation.recurrence.repeats) return@filter false
             val template = obligation.asset?.let { view.row(Tables.assets, it) }?.let { categories[it.templateKey] }
             obligation.completion(template?.keptBlueprints?.items.orEmpty()).replacesDocument
         }
@@ -158,10 +158,6 @@ object RenewalRepeatsStep : DataRepairStep {
             step.update(obligation.withKeptRecurrence(kept.replacingValue(RecurrenceRule.None)))
         }
     }
-
-    /** Whether a rule repeats (`RecurrenceRule.repeats`): one-off and a rule this build can't read don't. */
-    private fun repeats(rule: RecurrenceRule): Boolean =
-        rule != RecurrenceRule.None && rule !is RecurrenceRule.Unreadable
 }
 
 /** The name of the section [obligation] is in; none for a deadline of the household. */

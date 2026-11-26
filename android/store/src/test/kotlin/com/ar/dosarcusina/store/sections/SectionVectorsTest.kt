@@ -6,6 +6,7 @@ import com.ar.dosarcusina.archive.v3.FieldValues
 import com.ar.dosarcusina.catalog.DocumentNaming
 import com.ar.dosarcusina.catalog.FieldRules
 import com.ar.dosarcusina.catalog.PlannedObligation
+import com.ar.dosarcusina.core.documents.DocumentTypeCatalog
 import com.ar.dosarcusina.core.readiness.TravelData
 import com.ar.dosarcusina.core.values.CalendarDay
 import com.ar.dosarcusina.core.values.JsonTrees
@@ -92,7 +93,7 @@ class SectionVectorsTest {
                 val typed = values(case.getValue("values"))
                 val fields = fields(template)
                 val keys = FieldRules.normalizingChoices(typed, fields)
-                val kept = FieldRules.applying(keys, fields, null, TravelData.builtIn.documents)
+                val kept = FieldRules.applying(keys, fields, null, DocumentTypeCatalog.builtIn)
                 assertEquals(values(case.getValue("kept")), kept, "The values as saving keeps them")
                 val planned = actions(binder).plannedObligations(template, typed).map { plan ->
                     JsonObject(
@@ -298,7 +299,8 @@ class SectionVectorsTest {
 
     @TestFactory
     fun documentNames(): List<DynamicTest> {
-        val types = TravelData.builtIn.documents
+        val types = DocumentTypeCatalog.builtIn
+        val travel = TravelData.builtIn.documents
         val actions = actions(binder())
         return cases("document-names").mapIndexed { index, case ->
             DynamicTest.dynamicTest("Case $index") {
@@ -310,14 +312,14 @@ class SectionVectorsTest {
                         assertEquals(case.textOrNull("validityMonths")?.toInt(), types.validityMonths(type, variant))
                         if (variant == null) {
                             assertEquals(case.bool("keepsBackSide"), types.keepsBackSide(type))
-                            assertEquals(case.text("travelMarginDays").toInt(), types.travelMarginDays(type))
+                            assertEquals(case.text("travelMarginDays").toInt(), travel.travelMarginDays(type))
                             assertEquals(case.bool("isDatedByIssue"), types.isDatedByIssue(type))
                         }
                     }
                     "typeText" in case -> {
                         val text = case.text("typeText")
                         assertEquals(case.bool("keepsBackSide"), types.keepsBackSide(text))
-                        assertEquals(case.text("travelMarginDays").toInt(), types.travelMarginDays(text))
+                        assertEquals(case.text("travelMarginDays").toInt(), travel.travelMarginDays(text))
                     }
                     "values" in case ->
                         assertEquals(

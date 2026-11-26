@@ -4,7 +4,7 @@ import com.ar.dosarcusina.archive.v3.Condition
 import com.ar.dosarcusina.archive.v3.FieldDefinition
 import com.ar.dosarcusina.archive.v3.FieldValues
 import com.ar.dosarcusina.archive.v3.ObligationBlueprint
-import com.ar.dosarcusina.core.readiness.DocumentTypes
+import com.ar.dosarcusina.core.documents.DocumentTypeCatalog
 import com.ar.dosarcusina.core.values.CalendarDay
 
 /**
@@ -30,7 +30,7 @@ object BlueprintRules {
         blueprints: List<ObligationBlueprint>,
         values: FieldValues,
         today: CalendarDay,
-        documentTypes: DocumentTypes,
+        documentTypes: DocumentTypeCatalog,
     ): List<PlannedObligation> {
         val kept = FieldRules.applying(values, fields, previous = null, documentTypes = documentTypes)
         return blueprints.filter { applies(it, kept) }.map { blueprint ->

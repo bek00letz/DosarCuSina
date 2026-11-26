@@ -1,6 +1,7 @@
 package com.ar.dosarcusina.catalog
 
 import com.ar.dosarcusina.archive.v3.ChoiceOption
+import com.ar.dosarcusina.core.documents.DocumentTypeCatalog
 import com.ar.dosarcusina.core.readiness.TravelData
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -14,6 +15,7 @@ import org.junit.jupiter.api.Test
 class TravelDataTest {
     private val travel = TravelData.builtIn
     private val catalog = Catalog.builtIn
+    private val documents = DocumentTypeCatalog.builtIn
 
     private fun options(category: String, field: String): List<ChoiceOption> =
         catalog.definition(category)?.sections.orEmpty().flatMap { it.fields }
@@ -29,9 +31,9 @@ class TravelDataTest {
                 assertEquals(exported.getValue(type)[name], key, "$type.$name in rules.json and keys.json")
             }
         }
-        val types = travel.documents.types.map { it.key }.toSet()
+        val types = documents.types.map { it.key }.toSet()
         val named = travel.keys.all.getValue("DocumentType").values
-        assertTrue(types.containsAll(named), "Every document type the checks name is one documents.json lists")
+        assertTrue(types.containsAll(named), "Every document type the checks name is one the catalog lists")
     }
 
     @Test
@@ -42,9 +44,9 @@ class TravelDataTest {
 
     @Test
     fun theDocumentTypesAreTheTypeFieldsChoice() {
-        val types = named(options(BuiltInTemplates.Key.DOCUMENTS, travel.documents.typeField))
-        assertEquals(types, travel.documents.types.map { Triple(it.key, it.label, it.aliases) })
-        val variants = options(BuiltInTemplates.Key.DOCUMENTS, travel.documents.variantField).map { it.key }
-        assertEquals(variants, travel.documents.variants.map { it.key })
+        val types = named(options(BuiltInTemplates.Key.DOCUMENTS, documents.typeField))
+        assertEquals(types, documents.types.map { Triple(it.key, it.label, it.aliases) })
+        val variants = options(BuiltInTemplates.Key.DOCUMENTS, documents.variantField).map { it.key }
+        assertEquals(variants, documents.variants.map { it.key })
     }
 }
