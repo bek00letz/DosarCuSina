@@ -3,6 +3,14 @@ import SwiftData
 import Testing
 @testable import DosarCuSina
 
+/// How a device's locks can be left unreadable on disk.
+enum UnreadLockFile: CaseIterable, Sendable {
+    /// The file is there and can't be read.
+    case unreadable
+    /// The file that couldn't be read was set aside, and none was written after it.
+    case setAsideWithNoneAfter
+}
+
 /// Locks stay on when they can't be read, "Începe din nou" keeps this device's locks, and turning
 /// a lock off asks for Face ID every time. Every value is a placeholder.
 @MainActor
@@ -102,11 +110,30 @@ struct LocksHoldTests {
         #expect(!locked(locks, vehicle), "Nothing shows as locked that isn't kept")
     }
 
-    @Test func aStoreWhoseLocksCantBeReadOpensWithEveryCategoryLocked() async throws {
+    /// Leaves the locks of the store at `url` as `state` says.
+    private func leave(_ state: UnreadLockFile, forStoreAt url: URL) throws {
+        let file = SectionLocks.file(forStoreAt: url)
+        switch state {
+        case .unreadable: try Data("{".utf8).write(to: file)
+        case .setAsideWithNoneAfter: try Data("{".utf8).write(to: setAside(file))
+        }
+    }
+
+    /// Where a file of locks that couldn't be read is kept once set aside.
+    private func setAside(_ file: URL) -> URL {
+        file.deletingLastPathComponent().appending(path: file.lastPathComponent + SectionLocks.setAsideMark + UUID().uuidString)
+    }
+
+    private func names(in folder: URL) throws -> [String] {
+        try FileManager.default.contentsOfDirectory(atPath: folder.path(percentEncoded: false))
+    }
+
+    @Test(arguments: UnreadLockFile.allCases)
+    func aStoreWhoseLocksCantBeReadOpensWithEveryCategoryLocked(_ state: UnreadLockFile) async throws {
         let folder = try folder()
         defer { try? FileManager.default.removeItem(at: folder) }
         let url = folder.appending(path: "Dosar.store")
-        try Data("{".utf8).write(to: SectionLocks.file(forStoreAt: url))
+        try leave(state, forStoreAt: url)
         let container = try PersistenceController.makeContainer(storeURL: url)
         try TemplateStore(context: container.mainContext).installBuiltIns()
         try arrives(fromAnotherDevice, in: container)
@@ -145,6 +172,59 @@ struct LocksHoldTests {
         }
     }
 
+    @Test func locksSetAsideWithNoneWrittenAfterThemKeepEveryCategoryLocked() throws {
+        let folder = try folder()
+        defer { try? FileManager.default.removeItem(at: folder) }
+        let file = folder.appending(path: "Dosar.store.section-locks.json")
+        let unreadable = Data("{\"vehicle\": tr".utf8)
+        let aside = setAside(file)
+        try unreadable.write(to: aside)
+
+        let locks = SectionLocks(file: file)
+        #expect(locks.needsChoosingAgain)
+        for key in [vehicle, home, notebook, documents, fromAnotherDevice] {
+            #expect(locked(locks, key), "Every category is locked until chosen again: \(key)")
+        }
+
+        // A change while they wait writes a file that remembers the wait.
+        try locks.set(false, for: home)
+        #expect(locked(locks, home), "Nothing opens while the locks wait")
+        let reopened = SectionLocks(file: file)
+        #expect(reopened.needsChoosingAgain, "Still waiting after a relaunch")
+        for key in [vehicle, home, notebook] { #expect(locked(reopened, key)) }
+
+        // Kept: the file that is written then says what is chosen, and what was set aside stays.
+        try reopened.chooseAgain([vehicle: true, documents: true, home: true])
+        try reopened.set(false, for: home)
+        let chosen = SectionLocks(file: file)
+        #expect(!chosen.needsChoosingAgain, "The wait ends once the locks are kept")
+        #expect(locked(chosen, vehicle))
+        #expect(!locked(chosen, home), "Opened after the locks were kept")
+        #expect(!locked(chosen, fromAnotherDevice), "A category from another device starts open again")
+        #expect(try Data(contentsOf: aside) == unreadable, "What was set aside is kept as it was")
+        #expect(try names(in: folder).filter { $0.contains(SectionLocks.setAsideMark) }.count == 1, "Nothing else was set aside")
+    }
+
+    @Test func locksSetAsideWhileTheAppRunsStillWaitWhenNoneWasWrittenAfterThem() throws {
+        let folder = try folder()
+        defer { try? FileManager.default.removeItem(at: folder) }
+        let file = folder.appending(path: "Dosar.store.section-locks.json")
+        try Data("{".utf8).write(to: file)
+        let locks = SectionLocks(file: file)
+        #expect(locks.needsChoosingAgain)
+
+        // The file is set aside and the new one isn't written.
+        try FileManager.default.moveItem(at: file, to: setAside(file))
+        locks.readAgainIfUnread()
+        #expect(locks.needsChoosingAgain)
+        #expect(locked(locks, home))
+
+        try locks.set(false, for: home)
+        #expect(locks.needsChoosingAgain)
+        #expect(locked(locks, home), "Nothing opens while the locks wait")
+        #expect(SectionLocks(file: file).needsChoosingAgain, "The file written then remembers the wait")
+    }
+
     // MARK: "Începe din nou" keeps this device's locks
 
     @Test func startingFreshKeepsThisDevicesLocks() async throws {
@@ -175,6 +255,17 @@ struct LocksHoldTests {
         #expect(try template(vehicle, in: fresh).isSensitive)
         #expect(try !template(documents, in: fresh).isSensitive)
         #expect(try template(made, in: fresh).isSensitive, "A category of one's own locked here comes back locked")
+    }
+
+    @Test func startingFreshLeavesLocksThatWereSetAsideWhereTheyAre() throws {
+        let folder = try folder()
+        defer { try? FileManager.default.removeItem(at: folder) }
+        let url = folder.appending(path: "Dosar.store")
+        try leave(.setAsideWithNoneAfter, forStoreAt: url)
+
+        PersistenceController.moveStoreAside(at: url)
+        #expect(try names(in: folder).contains { $0.hasPrefix(SectionLocks.file(forStoreAt: url).lastPathComponent + SectionLocks.setAsideMark) }, "What was set aside stayed with the locks")
+        #expect(SectionLocks(file: SectionLocks.file(forStoreAt: url)).needsChoosingAgain, "Every category stays locked in the fresh binder")
     }
 
     // MARK: Turning a lock off asks every time
