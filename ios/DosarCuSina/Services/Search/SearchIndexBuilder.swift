@@ -8,7 +8,9 @@ import SwiftData
 /// What never reaches the index, whatever a record or its template says
 /// (`SearchPrivacy`): text read off a document filed in a locked section or off
 /// an identity document, sensitive and secret values, and any number shaped
-/// like a CNP or sealed value, wherever it was typed or read.
+/// like a CNP or sealed value, wherever it was typed or read. A document is locked
+/// by every section it belongs to (`Attachment.isSensitive(among:binder:)`), and
+/// a firm's result never names a section that is locked.
 ///
 /// It reads its own context and nothing else, so it runs off the main thread
 /// (`SearchIndexer`). The index is kept per record: `documents(forRecord:templates:)`
@@ -48,7 +50,7 @@ public struct SearchIndexBuilder {
             result[entry.persistentModelID] = historyDocuments(entry, templates: templates)
         }
         for provider in try context.fetch(FetchDescriptor<Provider>()) {
-            result[provider.persistentModelID] = [Self.redacted(providerDocument(provider), keeping: .nothing)]
+            result[provider.persistentModelID] = [Self.redacted(providerDocument(provider, templates: templates), keeping: .nothing)]
         }
         for attachment in try context.fetch(FetchDescriptor<Attachment>()) {
             result[attachment.persistentModelID] = attachmentDocuments(attachment, templates: templates)
@@ -68,7 +70,7 @@ public struct SearchIndexBuilder {
         case Self.entity(HistoryEntry.self):
             return try fetch(HistoryEntry.self, id).map { historyDocuments($0, templates: templates) } ?? []
         case Self.entity(Provider.self):
-            return try fetch(Provider.self, id).map { [Self.redacted(providerDocument($0), keeping: .nothing)] } ?? []
+            return try fetch(Provider.self, id).map { [Self.redacted(providerDocument($0, templates: templates), keeping: .nothing)] } ?? []
         case Self.entity(Attachment.self):
             return try fetch(Attachment.self, id).map { attachmentDocuments($0, templates: templates) } ?? []
         default:
@@ -206,12 +208,11 @@ public struct SearchIndexBuilder {
             fields.append(SearchField("\(fact.label) \(fact.value)", weight: SearchField.Weight.value))
         }
         fields.append(SearchField(asset.notes, weight: SearchField.Weight.note))
-        let subtitle = definition.flatMap { def in
-            def.fields(withRole: .subtitle).compactMap { field in asset.value(field.key).map { FieldFormatter.display($0, field: field, locale: locale) } }.joined(separator: " ")
-        }
+        // As the section's page says it (`HeroFacts.subtitle`), a value search never keeps masked.
+        let subtitle = definition.flatMap { HeroFacts.subtitle(asset.values, definition: $0, locale: locale, awayFromThePage: true) }
         return SearchDocument(
             id: id(.asset, asset.id), kind: .asset, title: asset.name,
-            subtitle: (subtitle?.isEmpty == false ? subtitle : template?.name),
+            subtitle: subtitle ?? template?.name,
             route: .asset(asset.id), fields: fields, date: asset.updatedAt, isSensitive: asset.isSensitive(template: template)
         )
     }
@@ -276,8 +277,12 @@ public struct SearchIndexBuilder {
         )
     }
 
-    private func providerDocument(_ provider: Provider) -> SearchDocument {
+    /// A firm is never behind a lock itself; of the sections it looks after, only the open ones
+    /// are named (its page draws the others as locked, `SectionRowGate`), so a locked section's
+    /// name never reaches a firm's result.
+    private func providerDocument(_ provider: Provider, templates: [String: CategoryTemplate]) -> SearchDocument {
         let trades = provider.trades.map { ProviderTrade(rawValue: $0)?.title ?? $0 }
+        let looksAfter = (provider.assets ?? []).filter { !$0.isSensitive(among: templates) }
         return SearchDocument(
             id: id(.provider, provider.id), kind: .provider, title: provider.name,
             subtitle: trades.formatted(.list(type: .and).locale(locale)),
@@ -286,28 +291,25 @@ public struct SearchIndexBuilder {
                 SearchField(provider.name, weight: SearchField.Weight.title),
                 SearchField(trades.joined(separator: " "), weight: SearchField.Weight.label),
                 SearchField(provider.phone, weight: SearchField.Weight.identifier),
-                SearchField((provider.assets ?? []).map(\.name).joined(separator: " "), weight: SearchField.Weight.value),
+                SearchField(looksAfter.map(\.name).joined(separator: " "), weight: SearchField.Weight.value),
                 SearchField([provider.address, provider.notes].compactMap { $0 }.joined(separator: " "), weight: SearchField.Weight.note),
             ],
             date: provider.updatedAt
         )
     }
 
-    /// The section a document is filed in: its own, or the one of the deadline,
-    /// visit, part or reading it belongs to.
+    /// The section a document is filed in, the one its row names: its own, or the one of the
+    /// deadline, visit, part or reading it belongs to, the first of `Attachment.sections`. Its lock
+    /// is every section's (`Attachment.isSensitive(among:binder:)`), never this one's alone.
     static func section(of attachment: Attachment) -> Asset? {
-        attachment.asset
-            ?? attachment.obligation?.asset
-            ?? attachment.historyEntry?.asset
-            ?? attachment.serviceItem?.entry?.asset
-            ?? attachment.measurement?.asset
+        attachment.sections.first
     }
 
     private func attachmentDocument(_ attachment: Attachment, templates: [String: CategoryTemplate]) -> SearchDocument {
         let title = attachment.title ?? attachment.fileName
         let section = Self.section(of: attachment)
-        let isLocked = isSensitive(section, templates)
-        // Text read off an identity document, or off anything filed in a locked
+        let isLocked = attachment.isSensitive(among: templates) { BinderLocks.read(in: context) }
+        // Text read off an identity document, or off anything that belongs to a locked
         // section, holds personal numbers: never indexed, whatever its kind says.
         let readText = isLocked || attachment.kind == .identity ? nil : attachment.extractedText
         return SearchDocument(

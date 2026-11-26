@@ -21,6 +21,8 @@ import com.ar.dosarcusina.store.FreeText
 import com.ar.dosarcusina.store.RecordRef
 import com.ar.dosarcusina.store.Tables
 import com.ar.dosarcusina.store.locks.BinderLocks
+import com.ar.dosarcusina.store.locks.DocumentSections
+import com.ar.dosarcusina.store.locks.isLocked
 import com.ar.dosarcusina.store.schema.Asset
 import com.ar.dosarcusina.store.schema.Attachment
 import com.ar.dosarcusina.store.schema.CategoryTemplate
@@ -66,6 +68,12 @@ class BinderSearch(
 ) {
     private val entries = SearchEntries(wording, zone)
     private val links by lazy { BinderLinks(view) }
+    private val documentSections by lazy {
+        DocumentSections(
+            view.all(Tables.assets), view.all(Tables.obligations), view.all(Tables.history),
+            view.all(Tables.items), view.all(Tables.readings),
+        )
+    }
 
     /** Every record's documents, keyed by the record they come from. */
     fun buildByRecord(): Map<RecordRef, List<SearchDocument>> {
@@ -147,7 +155,7 @@ class BinderSearch(
 
     private fun value(field: FieldDefinition, value: FieldValue) = SearchValue(
         label = field.label, type = field.type, role = field.role, isSensitive = field.isSensitive,
-        text = value.textValue, shown = wording.shown(value, field),
+        text = value.textValue, shown = wording.shown(value, field), isNumber = value is FieldValue.Number,
     )
 
     private fun deadline(obligation: Obligation): SearchDeadline {
@@ -172,9 +180,13 @@ class BinderSearch(
         )
     }
 
+    // A locked section is never named in a firm's result: only the open ones it looks after.
     private fun firm(provider: Provider) = SearchFirm(
         id = provider.id, name = provider.name, trades = provider.trades, phone = provider.phone,
-        sectionNames = view.linked(Tables.providerAssets, provider.pk).mapNotNull { view.row(Tables.assets, it)?.name },
+        sectionNames = view.linked(Tables.providerAssets, provider.pk)
+            .mapNotNull { view.row(Tables.assets, it) }
+            .filterNot { isLocked(it) }
+            .map { it.name },
         address = provider.address, notes = provider.notes, updatedAt = provider.updatedAt,
     )
 
@@ -184,7 +196,8 @@ class BinderSearch(
             id = attachment.id, title = attachment.title, fileName = attachment.fileName, sectionName = section?.name,
             isArchived = attachment.isArchived, extractedText = attachment.extractedText,
             isIdentity = attachment.kindRaw == IDENTITY, documentDay = attachment.documentDay,
-            createdAt = attachment.createdAt, isLocked = isLocked(section), keptWhole = kept(section),
+            createdAt = attachment.createdAt, isLocked = locks.isLocked(attachment, documentSections),
+            keptWhole = kept(section),
         )
     }
 
