@@ -16,7 +16,8 @@
 #   4. Added lines: Romanian personal numbers (CNP) with a valid control digit.
 #      Made-up ones use county code 99 and pass.
 #   5. Added lines: bank card numbers, 13 to 19 digits that pass the card check
-#      digit. Only the published test numbers listed below pass.
+#      digit, in any script's digits and with their groups apart by spaces, a dash,
+#      a dot or a slash. Only the published test numbers listed below pass.
 #
 # It lists patterns only. Never write a finding, a trace or a real value here.
 # It never prints a matched value either: pull request logs are public.
@@ -71,9 +72,12 @@ home_path_pattern='(/Users/|/home/)[A-Za-z0-9._-]+/|file:/{3}'
 # A 13-digit number that could be a CNP; validated below.
 cnp_candidate='(^|[^0-9])[1-8][0-9]{12}([^0-9]|$)'
 
-# Thirteen digits or more, maybe with spaces or dashes between them, that could be a
-# card number; validated below.
-card_candidate='[0-9]([ -]?[0-9]){12}'
+# What may stand between a card number's groups: spaces, or one dash, dot or slash
+# with spaces around it or none.
+card_gap='( *[-./] *| +)'
+# Thirteen digits or more, maybe with gaps between them, that could be a card number;
+# validated below.
+card_candidate="[0-9](${card_gap}?[0-9]){12}"
 
 # The only card numbers that may appear: test numbers that card networks and payment
 # providers publish for testing, which belong to no one. Digits only, separated by a
@@ -145,6 +149,18 @@ if [[ $mode == range && -f $reviewed_file ]]; then
     fi
 fi
 
+# The added lines as the card rule reads them: a digit of any script as its ASCII
+# digit and any kind of space as a space, one line for each line, so a number written
+# in other digits or with other spaces is checked like one in ASCII; and a date
+# (a day, a month and a four-digit year, or the year first, apart by the same dot,
+# slash or dash) as a number of its own, which a card number never starts or ends in.
+card_text() {
+    cut -f3- <<<"$card_added" | perl -X -CS -MUnicode::UCD=num -pe '
+        s/[\t\p{Zs}]/ /g;
+        s/(?![0-9])(\p{Nd})/num($1)/ge;
+        s{(?<![0-9])(?:[0-9]{1,2}([./-])[0-9]{1,2}\1[0-9]{4}|[0-9]{4}([./-])[0-9]{1,2}\2[0-9]{1,2})(?![0-9])}{date}g'
+}
+
 check_lines() {
     # $1 pattern, $2 message
     local matches
@@ -193,12 +209,12 @@ if [[ -n $added ]]; then
     fi
 
     # Card numbers: 13 to 19 digits that pass the card check digit (Luhn), printed whole
-    # or in groups of three digits or more with a space or a dash between them, as cards
+    # or in groups of three digits or more with a gap between them (card_gap), as cards
     # print them. Digits inside a longer word or code (a hash, an IBAN, an identifier)
     # aren't a card. A made-up CNP (county code 99, as the rule above asks) isn't either.
-    card_lines=$(cut -f3- <<<"$card_added" | grep -nE -- "$card_candidate" || true)
+    card_lines=$(card_text | grep -nE -- "$card_candidate" || true)
     if [[ -n $card_lines ]]; then
-        flagged=$(awk -F: -v allowed_list="$allowed_card_numbers" '
+        flagged=$(awk -F: -v allowed_list="$allowed_card_numbers" -v gap="$card_gap" '
             function luhn(s,   i, sum, d, doubled) {
                 sum = 0; doubled = 0
                 for (i = length(s); i >= 1; i--) {
@@ -224,13 +240,13 @@ if [[ -n $added ]]; then
             }
             {
                 index_ = $1; text = substr($0, length($1) + 2); found = 0
-                while (!found && match(text, /[0-9]+([ -][0-9]+)*/)) {
+                while (!found && match(text, "[0-9]+(" gap "[0-9]+)*")) {
                     before = (RSTART > 1) ? substr(text, RSTART - 1, 1) : ""
                     after = substr(text, RSTART + RLENGTH, 1)
                     run = substr(text, RSTART, RLENGTH)
                     text = substr(text, RSTART + RLENGTH)
                     if (before ~ /[A-Za-z0-9_]/ || after ~ /[A-Za-z0-9_]/) continue
-                    groups = split(run, group, "[ -]")
+                    groups = split(run, group, gap)
                     # Every stretch of whole groups: one group by itself, or groups of three digits or more.
                     for (first = 1; first <= groups && !found; first++) {
                         digits = ""
