@@ -10,4 +10,9 @@
     <issue id="NewerVersionAvailable" severity="ignore" />
     <!-- A newer Android has been released than the one the app targets. -->
     <issue id="OldTargetApi" severity="ignore" />
+    <!-- Room's generated code (KSP's output) calls Room's own internal API, as it is meant to;
+         only that code is left out of this check, never ours. -->
+    <issue id="RestrictedApi">
+        <ignore path="**/build/generated/ksp/**" />
+    </issue>
 </lint>

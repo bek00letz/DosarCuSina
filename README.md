@@ -102,6 +102,7 @@ The Android app is being ported by [docs/ANDROID_PLAN.md](docs/ANDROID_PLAN.md).
 | :--- | :--- |
 | `core` | Values and engines, in pure Kotlin (no Android), tested on the JVM. |
 | `archive` | The `.dosar` reader and writer, in pure Kotlin. |
+| `store` | The household database: Room on its bundled SQLite, in the iOS models' shape, tested on the JVM. Room's schema of every version is committed in `android/store/schemas/`; a change to what is stored is a new version there and a migration. |
 | `app` | The Android app, `com.ar.dosarcusina.app`: Compose with Material 3. |
 
 You need a JDK (17 or later; GitHub uses 25) and the Android SDK, found through `ANDROID_HOME` or `sdk.dir` in `android/local.properties` (which git ignores). From `android/`, build the app (debug, and the release build unsigned) and run every module's tests:

@@ -28,5 +28,7 @@ rootProject.name = "DosarCuSina"
 include(":core")
 // Pure Kotlin: the .dosar reader and writer.
 include(":archive")
+// Pure Kotlin on the JVM: the household database (Room on bundled SQLite).
+include(":store")
 // The Android app.
 include(":app")

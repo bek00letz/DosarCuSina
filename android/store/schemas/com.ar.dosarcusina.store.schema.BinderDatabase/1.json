@@ -1,0 +1,1927 @@
+{
+  "formatVersion": 1,
+  "database": {
+    "version": 1,
+    "identityHash": "726c99b4cc4fbb2d7fefa1a86048fb48",
+    "entities": [
+      {
+        "tableName": "CategoryTemplate",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`pk` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `key` TEXT NOT NULL DEFAULT '', `copyID` TEXT, `name` TEXT NOT NULL DEFAULT '', `summary` TEXT, `symbol` TEXT NOT NULL DEFAULT 'square.grid.2x2', `tintRaw` TEXT NOT NULL DEFAULT 'gray', `heroStyleRaw` TEXT NOT NULL DEFAULT 'standard', `isBuiltIn` INTEGER NOT NULL DEFAULT 0, `builtInVersion` INTEGER NOT NULL DEFAULT 0, `homeOrder` INTEGER NOT NULL DEFAULT 0, `isOnHome` INTEGER NOT NULL DEFAULT 1, `boxGroupingRaw` TEXT, `lockedEverywhereAt` INTEGER, `sectionsData` TEXT, `blueprintsData` TEXT, `componentsData` TEXT, `pocketsRaw` TEXT NOT NULL DEFAULT '[\"upcoming\",\"documents\",\"history\",\"people\",\"money\",\"keyFacts\"]', `behaviorData` TEXT, `createdAt` INTEGER NOT NULL DEFAULT -62135596800000, `updatedAt` INTEGER NOT NULL DEFAULT -62135596800000)",
+        "fields": [
+          {
+            "fieldPath": "pk",
+            "columnName": "pk",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "key",
+            "columnName": "key",
+            "affinity": "TEXT",
+            "notNull": true,
+            "defaultValue": "''"
+          },
+          {
+            "fieldPath": "copyID",
+            "columnName": "copyID",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "name",
+            "columnName": "name",
+            "affinity": "TEXT",
+            "notNull": true,
+            "defaultValue": "''"
+          },
+          {
+            "fieldPath": "summary",
+            "columnName": "summary",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "symbol",
+            "columnName": "symbol",
+            "affinity": "TEXT",
+            "notNull": true,
+            "defaultValue": "'square.grid.2x2'"
+          },
+          {
+            "fieldPath": "tintRaw",
+            "columnName": "tintRaw",
+            "affinity": "TEXT",
+            "notNull": true,
+            "defaultValue": "'gray'"
+          },
+          {
+            "fieldPath": "heroStyleRaw",
+            "columnName": "heroStyleRaw",
+            "affinity": "TEXT",
+            "notNull": true,
+            "defaultValue": "'standard'"
+          },
+          {
+            "fieldPath": "isBuiltIn",
+            "columnName": "isBuiltIn",
+            "affinity": "INTEGER",
+            "notNull": true,
+            "defaultValue": "0"
+          },
+          {
+            "fieldPath": "builtInVersion",
+            "columnName": "builtInVersion",
+            "affinity": "INTEGER",
+            "notNull": true,
+            "defaultValue": "0"
+          },
+          {
+            "fieldPath": "homeOrder",
+            "columnName": "homeOrder",
+            "affinity": "INTEGER",
+            "notNull": true,
+            "defaultValue": "0"
+          },
+          {
+            "fieldPath": "isOnHome",
+            "columnName": "isOnHome",
+            "affinity": "INTEGER",
+            "notNull": true,
+            "defaultValue": "1"
+          },
+          {
+            "fieldPath": "boxGroupingRaw",
+            "columnName": "boxGroupingRaw",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "lockedEverywhereAt",
+            "columnName": "lockedEverywhereAt",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "sectionsData",
+            "columnName": "sectionsData",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "blueprintsData",
+            "columnName": "blueprintsData",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "componentsData",
+            "columnName": "componentsData",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "pocketsRaw",
+            "columnName": "pocketsRaw",
+            "affinity": "TEXT",
+            "notNull": true,
+            "defaultValue": "'[\"upcoming\",\"documents\",\"history\",\"people\",\"money\",\"keyFacts\"]'"
+          },
+          {
+            "fieldPath": "behaviorData",
+            "columnName": "behaviorData",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "createdAt",
+            "columnName": "createdAt",
+            "affinity": "INTEGER",
+            "notNull": true,
+            "defaultValue": "-62135596800000"
+          },
+          {
+            "fieldPath": "updatedAt",
+            "columnName": "updatedAt",
+            "affinity": "INTEGER",
+            "notNull": true,
+            "defaultValue": "-62135596800000"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "pk"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_CategoryTemplate_key",
+            "unique": false,
+            "columnNames": [
+              "key"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_CategoryTemplate_key` ON `${TABLE_NAME}` (`key`)"
+          }
+        ]
+      },
+      {
+        "tableName": "Asset",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`pk` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `id` TEXT NOT NULL, `copyID` TEXT, `name` TEXT NOT NULL DEFAULT '', `templateKey` TEXT NOT NULL DEFAULT '', `symbolOverride` TEXT, `tintOverrideRaw` TEXT, `notes` TEXT, `photoData` TEXT, `valuesData` TEXT, `customFactsData` TEXT, `isExample` INTEGER NOT NULL DEFAULT 0, `createdAt` INTEGER NOT NULL DEFAULT -62135596800000, `updatedAt` INTEGER NOT NULL DEFAULT -62135596800000, `parent` INTEGER, FOREIGN KEY(`parent`) REFERENCES `Asset`(`pk`) ON UPDATE NO ACTION ON DELETE SET NULL DEFERRABLE INITIALLY DEFERRED)",
+        "fields": [
+          {
+            "fieldPath": "pk",
+            "columnName": "pk",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "copyID",
+            "columnName": "copyID",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "name",
+            "columnName": "name",
+            "affinity": "TEXT",
+            "notNull": true,
+            "defaultValue": "''"
+          },
+          {
+            "fieldPath": "templateKey",
+            "columnName": "templateKey",
+            "affinity": "TEXT",
+            "notNull": true,
+            "defaultValue": "''"
+          },
+          {
+            "fieldPath": "symbolOverride",
+            "columnName": "symbolOverride",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "tintOverrideRaw",
+            "columnName": "tintOverrideRaw",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "notes",
+            "columnName": "notes",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "photoData",
+            "columnName": "photoData",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "valuesData",
+            "columnName": "valuesData",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "customFactsData",
+            "columnName": "customFactsData",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "isExample",
+            "columnName": "isExample",
+            "affinity": "INTEGER",
+            "notNull": true,
+            "defaultValue": "0"
+          },
+          {
+            "fieldPath": "createdAt",
+            "columnName": "createdAt",
+            "affinity": "INTEGER",
+            "notNull": true,
+            "defaultValue": "-62135596800000"
+          },
+          {
+            "fieldPath": "updatedAt",
+            "columnName": "updatedAt",
+            "affinity": "INTEGER",
+            "notNull": true,
+            "defaultValue": "-62135596800000"
+          },
+          {
+            "fieldPath": "parent",
+            "columnName": "parent",
+            "affinity": "INTEGER"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "pk"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_Asset_id",
+            "unique": false,
+            "columnNames": [
+              "id"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_Asset_id` ON `${TABLE_NAME}` (`id`)"
+          },
+          {
+            "name": "index_Asset_parent",
+            "unique": false,
+            "columnNames": [
+              "parent"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_Asset_parent` ON `${TABLE_NAME}` (`parent`)"
+          },
+          {
+            "name": "index_Asset_templateKey",
+            "unique": false,
+            "columnNames": [
+              "templateKey"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_Asset_templateKey` ON `${TABLE_NAME}` (`templateKey`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "Asset",
+            "onDelete": "SET NULL",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "parent"
+            ],
+            "referencedColumns": [
+              "pk"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "Obligation",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`pk` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `id` TEXT NOT NULL, `copyID` TEXT, `title` TEXT NOT NULL DEFAULT '', `notes` TEXT, `blueprintKey` TEXT, `kindRaw` TEXT NOT NULL DEFAULT 'routine', `dueDayISO` TEXT NOT NULL DEFAULT '', `dueMetric` REAL, `reminderLeadDays` TEXT NOT NULL DEFAULT '[30,7,0]', `consequenceRaw` TEXT NOT NULL DEFAULT 'comfort', `graceDays` INTEGER NOT NULL DEFAULT 0, `followUpAfterLapse` INTEGER NOT NULL DEFAULT 0, `travelMarginDays` INTEGER NOT NULL DEFAULT 0, `remindersCustomized` INTEGER NOT NULL DEFAULT 0, `reminderMinuteOfDay` INTEGER, `recurrenceData` TEXT, `estimatedCostAmount` TEXT, `estimatedCostCurrency` TEXT, `provider` TEXT, `reference` TEXT, `statusRaw` TEXT NOT NULL DEFAULT 'active', `snoozedUntilISO` TEXT, `isExample` INTEGER NOT NULL DEFAULT 0, `createdAt` INTEGER NOT NULL DEFAULT -62135596800000, `updatedAt` INTEGER NOT NULL DEFAULT -62135596800000, `cycleKnownAt` INTEGER, `remindersData` TEXT, `asset` INTEGER, `assetID` TEXT, FOREIGN KEY(`asset`) REFERENCES `Asset`(`pk`) ON UPDATE NO ACTION ON DELETE SET NULL DEFERRABLE INITIALLY DEFERRED)",
+        "fields": [
+          {
+            "fieldPath": "pk",
+            "columnName": "pk",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "copyID",
+            "columnName": "copyID",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "title",
+            "columnName": "title",
+            "affinity": "TEXT",
+            "notNull": true,
+            "defaultValue": "''"
+          },
+          {
+            "fieldPath": "notes",
+            "columnName": "notes",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "blueprintKey",
+            "columnName": "blueprintKey",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "kindRaw",
+            "columnName": "kindRaw",
+            "affinity": "TEXT",
+            "notNull": true,
+            "defaultValue": "'routine'"
+          },
+          {
+            "fieldPath": "dueDayISO",
+            "columnName": "dueDayISO",
+            "affinity": "TEXT",
+            "notNull": true,
+            "defaultValue": "''"
+          },
+          {
+            "fieldPath": "dueMetric",
+            "columnName": "dueMetric",
+            "affinity": "REAL"
+          },
+          {
+            "fieldPath": "reminderLeadDays",
+            "columnName": "reminderLeadDays",
+            "affinity": "TEXT",
+            "notNull": true,
+            "defaultValue": "'[30,7,0]'"
+          },
+          {
+            "fieldPath": "consequenceRaw",
+            "columnName": "consequenceRaw",
+            "affinity": "TEXT",
+            "notNull": true,
+            "defaultValue": "'comfort'"
+          },
+          {
+            "fieldPath": "graceDays",
+            "columnName": "graceDays",
+            "affinity": "INTEGER",
+            "notNull": true,
+            "defaultValue": "0"
+          },
+          {
+            "fieldPath": "followUpAfterLapse",
+            "columnName": "followUpAfterLapse",
+            "affinity": "INTEGER",
+            "notNull": true,
+            "defaultValue": "0"
+          },
+          {
+            "fieldPath": "travelMarginDays",
+            "columnName": "travelMarginDays",
+            "affinity": "INTEGER",
+            "notNull": true,
+            "defaultValue": "0"
+          },
+          {
+            "fieldPath": "remindersCustomized",
+            "columnName": "remindersCustomized",
+            "affinity": "INTEGER",
+            "notNull": true,
+            "defaultValue": "0"
+          },
+          {
+            "fieldPath": "reminderMinuteOfDay",
+            "columnName": "reminderMinuteOfDay",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "recurrenceData",
+            "columnName": "recurrenceData",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "estimatedCostAmount",
+            "columnName": "estimatedCostAmount",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "estimatedCostCurrency",
+            "columnName": "estimatedCostCurrency",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "provider",
+            "columnName": "provider",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "reference",
+            "columnName": "reference",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "statusRaw",
+            "columnName": "statusRaw",
+            "affinity": "TEXT",
+            "notNull": true,
+            "defaultValue": "'active'"
+          },
+          {
+            "fieldPath": "snoozedUntilISO",
+            "columnName": "snoozedUntilISO",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "isExample",
+            "columnName": "isExample",
+            "affinity": "INTEGER",
+            "notNull": true,
+            "defaultValue": "0"
+          },
+          {
+            "fieldPath": "createdAt",
+            "columnName": "createdAt",
+            "affinity": "INTEGER",
+            "notNull": true,
+            "defaultValue": "-62135596800000"
+          },
+          {
+            "fieldPath": "updatedAt",
+            "columnName": "updatedAt",
+            "affinity": "INTEGER",
+            "notNull": true,
+            "defaultValue": "-62135596800000"
+          },
+          {
+            "fieldPath": "cycleKnownAt",
+            "columnName": "cycleKnownAt",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "remindersData",
+            "columnName": "remindersData",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "asset",
+            "columnName": "asset",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "assetID",
+            "columnName": "assetID",
+            "affinity": "TEXT"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "pk"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_Obligation_id",
+            "unique": false,
+            "columnNames": [
+              "id"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_Obligation_id` ON `${TABLE_NAME}` (`id`)"
+          },
+          {
+            "name": "index_Obligation_asset",
+            "unique": false,
+            "columnNames": [
+              "asset"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_Obligation_asset` ON `${TABLE_NAME}` (`asset`)"
+          },
+          {
+            "name": "index_Obligation_assetID",
+            "unique": false,
+            "columnNames": [
+              "assetID"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_Obligation_assetID` ON `${TABLE_NAME}` (`assetID`)"
+          },
+          {
+            "name": "index_Obligation_dueDayISO",
+            "unique": false,
+            "columnNames": [
+              "dueDayISO"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_Obligation_dueDayISO` ON `${TABLE_NAME}` (`dueDayISO`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "Asset",
+            "onDelete": "SET NULL",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "asset"
+            ],
+            "referencedColumns": [
+              "pk"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "HistoryEntry",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`pk` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `id` TEXT NOT NULL, `copyID` TEXT, `kindRaw` TEXT NOT NULL DEFAULT 'note', `title` TEXT NOT NULL DEFAULT '', `occurredAt` INTEGER NOT NULL DEFAULT -62135596800000, `metricReading` REAL, `totalCostAmount` TEXT, `totalCostCurrency` TEXT, `note` TEXT, `reference` TEXT, `rating` INTEGER, `isExample` INTEGER NOT NULL DEFAULT 0, `updatedAt` INTEGER NOT NULL DEFAULT -62135596800000, `cycleDueDayISO` TEXT, `nextDueDayISO` TEXT, `previousStatusRaw` TEXT, `previousDueMetric` REAL, `asset` INTEGER, `assetID` TEXT, `obligation` INTEGER, FOREIGN KEY(`asset`) REFERENCES `Asset`(`pk`) ON UPDATE NO ACTION ON DELETE SET NULL DEFERRABLE INITIALLY DEFERRED, FOREIGN KEY(`obligation`) REFERENCES `Obligation`(`pk`) ON UPDATE NO ACTION ON DELETE SET NULL DEFERRABLE INITIALLY DEFERRED)",
+        "fields": [
+          {
+            "fieldPath": "pk",
+            "columnName": "pk",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "copyID",
+            "columnName": "copyID",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "kindRaw",
+            "columnName": "kindRaw",
+            "affinity": "TEXT",
+            "notNull": true,
+            "defaultValue": "'note'"
+          },
+          {
+            "fieldPath": "title",
+            "columnName": "title",
+            "affinity": "TEXT",
+            "notNull": true,
+            "defaultValue": "''"
+          },
+          {
+            "fieldPath": "occurredAt",
+            "columnName": "occurredAt",
+            "affinity": "INTEGER",
+            "notNull": true,
+            "defaultValue": "-62135596800000"
+          },
+          {
+            "fieldPath": "metricReading",
+            "columnName": "metricReading",
+            "affinity": "REAL"
+          },
+          {
+            "fieldPath": "totalCostAmount",
+            "columnName": "totalCostAmount",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "totalCostCurrency",
+            "columnName": "totalCostCurrency",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "note",
+            "columnName": "note",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "reference",
+            "columnName": "reference",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "rating",
+            "columnName": "rating",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "isExample",
+            "columnName": "isExample",
+            "affinity": "INTEGER",
+            "notNull": true,
+            "defaultValue": "0"
+          },
+          {
+            "fieldPath": "updatedAt",
+            "columnName": "updatedAt",
+            "affinity": "INTEGER",
+            "notNull": true,
+            "defaultValue": "-62135596800000"
+          },
+          {
+            "fieldPath": "cycleDueDayISO",
+            "columnName": "cycleDueDayISO",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "nextDueDayISO",
+            "columnName": "nextDueDayISO",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "previousStatusRaw",
+            "columnName": "previousStatusRaw",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "previousDueMetric",
+            "columnName": "previousDueMetric",
+            "affinity": "REAL"
+          },
+          {
+            "fieldPath": "asset",
+            "columnName": "asset",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "assetID",
+            "columnName": "assetID",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "obligation",
+            "columnName": "obligation",
+            "affinity": "INTEGER"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "pk"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_HistoryEntry_id",
+            "unique": false,
+            "columnNames": [
+              "id"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_HistoryEntry_id` ON `${TABLE_NAME}` (`id`)"
+          },
+          {
+            "name": "index_HistoryEntry_asset",
+            "unique": false,
+            "columnNames": [
+              "asset"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_HistoryEntry_asset` ON `${TABLE_NAME}` (`asset`)"
+          },
+          {
+            "name": "index_HistoryEntry_assetID",
+            "unique": false,
+            "columnNames": [
+              "assetID"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_HistoryEntry_assetID` ON `${TABLE_NAME}` (`assetID`)"
+          },
+          {
+            "name": "index_HistoryEntry_obligation",
+            "unique": false,
+            "columnNames": [
+              "obligation"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_HistoryEntry_obligation` ON `${TABLE_NAME}` (`obligation`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "Asset",
+            "onDelete": "SET NULL",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "asset"
+            ],
+            "referencedColumns": [
+              "pk"
+            ]
+          },
+          {
+            "table": "Obligation",
+            "onDelete": "SET NULL",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "obligation"
+            ],
+            "referencedColumns": [
+              "pk"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "ServiceItem",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`pk` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `id` TEXT NOT NULL, `copyID` TEXT, `name` TEXT NOT NULL DEFAULT '', `componentKey` TEXT, `group` TEXT, `partBrandOrCode` TEXT, `partSerialNumber` TEXT, `costAmount` TEXT, `laborCostAmount` TEXT, `partsCostAmount` TEXT, `currency` TEXT NOT NULL DEFAULT 'RON', `supplier` INTEGER, `batchOrTicket` TEXT, `locationDetail` TEXT, `daysInService` INTEGER, `warrantyMonths` INTEGER, `notes` TEXT, `isExample` INTEGER NOT NULL DEFAULT 0, `updatedAt` INTEGER NOT NULL DEFAULT -62135596800000, `entry` INTEGER, `entryID` TEXT, FOREIGN KEY(`supplier`) REFERENCES `Provider`(`pk`) ON UPDATE NO ACTION ON DELETE SET NULL DEFERRABLE INITIALLY DEFERRED, FOREIGN KEY(`entry`) REFERENCES `HistoryEntry`(`pk`) ON UPDATE NO ACTION ON DELETE SET NULL DEFERRABLE INITIALLY DEFERRED)",
+        "fields": [
+          {
+            "fieldPath": "pk",
+            "columnName": "pk",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "copyID",
+            "columnName": "copyID",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "name",
+            "columnName": "name",
+            "affinity": "TEXT",
+            "notNull": true,
+            "defaultValue": "''"
+          },
+          {
+            "fieldPath": "componentKey",
+            "columnName": "componentKey",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "group",
+            "columnName": "group",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "partBrandOrCode",
+            "columnName": "partBrandOrCode",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "partSerialNumber",
+            "columnName": "partSerialNumber",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "costAmount",
+            "columnName": "costAmount",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "laborCostAmount",
+            "columnName": "laborCostAmount",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "partsCostAmount",
+            "columnName": "partsCostAmount",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "currency",
+            "columnName": "currency",
+            "affinity": "TEXT",
+            "notNull": true,
+            "defaultValue": "'RON'"
+          },
+          {
+            "fieldPath": "supplier",
+            "columnName": "supplier",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "batchOrTicket",
+            "columnName": "batchOrTicket",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "locationDetail",
+            "columnName": "locationDetail",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "daysInService",
+            "columnName": "daysInService",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "warrantyMonths",
+            "columnName": "warrantyMonths",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "notes",
+            "columnName": "notes",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "isExample",
+            "columnName": "isExample",
+            "affinity": "INTEGER",
+            "notNull": true,
+            "defaultValue": "0"
+          },
+          {
+            "fieldPath": "updatedAt",
+            "columnName": "updatedAt",
+            "affinity": "INTEGER",
+            "notNull": true,
+            "defaultValue": "-62135596800000"
+          },
+          {
+            "fieldPath": "entry",
+            "columnName": "entry",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "entryID",
+            "columnName": "entryID",
+            "affinity": "TEXT"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "pk"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_ServiceItem_id",
+            "unique": false,
+            "columnNames": [
+              "id"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_ServiceItem_id` ON `${TABLE_NAME}` (`id`)"
+          },
+          {
+            "name": "index_ServiceItem_supplier",
+            "unique": false,
+            "columnNames": [
+              "supplier"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_ServiceItem_supplier` ON `${TABLE_NAME}` (`supplier`)"
+          },
+          {
+            "name": "index_ServiceItem_entry",
+            "unique": false,
+            "columnNames": [
+              "entry"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_ServiceItem_entry` ON `${TABLE_NAME}` (`entry`)"
+          },
+          {
+            "name": "index_ServiceItem_entryID",
+            "unique": false,
+            "columnNames": [
+              "entryID"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_ServiceItem_entryID` ON `${TABLE_NAME}` (`entryID`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "Provider",
+            "onDelete": "SET NULL",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "supplier"
+            ],
+            "referencedColumns": [
+              "pk"
+            ]
+          },
+          {
+            "table": "HistoryEntry",
+            "onDelete": "SET NULL",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "entry"
+            ],
+            "referencedColumns": [
+              "pk"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "MeasurementLog",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`pk` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `id` TEXT NOT NULL, `copyID` TEXT, `kindRaw` TEXT NOT NULL DEFAULT 'custom', `name` TEXT NOT NULL DEFAULT '', `value` REAL NOT NULL DEFAULT 0, `secondaryValue` REAL, `unit` TEXT NOT NULL DEFAULT '', `recordedAt` INTEGER NOT NULL DEFAULT -62135596800000, `unitPriceAmount` TEXT, `unitPriceCurrency` TEXT, `isSelfRead` INTEGER NOT NULL DEFAULT 1, `referenceMin` REAL, `referenceMax` REAL, `source` TEXT, `notes` TEXT, `isExample` INTEGER NOT NULL DEFAULT 0, `updatedAt` INTEGER NOT NULL DEFAULT -62135596800000, `startsCounter` INTEGER NOT NULL DEFAULT 0, `basisRaw` TEXT, `asset` INTEGER, `assetID` TEXT, FOREIGN KEY(`asset`) REFERENCES `Asset`(`pk`) ON UPDATE NO ACTION ON DELETE SET NULL DEFERRABLE INITIALLY DEFERRED)",
+        "fields": [
+          {
+            "fieldPath": "pk",
+            "columnName": "pk",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "copyID",
+            "columnName": "copyID",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "kindRaw",
+            "columnName": "kindRaw",
+            "affinity": "TEXT",
+            "notNull": true,
+            "defaultValue": "'custom'"
+          },
+          {
+            "fieldPath": "name",
+            "columnName": "name",
+            "affinity": "TEXT",
+            "notNull": true,
+            "defaultValue": "''"
+          },
+          {
+            "fieldPath": "value",
+            "columnName": "value",
+            "affinity": "REAL",
+            "notNull": true,
+            "defaultValue": "0"
+          },
+          {
+            "fieldPath": "secondaryValue",
+            "columnName": "secondaryValue",
+            "affinity": "REAL"
+          },
+          {
+            "fieldPath": "unit",
+            "columnName": "unit",
+            "affinity": "TEXT",
+            "notNull": true,
+            "defaultValue": "''"
+          },
+          {
+            "fieldPath": "recordedAt",
+            "columnName": "recordedAt",
+            "affinity": "INTEGER",
+            "notNull": true,
+            "defaultValue": "-62135596800000"
+          },
+          {
+            "fieldPath": "unitPriceAmount",
+            "columnName": "unitPriceAmount",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "unitPriceCurrency",
+            "columnName": "unitPriceCurrency",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "isSelfRead",
+            "columnName": "isSelfRead",
+            "affinity": "INTEGER",
+            "notNull": true,
+            "defaultValue": "1"
+          },
+          {
+            "fieldPath": "referenceMin",
+            "columnName": "referenceMin",
+            "affinity": "REAL"
+          },
+          {
+            "fieldPath": "referenceMax",
+            "columnName": "referenceMax",
+            "affinity": "REAL"
+          },
+          {
+            "fieldPath": "source",
+            "columnName": "source",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "notes",
+            "columnName": "notes",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "isExample",
+            "columnName": "isExample",
+            "affinity": "INTEGER",
+            "notNull": true,
+            "defaultValue": "0"
+          },
+          {
+            "fieldPath": "updatedAt",
+            "columnName": "updatedAt",
+            "affinity": "INTEGER",
+            "notNull": true,
+            "defaultValue": "-62135596800000"
+          },
+          {
+            "fieldPath": "startsCounter",
+            "columnName": "startsCounter",
+            "affinity": "INTEGER",
+            "notNull": true,
+            "defaultValue": "0"
+          },
+          {
+            "fieldPath": "basisRaw",
+            "columnName": "basisRaw",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "asset",
+            "columnName": "asset",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "assetID",
+            "columnName": "assetID",
+            "affinity": "TEXT"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "pk"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_MeasurementLog_id",
+            "unique": false,
+            "columnNames": [
+              "id"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_MeasurementLog_id` ON `${TABLE_NAME}` (`id`)"
+          },
+          {
+            "name": "index_MeasurementLog_asset",
+            "unique": false,
+            "columnNames": [
+              "asset"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_MeasurementLog_asset` ON `${TABLE_NAME}` (`asset`)"
+          },
+          {
+            "name": "index_MeasurementLog_assetID",
+            "unique": false,
+            "columnNames": [
+              "assetID"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_MeasurementLog_assetID` ON `${TABLE_NAME}` (`assetID`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "Asset",
+            "onDelete": "SET NULL",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "asset"
+            ],
+            "referencedColumns": [
+              "pk"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "Attachment",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`pk` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `id` TEXT NOT NULL, `copyID` TEXT, `title` TEXT, `fileName` TEXT NOT NULL DEFAULT '', `kindRaw` TEXT NOT NULL DEFAULT 'other', `contentType` TEXT NOT NULL DEFAULT 'public.data', `fileData` TEXT, `thumbnailData` TEXT, `byteCount` INTEGER NOT NULL DEFAULT 0, `sha256` TEXT, `extractedText` TEXT, `documentDayISO` TEXT, `validUntilISO` TEXT, `documentID` TEXT, `isArchived` INTEGER NOT NULL DEFAULT 0, `compactedAt` INTEGER, `framingData` TEXT, `createdAt` INTEGER NOT NULL DEFAULT -62135596800000, `isExample` INTEGER NOT NULL DEFAULT 0, `updatedAt` INTEGER NOT NULL DEFAULT -62135596800000, `supersededBy` INTEGER, `asset` INTEGER, `assetID` TEXT, `obligation` INTEGER, `historyEntry` INTEGER, `serviceItem` INTEGER, `measurement` INTEGER, `provider` INTEGER, FOREIGN KEY(`supersededBy`) REFERENCES `Attachment`(`pk`) ON UPDATE NO ACTION ON DELETE SET NULL DEFERRABLE INITIALLY DEFERRED, FOREIGN KEY(`asset`) REFERENCES `Asset`(`pk`) ON UPDATE NO ACTION ON DELETE SET NULL DEFERRABLE INITIALLY DEFERRED, FOREIGN KEY(`obligation`) REFERENCES `Obligation`(`pk`) ON UPDATE NO ACTION ON DELETE SET NULL DEFERRABLE INITIALLY DEFERRED, FOREIGN KEY(`historyEntry`) REFERENCES `HistoryEntry`(`pk`) ON UPDATE NO ACTION ON DELETE SET NULL DEFERRABLE INITIALLY DEFERRED, FOREIGN KEY(`serviceItem`) REFERENCES `ServiceItem`(`pk`) ON UPDATE NO ACTION ON DELETE SET NULL DEFERRABLE INITIALLY DEFERRED, FOREIGN KEY(`measurement`) REFERENCES `MeasurementLog`(`pk`) ON UPDATE NO ACTION ON DELETE SET NULL DEFERRABLE INITIALLY DEFERRED, FOREIGN KEY(`provider`) REFERENCES `Provider`(`pk`) ON UPDATE NO ACTION ON DELETE SET NULL DEFERRABLE INITIALLY DEFERRED)",
+        "fields": [
+          {
+            "fieldPath": "pk",
+            "columnName": "pk",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "copyID",
+            "columnName": "copyID",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "title",
+            "columnName": "title",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "fileName",
+            "columnName": "fileName",
+            "affinity": "TEXT",
+            "notNull": true,
+            "defaultValue": "''"
+          },
+          {
+            "fieldPath": "kindRaw",
+            "columnName": "kindRaw",
+            "affinity": "TEXT",
+            "notNull": true,
+            "defaultValue": "'other'"
+          },
+          {
+            "fieldPath": "contentType",
+            "columnName": "contentType",
+            "affinity": "TEXT",
+            "notNull": true,
+            "defaultValue": "'public.data'"
+          },
+          {
+            "fieldPath": "fileData",
+            "columnName": "fileData",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "thumbnailData",
+            "columnName": "thumbnailData",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "byteCount",
+            "columnName": "byteCount",
+            "affinity": "INTEGER",
+            "notNull": true,
+            "defaultValue": "0"
+          },
+          {
+            "fieldPath": "sha256",
+            "columnName": "sha256",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "extractedText",
+            "columnName": "extractedText",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "documentDayISO",
+            "columnName": "documentDayISO",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "validUntilISO",
+            "columnName": "validUntilISO",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "documentID",
+            "columnName": "documentID",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "isArchived",
+            "columnName": "isArchived",
+            "affinity": "INTEGER",
+            "notNull": true,
+            "defaultValue": "0"
+          },
+          {
+            "fieldPath": "compactedAt",
+            "columnName": "compactedAt",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "framingData",
+            "columnName": "framingData",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "createdAt",
+            "columnName": "createdAt",
+            "affinity": "INTEGER",
+            "notNull": true,
+            "defaultValue": "-62135596800000"
+          },
+          {
+            "fieldPath": "isExample",
+            "columnName": "isExample",
+            "affinity": "INTEGER",
+            "notNull": true,
+            "defaultValue": "0"
+          },
+          {
+            "fieldPath": "updatedAt",
+            "columnName": "updatedAt",
+            "affinity": "INTEGER",
+            "notNull": true,
+            "defaultValue": "-62135596800000"
+          },
+          {
+            "fieldPath": "supersededBy",
+            "columnName": "supersededBy",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "asset",
+            "columnName": "asset",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "assetID",
+            "columnName": "assetID",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "obligation",
+            "columnName": "obligation",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "historyEntry",
+            "columnName": "historyEntry",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "serviceItem",
+            "columnName": "serviceItem",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "measurement",
+            "columnName": "measurement",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "provider",
+            "columnName": "provider",
+            "affinity": "INTEGER"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "pk"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_Attachment_id",
+            "unique": false,
+            "columnNames": [
+              "id"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_Attachment_id` ON `${TABLE_NAME}` (`id`)"
+          },
+          {
+            "name": "index_Attachment_supersededBy",
+            "unique": false,
+            "columnNames": [
+              "supersededBy"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_Attachment_supersededBy` ON `${TABLE_NAME}` (`supersededBy`)"
+          },
+          {
+            "name": "index_Attachment_asset",
+            "unique": false,
+            "columnNames": [
+              "asset"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_Attachment_asset` ON `${TABLE_NAME}` (`asset`)"
+          },
+          {
+            "name": "index_Attachment_assetID",
+            "unique": false,
+            "columnNames": [
+              "assetID"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_Attachment_assetID` ON `${TABLE_NAME}` (`assetID`)"
+          },
+          {
+            "name": "index_Attachment_obligation",
+            "unique": false,
+            "columnNames": [
+              "obligation"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_Attachment_obligation` ON `${TABLE_NAME}` (`obligation`)"
+          },
+          {
+            "name": "index_Attachment_historyEntry",
+            "unique": false,
+            "columnNames": [
+              "historyEntry"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_Attachment_historyEntry` ON `${TABLE_NAME}` (`historyEntry`)"
+          },
+          {
+            "name": "index_Attachment_serviceItem",
+            "unique": false,
+            "columnNames": [
+              "serviceItem"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_Attachment_serviceItem` ON `${TABLE_NAME}` (`serviceItem`)"
+          },
+          {
+            "name": "index_Attachment_measurement",
+            "unique": false,
+            "columnNames": [
+              "measurement"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_Attachment_measurement` ON `${TABLE_NAME}` (`measurement`)"
+          },
+          {
+            "name": "index_Attachment_provider",
+            "unique": false,
+            "columnNames": [
+              "provider"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_Attachment_provider` ON `${TABLE_NAME}` (`provider`)"
+          },
+          {
+            "name": "index_Attachment_sha256",
+            "unique": false,
+            "columnNames": [
+              "sha256"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_Attachment_sha256` ON `${TABLE_NAME}` (`sha256`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "Attachment",
+            "onDelete": "SET NULL",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "supersededBy"
+            ],
+            "referencedColumns": [
+              "pk"
+            ]
+          },
+          {
+            "table": "Asset",
+            "onDelete": "SET NULL",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "asset"
+            ],
+            "referencedColumns": [
+              "pk"
+            ]
+          },
+          {
+            "table": "Obligation",
+            "onDelete": "SET NULL",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "obligation"
+            ],
+            "referencedColumns": [
+              "pk"
+            ]
+          },
+          {
+            "table": "HistoryEntry",
+            "onDelete": "SET NULL",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "historyEntry"
+            ],
+            "referencedColumns": [
+              "pk"
+            ]
+          },
+          {
+            "table": "ServiceItem",
+            "onDelete": "SET NULL",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "serviceItem"
+            ],
+            "referencedColumns": [
+              "pk"
+            ]
+          },
+          {
+            "table": "MeasurementLog",
+            "onDelete": "SET NULL",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "measurement"
+            ],
+            "referencedColumns": [
+              "pk"
+            ]
+          },
+          {
+            "table": "Provider",
+            "onDelete": "SET NULL",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "provider"
+            ],
+            "referencedColumns": [
+              "pk"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "AttachmentPage",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`pk` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `id` TEXT NOT NULL, `copyID` TEXT, `index` INTEGER NOT NULL DEFAULT 0, `imageData` TEXT, `attachment` INTEGER, `attachmentID` TEXT, FOREIGN KEY(`attachment`) REFERENCES `Attachment`(`pk`) ON UPDATE NO ACTION ON DELETE SET NULL DEFERRABLE INITIALLY DEFERRED)",
+        "fields": [
+          {
+            "fieldPath": "pk",
+            "columnName": "pk",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "copyID",
+            "columnName": "copyID",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "index",
+            "columnName": "index",
+            "affinity": "INTEGER",
+            "notNull": true,
+            "defaultValue": "0"
+          },
+          {
+            "fieldPath": "imageData",
+            "columnName": "imageData",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "attachment",
+            "columnName": "attachment",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "attachmentID",
+            "columnName": "attachmentID",
+            "affinity": "TEXT"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "pk"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_AttachmentPage_id",
+            "unique": false,
+            "columnNames": [
+              "id"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_AttachmentPage_id` ON `${TABLE_NAME}` (`id`)"
+          },
+          {
+            "name": "index_AttachmentPage_attachment",
+            "unique": false,
+            "columnNames": [
+              "attachment"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_AttachmentPage_attachment` ON `${TABLE_NAME}` (`attachment`)"
+          },
+          {
+            "name": "index_AttachmentPage_attachmentID",
+            "unique": false,
+            "columnNames": [
+              "attachmentID"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_AttachmentPage_attachmentID` ON `${TABLE_NAME}` (`attachmentID`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "Attachment",
+            "onDelete": "SET NULL",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "attachment"
+            ],
+            "referencedColumns": [
+              "pk"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "Provider",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`pk` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `id` TEXT NOT NULL, `copyID` TEXT, `name` TEXT NOT NULL DEFAULT '', `trades` TEXT NOT NULL DEFAULT '[]', `phone` TEXT, `email` TEXT, `address` TEXT, `notes` TEXT, `manualRating` INTEGER, `wouldCallAgain` INTEGER, `contactIdentifier` TEXT, `taxID` TEXT, `isExample` INTEGER NOT NULL DEFAULT 0, `createdAt` INTEGER NOT NULL DEFAULT -62135596800000, `updatedAt` INTEGER NOT NULL DEFAULT -62135596800000)",
+        "fields": [
+          {
+            "fieldPath": "pk",
+            "columnName": "pk",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "copyID",
+            "columnName": "copyID",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "name",
+            "columnName": "name",
+            "affinity": "TEXT",
+            "notNull": true,
+            "defaultValue": "''"
+          },
+          {
+            "fieldPath": "trades",
+            "columnName": "trades",
+            "affinity": "TEXT",
+            "notNull": true,
+            "defaultValue": "'[]'"
+          },
+          {
+            "fieldPath": "phone",
+            "columnName": "phone",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "email",
+            "columnName": "email",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "address",
+            "columnName": "address",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "notes",
+            "columnName": "notes",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "manualRating",
+            "columnName": "manualRating",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "wouldCallAgain",
+            "columnName": "wouldCallAgain",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "contactIdentifier",
+            "columnName": "contactIdentifier",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "taxID",
+            "columnName": "taxID",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "isExample",
+            "columnName": "isExample",
+            "affinity": "INTEGER",
+            "notNull": true,
+            "defaultValue": "0"
+          },
+          {
+            "fieldPath": "createdAt",
+            "columnName": "createdAt",
+            "affinity": "INTEGER",
+            "notNull": true,
+            "defaultValue": "-62135596800000"
+          },
+          {
+            "fieldPath": "updatedAt",
+            "columnName": "updatedAt",
+            "affinity": "INTEGER",
+            "notNull": true,
+            "defaultValue": "-62135596800000"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "pk"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_Provider_id",
+            "unique": false,
+            "columnNames": [
+              "id"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_Provider_id` ON `${TABLE_NAME}` (`id`)"
+          },
+          {
+            "name": "index_Provider_taxID",
+            "unique": false,
+            "columnNames": [
+              "taxID"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_Provider_taxID` ON `${TABLE_NAME}` (`taxID`)"
+          }
+        ]
+      },
+      {
+        "tableName": "IssuerLesson",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`pk` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `id` TEXT NOT NULL, `copyID` TEXT, `issuerKey` TEXT NOT NULL DEFAULT '', `issuerName` TEXT NOT NULL DEFAULT '', `kindRaw` TEXT NOT NULL DEFAULT '', `fieldKey` TEXT NOT NULL DEFAULT '', `label` TEXT NOT NULL DEFAULT '', `categoryKey` TEXT, `createdAt` INTEGER NOT NULL DEFAULT -62135596800000, `updatedAt` INTEGER NOT NULL DEFAULT -62135596800000)",
+        "fields": [
+          {
+            "fieldPath": "pk",
+            "columnName": "pk",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "copyID",
+            "columnName": "copyID",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "issuerKey",
+            "columnName": "issuerKey",
+            "affinity": "TEXT",
+            "notNull": true,
+            "defaultValue": "''"
+          },
+          {
+            "fieldPath": "issuerName",
+            "columnName": "issuerName",
+            "affinity": "TEXT",
+            "notNull": true,
+            "defaultValue": "''"
+          },
+          {
+            "fieldPath": "kindRaw",
+            "columnName": "kindRaw",
+            "affinity": "TEXT",
+            "notNull": true,
+            "defaultValue": "''"
+          },
+          {
+            "fieldPath": "fieldKey",
+            "columnName": "fieldKey",
+            "affinity": "TEXT",
+            "notNull": true,
+            "defaultValue": "''"
+          },
+          {
+            "fieldPath": "label",
+            "columnName": "label",
+            "affinity": "TEXT",
+            "notNull": true,
+            "defaultValue": "''"
+          },
+          {
+            "fieldPath": "categoryKey",
+            "columnName": "categoryKey",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "createdAt",
+            "columnName": "createdAt",
+            "affinity": "INTEGER",
+            "notNull": true,
+            "defaultValue": "-62135596800000"
+          },
+          {
+            "fieldPath": "updatedAt",
+            "columnName": "updatedAt",
+            "affinity": "INTEGER",
+            "notNull": true,
+            "defaultValue": "-62135596800000"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "pk"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_IssuerLesson_id",
+            "unique": false,
+            "columnNames": [
+              "id"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_IssuerLesson_id` ON `${TABLE_NAME}` (`id`)"
+          },
+          {
+            "name": "index_IssuerLesson_issuerKey",
+            "unique": false,
+            "columnNames": [
+              "issuerKey"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_IssuerLesson_issuerKey` ON `${TABLE_NAME}` (`issuerKey`)"
+          }
+        ]
+      },
+      {
+        "tableName": "Provider_assets",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`pk` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `provider` INTEGER, `asset` INTEGER, FOREIGN KEY(`provider`) REFERENCES `Provider`(`pk`) ON UPDATE NO ACTION ON DELETE NO ACTION DEFERRABLE INITIALLY DEFERRED, FOREIGN KEY(`asset`) REFERENCES `Asset`(`pk`) ON UPDATE NO ACTION ON DELETE NO ACTION DEFERRABLE INITIALLY DEFERRED)",
+        "fields": [
+          {
+            "fieldPath": "pk",
+            "columnName": "pk",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "provider",
+            "columnName": "provider",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "asset",
+            "columnName": "asset",
+            "affinity": "INTEGER"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "pk"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_Provider_assets_provider",
+            "unique": false,
+            "columnNames": [
+              "provider"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_Provider_assets_provider` ON `${TABLE_NAME}` (`provider`)"
+          },
+          {
+            "name": "index_Provider_assets_asset",
+            "unique": false,
+            "columnNames": [
+              "asset"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_Provider_assets_asset` ON `${TABLE_NAME}` (`asset`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "Provider",
+            "onDelete": "NO ACTION",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "provider"
+            ],
+            "referencedColumns": [
+              "pk"
+            ]
+          },
+          {
+            "table": "Asset",
+            "onDelete": "NO ACTION",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "asset"
+            ],
+            "referencedColumns": [
+              "pk"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "HistoryEntry_providers",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`pk` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `historyEntry` INTEGER, `provider` INTEGER, FOREIGN KEY(`historyEntry`) REFERENCES `HistoryEntry`(`pk`) ON UPDATE NO ACTION ON DELETE NO ACTION DEFERRABLE INITIALLY DEFERRED, FOREIGN KEY(`provider`) REFERENCES `Provider`(`pk`) ON UPDATE NO ACTION ON DELETE NO ACTION DEFERRABLE INITIALLY DEFERRED)",
+        "fields": [
+          {
+            "fieldPath": "pk",
+            "columnName": "pk",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "historyEntry",
+            "columnName": "historyEntry",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "provider",
+            "columnName": "provider",
+            "affinity": "INTEGER"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "pk"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_HistoryEntry_providers_historyEntry",
+            "unique": false,
+            "columnNames": [
+              "historyEntry"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_HistoryEntry_providers_historyEntry` ON `${TABLE_NAME}` (`historyEntry`)"
+          },
+          {
+            "name": "index_HistoryEntry_providers_provider",
+            "unique": false,
+            "columnNames": [
+              "provider"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_HistoryEntry_providers_provider` ON `${TABLE_NAME}` (`provider`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "HistoryEntry",
+            "onDelete": "NO ACTION",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "historyEntry"
+            ],
+            "referencedColumns": [
+              "pk"
+            ]
+          },
+          {
+            "table": "Provider",
+            "onDelete": "NO ACTION",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "provider"
+            ],
+            "referencedColumns": [
+              "pk"
+            ]
+          }
+        ]
+      }
+    ],
+    "setupQueries": [
+      "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '726c99b4cc4fbb2d7fefa1a86048fb48')"
+    ]
+  }
+}
