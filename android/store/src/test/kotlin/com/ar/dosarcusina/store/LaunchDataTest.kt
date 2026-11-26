@@ -2,6 +2,7 @@ package com.ar.dosarcusina.store
 
 import com.ar.dosarcusina.archive.v3.ChangeTime
 import com.ar.dosarcusina.catalog.Catalog
+import com.ar.dosarcusina.store.repairs.DataRepairStepId
 import com.ar.dosarcusina.store.schema.Asset
 import com.ar.dosarcusina.store.schema.Obligation
 import kotlinx.coroutines.runBlocking
@@ -19,7 +20,7 @@ class LaunchDataTest {
 
     private val today = noon("2026-11-10")
     private val binder = TestBinderStore(now = today)
-    private val launch = LaunchData(binder.unit)
+    private val launch = binder.launch
 
     @Test
     fun theBuiltInsComeInAsTheAppsOwnStepAndOnlyOnce() {
@@ -91,5 +92,24 @@ class LaunchDataTest {
         assertEquals(copy, binder.stored(deadline).asset, "Back with the copy")
         assertEquals(changed, binder.stored(deadline).updatedAt, "As the app's own step: no change time")
         assertFalse(launch.rehome(), "Nothing left to put back")
+    }
+
+    @Test
+    fun theRepairListLooksOnceTheBuiltInsAreIn() {
+        // A first-version ITP: its blueprint is found only once the vehicle's category is installed.
+        val car = binder.unit.performPrivate { step ->
+            step.insert(Asset(name = "VW Golf 2018", templateKey = "vehicle"))
+        }
+        binder.unit.performPrivate { step ->
+            step.insert(Obligation(title = "ITP", kindRaw = "legal", dueDayISO = "2027-05-01", asset = car.pk))
+        }
+        assertEquals(emptyList<LaunchData.LaunchStep>(), launch.prepare(today))
+        assertEquals(
+            listOf(DataRepairStepId.FIRST_VERSION_DEADLINES),
+            binder.repairs.pending.map { it.step },
+            "Waiting for the owner",
+        )
+        assertEquals(binder.repairs.pending, binder.repairs.announcement, "And the calm prompt says so")
+        assertEquals(LaunchData.LaunchStep.entries.last(), LaunchData.LaunchStep.REPAIR_LIST, "After the built-ins")
     }
 }

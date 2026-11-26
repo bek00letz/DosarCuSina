@@ -8,6 +8,9 @@ import com.ar.dosarcusina.archive.binder.Removed
 import com.ar.dosarcusina.catalog.Catalog
 import com.ar.dosarcusina.store.locks.CategoryLocks
 import com.ar.dosarcusina.store.locks.SectionLocks
+import com.ar.dosarcusina.store.repairs.DataRepairCenter
+import com.ar.dosarcusina.store.repairs.DataRepairLedger
+import com.ar.dosarcusina.store.repairs.DataRepairs
 import com.ar.dosarcusina.store.schema.StoredMoment
 import java.io.File
 import java.nio.file.Files
@@ -40,7 +43,9 @@ class RoomTestBinder(initial: Binder) : TestBinder {
     val locks = CategoryLocks(sectionLocks, Catalog.builtIn)
     val log = RecordingLog()
     val unit = UnitOfWork(store, locks, log, undoRoot = scratchFolder("undo-"))
-    val target = RoomArchiveTarget(unit)
+    /** The repair list every import here looks at again. */
+    val repairs = DataRepairCenter(DataRepairs(unit, DataRepairLedger(file = null)))
+    val target = RoomArchiveTarget(unit, repairs)
 
     override var applied = 0
         private set
