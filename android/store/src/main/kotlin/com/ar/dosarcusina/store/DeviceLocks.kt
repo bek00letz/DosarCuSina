@@ -1,11 +1,12 @@
 package com.ar.dosarcusina.store
 
+import com.ar.dosarcusina.store.locks.BinderLocks
 import com.ar.dosarcusina.store.schema.CategoryTemplate
 import java.time.Instant
 
 /**
  * Which categories are locked on this phone, kept beside the store and never in it: what the
- * store's own steps (the archive's target, the unit of work) ask of the locks. The one
+ * store's own steps (the archive's target, the unit of work, the repair list) ask of the locks. The one
  * implementation is [com.ar.dosarcusina.store.locks.CategoryLocks], over this phone's choices
  * ([com.ar.dosarcusina.store.locks.SectionLocks]); nothing here can open a lock.
  */
@@ -16,6 +17,12 @@ interface DeviceLocks {
      * locked if either is.
      */
     fun locked(templates: List<CategoryTemplate>): Map<String, Boolean>
+
+    /**
+     * Which categories are locked across the binder ([BinderLocks]): those of [templates]' records, and
+     * every category [naming] names whose record isn't here, by the one answer.
+     */
+    fun binder(templates: List<CategoryTemplate>, naming: Iterable<String>): BinderLocks
 
     /**
      * Locks [template] on this phone, as chosen at [now], and gives its row as it is to be saved:

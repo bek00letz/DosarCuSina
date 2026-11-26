@@ -71,9 +71,9 @@ object CategoryOrder {
 
 /**
  * Choice values written as display text (version 2 backups, older builds) become option keys, as the iOS app's
- * `FieldValues.normalizingChoices`.
+ * `FieldValues.normalizingChoices`: the one rule, for an import and for the store's repair list (`ChoiceKeysStep`).
  */
-internal object ChoiceKeys {
+object ChoiceKeys {
     fun normalizing(values: FieldValues, fields: List<FieldDefinition>): FieldValues {
         var result = values
         for (field in fields) {

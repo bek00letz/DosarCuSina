@@ -95,7 +95,7 @@ class HouseholdDeadlinesTest {
 
     @Test
     fun whileATenancyExistsThereIsExactlyOneDeclaration() {
-        val launch = LaunchData(binder.unit)
+        val launch = binder.launch
         assertFalse(launch.reconcileHouseholdRules(binder.now), "No tenancy, no declaration")
         val first = tenancy()
         tenancy()
@@ -287,7 +287,7 @@ class HouseholdDeadlinesTest {
     fun theStepComesLastAtLaunch() {
         assertEquals(LaunchData.LaunchStep.HOUSEHOLD_DEADLINES, LaunchData.LaunchStep.entries.last())
         tenancy()
-        assertEquals(emptyList<LaunchData.LaunchStep>(), LaunchData(binder.unit).prepare(binder.now))
+        assertEquals(emptyList<LaunchData.LaunchStep>(), binder.launch.prepare(binder.now))
         assertEquals(1, declarations().size)
     }
 }

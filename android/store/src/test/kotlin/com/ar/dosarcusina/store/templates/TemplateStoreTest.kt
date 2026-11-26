@@ -39,7 +39,7 @@ class CategoryBinder(now: Instant = noon("2026-11-03")) {
     val store = TemplateStore(binder.unit, binder.locks)
 
     init {
-        LaunchData(binder.unit).installBuiltIns(now)
+        binder.launch.installBuiltIns(now)
     }
 
     fun template(key: String): CategoryTemplate = requireNotNull(store.template(key)) { key }
@@ -157,7 +157,7 @@ class TemplateStoreTest {
             val row = requireNotNull(step.row(Tables.templates, cars.pk))
             step.update(row.copy(builtInVersion = row.builtInVersion - 1))
         }
-        assertTrue(LaunchData(house.binder.unit).installBuiltIns(house.binder.now))
+        assertTrue(house.binder.launch.installBuiltIns(house.binder.now))
         val upgraded = house.stored(cars)
         assertEquals(Catalog.builtIn.version, upgraded.builtInVersion)
         assertEquals(BoxGrouping.GROUPED, upgraded.chosenGrouping)

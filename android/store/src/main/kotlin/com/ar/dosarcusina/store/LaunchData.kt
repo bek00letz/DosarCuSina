@@ -8,6 +8,7 @@ import com.ar.dosarcusina.catalog.Catalog
 import com.ar.dosarcusina.core.values.DosarCalendar
 import com.ar.dosarcusina.core.values.CalendarDay
 import com.ar.dosarcusina.store.locks.LockPublishing
+import com.ar.dosarcusina.store.repairs.DataRepairCenter
 import com.ar.dosarcusina.store.templates.HouseholdDeadlines
 import java.time.Instant
 import java.time.ZoneId
@@ -16,18 +17,21 @@ import java.util.UUID
 /**
  * What launch does to the household's data, in this order, as the iOS app's `LaunchData`
  * (ios/DosarCuSina/App/LaunchData.swift): what a deletion let go put back with its holder
- * ([ParentLinks.rehome]), the built-in categories from the app's catalog ([BuiltInInstall]), then
- * this phone's locks sent up ([LockPublishing]). Each step saves through the unit of work on its
- * own, as the app's own step ([ChangeOrigin.APP]: nothing it changes gets a new change time), so
- * one that fails takes back only its own changes and is tried again at the next launch. Nothing
- * here is the person's to answer, so nothing is shown; a failure goes to the persistence log, by
- * its kind and without any of the household's values, and the next step still runs.
+ * ([ParentLinks.rehome]), the built-in categories from the app's catalog ([BuiltInInstall]),
+ * this phone's locks sent up ([LockPublishing]), then the repair list ([DataRepairCenter]). Each
+ * step saves through the unit of work on its own, as the app's own step ([ChangeOrigin.APP]: nothing
+ * it changes gets a new change time), so one that fails takes back only its own changes and is
+ * tried again at the next launch. Nothing here is the person's to answer, so nothing is shown; a
+ * failure goes to the persistence log, by its kind and without any of the household's values, and
+ * the next step still runs.
  *
  * Last, the household's own deadlines ([HouseholdDeadlines]). The steps the iOS app runs between
- * these (copies that meet, what capture learned, the repair list) come with what they keep.
+ * these (copies that meet, what capture learned) come with what they keep.
  */
 class LaunchData(
     private val unit: UnitOfWork,
+    /** The repair list: steps that change nothing anyone sees run now; the rest wait for the owner. */
+    private val repairs: DataRepairCenter,
     private val catalog: Catalog = Catalog.builtIn,
     /** The time zone the app counts days in, for reading the binder as the catalog's plan reads it. */
     private val zone: () -> ZoneId = DosarCalendar::zone,
@@ -37,6 +41,7 @@ class LaunchData(
         PARENT_LINKS("Putting back what a deletion let go"),
         BUILT_IN_CATEGORIES("Installing the built-in categories"),
         LOCK_PUBLISHING("Sending this device's locks to the others"),
+        REPAIR_LIST("Refreshing the repair list"),
         HOUSEHOLD_DEADLINES("Working out the household's own deadlines"),
     }
 
@@ -47,6 +52,7 @@ class LaunchData(
                 LaunchStep.PARENT_LINKS -> rehome()
                 LaunchStep.BUILT_IN_CATEGORIES -> installBuiltIns(now)
                 LaunchStep.LOCK_PUBLISHING -> publishLocks(now)
+                LaunchStep.REPAIR_LIST -> repairs.refresh(announce = true)
                 LaunchStep.HOUSEHOLD_DEADLINES -> reconcileHouseholdRules(now)
             }
         }

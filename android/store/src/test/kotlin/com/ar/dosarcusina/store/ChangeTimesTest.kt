@@ -201,7 +201,7 @@ class ChangeTimesTest {
 
     // Built-in categories
 
-    private fun phone(): TestBinderStore = TestBinderStore().also { LaunchData(it.unit).prepare(today) }
+    private fun phone(): TestBinderStore = TestBinderStore().also { it.launch.prepare(today) }
 
     @Test
     fun installedBuiltInsHaveNoChange() {
@@ -224,7 +224,7 @@ class ChangeTimesTest {
                 updatedAt = long,
             ))
         }
-        assertTrue(LaunchData(phone.unit).installBuiltIns(today))
+        assertTrue(phone.launch.installBuiltIns(today))
         val upgraded = phone.stored(documents)
         assertEquals(version, upgraded.builtInVersion, "Upgraded")
         assertEquals(long, upgraded.updatedAt, "Its change time is the person's last choice, not the update")

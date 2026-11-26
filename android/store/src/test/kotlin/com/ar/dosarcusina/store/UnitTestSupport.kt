@@ -4,6 +4,9 @@ import com.ar.dosarcusina.archive.v3.MemoryFile
 import com.ar.dosarcusina.catalog.Catalog
 import com.ar.dosarcusina.store.locks.CategoryLocks
 import com.ar.dosarcusina.store.locks.SectionLocks
+import com.ar.dosarcusina.store.repairs.DataRepairCenter
+import com.ar.dosarcusina.store.repairs.DataRepairLedger
+import com.ar.dosarcusina.store.repairs.DataRepairs
 import com.ar.dosarcusina.store.schema.Asset
 import com.ar.dosarcusina.store.schema.Attachment
 import com.ar.dosarcusina.store.schema.AttachmentPage
@@ -12,6 +15,10 @@ import com.ar.dosarcusina.store.schema.MeasurementLog
 import com.ar.dosarcusina.store.schema.ServiceItem
 import kotlinx.coroutines.runBlocking
 import java.time.Instant
+import java.time.ZoneId
+
+/** The time zone the tests count days in, as the iOS tests' `.bucharest`. */
+val bucharest: ZoneId = ZoneId.of("Europe/Bucharest")
 
 /** Noon in Bucharest on [day], as the iOS tests' `noon`. */
 fun noon(day: String): Instant = Instant.parse("${day}T10:00:00Z")
@@ -36,6 +43,15 @@ class TestBinderStore(
     val log = RecordingLog()
     val undoRoot = scratchFolder("undo-")
     val unit = UnitOfWork(store, locks, log, clock = { now }, undoRoot = undoRoot)
+
+    /** The repair list, with a ledger of its own in memory. */
+    val repairs = DataRepairCenter(DataRepairs(unit, DataRepairLedger(file = null), zone = { bucharest }))
+
+    /** Launch, with this store's repair list. */
+    val launch: LaunchData get() = LaunchData(unit, repairs, zone = { bucharest })
+
+    /** The archive's target over this store, with its repair list. */
+    val target: RoomArchiveTarget get() = RoomArchiveTarget(unit, repairs, zone = { bucharest })
 
     /** The binder as stored now, read in one transaction. */
     fun snapshot(): BinderSnapshot = runBlocking { BinderSnapshot.read(store.database) }

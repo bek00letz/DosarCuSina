@@ -321,7 +321,7 @@ class FreeTextTest {
 
     @Test
     fun aBackupBringsNoCardNumberIn() {
-        val target = RoomArchiveTarget(unit)
+        val target = binder.target
         DossierArchiveService(
             target,
             Catalog.builtIn,
