@@ -2,11 +2,14 @@ package com.ar.dosarcusina.store.repairs
 
 import com.ar.dosarcusina.archive.v3.ObligationBlueprint
 import com.ar.dosarcusina.archive.v3.RecurrenceRule
+import com.ar.dosarcusina.catalog.obligationKind
+import com.ar.dosarcusina.core.deadlines.ObligationKind
 import com.ar.dosarcusina.core.values.ObligationStatus
 import com.ar.dosarcusina.core.values.RomanianText
 import com.ar.dosarcusina.store.BinderView
 import com.ar.dosarcusina.store.Step
 import com.ar.dosarcusina.store.Tables
+import com.ar.dosarcusina.store.obligations.status
 import com.ar.dosarcusina.store.schema.CategoryTemplate
 import com.ar.dosarcusina.store.schema.Obligation
 import com.ar.dosarcusina.store.schema.keptBlueprints
@@ -66,33 +69,18 @@ object FirstVersionDeadlinesStep : DataRepairStep {
         categories: Map<String, CategoryTemplate>,
     ): ObligationBlueprint? {
         if (obligation.blueprintKey != null || obligation.isExample) return null
-        if (ObligationStatus.stored(obligation.statusRaw) !in StoredKinds.running) return null
+        if (obligation.status != ObligationStatus.ACTIVE && obligation.status != ObligationStatus.PAUSED) return null
         val section = obligation.asset?.let { view.row(Tables.assets, it) } ?: return null
         val template = categories[section.templateKey] ?: return null
         val title = normalized(obligation.title)
-        val kind = StoredKinds.kind(obligation.kindRaw)
+        val kind = ObligationKind.stored(obligation.kindRaw)
         val used = view.pointingAt(Tables.obligations, "asset", section.pk)
             .mapNotNullTo(mutableSetOf()) { view.row(Tables.obligations, it)?.blueprintKey }
         return template.keptBlueprints.items.firstOrNull {
-            it.kind == kind && normalized(it.title) == title && it.key !in used
+            it.obligationKind == kind && normalized(it.title) == title && it.key !in used
         }
     }
 
     /** A title as compared: its folded words, one space apart (`SearchText.normalize`). */
     private fun normalized(title: String): String = RomanianText.words(title).joinToString(" ")
-}
-
-/**
- * A deadline's kind as stored, read as the iOS app reads it (`ObligationKind(stored:)`): a value a
- * newer build wrote that this one doesn't know reads as the loudest kind, never written back. What
- * the repair list reads until the deadlines' own kind type comes; their status is
- * [ObligationStatus], the one status type.
- */
-internal object StoredKinds {
-    private val kinds = setOf("legal", "tax", "insurance", "health", "renewal", "payment", "maintenance", "routine")
-
-    /** The statuses of a deadline still running. */
-    val running: Set<ObligationStatus> = setOf(ObligationStatus.ACTIVE, ObligationStatus.PAUSED)
-
-    fun kind(raw: String): String = raw.takeIf { it in kinds } ?: "legal"
 }
