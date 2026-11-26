@@ -1,0 +1,157 @@
+{
+  "cases" : [
+    {
+      "missing" : [
+        {
+          "expectedDay" : "2026-10-05",
+          "id" : "A0000000-B000-C000-D000-E00000000008"
+        },
+        {
+          "expectedDay" : "2026-10-10",
+          "id" : "A0000000-B000-C000-D000-E00000000004"
+        },
+        {
+          "expectedDay" : "2026-10-20",
+          "id" : "A0000000-B000-C000-D000-E00000000001"
+        },
+        {
+          "expectedDay" : "2026-11-03",
+          "id" : "A0000000-B000-C000-D000-E00000000007"
+        }
+      ],
+      "subscriptions" : [
+        {
+          "cycle" : {
+            "every" : 1,
+            "unit" : "month"
+          },
+          "days" : [
+            "2026-09-20"
+          ],
+          "id" : "A0000000-B000-C000-D000-E00000000001",
+          "isExample" : false,
+          "isSensitive" : false,
+          "service" : "service.gas"
+        },
+        {
+          "cycle" : {
+            "every" : 1,
+            "unit" : "month"
+          },
+          "days" : [
+            "2026-09-20"
+          ],
+          "id" : "A0000000-B000-C000-D000-E00000000002",
+          "isExample" : false,
+          "isSensitive" : false,
+          "service" : "service.streaming"
+        },
+        {
+          "cycle" : {
+            "every" : 1,
+            "unit" : "month"
+          },
+          "days" : [
+            "2026-09-20"
+          ],
+          "id" : "A0000000-B000-C000-D000-E00000000003",
+          "isExample" : true,
+          "isSensitive" : false,
+          "service" : "service.gas"
+        },
+        {
+          "cycle" : {
+            "every" : 1,
+            "unit" : "month"
+          },
+          "days" : [
+            "2026-09-10"
+          ],
+          "id" : "A0000000-B000-C000-D000-E00000000004",
+          "isExample" : false,
+          "isSensitive" : true,
+          "service" : "service.mobile"
+        },
+        {
+          "cycle" : {
+            "every" : 1,
+            "unit" : "month"
+          },
+          "days" : [
+            "2026-11-01"
+          ],
+          "id" : "A0000000-B000-C000-D000-E00000000005",
+          "isExample" : false,
+          "isSensitive" : false,
+          "service" : "service.electricity"
+        },
+        {
+          "cycle" : {
+            "every" : 1,
+            "unit" : "month"
+          },
+          "days" : [
+            "2026-09-20"
+          ],
+          "id" : "A0000000-B000-C000-D000-E00000000006",
+          "isExample" : false,
+          "isSensitive" : false,
+          "service" : null
+        },
+        {
+          "cycle" : {
+            "every" : 1,
+            "unit" : "week"
+          },
+          "days" : [
+            "2026-10-27"
+          ],
+          "id" : "A0000000-B000-C000-D000-E00000000007",
+          "isExample" : false,
+          "isSensitive" : false,
+          "service" : "Gaze naturale"
+        },
+        {
+          "cycle" : {
+            "every" : 3,
+            "unit" : "month"
+          },
+          "days" : [
+            "2026-07-05"
+          ],
+          "id" : "A0000000-B000-C000-D000-E00000000008",
+          "isExample" : false,
+          "isSensitive" : false,
+          "service" : "service.water"
+        },
+        {
+          "cycle" : {
+            "every" : 1,
+            "unit" : "month"
+          },
+          "days" : [
+
+          ],
+          "id" : "A0000000-B000-C000-D000-E00000000009",
+          "isExample" : false,
+          "isSensitive" : false,
+          "service" : "service.heating"
+        }
+      ],
+      "today" : "2026-11-10"
+    },
+    {
+      "missing" : [
+
+      ],
+      "subscriptions" : [
+
+      ],
+      "today" : "2026-11-10"
+    }
+  ],
+  "rule" : "AttentionModel.missingBills(_:now:calendar:locale:): which subscriptions' bills haven't come, and in which order",
+  "shape" : "today and the binder's subscriptions (each its id, its stored service, null for none, how often it bills, the days its bills came, whether it is locked and whether it is an example); missing: the ones with a bill that hasn't come, oldest expected first, each its id and the day its bill was expected. The notes' words are the screens', not pinned here.",
+  "source" : "ios/DosarCuSina/Services/Attention/MissingBills.swift",
+  "writtenBy" : "ios/DosarCuSinaTests/SubscriptionVectorsTests.swift"
+}

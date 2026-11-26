@@ -1,0 +1,1777 @@
+{
+  "cases" : [
+    {
+      "address" : "Strada Exemplului 5, Sector 3, Bucuresti",
+      "home" : {
+        "check" : null,
+        "id" : "A0000000-B000-C000-D000-E00000000005"
+      },
+      "homes" : [
+        {
+          "address" : "Str. Exemplului nr. 1, București",
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000001"
+        },
+        {
+          "address" : "Str. Exemplului nr. 5, București",
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000005"
+        }
+      ],
+      "house" : {
+        "check" : null,
+        "id" : "A0000000-B000-C000-D000-E00000000005"
+      }
+    },
+    {
+      "address" : "Str. Exemplului nr. 9",
+      "home" : null,
+      "homes" : [
+        {
+          "address" : "Str. Exemplului nr. 1, București",
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000001"
+        },
+        {
+          "address" : "Str. Exemplului nr. 5, București",
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000005"
+        }
+      ],
+      "house" : null
+    },
+    {
+      "address" : "Str. Exemplului nr. 1, bl. A1, ap. 14",
+      "home" : {
+        "check" : "addressPartlyAgrees",
+        "id" : "A0000000-B000-C000-D000-E00000000001"
+      },
+      "homes" : [
+        {
+          "address" : "Str. Exemplului nr. 1, București",
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000001"
+        },
+        {
+          "address" : "Str. Exemplului nr. 5, București",
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000005"
+        }
+      ],
+      "house" : {
+        "check" : "addressPartlyAgrees",
+        "id" : "A0000000-B000-C000-D000-E00000000001"
+      }
+    },
+    {
+      "address" : "Str. Exemplului nr. 1, bl. A1",
+      "home" : {
+        "check" : "addressPartlyAgrees",
+        "id" : "A0000000-B000-C000-D000-E00000000001"
+      },
+      "homes" : [
+        {
+          "address" : "Str. Exemplului nr. 1, București",
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000001"
+        },
+        {
+          "address" : "Str. Exemplului nr. 5, București",
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000005"
+        }
+      ],
+      "house" : {
+        "check" : "addressPartlyAgrees",
+        "id" : "A0000000-B000-C000-D000-E00000000001"
+      }
+    },
+    {
+      "address" : "Str. Exemplului nr. 5",
+      "home" : {
+        "check" : null,
+        "id" : "A0000000-B000-C000-D000-E00000000005"
+      },
+      "homes" : [
+        {
+          "address" : "Str. Exemplului nr. 1, București",
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000001"
+        },
+        {
+          "address" : "Str. Exemplului nr. 5, București",
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000005"
+        }
+      ],
+      "house" : {
+        "check" : null,
+        "id" : "A0000000-B000-C000-D000-E00000000005"
+      }
+    },
+    {
+      "address" : "Str. Exemplului nr. 5, ap. 12",
+      "home" : {
+        "check" : "addressPartlyAgrees",
+        "id" : "A0000000-B000-C000-D000-E00000000005"
+      },
+      "homes" : [
+        {
+          "address" : "Str. Exemplului nr. 1, București",
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000001"
+        },
+        {
+          "address" : "Str. Exemplului nr. 5, București",
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000005"
+        }
+      ],
+      "house" : {
+        "check" : "addressPartlyAgrees",
+        "id" : "A0000000-B000-C000-D000-E00000000005"
+      }
+    },
+    {
+      "address" : "Str. Alta nr. 7",
+      "home" : null,
+      "homes" : [
+        {
+          "address" : "Str. Exemplului nr. 1, București",
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000001"
+        },
+        {
+          "address" : "Str. Exemplului nr. 5, București",
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000005"
+        }
+      ],
+      "house" : null
+    },
+    {
+      "address" : "Str. Exemplului nr. 1",
+      "home" : {
+        "check" : null,
+        "id" : "A0000000-B000-C000-D000-E00000000001"
+      },
+      "homes" : [
+        {
+          "address" : "Str. Exemplului nr. 1, București",
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000001"
+        },
+        {
+          "address" : "Str. Exemplului nr. 5, București",
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000005"
+        }
+      ],
+      "house" : {
+        "check" : null,
+        "id" : "A0000000-B000-C000-D000-E00000000001"
+      }
+    },
+    {
+      "address" : "Str. Exemplului nr. 3",
+      "home" : null,
+      "homes" : [
+        {
+          "address" : "Str. Exemplului nr. 1, București",
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000001"
+        },
+        {
+          "address" : "Str. Exemplului nr. 5, București",
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000005"
+        }
+      ],
+      "house" : null
+    },
+    {
+      "address" : "Cod client 1000000000",
+      "home" : null,
+      "homes" : [
+        {
+          "address" : "Str. Exemplului nr. 1, București",
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000001"
+        },
+        {
+          "address" : "Str. Exemplului nr. 5, București",
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000005"
+        }
+      ],
+      "house" : null
+    },
+    {
+      "address" : null,
+      "home" : null,
+      "homes" : [
+        {
+          "address" : "Str. Exemplului nr. 1, București",
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000001"
+        },
+        {
+          "address" : "Str. Exemplului nr. 5, București",
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000005"
+        }
+      ],
+      "house" : null
+    },
+    {
+      "address" : "Strada Exemplului 5, Sector 3, Bucuresti",
+      "home" : null,
+      "homes" : [
+        {
+          "address" : "Str. Exemplului nr. 1, bl. A1, sc. B, ap. 12",
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000012"
+        },
+        {
+          "address" : "Str. Exemplului nr. 1, bl. A1, sc. B, ap. 14",
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000014"
+        }
+      ],
+      "house" : null
+    },
+    {
+      "address" : "Str. Exemplului nr. 9",
+      "home" : null,
+      "homes" : [
+        {
+          "address" : "Str. Exemplului nr. 1, bl. A1, sc. B, ap. 12",
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000012"
+        },
+        {
+          "address" : "Str. Exemplului nr. 1, bl. A1, sc. B, ap. 14",
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000014"
+        }
+      ],
+      "house" : null
+    },
+    {
+      "address" : "Str. Exemplului nr. 1, bl. A1, ap. 14",
+      "home" : {
+        "check" : null,
+        "id" : "A0000000-B000-C000-D000-E00000000014"
+      },
+      "homes" : [
+        {
+          "address" : "Str. Exemplului nr. 1, bl. A1, sc. B, ap. 12",
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000012"
+        },
+        {
+          "address" : "Str. Exemplului nr. 1, bl. A1, sc. B, ap. 14",
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000014"
+        }
+      ],
+      "house" : {
+        "check" : null,
+        "id" : "A0000000-B000-C000-D000-E00000000014"
+      }
+    },
+    {
+      "address" : "Str. Exemplului nr. 1, bl. A1",
+      "home" : null,
+      "homes" : [
+        {
+          "address" : "Str. Exemplului nr. 1, bl. A1, sc. B, ap. 12",
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000012"
+        },
+        {
+          "address" : "Str. Exemplului nr. 1, bl. A1, sc. B, ap. 14",
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000014"
+        }
+      ],
+      "house" : null
+    },
+    {
+      "address" : "Str. Exemplului nr. 5",
+      "home" : null,
+      "homes" : [
+        {
+          "address" : "Str. Exemplului nr. 1, bl. A1, sc. B, ap. 12",
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000012"
+        },
+        {
+          "address" : "Str. Exemplului nr. 1, bl. A1, sc. B, ap. 14",
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000014"
+        }
+      ],
+      "house" : null
+    },
+    {
+      "address" : "Str. Exemplului nr. 5, ap. 12",
+      "home" : null,
+      "homes" : [
+        {
+          "address" : "Str. Exemplului nr. 1, bl. A1, sc. B, ap. 12",
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000012"
+        },
+        {
+          "address" : "Str. Exemplului nr. 1, bl. A1, sc. B, ap. 14",
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000014"
+        }
+      ],
+      "house" : null
+    },
+    {
+      "address" : "Str. Alta nr. 7",
+      "home" : null,
+      "homes" : [
+        {
+          "address" : "Str. Exemplului nr. 1, bl. A1, sc. B, ap. 12",
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000012"
+        },
+        {
+          "address" : "Str. Exemplului nr. 1, bl. A1, sc. B, ap. 14",
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000014"
+        }
+      ],
+      "house" : null
+    },
+    {
+      "address" : "Str. Exemplului nr. 1",
+      "home" : null,
+      "homes" : [
+        {
+          "address" : "Str. Exemplului nr. 1, bl. A1, sc. B, ap. 12",
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000012"
+        },
+        {
+          "address" : "Str. Exemplului nr. 1, bl. A1, sc. B, ap. 14",
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000014"
+        }
+      ],
+      "house" : null
+    },
+    {
+      "address" : "Str. Exemplului nr. 3",
+      "home" : null,
+      "homes" : [
+        {
+          "address" : "Str. Exemplului nr. 1, bl. A1, sc. B, ap. 12",
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000012"
+        },
+        {
+          "address" : "Str. Exemplului nr. 1, bl. A1, sc. B, ap. 14",
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000014"
+        }
+      ],
+      "house" : null
+    },
+    {
+      "address" : "Cod client 1000000000",
+      "home" : null,
+      "homes" : [
+        {
+          "address" : "Str. Exemplului nr. 1, bl. A1, sc. B, ap. 12",
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000012"
+        },
+        {
+          "address" : "Str. Exemplului nr. 1, bl. A1, sc. B, ap. 14",
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000014"
+        }
+      ],
+      "house" : null
+    },
+    {
+      "address" : null,
+      "home" : null,
+      "homes" : [
+        {
+          "address" : "Str. Exemplului nr. 1, bl. A1, sc. B, ap. 12",
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000012"
+        },
+        {
+          "address" : "Str. Exemplului nr. 1, bl. A1, sc. B, ap. 14",
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000014"
+        }
+      ],
+      "house" : null
+    },
+    {
+      "address" : "Strada Exemplului 5, Sector 3, Bucuresti",
+      "home" : {
+        "check" : "addressPartlyAgrees",
+        "id" : "A0000000-B000-C000-D000-E00000000003"
+      },
+      "homes" : [
+        {
+          "address" : "Str. Exemplului nr. 5, ap. 12",
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000001"
+        },
+        {
+          "address" : "Str. Alta nr. 2",
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000002"
+        },
+        {
+          "address" : "Str. Exemplului nr. 5",
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000003"
+        }
+      ],
+      "house" : {
+        "check" : "addressPartlyAgrees",
+        "id" : "A0000000-B000-C000-D000-E00000000003"
+      }
+    },
+    {
+      "address" : "Str. Exemplului nr. 9",
+      "home" : null,
+      "homes" : [
+        {
+          "address" : "Str. Exemplului nr. 5, ap. 12",
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000001"
+        },
+        {
+          "address" : "Str. Alta nr. 2",
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000002"
+        },
+        {
+          "address" : "Str. Exemplului nr. 5",
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000003"
+        }
+      ],
+      "house" : null
+    },
+    {
+      "address" : "Str. Exemplului nr. 1, bl. A1, ap. 14",
+      "home" : null,
+      "homes" : [
+        {
+          "address" : "Str. Exemplului nr. 5, ap. 12",
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000001"
+        },
+        {
+          "address" : "Str. Alta nr. 2",
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000002"
+        },
+        {
+          "address" : "Str. Exemplului nr. 5",
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000003"
+        }
+      ],
+      "house" : null
+    },
+    {
+      "address" : "Str. Exemplului nr. 1, bl. A1",
+      "home" : null,
+      "homes" : [
+        {
+          "address" : "Str. Exemplului nr. 5, ap. 12",
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000001"
+        },
+        {
+          "address" : "Str. Alta nr. 2",
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000002"
+        },
+        {
+          "address" : "Str. Exemplului nr. 5",
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000003"
+        }
+      ],
+      "house" : null
+    },
+    {
+      "address" : "Str. Exemplului nr. 5",
+      "home" : {
+        "check" : "addressPartlyAgrees",
+        "id" : "A0000000-B000-C000-D000-E00000000003"
+      },
+      "homes" : [
+        {
+          "address" : "Str. Exemplului nr. 5, ap. 12",
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000001"
+        },
+        {
+          "address" : "Str. Alta nr. 2",
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000002"
+        },
+        {
+          "address" : "Str. Exemplului nr. 5",
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000003"
+        }
+      ],
+      "house" : {
+        "check" : "addressPartlyAgrees",
+        "id" : "A0000000-B000-C000-D000-E00000000003"
+      }
+    },
+    {
+      "address" : "Str. Exemplului nr. 5, ap. 12",
+      "home" : {
+        "check" : "addressPartlyAgrees",
+        "id" : "A0000000-B000-C000-D000-E00000000001"
+      },
+      "homes" : [
+        {
+          "address" : "Str. Exemplului nr. 5, ap. 12",
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000001"
+        },
+        {
+          "address" : "Str. Alta nr. 2",
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000002"
+        },
+        {
+          "address" : "Str. Exemplului nr. 5",
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000003"
+        }
+      ],
+      "house" : {
+        "check" : "addressPartlyAgrees",
+        "id" : "A0000000-B000-C000-D000-E00000000001"
+      }
+    },
+    {
+      "address" : "Str. Alta nr. 7",
+      "home" : null,
+      "homes" : [
+        {
+          "address" : "Str. Exemplului nr. 5, ap. 12",
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000001"
+        },
+        {
+          "address" : "Str. Alta nr. 2",
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000002"
+        },
+        {
+          "address" : "Str. Exemplului nr. 5",
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000003"
+        }
+      ],
+      "house" : null
+    },
+    {
+      "address" : "Str. Exemplului nr. 1",
+      "home" : null,
+      "homes" : [
+        {
+          "address" : "Str. Exemplului nr. 5, ap. 12",
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000001"
+        },
+        {
+          "address" : "Str. Alta nr. 2",
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000002"
+        },
+        {
+          "address" : "Str. Exemplului nr. 5",
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000003"
+        }
+      ],
+      "house" : null
+    },
+    {
+      "address" : "Str. Exemplului nr. 3",
+      "home" : null,
+      "homes" : [
+        {
+          "address" : "Str. Exemplului nr. 5, ap. 12",
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000001"
+        },
+        {
+          "address" : "Str. Alta nr. 2",
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000002"
+        },
+        {
+          "address" : "Str. Exemplului nr. 5",
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000003"
+        }
+      ],
+      "house" : null
+    },
+    {
+      "address" : "Cod client 1000000000",
+      "home" : null,
+      "homes" : [
+        {
+          "address" : "Str. Exemplului nr. 5, ap. 12",
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000001"
+        },
+        {
+          "address" : "Str. Alta nr. 2",
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000002"
+        },
+        {
+          "address" : "Str. Exemplului nr. 5",
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000003"
+        }
+      ],
+      "house" : null
+    },
+    {
+      "address" : null,
+      "home" : null,
+      "homes" : [
+        {
+          "address" : "Str. Exemplului nr. 5, ap. 12",
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000001"
+        },
+        {
+          "address" : "Str. Alta nr. 2",
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000002"
+        },
+        {
+          "address" : "Str. Exemplului nr. 5",
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000003"
+        }
+      ],
+      "house" : null
+    },
+    {
+      "address" : "Strada Exemplului 5, Sector 3, Bucuresti",
+      "home" : {
+        "check" : "addressDiffers",
+        "id" : "A0000000-B000-C000-D000-E00000000001"
+      },
+      "homes" : [
+        {
+          "address" : "Str. Exemplului nr. 1",
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000001"
+        }
+      ],
+      "house" : null
+    },
+    {
+      "address" : "Str. Exemplului nr. 9",
+      "home" : {
+        "check" : "addressDiffers",
+        "id" : "A0000000-B000-C000-D000-E00000000001"
+      },
+      "homes" : [
+        {
+          "address" : "Str. Exemplului nr. 1",
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000001"
+        }
+      ],
+      "house" : null
+    },
+    {
+      "address" : "Str. Exemplului nr. 1, bl. A1, ap. 14",
+      "home" : {
+        "check" : "addressPartlyAgrees",
+        "id" : "A0000000-B000-C000-D000-E00000000001"
+      },
+      "homes" : [
+        {
+          "address" : "Str. Exemplului nr. 1",
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000001"
+        }
+      ],
+      "house" : {
+        "check" : "addressPartlyAgrees",
+        "id" : "A0000000-B000-C000-D000-E00000000001"
+      }
+    },
+    {
+      "address" : "Str. Exemplului nr. 1, bl. A1",
+      "home" : {
+        "check" : "addressPartlyAgrees",
+        "id" : "A0000000-B000-C000-D000-E00000000001"
+      },
+      "homes" : [
+        {
+          "address" : "Str. Exemplului nr. 1",
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000001"
+        }
+      ],
+      "house" : {
+        "check" : "addressPartlyAgrees",
+        "id" : "A0000000-B000-C000-D000-E00000000001"
+      }
+    },
+    {
+      "address" : "Str. Exemplului nr. 5",
+      "home" : {
+        "check" : "addressDiffers",
+        "id" : "A0000000-B000-C000-D000-E00000000001"
+      },
+      "homes" : [
+        {
+          "address" : "Str. Exemplului nr. 1",
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000001"
+        }
+      ],
+      "house" : null
+    },
+    {
+      "address" : "Str. Exemplului nr. 5, ap. 12",
+      "home" : {
+        "check" : "addressDiffers",
+        "id" : "A0000000-B000-C000-D000-E00000000001"
+      },
+      "homes" : [
+        {
+          "address" : "Str. Exemplului nr. 1",
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000001"
+        }
+      ],
+      "house" : null
+    },
+    {
+      "address" : "Str. Alta nr. 7",
+      "home" : {
+        "check" : "addressDiffers",
+        "id" : "A0000000-B000-C000-D000-E00000000001"
+      },
+      "homes" : [
+        {
+          "address" : "Str. Exemplului nr. 1",
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000001"
+        }
+      ],
+      "house" : null
+    },
+    {
+      "address" : "Str. Exemplului nr. 1",
+      "home" : {
+        "check" : null,
+        "id" : "A0000000-B000-C000-D000-E00000000001"
+      },
+      "homes" : [
+        {
+          "address" : "Str. Exemplului nr. 1",
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000001"
+        }
+      ],
+      "house" : {
+        "check" : null,
+        "id" : "A0000000-B000-C000-D000-E00000000001"
+      }
+    },
+    {
+      "address" : "Str. Exemplului nr. 3",
+      "home" : {
+        "check" : "addressDiffers",
+        "id" : "A0000000-B000-C000-D000-E00000000001"
+      },
+      "homes" : [
+        {
+          "address" : "Str. Exemplului nr. 1",
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000001"
+        }
+      ],
+      "house" : null
+    },
+    {
+      "address" : "Cod client 1000000000",
+      "home" : {
+        "check" : null,
+        "id" : "A0000000-B000-C000-D000-E00000000001"
+      },
+      "homes" : [
+        {
+          "address" : "Str. Exemplului nr. 1",
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000001"
+        }
+      ],
+      "house" : null
+    },
+    {
+      "address" : null,
+      "home" : {
+        "check" : null,
+        "id" : "A0000000-B000-C000-D000-E00000000001"
+      },
+      "homes" : [
+        {
+          "address" : "Str. Exemplului nr. 1",
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000001"
+        }
+      ],
+      "house" : null
+    },
+    {
+      "address" : "Strada Exemplului 5, Sector 3, Bucuresti",
+      "home" : {
+        "check" : null,
+        "id" : "A0000000-B000-C000-D000-E00000000001"
+      },
+      "homes" : [
+        {
+          "address" : null,
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000001"
+        }
+      ],
+      "house" : null
+    },
+    {
+      "address" : "Str. Exemplului nr. 9",
+      "home" : {
+        "check" : null,
+        "id" : "A0000000-B000-C000-D000-E00000000001"
+      },
+      "homes" : [
+        {
+          "address" : null,
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000001"
+        }
+      ],
+      "house" : null
+    },
+    {
+      "address" : "Str. Exemplului nr. 1, bl. A1, ap. 14",
+      "home" : {
+        "check" : null,
+        "id" : "A0000000-B000-C000-D000-E00000000001"
+      },
+      "homes" : [
+        {
+          "address" : null,
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000001"
+        }
+      ],
+      "house" : null
+    },
+    {
+      "address" : "Str. Exemplului nr. 1, bl. A1",
+      "home" : {
+        "check" : null,
+        "id" : "A0000000-B000-C000-D000-E00000000001"
+      },
+      "homes" : [
+        {
+          "address" : null,
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000001"
+        }
+      ],
+      "house" : null
+    },
+    {
+      "address" : "Str. Exemplului nr. 5",
+      "home" : {
+        "check" : null,
+        "id" : "A0000000-B000-C000-D000-E00000000001"
+      },
+      "homes" : [
+        {
+          "address" : null,
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000001"
+        }
+      ],
+      "house" : null
+    },
+    {
+      "address" : "Str. Exemplului nr. 5, ap. 12",
+      "home" : {
+        "check" : null,
+        "id" : "A0000000-B000-C000-D000-E00000000001"
+      },
+      "homes" : [
+        {
+          "address" : null,
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000001"
+        }
+      ],
+      "house" : null
+    },
+    {
+      "address" : "Str. Alta nr. 7",
+      "home" : {
+        "check" : null,
+        "id" : "A0000000-B000-C000-D000-E00000000001"
+      },
+      "homes" : [
+        {
+          "address" : null,
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000001"
+        }
+      ],
+      "house" : null
+    },
+    {
+      "address" : "Str. Exemplului nr. 1",
+      "home" : {
+        "check" : null,
+        "id" : "A0000000-B000-C000-D000-E00000000001"
+      },
+      "homes" : [
+        {
+          "address" : null,
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000001"
+        }
+      ],
+      "house" : null
+    },
+    {
+      "address" : "Str. Exemplului nr. 3",
+      "home" : {
+        "check" : null,
+        "id" : "A0000000-B000-C000-D000-E00000000001"
+      },
+      "homes" : [
+        {
+          "address" : null,
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000001"
+        }
+      ],
+      "house" : null
+    },
+    {
+      "address" : "Cod client 1000000000",
+      "home" : {
+        "check" : null,
+        "id" : "A0000000-B000-C000-D000-E00000000001"
+      },
+      "homes" : [
+        {
+          "address" : null,
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000001"
+        }
+      ],
+      "house" : null
+    },
+    {
+      "address" : null,
+      "home" : {
+        "check" : null,
+        "id" : "A0000000-B000-C000-D000-E00000000001"
+      },
+      "homes" : [
+        {
+          "address" : null,
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000001"
+        }
+      ],
+      "house" : null
+    },
+    {
+      "address" : "Strada Exemplului 5, Sector 3, Bucuresti",
+      "home" : null,
+      "homes" : [
+        {
+          "address" : "Str. Exemplului nr. 1",
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000001"
+        },
+        {
+          "address" : "Strada Exemplului 1",
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000002"
+        }
+      ],
+      "house" : null
+    },
+    {
+      "address" : "Str. Exemplului nr. 9",
+      "home" : null,
+      "homes" : [
+        {
+          "address" : "Str. Exemplului nr. 1",
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000001"
+        },
+        {
+          "address" : "Strada Exemplului 1",
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000002"
+        }
+      ],
+      "house" : null
+    },
+    {
+      "address" : "Str. Exemplului nr. 1, bl. A1, ap. 14",
+      "home" : null,
+      "homes" : [
+        {
+          "address" : "Str. Exemplului nr. 1",
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000001"
+        },
+        {
+          "address" : "Strada Exemplului 1",
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000002"
+        }
+      ],
+      "house" : null
+    },
+    {
+      "address" : "Str. Exemplului nr. 1, bl. A1",
+      "home" : null,
+      "homes" : [
+        {
+          "address" : "Str. Exemplului nr. 1",
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000001"
+        },
+        {
+          "address" : "Strada Exemplului 1",
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000002"
+        }
+      ],
+      "house" : null
+    },
+    {
+      "address" : "Str. Exemplului nr. 5",
+      "home" : null,
+      "homes" : [
+        {
+          "address" : "Str. Exemplului nr. 1",
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000001"
+        },
+        {
+          "address" : "Strada Exemplului 1",
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000002"
+        }
+      ],
+      "house" : null
+    },
+    {
+      "address" : "Str. Exemplului nr. 5, ap. 12",
+      "home" : null,
+      "homes" : [
+        {
+          "address" : "Str. Exemplului nr. 1",
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000001"
+        },
+        {
+          "address" : "Strada Exemplului 1",
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000002"
+        }
+      ],
+      "house" : null
+    },
+    {
+      "address" : "Str. Alta nr. 7",
+      "home" : null,
+      "homes" : [
+        {
+          "address" : "Str. Exemplului nr. 1",
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000001"
+        },
+        {
+          "address" : "Strada Exemplului 1",
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000002"
+        }
+      ],
+      "house" : null
+    },
+    {
+      "address" : "Str. Exemplului nr. 1",
+      "home" : null,
+      "homes" : [
+        {
+          "address" : "Str. Exemplului nr. 1",
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000001"
+        },
+        {
+          "address" : "Strada Exemplului 1",
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000002"
+        }
+      ],
+      "house" : null
+    },
+    {
+      "address" : "Str. Exemplului nr. 3",
+      "home" : null,
+      "homes" : [
+        {
+          "address" : "Str. Exemplului nr. 1",
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000001"
+        },
+        {
+          "address" : "Strada Exemplului 1",
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000002"
+        }
+      ],
+      "house" : null
+    },
+    {
+      "address" : "Cod client 1000000000",
+      "home" : null,
+      "homes" : [
+        {
+          "address" : "Str. Exemplului nr. 1",
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000001"
+        },
+        {
+          "address" : "Strada Exemplului 1",
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000002"
+        }
+      ],
+      "house" : null
+    },
+    {
+      "address" : null,
+      "home" : null,
+      "homes" : [
+        {
+          "address" : "Str. Exemplului nr. 1",
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000001"
+        },
+        {
+          "address" : "Strada Exemplului 1",
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000002"
+        }
+      ],
+      "house" : null
+    },
+    {
+      "address" : "Strada Exemplului 5, Sector 3, Bucuresti",
+      "home" : null,
+      "homes" : [
+        {
+          "address" : "Str. Exemplu nr. 3",
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000001"
+        },
+        {
+          "address" : "Str. Alta nr. 3",
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000002"
+        }
+      ],
+      "house" : null
+    },
+    {
+      "address" : "Str. Exemplului nr. 9",
+      "home" : null,
+      "homes" : [
+        {
+          "address" : "Str. Exemplu nr. 3",
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000001"
+        },
+        {
+          "address" : "Str. Alta nr. 3",
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000002"
+        }
+      ],
+      "house" : null
+    },
+    {
+      "address" : "Str. Exemplului nr. 1, bl. A1, ap. 14",
+      "home" : null,
+      "homes" : [
+        {
+          "address" : "Str. Exemplu nr. 3",
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000001"
+        },
+        {
+          "address" : "Str. Alta nr. 3",
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000002"
+        }
+      ],
+      "house" : null
+    },
+    {
+      "address" : "Str. Exemplului nr. 1, bl. A1",
+      "home" : null,
+      "homes" : [
+        {
+          "address" : "Str. Exemplu nr. 3",
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000001"
+        },
+        {
+          "address" : "Str. Alta nr. 3",
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000002"
+        }
+      ],
+      "house" : null
+    },
+    {
+      "address" : "Str. Exemplului nr. 5",
+      "home" : null,
+      "homes" : [
+        {
+          "address" : "Str. Exemplu nr. 3",
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000001"
+        },
+        {
+          "address" : "Str. Alta nr. 3",
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000002"
+        }
+      ],
+      "house" : null
+    },
+    {
+      "address" : "Str. Exemplului nr. 5, ap. 12",
+      "home" : null,
+      "homes" : [
+        {
+          "address" : "Str. Exemplu nr. 3",
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000001"
+        },
+        {
+          "address" : "Str. Alta nr. 3",
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000002"
+        }
+      ],
+      "house" : null
+    },
+    {
+      "address" : "Str. Alta nr. 7",
+      "home" : null,
+      "homes" : [
+        {
+          "address" : "Str. Exemplu nr. 3",
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000001"
+        },
+        {
+          "address" : "Str. Alta nr. 3",
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000002"
+        }
+      ],
+      "house" : null
+    },
+    {
+      "address" : "Str. Exemplului nr. 1",
+      "home" : null,
+      "homes" : [
+        {
+          "address" : "Str. Exemplu nr. 3",
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000001"
+        },
+        {
+          "address" : "Str. Alta nr. 3",
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000002"
+        }
+      ],
+      "house" : null
+    },
+    {
+      "address" : "Str. Exemplului nr. 3",
+      "home" : {
+        "check" : "addressPartlyAgrees",
+        "id" : "A0000000-B000-C000-D000-E00000000001"
+      },
+      "homes" : [
+        {
+          "address" : "Str. Exemplu nr. 3",
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000001"
+        },
+        {
+          "address" : "Str. Alta nr. 3",
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000002"
+        }
+      ],
+      "house" : {
+        "check" : "addressPartlyAgrees",
+        "id" : "A0000000-B000-C000-D000-E00000000001"
+      }
+    },
+    {
+      "address" : "Cod client 1000000000",
+      "home" : null,
+      "homes" : [
+        {
+          "address" : "Str. Exemplu nr. 3",
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000001"
+        },
+        {
+          "address" : "Str. Alta nr. 3",
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000002"
+        }
+      ],
+      "house" : null
+    },
+    {
+      "address" : null,
+      "home" : null,
+      "homes" : [
+        {
+          "address" : "Str. Exemplu nr. 3",
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000001"
+        },
+        {
+          "address" : "Str. Alta nr. 3",
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000002"
+        }
+      ],
+      "house" : null
+    },
+    {
+      "address" : "Strada Exemplului 5, Sector 3, Bucuresti",
+      "home" : null,
+      "homes" : [
+
+      ],
+      "house" : null
+    },
+    {
+      "address" : "Str. Exemplului nr. 9",
+      "home" : null,
+      "homes" : [
+
+      ],
+      "house" : null
+    },
+    {
+      "address" : "Str. Exemplului nr. 1, bl. A1, ap. 14",
+      "home" : null,
+      "homes" : [
+
+      ],
+      "house" : null
+    },
+    {
+      "address" : "Str. Exemplului nr. 1, bl. A1",
+      "home" : null,
+      "homes" : [
+
+      ],
+      "house" : null
+    },
+    {
+      "address" : "Str. Exemplului nr. 5",
+      "home" : null,
+      "homes" : [
+
+      ],
+      "house" : null
+    },
+    {
+      "address" : "Str. Exemplului nr. 5, ap. 12",
+      "home" : null,
+      "homes" : [
+
+      ],
+      "house" : null
+    },
+    {
+      "address" : "Str. Alta nr. 7",
+      "home" : null,
+      "homes" : [
+
+      ],
+      "house" : null
+    },
+    {
+      "address" : "Str. Exemplului nr. 1",
+      "home" : null,
+      "homes" : [
+
+      ],
+      "house" : null
+    },
+    {
+      "address" : "Str. Exemplului nr. 3",
+      "home" : null,
+      "homes" : [
+
+      ],
+      "house" : null
+    },
+    {
+      "address" : "Cod client 1000000000",
+      "home" : null,
+      "homes" : [
+
+      ],
+      "house" : null
+    },
+    {
+      "address" : null,
+      "home" : null,
+      "homes" : [
+
+      ],
+      "house" : null
+    }
+  ],
+  "rule" : "SubscriptionMatcher.house(at:among:) and home(at:among:)",
+  "shape" : "address: as a paper prints it (null for none); homes: each its id, its address (null for none) and the fields kept on it; house: the home the address picks by itself, with what is worth a look (addressPartlyAgrees, addressDiffers, null), or null when it can't tell; home: the same, else the only home, or null.",
+  "source" : "ios/DosarCuSina/Services/Subscriptions/SubscriptionMatcher.swift",
+  "writtenBy" : "ios/DosarCuSinaTests/SubscriptionVectorsTests.swift"
+}

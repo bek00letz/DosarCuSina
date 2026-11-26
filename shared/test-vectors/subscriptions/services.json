@@ -1,0 +1,335 @@
+{
+  "cases" : [
+    {
+      "codes" : [
+        "clc",
+        "clientCode",
+        "contractNumber"
+      ],
+      "group" : "subscriptionGroup.utilities",
+      "isTiedToHome" : true,
+      "meter" : "gas",
+      "sendsRegularBills" : true,
+      "service" : "service.gas",
+      "text" : "service.gas"
+    },
+    {
+      "codes" : [
+        "pod",
+        "clientCode",
+        "contractNumber"
+      ],
+      "group" : "subscriptionGroup.utilities",
+      "isTiedToHome" : true,
+      "meter" : "electricity",
+      "sendsRegularBills" : true,
+      "service" : "service.electricity",
+      "text" : "service.electricity"
+    },
+    {
+      "codes" : [
+        "placeCode",
+        "clientCode",
+        "contractNumber"
+      ],
+      "group" : "subscriptionGroup.utilities",
+      "isTiedToHome" : true,
+      "meter" : "coldWater",
+      "sendsRegularBills" : true,
+      "service" : "service.water",
+      "text" : "service.water"
+    },
+    {
+      "codes" : [
+        "placeCode",
+        "clientCode",
+        "contractNumber"
+      ],
+      "group" : "subscriptionGroup.utilities",
+      "isTiedToHome" : true,
+      "meter" : null,
+      "sendsRegularBills" : true,
+      "service" : "service.heating",
+      "text" : "service.heating"
+    },
+    {
+      "codes" : [
+        "clientCode",
+        "contractNumber"
+      ],
+      "group" : "subscriptionGroup.utilities",
+      "isTiedToHome" : true,
+      "meter" : null,
+      "sendsRegularBills" : true,
+      "service" : "service.sanitation",
+      "text" : "service.sanitation"
+    },
+    {
+      "codes" : [
+        "clientCode",
+        "contractNumber",
+        "account"
+      ],
+      "group" : "subscriptionGroup.internetAndPhone",
+      "isTiedToHome" : true,
+      "meter" : null,
+      "sendsRegularBills" : true,
+      "service" : "service.internetTV",
+      "text" : "service.internetTV"
+    },
+    {
+      "codes" : [
+        "phoneNumber",
+        "clientCode",
+        "contractNumber",
+        "account"
+      ],
+      "group" : "subscriptionGroup.internetAndPhone",
+      "isTiedToHome" : false,
+      "meter" : null,
+      "sendsRegularBills" : true,
+      "service" : "service.mobile",
+      "text" : "service.mobile"
+    },
+    {
+      "codes" : [
+        "clientCode",
+        "contractNumber"
+      ],
+      "group" : "subscriptionGroup.transport",
+      "isTiedToHome" : false,
+      "meter" : null,
+      "sendsRegularBills" : false,
+      "service" : "service.transport",
+      "text" : "service.transport"
+    },
+    {
+      "codes" : [
+
+      ],
+      "group" : "subscriptionGroup.appsAndStreaming",
+      "isTiedToHome" : false,
+      "meter" : null,
+      "sendsRegularBills" : false,
+      "service" : "service.streaming",
+      "text" : "service.streaming"
+    },
+    {
+      "codes" : [
+        "clientCode",
+        "contractNumber"
+      ],
+      "group" : "subscriptionGroup.other",
+      "isTiedToHome" : false,
+      "meter" : null,
+      "sendsRegularBills" : false,
+      "service" : "service.other",
+      "text" : "service.other"
+    },
+    {
+      "codes" : [
+        "clc",
+        "clientCode",
+        "contractNumber"
+      ],
+      "group" : "subscriptionGroup.utilities",
+      "isTiedToHome" : true,
+      "meter" : "gas",
+      "sendsRegularBills" : true,
+      "service" : "service.gas",
+      "text" : "Gaze naturale"
+    },
+    {
+      "codes" : [
+        "clc",
+        "clientCode",
+        "contractNumber"
+      ],
+      "group" : "subscriptionGroup.utilities",
+      "isTiedToHome" : true,
+      "meter" : "gas",
+      "sendsRegularBills" : true,
+      "service" : "service.gas",
+      "text" : "gaz"
+    },
+    {
+      "codes" : [
+        "pod",
+        "clientCode",
+        "contractNumber"
+      ],
+      "group" : "subscriptionGroup.utilities",
+      "isTiedToHome" : true,
+      "meter" : "electricity",
+      "sendsRegularBills" : true,
+      "service" : "service.electricity",
+      "text" : "CURENT"
+    },
+    {
+      "codes" : [
+        "pod",
+        "clientCode",
+        "contractNumber"
+      ],
+      "group" : "subscriptionGroup.utilities",
+      "isTiedToHome" : true,
+      "meter" : "electricity",
+      "sendsRegularBills" : true,
+      "service" : "service.electricity",
+      "text" : "Energie electrică"
+    },
+    {
+      "codes" : [
+        "placeCode",
+        "clientCode",
+        "contractNumber"
+      ],
+      "group" : "subscriptionGroup.utilities",
+      "isTiedToHome" : true,
+      "meter" : "coldWater",
+      "sendsRegularBills" : true,
+      "service" : "service.water",
+      "text" : "apa-canal"
+    },
+    {
+      "codes" : [
+        "placeCode",
+        "clientCode",
+        "contractNumber"
+      ],
+      "group" : "subscriptionGroup.utilities",
+      "isTiedToHome" : true,
+      "meter" : null,
+      "sendsRegularBills" : true,
+      "service" : "service.heating",
+      "text" : "Termoficare"
+    },
+    {
+      "codes" : [
+        "clientCode",
+        "contractNumber",
+        "account"
+      ],
+      "group" : "subscriptionGroup.internetAndPhone",
+      "isTiedToHome" : true,
+      "meter" : null,
+      "sendsRegularBills" : true,
+      "service" : "service.internetTV",
+      "text" : "Internet"
+    },
+    {
+      "codes" : [
+        "phoneNumber",
+        "clientCode",
+        "contractNumber",
+        "account"
+      ],
+      "group" : "subscriptionGroup.internetAndPhone",
+      "isTiedToHome" : false,
+      "meter" : null,
+      "sendsRegularBills" : true,
+      "service" : "service.mobile",
+      "text" : "telefonie   mobilă"
+    },
+    {
+      "codes" : [
+        "clientCode",
+        "contractNumber"
+      ],
+      "group" : "subscriptionGroup.other",
+      "isTiedToHome" : false,
+      "meter" : null,
+      "sendsRegularBills" : false,
+      "service" : null,
+      "text" : "Netflix"
+    },
+    {
+      "codes" : [
+        "clientCode",
+        "contractNumber"
+      ],
+      "group" : "subscriptionGroup.other",
+      "isTiedToHome" : false,
+      "meter" : null,
+      "sendsRegularBills" : false,
+      "service" : null,
+      "text" : ""
+    },
+    {
+      "codes" : [
+        "clientCode",
+        "contractNumber"
+      ],
+      "group" : "subscriptionGroup.other",
+      "isTiedToHome" : false,
+      "meter" : null,
+      "sendsRegularBills" : false,
+      "service" : null,
+      "text" : null
+    },
+    {
+      "carrying" : "clientCode",
+      "services" : [
+        "service.gas",
+        "service.electricity",
+        "service.water",
+        "service.heating",
+        "service.sanitation",
+        "service.internetTV",
+        "service.mobile",
+        "service.transport",
+        "service.other"
+      ]
+    },
+    {
+      "carrying" : "contractNumber",
+      "services" : [
+        "service.gas",
+        "service.electricity",
+        "service.water",
+        "service.heating",
+        "service.sanitation",
+        "service.internetTV",
+        "service.mobile",
+        "service.transport",
+        "service.other"
+      ]
+    },
+    {
+      "carrying" : "account",
+      "services" : [
+        "service.internetTV",
+        "service.mobile"
+      ]
+    },
+    {
+      "carrying" : "pod",
+      "services" : [
+        "service.electricity"
+      ]
+    },
+    {
+      "carrying" : "clc",
+      "services" : [
+        "service.gas"
+      ]
+    },
+    {
+      "carrying" : "placeCode",
+      "services" : [
+        "service.water",
+        "service.heating"
+      ]
+    },
+    {
+      "carrying" : "phoneNumber",
+      "services" : [
+        "service.mobile"
+      ]
+    }
+  ],
+  "rule" : "ServiceKind.service(_:), isTiedToHome, sendsRegularBills, meterKind(for:), codes(of:), keys(carrying:), SubscriptionGroup.of(service:)",
+  "shape" : "text: a stored or typed service (null for none), the service it names (null for none), whether it lives under a home, whether it bills on a rhythm, its meter's kind (null without one), its codes' names in order, and its group's key. carrying: a code's name and the services whose papers carry it, in order.",
+  "source" : "ios/DosarCuSina/Models/Fields/ChoiceOptions.swift",
+  "writtenBy" : "ios/DosarCuSinaTests/SubscriptionVectorsTests.swift"
+}

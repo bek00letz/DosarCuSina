@@ -1,0 +1,1468 @@
+{
+  "cases" : [
+    {
+      "check" : null,
+      "decision" : {
+        "id" : "A0000000-B000-C000-D000-E00000000012",
+        "type" : "existing"
+      },
+      "homes" : [
+        {
+          "address" : "Str. Exemplului nr. 1",
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000001"
+        },
+        {
+          "address" : "Str. Exemplului nr. 5",
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000005"
+        }
+      ],
+      "isTiedToHome" : true,
+      "keptCodes" : [
+        "clc"
+      ],
+      "name" : "Codes come first",
+      "reading" : {
+        "codes" : {
+          "clc" : "DEG0000000000002"
+        },
+        "isBill" : true,
+        "provider" : "ENGIE Romania S.A.",
+        "service" : "service.gas",
+        "supplyAddress" : null
+      },
+      "subscriptions" : [
+        {
+          "fields" : {
+            "subscription.clc" : "DEG0000000000001"
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000011",
+          "parentID" : "A0000000-B000-C000-D000-E00000000001",
+          "provider" : "ENGIE Romania S.A.",
+          "service" : "service.gas"
+        },
+        {
+          "fields" : {
+            "subscription.clc" : "DEG 0000-0000-0000-2"
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000012",
+          "parentID" : "A0000000-B000-C000-D000-E00000000005",
+          "provider" : "ENGIE Romania S.A.",
+          "service" : "service.gas"
+        }
+      ],
+      "within" : null
+    },
+    {
+      "check" : null,
+      "decision" : {
+        "id" : "A0000000-B000-C000-D000-E00000000001",
+        "type" : "newUnder"
+      },
+      "homes" : [
+        {
+          "address" : null,
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000001"
+        }
+      ],
+      "isTiedToHome" : true,
+      "keptCodes" : [
+        "clc"
+      ],
+      "name" : "A different consumption point is never the one",
+      "reading" : {
+        "codes" : {
+          "clc" : "DEG0000000000003"
+        },
+        "isBill" : true,
+        "provider" : "ENGIE Romania S.A.",
+        "service" : "service.gas",
+        "supplyAddress" : null
+      },
+      "subscriptions" : [
+        {
+          "fields" : {
+            "subscription.clc" : "DEG0000000000001"
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000011",
+          "parentID" : "A0000000-B000-C000-D000-E00000000001",
+          "provider" : "ENGIE Romania S.A.",
+          "service" : "service.gas"
+        }
+      ],
+      "within" : null
+    },
+    {
+      "check" : null,
+      "decision" : {
+        "id" : "A0000000-B000-C000-D000-E00000000011",
+        "type" : "existing"
+      },
+      "homes" : [
+        {
+          "address" : null,
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000001"
+        }
+      ],
+      "isTiedToHome" : true,
+      "keptCodes" : [
+
+      ],
+      "name" : "A code from another service is never read",
+      "reading" : {
+        "codes" : {
+          "pod" : "RO005E000000001"
+        },
+        "isBill" : true,
+        "provider" : "ENGIE Romania S.A.",
+        "service" : "service.gas",
+        "supplyAddress" : null
+      },
+      "subscriptions" : [
+        {
+          "fields" : {
+            "subscription.clc" : "DEG0000000000001"
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000011",
+          "parentID" : "A0000000-B000-C000-D000-E00000000001",
+          "provider" : "ENGIE Romania S.A.",
+          "service" : "service.gas"
+        },
+        {
+          "fields" : {
+            "subscription.pod" : "RO005E000000001"
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000012",
+          "parentID" : "A0000000-B000-C000-D000-E00000000001",
+          "provider" : "Enel Energie S.A.",
+          "service" : "service.electricity"
+        }
+      ],
+      "within" : null
+    },
+    {
+      "check" : null,
+      "decision" : {
+        "id" : "A0000000-B000-C000-D000-E00000000011",
+        "type" : "existing"
+      },
+      "homes" : [
+        {
+          "address" : null,
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000001"
+        }
+      ],
+      "isTiedToHome" : true,
+      "keptCodes" : [
+        "account"
+      ],
+      "name" : "A stray POD never tells two internet contracts apart",
+      "reading" : {
+        "codes" : {
+          "account" : "3000000000",
+          "pod" : "RO005E000000001"
+        },
+        "isBill" : true,
+        "provider" : "Vodafone Romania",
+        "service" : "service.internetTV",
+        "supplyAddress" : null
+      },
+      "subscriptions" : [
+        {
+          "fields" : {
+            "subscription.pod" : "RO005E000000009"
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000011",
+          "parentID" : "A0000000-B000-C000-D000-E00000000001",
+          "provider" : "Vodafone Romania S.A.",
+          "service" : "service.internetTV"
+        }
+      ],
+      "within" : null
+    },
+    {
+      "check" : null,
+      "decision" : {
+        "id" : "A0000000-B000-C000-D000-E00000000012",
+        "type" : "existing"
+      },
+      "homes" : [
+        {
+          "address" : "Str. Exemplului nr. 1",
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000001"
+        },
+        {
+          "address" : "Str. Exemplului nr. 5",
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000005"
+        }
+      ],
+      "isTiedToHome" : true,
+      "keptCodes" : [
+
+      ],
+      "name" : "A bill that matches by its address only",
+      "reading" : {
+        "codes" : {
+
+        },
+        "isBill" : true,
+        "provider" : "ENGIE Romania S.A.",
+        "service" : "service.gas",
+        "supplyAddress" : "Str. Exemplului nr. 5"
+      },
+      "subscriptions" : [
+        {
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000011",
+          "parentID" : "A0000000-B000-C000-D000-E00000000001",
+          "provider" : "ENGIE Romania S.A.",
+          "service" : "service.gas"
+        },
+        {
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000012",
+          "parentID" : "A0000000-B000-C000-D000-E00000000005",
+          "provider" : "ENGIE Romania S.A.",
+          "service" : "service.gas"
+        }
+      ],
+      "within" : null
+    },
+    {
+      "check" : null,
+      "decision" : {
+        "id" : "A0000000-B000-C000-D000-E00000000005",
+        "type" : "newUnder"
+      },
+      "homes" : [
+        {
+          "address" : "Str. Exemplului nr. 1",
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000001"
+        },
+        {
+          "address" : "Str. Exemplului nr. 5",
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000005"
+        }
+      ],
+      "isTiedToHome" : true,
+      "keptCodes" : [
+
+      ],
+      "name" : "Two homes on one street: the number decides",
+      "reading" : {
+        "codes" : {
+
+        },
+        "isBill" : true,
+        "provider" : "ENGIE Romania S.A.",
+        "service" : "service.gas",
+        "supplyAddress" : "Strada Exemplului 5, Sector 3, Bucuresti"
+      },
+      "subscriptions" : [
+
+      ],
+      "within" : null
+    },
+    {
+      "check" : null,
+      "decision" : {
+        "id" : null,
+        "type" : "undecided"
+      },
+      "homes" : [
+        {
+          "address" : "Str. Exemplului nr. 1",
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000001"
+        },
+        {
+          "address" : "Str. Exemplului nr. 5",
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000005"
+        }
+      ],
+      "isTiedToHome" : true,
+      "keptCodes" : [
+
+      ],
+      "name" : "No address and no code with two homes: the person picks",
+      "reading" : {
+        "codes" : {
+
+        },
+        "isBill" : true,
+        "provider" : "ENGIE Romania S.A.",
+        "service" : "service.gas",
+        "supplyAddress" : null
+      },
+      "subscriptions" : [
+
+      ],
+      "within" : null
+    },
+    {
+      "check" : null,
+      "decision" : {
+        "id" : null,
+        "type" : "undecided"
+      },
+      "homes" : [
+        {
+          "address" : "Str. Exemplului nr. 1",
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000001"
+        },
+        {
+          "address" : "Str. Exemplului nr. 5",
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000005"
+        }
+      ],
+      "isTiedToHome" : true,
+      "keptCodes" : [
+
+      ],
+      "name" : "An address neither home has",
+      "reading" : {
+        "codes" : {
+
+        },
+        "isBill" : true,
+        "provider" : "ENGIE Romania S.A.",
+        "service" : "service.gas",
+        "supplyAddress" : "Str. Exemplului nr. 9"
+      },
+      "subscriptions" : [
+
+      ],
+      "within" : null
+    },
+    {
+      "check" : null,
+      "decision" : {
+        "id" : "A0000000-B000-C000-D000-E00000000014",
+        "type" : "newUnder"
+      },
+      "homes" : [
+        {
+          "address" : "Str. Exemplului nr. 1, bl. A1, sc. B, ap. 12",
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000012"
+        },
+        {
+          "address" : "Str. Exemplului nr. 1, bl. A1, sc. B, ap. 14",
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000014"
+        }
+      ],
+      "isTiedToHome" : true,
+      "keptCodes" : [
+
+      ],
+      "name" : "Two flats in one block, by the apartment",
+      "reading" : {
+        "codes" : {
+
+        },
+        "isBill" : true,
+        "provider" : "ENGIE Romania S.A.",
+        "service" : "service.gas",
+        "supplyAddress" : "Str. Exemplului nr. 1, bl. A1, ap. 14"
+      },
+      "subscriptions" : [
+
+      ],
+      "within" : null
+    },
+    {
+      "check" : null,
+      "decision" : {
+        "id" : null,
+        "type" : "undecided"
+      },
+      "homes" : [
+        {
+          "address" : "Str. Exemplului nr. 1, bl. A1, sc. B, ap. 12",
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000012"
+        },
+        {
+          "address" : "Str. Exemplului nr. 1, bl. A1, sc. B, ap. 14",
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000014"
+        }
+      ],
+      "isTiedToHome" : true,
+      "keptCodes" : [
+
+      ],
+      "name" : "Two flats in one block, the bill not saying which",
+      "reading" : {
+        "codes" : {
+
+        },
+        "isBill" : true,
+        "provider" : "ENGIE Romania S.A.",
+        "service" : "service.gas",
+        "supplyAddress" : "Str. Exemplului nr. 1, bl. A1"
+      },
+      "subscriptions" : [
+
+      ],
+      "within" : null
+    },
+    {
+      "check" : "addressPartlyAgrees",
+      "decision" : {
+        "id" : "A0000000-B000-C000-D000-E00000000001",
+        "type" : "newUnder"
+      },
+      "homes" : [
+        {
+          "address" : "Str. Exemplului nr. 5, ap. 12",
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000001"
+        },
+        {
+          "address" : "Str. Alta nr. 2",
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000002"
+        }
+      ],
+      "isTiedToHome" : true,
+      "keptCodes" : [
+
+      ],
+      "name" : "A partial match is suggested with a check",
+      "reading" : {
+        "codes" : {
+
+        },
+        "isBill" : true,
+        "provider" : "ENGIE Romania S.A.",
+        "service" : "service.gas",
+        "supplyAddress" : "Str. Exemplului nr. 5"
+      },
+      "subscriptions" : [
+
+      ],
+      "within" : null
+    },
+    {
+      "check" : "addressDiffers",
+      "decision" : {
+        "id" : "A0000000-B000-C000-D000-E00000000001",
+        "type" : "newUnder"
+      },
+      "homes" : [
+        {
+          "address" : "Str. Exemplului nr. 1",
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000001"
+        }
+      ],
+      "isTiedToHome" : true,
+      "keptCodes" : [
+
+      ],
+      "name" : "The only home at another address is kept but checked",
+      "reading" : {
+        "codes" : {
+
+        },
+        "isBill" : true,
+        "provider" : "ENGIE Romania S.A.",
+        "service" : "service.gas",
+        "supplyAddress" : "Str. Alta nr. 7"
+      },
+      "subscriptions" : [
+
+      ],
+      "within" : null
+    },
+    {
+      "check" : "addressDiffers",
+      "decision" : {
+        "id" : "A0000000-B000-C000-D000-E00000000011",
+        "type" : "existing"
+      },
+      "homes" : [
+        {
+          "address" : "Str. Exemplului nr. 1",
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000001"
+        }
+      ],
+      "isTiedToHome" : true,
+      "keptCodes" : [
+
+      ],
+      "name" : "The only home at another address, an existing contract there",
+      "reading" : {
+        "codes" : {
+
+        },
+        "isBill" : true,
+        "provider" : "ENGIE Romania S.A.",
+        "service" : "service.gas",
+        "supplyAddress" : "Str. Alta nr. 7"
+      },
+      "subscriptions" : [
+        {
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000011",
+          "parentID" : "A0000000-B000-C000-D000-E00000000001",
+          "provider" : "ENGIE Romania S.A.",
+          "service" : "service.gas"
+        }
+      ],
+      "within" : null
+    },
+    {
+      "check" : null,
+      "decision" : {
+        "id" : "A0000000-B000-C000-D000-E00000000001",
+        "type" : "newUnder"
+      },
+      "homes" : [
+        {
+          "address" : "Str. Exemplului nr. 1",
+          "fields" : {
+            "home.clc" : "DEG0000000000001"
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000001"
+        },
+        {
+          "address" : "Str. Exemplului nr. 5",
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000005"
+        }
+      ],
+      "isTiedToHome" : true,
+      "keptCodes" : [
+        "clc"
+      ],
+      "name" : "The home's own code outranks the address",
+      "reading" : {
+        "codes" : {
+          "clc" : "DEG0000000000001"
+        },
+        "isBill" : true,
+        "provider" : "ENGIE Romania S.A.",
+        "service" : "service.gas",
+        "supplyAddress" : "Str. Exemplului nr. 5"
+      },
+      "subscriptions" : [
+
+      ],
+      "within" : null
+    },
+    {
+      "check" : null,
+      "decision" : {
+        "id" : null,
+        "type" : "undecided"
+      },
+      "homes" : [
+        {
+          "address" : "Str. Exemplului nr. 1",
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000001"
+        },
+        {
+          "address" : "Str. Exemplului nr. 5",
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000005"
+        }
+      ],
+      "isTiedToHome" : true,
+      "keptCodes" : [
+        "clientCode"
+      ],
+      "name" : "A client code alone can't tell two homes apart",
+      "reading" : {
+        "codes" : {
+          "clientCode" : "1000000000"
+        },
+        "isBill" : true,
+        "provider" : "ENGIE Romania S.A.",
+        "service" : "service.gas",
+        "supplyAddress" : null
+      },
+      "subscriptions" : [
+        {
+          "fields" : {
+            "subscription.clientCode" : "1000000000"
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000011",
+          "parentID" : "A0000000-B000-C000-D000-E00000000001",
+          "provider" : "ENGIE Romania S.A.",
+          "service" : "service.gas"
+        },
+        {
+          "fields" : {
+            "subscription.clientCode" : "1000000000"
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000012",
+          "parentID" : "A0000000-B000-C000-D000-E00000000005",
+          "provider" : "ENGIE Romania S.A.",
+          "service" : "service.gas"
+        }
+      ],
+      "within" : null
+    },
+    {
+      "check" : null,
+      "decision" : {
+        "id" : "A0000000-B000-C000-D000-E00000000012",
+        "type" : "existing"
+      },
+      "homes" : [
+        {
+          "address" : "Str. Exemplului nr. 1",
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000001"
+        },
+        {
+          "address" : "Str. Exemplului nr. 5",
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000005"
+        }
+      ],
+      "isTiedToHome" : true,
+      "keptCodes" : [
+        "clientCode"
+      ],
+      "name" : "A client code alone, inside the home the person chose",
+      "reading" : {
+        "codes" : {
+          "clientCode" : "1000000000"
+        },
+        "isBill" : true,
+        "provider" : "ENGIE Romania S.A.",
+        "service" : "service.gas",
+        "supplyAddress" : null
+      },
+      "subscriptions" : [
+        {
+          "fields" : {
+            "subscription.clientCode" : "1000000000"
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000011",
+          "parentID" : "A0000000-B000-C000-D000-E00000000001",
+          "provider" : "ENGIE Romania S.A.",
+          "service" : "service.gas"
+        },
+        {
+          "fields" : {
+            "subscription.clientCode" : "1000000000"
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000012",
+          "parentID" : "A0000000-B000-C000-D000-E00000000005",
+          "provider" : "ENGIE Romania S.A.",
+          "service" : "service.gas"
+        }
+      ],
+      "within" : "A0000000-B000-C000-D000-E00000000005"
+    },
+    {
+      "check" : null,
+      "decision" : {
+        "id" : null,
+        "type" : "undecided"
+      },
+      "homes" : [
+        {
+          "address" : null,
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000001"
+        }
+      ],
+      "isTiedToHome" : true,
+      "keptCodes" : [
+        "clientCode"
+      ],
+      "name" : "Two contracts with the same client code and one home",
+      "reading" : {
+        "codes" : {
+          "clientCode" : "1000000000"
+        },
+        "isBill" : true,
+        "provider" : "ENGIE Romania S.A.",
+        "service" : "service.gas",
+        "supplyAddress" : null
+      },
+      "subscriptions" : [
+        {
+          "fields" : {
+            "subscription.clientCode" : "1000000000"
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000011",
+          "parentID" : "A0000000-B000-C000-D000-E00000000001",
+          "provider" : "ENGIE Romania S.A.",
+          "service" : "service.gas"
+        },
+        {
+          "fields" : {
+            "subscription.clientCode" : "1000000000"
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000012",
+          "parentID" : "A0000000-B000-C000-D000-E00000000001",
+          "provider" : "ENGIE Romania S.A.",
+          "service" : "service.gas"
+        }
+      ],
+      "within" : null
+    },
+    {
+      "check" : null,
+      "decision" : {
+        "id" : "A0000000-B000-C000-D000-E00000000012",
+        "type" : "existing"
+      },
+      "homes" : [
+        {
+          "address" : null,
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000001"
+        }
+      ],
+      "isTiedToHome" : true,
+      "keptCodes" : [
+        "clientCode",
+        "contractNumber"
+      ],
+      "name" : "A client code and a contract number outrank a client code",
+      "reading" : {
+        "codes" : {
+          "clientCode" : "1000000000",
+          "contractNumber" : "CTR-0001"
+        },
+        "isBill" : true,
+        "provider" : "ENGIE Romania S.A.",
+        "service" : "service.gas",
+        "supplyAddress" : null
+      },
+      "subscriptions" : [
+        {
+          "fields" : {
+            "subscription.clientCode" : "1000000000"
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000011",
+          "parentID" : "A0000000-B000-C000-D000-E00000000001",
+          "provider" : "ENGIE Romania S.A.",
+          "service" : "service.gas"
+        },
+        {
+          "fields" : {
+            "subscription.clientCode" : "1000000000",
+            "subscription.contractNumber" : "ctr 0001"
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000012",
+          "parentID" : "A0000000-B000-C000-D000-E00000000001",
+          "provider" : "ENGIE Romania S.A.",
+          "service" : "service.gas"
+        }
+      ],
+      "within" : null
+    },
+    {
+      "check" : null,
+      "decision" : {
+        "id" : null,
+        "type" : "undecided"
+      },
+      "homes" : [
+        {
+          "address" : "Str. Exemplului nr. 1",
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000001"
+        },
+        {
+          "address" : "Str. Exemplului nr. 5",
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000005"
+        }
+      ],
+      "isTiedToHome" : true,
+      "keptCodes" : [
+
+      ],
+      "name" : "The provider decides inside the home, two with the same one",
+      "reading" : {
+        "codes" : {
+
+        },
+        "isBill" : true,
+        "provider" : "ENGIE Romania S.A.",
+        "service" : "service.gas",
+        "supplyAddress" : "Str. Exemplului nr. 5"
+      },
+      "subscriptions" : [
+        {
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000011",
+          "parentID" : "A0000000-B000-C000-D000-E00000000005",
+          "provider" : "ENGIE Romania S.A.",
+          "service" : "service.gas"
+        },
+        {
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000012",
+          "parentID" : "A0000000-B000-C000-D000-E00000000005",
+          "provider" : "Engie",
+          "service" : "service.gas"
+        }
+      ],
+      "within" : null
+    },
+    {
+      "check" : null,
+      "decision" : {
+        "id" : "A0000000-B000-C000-D000-E00000000005",
+        "type" : "newUnder"
+      },
+      "homes" : [
+        {
+          "address" : "Str. Exemplului nr. 1",
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000001"
+        },
+        {
+          "address" : "Str. Exemplului nr. 5",
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000005"
+        }
+      ],
+      "isTiedToHome" : true,
+      "keptCodes" : [
+
+      ],
+      "name" : "Another provider in the home is a new contract",
+      "reading" : {
+        "codes" : {
+
+        },
+        "isBill" : true,
+        "provider" : "Exemplu Gaz S.R.L.",
+        "service" : "service.gas",
+        "supplyAddress" : "Str. Exemplului nr. 5"
+      },
+      "subscriptions" : [
+        {
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000011",
+          "parentID" : "A0000000-B000-C000-D000-E00000000005",
+          "provider" : "ENGIE Romania S.A.",
+          "service" : "service.gas"
+        }
+      ],
+      "within" : null
+    },
+    {
+      "check" : null,
+      "decision" : {
+        "id" : null,
+        "type" : "newStandalone"
+      },
+      "homes" : [
+
+      ],
+      "isTiedToHome" : true,
+      "keptCodes" : [
+
+      ],
+      "name" : "No homes: a gas contract stands on its own",
+      "reading" : {
+        "codes" : {
+
+        },
+        "isBill" : true,
+        "provider" : "ENGIE Romania S.A.",
+        "service" : "service.gas",
+        "supplyAddress" : null
+      },
+      "subscriptions" : [
+
+      ],
+      "within" : null
+    },
+    {
+      "check" : null,
+      "decision" : {
+        "id" : "A0000000-B000-C000-D000-E00000000011",
+        "type" : "existing"
+      },
+      "homes" : [
+        {
+          "address" : "Str. Exemplului nr. 1",
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000001"
+        },
+        {
+          "address" : "Str. Exemplului nr. 5",
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000005"
+        }
+      ],
+      "isTiedToHome" : false,
+      "keptCodes" : [
+        "phoneNumber"
+      ],
+      "name" : "A phone plan, by its number in another form",
+      "reading" : {
+        "codes" : {
+          "phoneNumber" : "+40 712 345 678"
+        },
+        "isBill" : true,
+        "provider" : "Orange Romania S.A.",
+        "service" : "service.mobile",
+        "supplyAddress" : null
+      },
+      "subscriptions" : [
+        {
+          "fields" : {
+            "subscription.phoneNumber" : "0712345678"
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000011",
+          "parentID" : null,
+          "provider" : "Orange Romania S.A.",
+          "service" : "service.mobile"
+        }
+      ],
+      "within" : null
+    },
+    {
+      "check" : null,
+      "decision" : {
+        "id" : null,
+        "type" : "newStandalone"
+      },
+      "homes" : [
+        {
+          "address" : "Str. Exemplului nr. 1",
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000001"
+        },
+        {
+          "address" : "Str. Exemplului nr. 5",
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000005"
+        }
+      ],
+      "isTiedToHome" : false,
+      "keptCodes" : [
+        "phoneNumber"
+      ],
+      "name" : "A phone plan with another number",
+      "reading" : {
+        "codes" : {
+          "phoneNumber" : "0040 722 000 000"
+        },
+        "isBill" : true,
+        "provider" : "Orange Romania S.A.",
+        "service" : "service.mobile",
+        "supplyAddress" : null
+      },
+      "subscriptions" : [
+        {
+          "fields" : {
+            "subscription.phoneNumber" : "0712345678"
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000011",
+          "parentID" : null,
+          "provider" : "Orange Romania S.A.",
+          "service" : "service.mobile"
+        }
+      ],
+      "within" : null
+    },
+    {
+      "check" : null,
+      "decision" : {
+        "id" : "A0000000-B000-C000-D000-E00000000011",
+        "type" : "existing"
+      },
+      "homes" : [
+        {
+          "address" : "Str. Exemplului nr. 1",
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000001"
+        },
+        {
+          "address" : "Str. Exemplului nr. 5",
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000005"
+        }
+      ],
+      "isTiedToHome" : false,
+      "keptCodes" : [
+
+      ],
+      "name" : "A phone plan by its provider, on its own",
+      "reading" : {
+        "codes" : {
+
+        },
+        "isBill" : true,
+        "provider" : "Orange Romania",
+        "service" : "service.mobile",
+        "supplyAddress" : null
+      },
+      "subscriptions" : [
+        {
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000011",
+          "parentID" : null,
+          "provider" : "Orange Romania S.A.",
+          "service" : "service.mobile"
+        },
+        {
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000012",
+          "parentID" : "A0000000-B000-C000-D000-E00000000001",
+          "provider" : "Orange Romania S.A.",
+          "service" : "service.internetTV"
+        }
+      ],
+      "within" : null
+    },
+    {
+      "check" : null,
+      "decision" : {
+        "id" : "A0000000-B000-C000-D000-E00000000002",
+        "type" : "newUnder"
+      },
+      "homes" : [
+        {
+          "address" : null,
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000001"
+        },
+        {
+          "address" : null,
+          "fields" : {
+            "home.pod" : "ro005e000000001"
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000002"
+        }
+      ],
+      "isTiedToHome" : true,
+      "keptCodes" : [
+        "pod"
+      ],
+      "name" : "An unknown service with a POD goes under the home that keeps it",
+      "reading" : {
+        "codes" : {
+          "pod" : "RO005E000000001"
+        },
+        "isBill" : true,
+        "provider" : null,
+        "service" : null,
+        "supplyAddress" : null
+      },
+      "subscriptions" : [
+
+      ],
+      "within" : null
+    },
+    {
+      "check" : null,
+      "decision" : {
+        "id" : null,
+        "type" : "newStandalone"
+      },
+      "homes" : [
+        {
+          "address" : "Str. Exemplului nr. 1",
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000001"
+        },
+        {
+          "address" : "Str. Exemplului nr. 5",
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000005"
+        }
+      ],
+      "isTiedToHome" : false,
+      "keptCodes" : [
+
+      ],
+      "name" : "A contract with no service and no code stands on its own",
+      "reading" : {
+        "codes" : {
+
+        },
+        "isBill" : false,
+        "provider" : "Exemplu Servicii S.R.L.",
+        "service" : null,
+        "supplyAddress" : null
+      },
+      "subscriptions" : [
+
+      ],
+      "within" : null
+    },
+    {
+      "check" : null,
+      "decision" : {
+        "id" : "A0000000-B000-C000-D000-E00000000001",
+        "type" : "newUnder"
+      },
+      "homes" : [
+        {
+          "address" : null,
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000001"
+        }
+      ],
+      "isTiedToHome" : true,
+      "keptCodes" : [
+
+      ],
+      "name" : "A bill with no service named is a utility's",
+      "reading" : {
+        "codes" : {
+
+        },
+        "isBill" : true,
+        "provider" : "Exemplu Servicii S.R.L.",
+        "service" : null,
+        "supplyAddress" : null
+      },
+      "subscriptions" : [
+
+      ],
+      "within" : null
+    },
+    {
+      "check" : null,
+      "decision" : {
+        "id" : "A0000000-B000-C000-D000-E00000000011",
+        "type" : "existing"
+      },
+      "homes" : [
+        {
+          "address" : null,
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000001"
+        }
+      ],
+      "isTiedToHome" : true,
+      "keptCodes" : [
+
+      ],
+      "name" : "An unspecified service is never told apart from gas",
+      "reading" : {
+        "codes" : {
+
+        },
+        "isBill" : true,
+        "provider" : "ENGIE Romania S.A.",
+        "service" : "service.gas",
+        "supplyAddress" : null
+      },
+      "subscriptions" : [
+        {
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000011",
+          "parentID" : "A0000000-B000-C000-D000-E00000000001",
+          "provider" : "ENGIE Romania S.A.",
+          "service" : "service.other"
+        }
+      ],
+      "within" : null
+    },
+    {
+      "check" : null,
+      "decision" : {
+        "id" : "A0000000-B000-C000-D000-E00000000001",
+        "type" : "newUnder"
+      },
+      "homes" : [
+        {
+          "address" : null,
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000001"
+        }
+      ],
+      "isTiedToHome" : true,
+      "keptCodes" : [
+
+      ],
+      "name" : "Another service is never the one",
+      "reading" : {
+        "codes" : {
+
+        },
+        "isBill" : true,
+        "provider" : "ENGIE Romania S.A.",
+        "service" : "service.gas",
+        "supplyAddress" : null
+      },
+      "subscriptions" : [
+        {
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000011",
+          "parentID" : "A0000000-B000-C000-D000-E00000000001",
+          "provider" : "ENGIE Romania S.A.",
+          "service" : "service.electricity"
+        }
+      ],
+      "within" : null
+    },
+    {
+      "check" : null,
+      "decision" : {
+        "id" : "A0000000-B000-C000-D000-E00000000001",
+        "type" : "newUnder"
+      },
+      "homes" : [
+        {
+          "address" : null,
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000001"
+        }
+      ],
+      "isTiedToHome" : true,
+      "keptCodes" : [
+
+      ],
+      "name" : "A service typed as text",
+      "reading" : {
+        "codes" : {
+
+        },
+        "isBill" : true,
+        "provider" : "ENGIE Romania S.A.",
+        "service" : "Gaze naturale",
+        "supplyAddress" : null
+      },
+      "subscriptions" : [
+        {
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000011",
+          "parentID" : "A0000000-B000-C000-D000-E00000000001",
+          "provider" : "Engie",
+          "service" : "gaz"
+        }
+      ],
+      "within" : null
+    },
+    {
+      "check" : null,
+      "decision" : {
+        "id" : "A0000000-B000-C000-D000-E00000000005",
+        "type" : "newUnder"
+      },
+      "homes" : [
+        {
+          "address" : "Str. Exemplului nr. 1",
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000001"
+        },
+        {
+          "address" : "Str. Exemplului nr. 5",
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000005"
+        }
+      ],
+      "isTiedToHome" : true,
+      "keptCodes" : [
+        "clc"
+      ],
+      "name" : "Inside the home the person chose, a new one there",
+      "reading" : {
+        "codes" : {
+          "clc" : "DEG0000000000009"
+        },
+        "isBill" : true,
+        "provider" : "ENGIE Romania S.A.",
+        "service" : "service.gas",
+        "supplyAddress" : null
+      },
+      "subscriptions" : [
+        {
+          "fields" : {
+            "subscription.clc" : "DEG0000000000009"
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000011",
+          "parentID" : "A0000000-B000-C000-D000-E00000000001",
+          "provider" : "ENGIE Romania S.A.",
+          "service" : "service.gas"
+        }
+      ],
+      "within" : "A0000000-B000-C000-D000-E00000000005"
+    },
+    {
+      "check" : null,
+      "decision" : {
+        "id" : "A0000000-B000-C000-D000-E00000000011",
+        "type" : "existing"
+      },
+      "homes" : [
+        {
+          "address" : null,
+          "fields" : {
+
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000001"
+        }
+      ],
+      "isTiedToHome" : true,
+      "keptCodes" : [
+
+      ],
+      "name" : "A code that is only spaces is no code",
+      "reading" : {
+        "codes" : {
+          "clc" : " - "
+        },
+        "isBill" : true,
+        "provider" : "ENGIE Romania S.A.",
+        "service" : "service.gas",
+        "supplyAddress" : null
+      },
+      "subscriptions" : [
+        {
+          "fields" : {
+            "subscription.clc" : "DEG0000000000001"
+          },
+          "id" : "A0000000-B000-C000-D000-E00000000011",
+          "parentID" : "A0000000-B000-C000-D000-E00000000001",
+          "provider" : "ENGIE Romania S.A.",
+          "service" : "service.gas"
+        }
+      ],
+      "within" : null
+    }
+  ],
+  "rule" : "SubscriptionMatcher.Reading(provider:service:codes:isBill:supplyAddress:) and SubscriptionMatcher.place(_:subscriptions:homes:within:)",
+  "shape" : "reading: what a paper says (its provider and service, null for none, its codes by name, whether it is a bill, its supply address); subscriptions: each its id, the home it is filed under (null for none), its provider and stored service (null for none), and its codes by their fields' keys; homes: as homes.json; within: the home the person chose (null for none). keptCodes: the codes the reading keeps, in order; isTiedToHome: whether it belongs under a home; decision: existing (the subscription's id), newUnder (the home's id), newStandalone or undecided; check: what is worth a look about the house (null for nothing).",
+  "source" : "ios/DosarCuSina/Services/Subscriptions/SubscriptionMatcher.swift",
+  "writtenBy" : "ios/DosarCuSinaTests/SubscriptionVectorsTests.swift"
+}
