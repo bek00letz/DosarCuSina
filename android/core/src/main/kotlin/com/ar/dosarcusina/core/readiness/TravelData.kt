@@ -151,16 +151,30 @@ class ReadinessKeys(private val reads: Map<String, Map<String, String>>) {
 }
 
 /**
- * The document types as the checks read them, as the iOS app's `DocumentType`: each type's key,
- * name and other spellings (a type stored as a label by an earlier version is still its type),
- * its travel margin, and the kinds (variants) that are no travel document or stop being one.
+ * What a personal document can be, as the iOS app's `DocumentType`
+ * (ios/DosarCuSina/Models/Fields/ChoiceOptions.swift), read once for the whole app from
+ * shared/travel/documents.json: each type's key, name and other spellings (a type stored as a label
+ * by an earlier version is still its type) and its travel margin; its variants, with the name a
+ * document of the variant takes and what makes it no travel document; and what the app declares on
+ * the types as data: what a document of no known type is called, which keep a back, how long one
+ * is valid after it is issued, which are read only on the phone and which are shared with care.
+ * The readiness checks and the section actions (a document's name, its validity after issue) both
+ * read it here; no code asks for a type by name.
  */
+// The iOS type's surface, one function per question, and the file's parts, one per rule.
+@Suppress("TooManyFunctions", "LongParameterList")
 class DocumentTypes(
     /** The field that holds a document's type, and the one that holds its variant. */
     val typeField: String,
     val variantField: String,
     val types: List<Type>,
     val variants: List<Variant>,
+    /** What a document is called when its type isn't one this build knows. */
+    val unnamed: String = "",
+    private val keepsBack: Set<String> = emptySet(),
+    private val validityMonthsAfterIssue: Map<String, Int> = emptyMap(),
+    private val readOnPhoneOnly: Set<String> = emptySet(),
+    private val sharedWithCare: Set<String> = emptySet(),
 ) {
     data class Type(
         override val key: String,
@@ -169,7 +183,18 @@ class DocumentTypes(
         val travelMarginDays: Int,
     ) : NamedChoice
 
-    data class Variant(val type: String, val key: String, val travels: Boolean, val travelEnds: CalendarDay?)
+    data class Variant(
+        val type: String,
+        override val key: String,
+        val travels: Boolean,
+        val travelEnds: CalendarDay?,
+        /** The name a document of this variant takes when it isn't its type's ("Cazier fiscal"). */
+        val documentName: String? = null,
+        /** How the variant is offered, which a variant stored as text by an earlier version may be. */
+        override val label: String = "",
+    ) : NamedChoice {
+        override val aliases: List<String> get() = emptyList()
+    }
 
     /** The type a stored text names: its key, or a label an earlier version stored. */
     fun key(text: String?): String? {
@@ -181,8 +206,10 @@ class DocumentTypes(
     fun type(values: ReadinessValues): String? = key(values.text(typeField))
 
     /** How long before its expiry a document stops being good for travel, from its values (its type's). */
-    fun travelMarginDays(values: ReadinessValues): Int =
-        types.firstOrNull { it.key == type(values) }?.travelMarginDays ?: 0
+    fun travelMarginDays(values: ReadinessValues): Int = travelMarginDays(values.text(typeField))
+
+    /** How long before its expiry a document of the type [text] names stops being good for travel; 0 when never. */
+    fun travelMarginDays(text: String?): Int = types.firstOrNull { it.key == key(text) }?.travelMarginDays ?: 0
 
     private fun variant(values: ReadinessValues): Variant? =
         values.text(variantField)?.let { key -> variants.firstOrNull { it.key == key } }
@@ -193,7 +220,65 @@ class DocumentTypes(
     /** The last day a document is good for travel by its kind, when its kind has one. */
     fun travelEnd(values: ReadinessValues): CalendarDay? = variant(values)?.travelEnds
 
+    /** The document's name for a type: "Carte de identitate", "Pașaport". */
+    fun label(text: String): String? = key(text)?.let { key -> types.first { it.key == key }.label }
+
+    /** The variants of a type, in order. */
+    fun variants(of: String): List<Variant> = variants.filter { it.type == of }
+
+    /** What the document is called: the variant's own name ("Cazier fiscal"), else the type's, else [unnamed]. */
+    fun documentName(type: String, variant: String?): String {
+        val spec = variant?.let { key -> variants.firstOrNull { it.type == type && it.key == key } }
+        return spec?.documentName ?: label(type) ?: unnamed
+    }
+
+    /**
+     * What a document whose type field holds [typeText] and whose variant field holds [variantText]
+     * is called ("Carte de identitate", "Cazier judiciar"), when its type is one this build knows
+     * (`AssetActions.documentName`).
+     */
+    fun nameFromFields(typeText: String?, variantText: String?): String? {
+        val type = key(typeText) ?: return null
+        val variant = variantText?.let { variants.option(it)?.key }
+        return documentName(type, variant)
+    }
+
+    /**
+     * Whether a document of the type [text] names has a back worth adding. One with no type yet counts
+     * as "Alt document"; never a bank card, whose back shows the security code.
+     */
+    fun keepsBackSide(text: String?): Boolean {
+        if (text.isNullOrEmpty()) return OTHER in keepsBack
+        return key(text)?.let { it in keepsBack } ?: false
+    }
+
+    /** The months a document of this type and variant is valid after it is issued, if a rule says so. */
+    fun validityMonths(type: String?, variant: String?): Int? {
+        val key = key(type) ?: return null
+        val own = variant?.takeIf { text -> variants.any { it.type == key && it.key == text } }
+        return own?.let(validityMonthsAfterIssue::get) ?: validityMonthsAfterIssue[key]
+    }
+
+    /** Whether a type is dated by the day it was issued: the type, or one of its variants, has a validity from it. */
+    fun isDatedByIssue(type: String?): Boolean {
+        val key = key(type) ?: return false
+        return key in validityMonthsAfterIssue || variants(of = key).any { it.key in validityMonthsAfterIssue }
+    }
+
+    /** The last day a document issued on [issued] is valid by its rule: the same day, its months later. */
+    fun validUntil(issued: CalendarDay, type: String?, variant: String?): CalendarDay? =
+        validityMonths(type, variant)?.let { issued.addingMonths(it) }
+
+    /** Whether a type is read only on the phone, never sent to the person's AI provider. */
+    fun isReadOnPhoneOnly(type: String?): Boolean = key(type)?.let { it in readOnPhoneOnly } ?: false
+
+    /** Whether sending a type's picture says to send it only to someone the person trusts. */
+    fun isSharedWithCare(type: String?): Boolean = key(type)?.let { it in sharedWithCare } ?: false
+
     companion object {
+        /** "Alt document": what a document with no type yet counts as. */
+        private const val OTHER = "documentType.other"
+
         fun read(json: JsonObject): DocumentTypes = DocumentTypes(
             typeField = json.string("typeField"),
             variantField = json.string("variantField"),
@@ -201,8 +286,17 @@ class DocumentTypes(
                 Type(it.string("key"), it.string("label"), it.strings("aliases"), it.int("travelMarginDays"))
             },
             variants = json.list("variants").map { it.obj("variants") }.map {
-                Variant(it.string("type"), it.string("key"), it.bool("travels"), it.day("travelEnds"))
+                val name = it.stringOrNull("documentName")
+                val label = it.string("label")
+                Variant(it.string("type"), it.string("key"), it.bool("travels"), it.day("travelEnds"), name, label)
             },
+            unnamed = json.string("unnamed"),
+            keepsBack = json.strings("keepsBackSide").toSet(),
+            validityMonthsAfterIssue = json.obj("validityMonthsAfterIssue").keys.associateWith {
+                json.obj("validityMonthsAfterIssue").int(it)
+            },
+            readOnPhoneOnly = json.strings("readOnPhoneOnly").toSet(),
+            sharedWithCare = json.strings("sharedWithCare").toSet(),
         )
     }
 }

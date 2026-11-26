@@ -283,13 +283,7 @@ internal object V2Text {
     }
 
     /** A phone number as stored: digits, `+` kept, `00` read as `+` (`FieldFormatter.normalizePhone`). */
-    fun phone(raw: String): String {
-        val trimmed = raw.trim()
-        val hasPlus = trimmed.startsWith("+")
-        val digits = trimmed.filter(Char::isDigit)
-        if (!hasPlus && digits.startsWith("00")) return "+" + digits.drop(2)
-        return (if (hasPlus) "+" else "") + digits
-    }
+    fun phone(raw: String): String = com.ar.dosarcusina.archive.FieldFormatter.normalizePhone(raw)
 
     private val COUNTY_CODES = setOf(
         "AB", "AR", "AG", "BC", "BH", "BN", "BT", "BV", "BR", "BZ", "CS", "CL", "CJ", "CT", "CV", "DB", "DJ", "GL",

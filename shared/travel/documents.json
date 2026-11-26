@@ -1,4 +1,18 @@
 {
+  "keepsBackSide" : [
+    "documentType.drivingLicence",
+    "documentType.euHealthCard",
+    "documentType.idCard",
+    "documentType.nationalHealthCard",
+    "documentType.other",
+    "documentType.residencePermit"
+  ],
+  "readOnPhoneOnly" : [
+    "documentType.bankCard"
+  ],
+  "sharedWithCare" : [
+    "documentType.bankCard"
+  ],
   "typeField" : "document.type",
   "types" : [
     {
@@ -104,76 +118,104 @@
       "travelMarginDays" : 0
     }
   ],
+  "unnamed" : "Document",
+  "validityMonthsAfterIssue" : {
+    "documentVariant.criminalRecord.judicial" : 6
+  },
   "variantField" : "document.variant",
   "variants" : [
     {
+      "documentName" : null,
       "key" : "documentVariant.idCard.electronic",
+      "label" : "Electronică, cu cip (CEI)",
       "travelEnds" : null,
       "travels" : true,
       "type" : "documentType.idCard"
     },
     {
+      "documentName" : null,
       "key" : "documentVariant.idCard.withoutChip",
+      "label" : "Fără cip, modelul vechi",
       "travelEnds" : "2031-08-02",
       "travels" : true,
       "type" : "documentType.idCard"
     },
     {
+      "documentName" : "Carte de identitate simplă",
       "key" : "documentVariant.idCard.simple",
+      "label" : "Simplă (CIS)",
       "travelEnds" : null,
       "travels" : false,
       "type" : "documentType.idCard"
     },
     {
+      "documentName" : null,
       "key" : "documentVariant.passport.electronic",
+      "label" : "Simplu electronic",
       "travelEnds" : null,
       "travels" : true,
       "type" : "documentType.passport"
     },
     {
+      "documentName" : "Pașaport temporar",
       "key" : "documentVariant.passport.temporary",
+      "label" : "Simplu temporar",
       "travelEnds" : null,
       "travels" : true,
       "type" : "documentType.passport"
     },
     {
+      "documentName" : "Carte de rezidență",
       "key" : "documentVariant.residencePermit.residenceCard",
+      "label" : "Carte de rezidență, pentru un membru de familie al unui cetățean UE",
       "travelEnds" : null,
       "travels" : true,
       "type" : "documentType.residencePermit"
     },
     {
+      "documentName" : "Permis de ședere (Acordul de retragere)",
       "key" : "documentVariant.residencePermit.withdrawalAgreement",
+      "label" : "Pentru cetățeni britanici (Acordul de retragere)",
       "travelEnds" : null,
       "travels" : true,
       "type" : "documentType.residencePermit"
     },
     {
+      "documentName" : "Card de debit",
       "key" : "documentVariant.bankCard.debit",
+      "label" : "De debit",
       "travelEnds" : null,
       "travels" : true,
       "type" : "documentType.bankCard"
     },
     {
+      "documentName" : "Card de credit",
       "key" : "documentVariant.bankCard.credit",
+      "label" : "De credit",
       "travelEnds" : null,
       "travels" : true,
       "type" : "documentType.bankCard"
     },
     {
+      "documentName" : "Cazier judiciar",
       "key" : "documentVariant.criminalRecord.judicial",
+      "label" : "Judiciar",
       "travelEnds" : null,
       "travels" : true,
       "type" : "documentType.criminalRecord"
     },
     {
+      "documentName" : "Cazier fiscal",
       "key" : "documentVariant.criminalRecord.fiscal",
+      "label" : "Fiscal",
       "travelEnds" : null,
       "travels" : true,
       "type" : "documentType.criminalRecord"
     },
     {
+      "documentName" : "Cazier auto",
       "key" : "documentVariant.criminalRecord.driving",
+      "label" : "Auto",
       "travelEnds" : null,
       "travels" : true,
       "type" : "documentType.criminalRecord"

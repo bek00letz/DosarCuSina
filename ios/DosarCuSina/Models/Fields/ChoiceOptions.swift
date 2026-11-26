@@ -336,8 +336,11 @@ public enum DocumentType {
         if let variant, let spec = variants.first(where: { $0.type == type && $0.option.key == variant }), let name = spec.documentName {
             return name
         }
-        return label(for: type) ?? String(localized: "Document")
+        return label(for: type) ?? unnamed
     }
+
+    /// What a document is called when its type isn't one this build knows.
+    public static var unnamed: String { String(localized: "Document") }
 }
 
 public enum PetSpecies {
