@@ -14,6 +14,17 @@ public enum NumberKind: Sendable, Hashable, CaseIterable {
     /// Kilometres and counts have no decimals, so "45,724 km" can only be 45724.
     public var isWhole: Bool { self == .count || self == .kilometres }
 
+    /// The most decimals the app writes a number of this kind with: two for money, three for a
+    /// meter index or another measured value („1.234,567 m³”), none for kilometres and counts.
+    /// What `RomanianNumber.correction(of:as:)` takes a stored number's short decimal to have.
+    public var decimals: Int {
+        switch self {
+        case .money: 2
+        case .meterIndex: 3
+        case .count, .kilometres: 0
+        }
+    }
+
     /// The kind of a typed field's number: kilometres by their unit, whole numbers
     /// when the field shows no decimals (a year), any other measured value otherwise.
     public static func forField(unit: MeasurementUnit?, allowsDecimals: Bool = true) -> NumberKind {
@@ -57,7 +68,7 @@ public enum RomanianNumber {
         /// A document's ambiguous number: shown with "Verifică".
         public let needsCheck: Bool
 
-        public var doubleValue: Double { NSDecimalNumber(decimal: value).doubleValue }
+        public var doubleValue: Double { RomanianNumber.double(value) }
     }
 
     /// Why a text isn't a number of the kind asked for.
@@ -128,6 +139,67 @@ public enum RomanianNumber {
         let text = raw.trimmingCharacters(in: .whitespaces)
         guard TextPattern.first(#"^-?\d+(\.\d+)?$"#, in: text) != nil else { return nil }
         return Decimal(string: text, locale: Locale(identifier: "en_US_POSIX"))
+    }
+
+    // MARK: As a Double
+
+    /// `value` as the Double nearest it, correctly rounded: 98765.4321 is the Double written
+    /// "98765.4321", never one step beside it (98765.43209999999, which Foundation's
+    /// `NSDecimalNumber.doubleValue` gives). The one way a number read becomes a Double (a
+    /// reading, a field's number, an odometer), so both apps store the same value: Kotlin's
+    /// `BigDecimal.toDouble()` rounds the same way. It goes through the number's exact decimal
+    /// text, which Swift's `Double(_:)` reads correctly rounded.
+    public static func double(_ value: Decimal) -> Double {
+        Double(value.description) ?? .nan
+    }
+
+    /// The Double an earlier version meant to store, when `stored` is a step or two off it, or
+    /// nil when `stored` stands. Earlier versions turned a number into a Double through
+    /// `NSDecimalNumber.doubleValue`, which misses the nearest Double for about a third of the
+    /// numbers with two or three decimals, by one step (one ULP) or, rarely, two: a meter index
+    /// printed 1234,567 or 98765,4321 was kept beside its Double (98765.43209999999). The one
+    /// rule, the same in both apps (`DecimalDoublesStep`):
+    ///
+    /// - a number of `kind` is short when it has at most `kind.decimals` decimals; a Double is a
+    ///   short number's when it is that number correctly rounded (`double`);
+    /// - `stored` is corrected when it isn't a short number's, and a Double at most
+    ///   `missedSteps` steps above or below it is: it becomes the nearest such one;
+    /// - only while the steps around `stored` are small enough that one short number at most
+    ///   lies within reach (`ulp` × 2 × `missedSteps` below 10⁻ᵈ); a number past that (above
+    ///   about 10¹² for three decimals) stands, as does zero, an infinity or what isn't a number;
+    ///   and zero is never what a number becomes: the old conversion wrote it exactly.
+    public static func correction(of stored: Double, as kind: NumberKind) -> Double? {
+        let decimals = kind.decimals
+        guard stored.isFinite, stored != 0, hasSmallSteps(stored, decimals: decimals), !isShort(stored, decimals: decimals) else { return nil }
+        var below = stored
+        var above = stored
+        for _ in 0..<missedSteps {
+            below = below.nextDown
+            above = above.nextUp
+            if below != 0, isShort(below, decimals: decimals) { return below }
+            if above != 0, isShort(above, decimals: decimals) { return above }
+        }
+        return nil
+    }
+
+    /// How many steps (ULPs) `NSDecimalNumber.doubleValue` missed the nearest Double by, at most,
+    /// for a number with up to three decimals: measured over millions of them, from 0 to 10¹².
+    static let missedSteps = 2
+
+    /// Whether the steps of `value` (its `ulp`) are small enough for `missedSteps` of them each
+    /// way to reach one short number at most: compared exactly with the Double nearest 10⁻ᵈ, as
+    /// the Android app compares them.
+    private static func hasSmallSteps(_ value: Double, decimals: Int) -> Bool {
+        guard let last = Double("1e-\(decimals)") else { return false }
+        return value.ulp * 2 * Double(missedSteps) < last
+    }
+
+    /// Whether `value` is a short number's Double: its shortest text rounded to `decimals` and
+    /// read back gives it again. Only asked of a Double whose steps are small enough, so it is
+    /// never a half-way case: it lies within a quarter of the last decimal of the short number.
+    private static func isShort(_ value: Double, decimals: Int) -> Bool {
+        guard let text = Decimal(string: value.description, locale: Locale(identifier: "en_US_POSIX")) else { return false }
+        return double(text.rounded(scale: decimals)) == value
     }
 
     // MARK: Writing

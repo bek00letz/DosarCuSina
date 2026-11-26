@@ -824,7 +824,7 @@ private struct CaptureFieldEditor: View {
 
     static func number(of value: CaptureValue?) -> Double? {
         switch value {
-        case .number(let number)?, .metric(let number, _)?: NSDecimalNumber(decimal: number).doubleValue
+        case .number(let number)?, .metric(let number, _)?: RomanianNumber.double(number)
         default: nil
         }
     }
