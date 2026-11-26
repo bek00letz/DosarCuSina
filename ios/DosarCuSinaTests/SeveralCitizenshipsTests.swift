@@ -191,7 +191,7 @@ struct SeveralCitizenshipsTests {
         let simple = document(DocumentType.idCard, expires: "2035-01-01", holder: ana, variant: DocumentType.Variant.idCardSimple)
         let alone = trip(.everyone(start: "2027-07-12", end: "2027-07-20", region: .europeanUnion, in: [ana, simple]), [ana, simple])[id: "trip.identity.\(ana.id)"]
         #expect(alone?.status == .problem)
-        #expect(alone?.detail == TravelWording.notATravelDocument)
+        #expect(alone?.detail == ReadinessWords.notATravelDocument.text)
 
         let passport = document(DocumentType.passport, expires: "2030-01-01", holder: ana)
         #expect(trip(.everyone(start: "2027-07-12", end: "2027-07-20", region: .europeanUnion, in: [ana, simple, passport]),
